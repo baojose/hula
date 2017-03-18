@@ -21,8 +21,8 @@ class UserBaseViewController: UIViewController {
     func navToMainView() {
         
         DispatchQueue.main.async {
-            let navController = self.storyboard?.instantiateViewController(withIdentifier: "mainNav")
-            self.navigationController?.present(navController!, animated: true, completion: nil)
+            let viewController = self.storyboard?.instantiateViewController(withIdentifier: "baseTabBarPage") as! BaseTabBarViewController
+            self.navigationController?.pushViewController(viewController, animated: true)
         }
         
     }

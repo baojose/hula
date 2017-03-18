@@ -41,5 +41,11 @@
 		<string>BebasNeue Thin.otf</string>
 		<string>BebasNeue.otf</string>
 	</array>
+	<key>UIViewControllerBasedStatusBarAppearance</key>
+	<true/>
+	<key>NSCameraUsageDescription</key>
+	<string>Allow to us</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Allow to us</string>
 </dict>
 </plist>

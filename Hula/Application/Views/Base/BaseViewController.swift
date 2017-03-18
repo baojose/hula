@@ -13,15 +13,17 @@ class BaseViewController: UIViewController {
     var dataManager: HLDataManager! = HLDataManager.sharedInstance
     var commonUtils: CommonUtils! = CommonUtils.sharedInstance
     
+    @IBOutlet var pageTitleLabel: UILabel!
+    
     override func viewDidLoad() {
         super.viewDidLoad()
+
     }
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
     }
     
     //#MARK: Common Functions
-    
     
     
     //#MARK: Common Actions

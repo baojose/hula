@@ -15,7 +15,11 @@ class HLHomeViewController: BaseViewController, UIScrollViewDelegate, UITextFiel
     @IBOutlet var searchTxtField: UITextField!
     @IBOutlet var profileCompleteAlertView: UIView!
     @IBOutlet var noResultView: UIView!
-    
+    @IBOutlet var tableContainView: UIView!
+
+    var isSearching: Bool!
+    var productArray: NSMutableArray!
+    var filteredProductArray: NSMutableArray!
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -29,13 +33,19 @@ class HLHomeViewController: BaseViewController, UIScrollViewDelegate, UITextFiel
         super.didReceiveMemoryWarning()
     }
     func initData() {
-        
+        isSearching = false
+        productArray = NSMutableArray.init()
+        filteredProductArray = NSMutableArray.init()
+        for _ in 0 ..< 5 {
+            productArray.add("Camera")
+        }
     }
     func initView() {
         profileCompleteAlertView.frame = CGRect(x: HulaConstants.screenWidth / 8 * 7 - 282, y: HulaConstants.screenHeight - 136, width: 311, height: 78)
         self.profileCompleteAlertView.isHidden = true;
         self.noResultView.isHidden = true;
         self.showProfileCompleteAlertView()
+        searchTxtField.addTarget(self, action: #selector(searchTextDidChange(_:)), for: UIControlEvents.editingChanged)
     }
     @IBAction func closeProfileCompleteAlert(_ sender: Any) {
         self.hideProfileCompleteAlertView()
@@ -62,8 +72,7 @@ class HLHomeViewController: BaseViewController, UIScrollViewDelegate, UITextFiel
     }
     //#MARK: - TableViewDelegate
     func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat{
-        
-        return 22
+        return 22.0
     }
     func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView?{
 
@@ -76,38 +85,99 @@ class HLHomeViewController: BaseViewController, UIScrollViewDelegate, UITextFiel
         view.addSubview(label)
         
         let lineLabel = UILabel(frame: CGRect(x: 0, y: tableView.sectionHeaderHeight - 1, width: tableView.frame.size.width, height: 1))
-        lineLabel.backgroundColor = UIColor(red: 236.0/255, green: 236.0/255, blue: 236.0/255, alpha: 1.0)
+        lineLabel.backgroundColor = UIColor(red: 193.0/255, green: 193.0/255, blue: 193.0/255, alpha: 1.0)
         view.addSubview(lineLabel)
         view.backgroundColor = UIColor.white
         
         return view
     }
-
-    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return dataManager.arrCategories.count
-        
+    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat{
+        if self.isSearching == true{
+            return 73.0
+        }else{
+            return 128.0
+        }
     }
-    
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        if self.isSearching == true {
+            return filteredProductArray.count
+        }else{
+            return dataManager.arrCategories.count
+        }
+    }
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         
-        let cell = tableView.dequeueReusableCell(withIdentifier: "homeCategoryCell") as! HLHomeCategoryTableViewCell
-        let category : NSDictionary = dataManager.arrCategories.object(at: indexPath.row) as! NSDictionary
-
-        cell.categoryName.attributedText = commonUtils.attributedStringWithTextSpacing(category.object(forKey: "name") as! String, CGFloat(2.33))
-        cell.categoryImage.image = UIImage.init(named: category.object(forKey: "icon") as! String)
-        
-        return cell
+        if self.isSearching == true {
+            let cell = tableView.dequeueReusableCell(withIdentifier: "homeSearchCell") as! HLHomeSearchTableViewCell
+            let productName: String = filteredProductArray.object(at: indexPath.row) as! String
+            cell.productMainNameLabel.attributedText = commonUtils.attributedStringWithTextSpacing(productName, CGFloat(1.0))
+            return cell
+        }else{
+            let cell = tableView.dequeueReusableCell(withIdentifier: "homeCategoryCell") as! HLHomeCategoryTableViewCell
+            let category : NSDictionary = dataManager.arrCategories.object(at: indexPath.row) as! NSDictionary
+            
+            cell.categoryName.attributedText = commonUtils.attributedStringWithTextSpacing(category.object(forKey: "name") as! String, CGFloat(2.33))
+            cell.categoryImage.image = UIImage.init(named: category.object(forKey: "icon") as! String)
+            
+            return cell
+        }
     }
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath){
         let introViewController = self.storyboard?.instantiateViewController(withIdentifier: "searchResultPage") as! HLSearchResultViewController
         self.navigationController?.pushViewController(introViewController, animated: true)
     }
     //#MARK: - UITextFieldDelegate
-    
+    func textFieldShouldBeginEditing(_ textField: UITextField) -> Bool{
+        isSearching = true
+        self.searchProduct(textField.text!)
+        return true
+    }
+    func textFieldShouldReturn(_ textField: UITextField) -> Bool{
+        if textField.text?.characters.count == 0 {
+            isSearching = false
+            self.searchProduct(textField.text!)
+        }else{
+            isSearching = true
+            self.searchProduct(textField.text!)
+        }
+        return textField.resignFirstResponder()
+    }
+    func searchTextDidChange(_ textField:UITextField) {
+        isSearching = true
+        self.searchProduct(textField.text!)
+    }
+    func searchProduct(_ searchString: String) {
+        if isSearching == true {
+            if searchString.characters.count == 0 {
+                filteredProductArray.removeAllObjects()
+            }else{
+                filteredProductArray.removeAllObjects()
+                for i in 0 ..< productArray.count {
+                    let productName:String = productArray.object(at: i) as! String
+                    if productName.lowercased().range(of: searchString.lowercased()) != nil {
+                        filteredProductArray.add(productName)
+                    }
+                }
+                if filteredProductArray.count == 0 {
+                    noResultView.isHidden = false
+                    tableContainView.isHidden = true
+                }else{
+                    noResultView.isHidden = true
+                    tableContainView.isHidden = false
+                }
+            }
+        }
+        productTableView.reloadData()
+    }
     //#MARK: - ScrollViewDelegate
     func scrollViewDidScroll(_ scrollView: UIScrollView){
         if (scrollView == productTableView) {
             searchTxtField.resignFirstResponder()
         }
+    }
+    
+    //#MARK - Web service - GetAllProduct
+    func getAllProducts() {
+        
     }
 }

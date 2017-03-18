@@ -22,8 +22,8 @@ class HulaUser: NSObject {
         }
         return Static.instance
     }
-    
-    func initVal() {
+    override init() {
+        super.init()
         self.userId = -1
         self.userName = ""
         self.userEmail = ""

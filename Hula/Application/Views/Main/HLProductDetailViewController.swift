@@ -28,6 +28,9 @@ class HLProductDetailViewController: BaseViewController, UIScrollViewDelegate, U
     @IBOutlet var sellerFeedbackLabel: UILabel!
     @IBOutlet var sellerVerifiedMethodsView: UIView!
 
+    @IBOutlet var sellerLabel: UILabel!
+    @IBOutlet var userInventoryLabel: UILabel!
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         self.initData()
@@ -51,12 +54,14 @@ class HLProductDetailViewController: BaseViewController, UIScrollViewDelegate, U
         newFrame.size.height = 10 * 129;
         productTableView.frame = newFrame
         mainScrollView.contentSize = CGSize(width: 0, height: productTableView.frame.origin.y + productTableView.frame.size.height)
-        self.setUpProductScrollView()
-        
+        self.setUpProductImagesScrollView()
         commonUtils.setRoundedRectBorderButton(addToTradeBtn, 1.0, UIColor.white, addToTradeBtn.frame.size.height / 2.0)
+        commonUtils.circleImageView(sellerImageView)
+        sellerLabel.attributedText = commonUtils.attributedStringWithTextSpacing("SELLER", 2.33)
+        userInventoryLabel.attributedText = commonUtils.attributedStringWithTextSpacing("USER'S INVENTORY", 2.33)
     }
     
-    func setUpProductScrollView() {
+    func setUpProductImagesScrollView() {
         for i in 0 ..< 5 {
             let imageFrame = CGRect(x: (CGFloat)(i) * productsScrollView.frame.size.width, y: 0, width: productsScrollView.frame.size.width, height: productsScrollView.frame.size.height)
             let imgView: UIImageView! = UIImageView.init(frame: imageFrame)

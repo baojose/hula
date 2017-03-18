@@ -16,10 +16,13 @@ class HLProductTableViewCell: UITableViewCell {
     @IBOutlet var productDistance: UILabel!
     @IBOutlet var productTradeRate: UILabel!
     @IBOutlet var verifiedMethodsView: UIView!
-    @IBOutlet var selectedMarkButton: UIButton!
+    @IBOutlet var productOwnerImage: UIImageView!
+    @IBOutlet var productOwnerName: UILabel!
+    @IBOutlet var productEditBtn: UIButton!
 
     override func awakeFromNib() {
         super.awakeFromNib()
+        
     }
     override func setSelected(_ selected: Bool, animated: Bool) {
         super.setSelected(selected, animated: animated)

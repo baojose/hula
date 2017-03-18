@@ -11,8 +11,9 @@ import UIKit
 class HLDataManager: NSObject {
     
     var currentUser: HulaUser!
+    var newProduct: HulaProduct!
     var arrCategories : NSMutableArray!
-    
+    var uploadMode: Bool!
     
     class var sharedInstance: HLDataManager {
         struct Static {
@@ -24,7 +25,9 @@ class HLDataManager: NSObject {
     override init() {
         super.init()
         
+        uploadMode = false
         currentUser = HulaUser.init()
+        newProduct = HulaProduct.init()
         arrCategories = [["icon" : "icon_cat_service" , "name" : "SERVICES"],
                          ["icon" : "icon_cat_cars" , "name" : "CARS, BIKES & AUTO PARTS"],
                          ["icon" : "icon_cat_clothing" , "name" : "CLOTHING"],
