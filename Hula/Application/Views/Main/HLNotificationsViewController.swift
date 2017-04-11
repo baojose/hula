@@ -2,14 +2,13 @@
 //  HLNotificationsViewController.swift
 //  Hula
 //
-//  Created by Jose Bao on 4/8/17.
+//  Created by Juan Searle on 11/4/17.
 //  Copyright © 2017 star. All rights reserved.
 //
 
-
 import UIKit
 
-class NotificationsCategoryCell: BaseViewController, UITableViewDelegate, UITableViewDataSource {
+class HLNotificationsViewController: BaseViewController, UITableViewDelegate, UITableViewDataSource {
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -28,10 +27,9 @@ class NotificationsCategoryCell: BaseViewController, UITableViewDelegate, UITabl
     }
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         
-        let cell = tableView.dequeueReusableCell(withIdentifier: "HLHomeNotificationsTableViewCell") as! HLFeedbackHistoryTableViewCell
+        let cell = tableView.dequeueReusableCell(withIdentifier: "NotificationsCategoryCell") as! HLHomeNotificationsTableViewCell
         
         return cell
     }
 }
-
 
