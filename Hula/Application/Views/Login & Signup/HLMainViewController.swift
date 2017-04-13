@@ -36,6 +36,7 @@ class HLMainViewController: UserBaseViewController {
         self.view.layer.addSublayer(playerLayer)
         NotificationCenter.default.addObserver(self, selector: #selector(HLMainViewController.playerEnded(notification:)), name:NSNotification.Name.AVPlayerItemDidPlayToEndTime, object: player.currentItem)
         player.play()
+        
     }
     
     func playerEnded (notification:NSNotification) {
