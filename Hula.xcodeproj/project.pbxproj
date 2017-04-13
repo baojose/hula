@@ -7,6 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		116669151E98222F0094B157 /* HLHomeNotificationsTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 116669141E98222F0094B157 /* HLHomeNotificationsTableViewCell.swift */; };
+		116669191E9925C20094B157 /* HulaNotifications.swift in Sources */ = {isa = PBXBuildFile; fileRef = 116669181E9925C20094B157 /* HulaNotifications.swift */; };
+		279BAAD81E9D726D00091D24 /* HLNotificationsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 279BAAD71E9D726D00091D24 /* HLNotificationsViewController.swift */; };
 		F8274D4F1E712FCB002A3164 /* HLProfileViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F8274D4E1E712FCB002A3164 /* HLProfileViewController.swift */; };
 		F83186191E6FABBA00DD61FA /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = F83186171E6FABBA00DD61FA /* Main.storyboard */; };
 		F831861C1E6FABBA00DD61FA /* Hula.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = F831861A1E6FABBA00DD61FA /* Hula.xcdatamodeld */; };
@@ -76,6 +79,9 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		116669141E98222F0094B157 /* HLHomeNotificationsTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HLHomeNotificationsTableViewCell.swift; sourceTree = "<group>"; };
+		116669181E9925C20094B157 /* HulaNotifications.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HulaNotifications.swift; sourceTree = "<group>"; };
+		279BAAD71E9D726D00091D24 /* HLNotificationsViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HLNotificationsViewController.swift; sourceTree = "<group>"; };
 		F8274D4E1E712FCB002A3164 /* HLProfileViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HLProfileViewController.swift; sourceTree = "<group>"; };
 		F83186101E6FABBA00DD61FA /* Hula.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Hula.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		F83186181E6FABBA00DD61FA /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
@@ -161,6 +167,14 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		1166691A1E992C760094B157 /* Notifications */ = {
+			isa = PBXGroup;
+			children = (
+				279BAAD71E9D726D00091D24 /* HLNotificationsViewController.swift */,
+			);
+			name = Notifications;
+			sourceTree = "<group>";
+		};
 		F83186071E6FABB900DD61FA = {
 			isa = PBXGroup;
 			children = (
@@ -240,6 +254,7 @@
 			children = (
 				F86698B01E703AB7002129E1 /* HulaUser.swift */,
 				F86698B21E703AC9002129E1 /* HulaProduct.swift */,
+				116669181E9925C20094B157 /* HulaNotifications.swift */,
 				F86698B61E703CB9002129E1 /* HLAPIClient.swift */,
 				F86698C31E703EA6002129E1 /* HLDataManager.swift */,
 			);
@@ -303,6 +318,7 @@
 			isa = PBXGroup;
 			children = (
 				F890E4991E710187008719B9 /* HLHomeCategoryTableViewCell.swift */,
+				116669141E98222F0094B157 /* HLHomeNotificationsTableViewCell.swift */,
 				F8BE7C361E72010D00FAE07D /* HLFeedbackHistoryTableViewCell.swift */,
 				F8BE7C461E72412200FAE07D /* HLProductTableViewCell.swift */,
 				F8B651EA1E787B35009D1DC6 /* HLHomeSearchTableViewCell.swift */,
@@ -327,6 +343,7 @@
 			isa = PBXGroup;
 			children = (
 				F86698C01E703E3A002129E1 /* Home */,
+				1166691A1E992C760094B157 /* Notifications */,
 				F8B651EC1E7A34F8009D1DC6 /* My Products */,
 				F86698C11E703E45002129E1 /* Profile */,
 				F86698C21E703E4F002129E1 /* Setting */,
@@ -557,6 +574,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				F86698BD1E703DD8002129E1 /* UserBaseViewController.swift in Sources */,
+				116669191E9925C20094B157 /* HulaNotifications.swift in Sources */,
 				F890E4981E71011C008719B9 /* HLHomeViewController.swift in Sources */,
 				F86698B51E703C34002129E1 /* HulaConstants.swift in Sources */,
 				F8B651F61E7AB643009D1DC6 /* HLCustomCameraViewController.swift in Sources */,
@@ -570,6 +588,7 @@
 				F8BE7C4D1E72575300FAE07D /* HLFilterViewController.swift in Sources */,
 				F8BE7C491E7241C500FAE07D /* HLSearchResultViewController.swift in Sources */,
 				F8274D4F1E712FCB002A3164 /* HLProfileViewController.swift in Sources */,
+				279BAAD81E9D726D00091D24 /* HLNotificationsViewController.swift in Sources */,
 				F86698C41E703EA6002129E1 /* HLDataManager.swift in Sources */,
 				F86698B71E703CB9002129E1 /* HLAPIClient.swift in Sources */,
 				F8BE7C4B1E724F3D00FAE07D /* HLProductDetailViewController.swift in Sources */,
@@ -584,6 +603,7 @@
 				F8BE7C471E72412200FAE07D /* HLProductTableViewCell.swift in Sources */,
 				F8B652031E7C77BF009D1DC6 /* HLSellerInfoViewController.swift in Sources */,
 				F8B651F41E7A82F6009D1DC6 /* HLCompleteProductProfileViewController.swift in Sources */,
+				116669151E98222F0094B157 /* HLHomeNotificationsTableViewCell.swift in Sources */,
 				F86698B91E703D02002129E1 /* CommonUtils.swift in Sources */,
 				F8B651EB1E787B35009D1DC6 /* HLHomeSearchTableViewCell.swift in Sources */,
 				F86698CB1E7044D6002129E1 /* HLLogInViewController.swift in Sources */,
