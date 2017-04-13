@@ -24,7 +24,6 @@ class HLHomeViewController: BaseViewController, UIScrollViewDelegate, UITextFiel
     override func viewDidLoad() {
         super.viewDidLoad()
         self.initData()
-        self.initView()
     }
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
@@ -39,6 +38,21 @@ class HLHomeViewController: BaseViewController, UIScrollViewDelegate, UITextFiel
         for _ in 0 ..< 5 {
             productArray.add("Camera")
         }
+        
+        let categoriesLoaded = Notification.Name("categoriesLoaded")
+        NotificationCenter.default.addObserver(self, selector: #selector(self.methodOfReceivedNotification), name: categoriesLoaded, object: nil)
+
+        
+        self.initView()
+    }
+    func methodOfReceivedNotification(){
+        print("Ya se ha cargado")
+        refreshUI()
+    }
+    func refreshUI() {
+        DispatchQueue.main.async(execute: {
+            self.productTableView.reloadData()
+        });
     }
     func initView() {
         profileCompleteAlertView.frame = CGRect(x: HulaConstants.screenWidth / 8 * 7 - 282, y: HulaConstants.screenHeight - 136, width: 311, height: 78)
@@ -118,7 +132,8 @@ class HLHomeViewController: BaseViewController, UIScrollViewDelegate, UITextFiel
             
             cell.categoryName.attributedText = commonUtils.attributedStringWithTextSpacing(category.object(forKey: "name") as! String, CGFloat(2.33))
             cell.categoryImage.image = UIImage.init(named: category.object(forKey: "icon") as! String)
-            
+            cell.categoryProductNum.text = String(format:"%i products", (category.object(forKey: "num_products") as! Int))
+
             return cell
         }
     }

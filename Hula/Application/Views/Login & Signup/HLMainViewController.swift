@@ -36,16 +36,19 @@ class HLMainViewController: UserBaseViewController {
         self.view.layer.addSublayer(playerLayer)
         NotificationCenter.default.addObserver(self, selector: #selector(HLMainViewController.playerEnded(notification:)), name:NSNotification.Name.AVPlayerItemDidPlayToEndTime, object: player.currentItem)
         player.play()
+        
     }
     
     func playerEnded (notification:NSNotification) {
-        print("finished")
-        let introViewController = self.storyboard?.instantiateViewController(withIdentifier: "introPage") as! HLIntroViewController
-        let transition = CATransition()
-        transition.duration = 0.3
-        transition.timingFunction = CAMediaTimingFunction.init(name: kCAMediaTimingFunctionEaseInEaseOut)
-        transition.type = kCATransitionFade
-        self.navigationController?.view.layer.add(transition, forKey: nil)
-        self.navigationController?.pushViewController(introViewController, animated: false)
+        self.navToMainView()
+        
+//        print("finished")
+//        let introViewController = self.storyboard?.instantiateViewController(withIdentifier: "introPage") as! HLIntroViewController
+//        let transition = CATransition()
+//        transition.duration = 0.3
+//        transition.timingFunction = CAMediaTimingFunction.init(name: kCAMediaTimingFunctionEaseInEaseOut)
+//        transition.type = kCATransitionFade
+//        self.navigationController?.view.layer.add(transition, forKey: nil)
+//        self.navigationController?.pushViewController(introViewController, animated: false)
     }
 }
