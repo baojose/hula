@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="12118" systemVersion="16A323" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" colorMatched="YES" initialViewController="omL-QY-oVG">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="11762" systemVersion="16B2555" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" colorMatched="YES" initialViewController="omL-QY-oVG">
     <device id="retina4_7" orientation="portrait">
         <adaptation id="fullscreen"/>
     </device>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="12086"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="11757"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <scenes>
@@ -30,10 +30,6 @@
         <scene sceneID="JWv-rb-lhA">
             <objects>
                 <viewController id="WfN-zc-evU" customClass="HLMainViewController" customModule="Hula" customModuleProvider="target" sceneMemberID="viewController">
-                    <layoutGuides>
-                        <viewControllerLayoutGuide type="top" id="fEZ-Pe-Bfg"/>
-                        <viewControllerLayoutGuide type="bottom" id="Gh3-Sr-j8C"/>
-                    </layoutGuides>
                     <view key="view" contentMode="scaleToFill" id="wZo-s3-1ct">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -55,10 +51,6 @@
         <scene sceneID="jvO-84-HGT">
             <objects>
                 <viewController id="pEV-TJ-xPS" sceneMemberID="viewController">
-                    <layoutGuides>
-                        <viewControllerLayoutGuide type="top" id="Ras-7N-ZIp"/>
-                        <viewControllerLayoutGuide type="bottom" id="Sc2-c0-zT1"/>
-                    </layoutGuides>
                     <view key="view" contentMode="scaleToFill" id="q9y-Y5-46d">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -74,10 +66,6 @@
         <scene sceneID="7Zr-Ig-USr">
             <objects>
                 <viewController id="4Z7-C3-lzO" customClass="HLLogInViewController" customModule="Hula" customModuleProvider="target" sceneMemberID="viewController">
-                    <layoutGuides>
-                        <viewControllerLayoutGuide type="top" id="fo0-KY-qHF"/>
-                        <viewControllerLayoutGuide type="bottom" id="flX-4v-f5G"/>
-                    </layoutGuides>
                     <view key="view" contentMode="scaleToFill" id="DBC-I5-7dI">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -92,10 +80,6 @@
         <scene sceneID="0jL-rN-TOg">
             <objects>
                 <viewController storyboardIdentifier="introPage" automaticallyAdjustsScrollViewInsets="NO" id="IN6-WC-8ac" customClass="HLIntroViewController" customModule="Hula" customModuleProvider="target" sceneMemberID="viewController">
-                    <layoutGuides>
-                        <viewControllerLayoutGuide type="top" id="TOn-El-VOH"/>
-                        <viewControllerLayoutGuide type="bottom" id="4IJ-9I-yfc"/>
-                    </layoutGuides>
                     <view key="view" contentMode="scaleToFill" id="nO2-6e-uE7">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -321,10 +305,6 @@
         <scene sceneID="uHg-6a-Vr1">
             <objects>
                 <viewController id="Xzl-EG-WaS" sceneMemberID="viewController">
-                    <layoutGuides>
-                        <viewControllerLayoutGuide type="top" id="wlq-Xf-AT1"/>
-                        <viewControllerLayoutGuide type="bottom" id="0We-Lc-DnV"/>
-                    </layoutGuides>
                     <view key="view" contentMode="scaleToFill" id="A2W-VG-iCc">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -410,10 +390,6 @@
         <scene sceneID="P2o-gl-o5o">
             <objects>
                 <viewController id="EJg-eJ-lnZ" sceneMemberID="viewController">
-                    <layoutGuides>
-                        <viewControllerLayoutGuide type="top" id="1aF-Yu-rJw"/>
-                        <viewControllerLayoutGuide type="bottom" id="gzK-g4-NRR"/>
-                    </layoutGuides>
                     <view key="view" contentMode="scaleToFill" id="WKe-tQ-ZCo">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -527,10 +503,6 @@
         <scene sceneID="Dg2-ae-7zT">
             <objects>
                 <viewController id="VHH-Fv-zBi" sceneMemberID="viewController">
-                    <layoutGuides>
-                        <viewControllerLayoutGuide type="top" id="GRU-rV-a9U"/>
-                        <viewControllerLayoutGuide type="bottom" id="QpS-Qi-swx"/>
-                    </layoutGuides>
                     <view key="view" contentMode="scaleToFill" id="VHR-W8-3Q5">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -610,10 +582,6 @@
         <scene sceneID="f8K-T9-Jhp">
             <objects>
                 <viewController id="5t2-NI-WBD" sceneMemberID="viewController">
-                    <layoutGuides>
-                        <viewControllerLayoutGuide type="top" id="QMN-e1-Nug"/>
-                        <viewControllerLayoutGuide type="bottom" id="d1J-0Y-EAV"/>
-                    </layoutGuides>
                     <view key="view" contentMode="scaleToFill" id="n55-DL-2cf">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -697,10 +665,6 @@ Log In</string>
         <scene sceneID="9bd-0S-T1u">
             <objects>
                 <viewController id="kuR-Mr-JJh" sceneMemberID="viewController">
-                    <layoutGuides>
-                        <viewControllerLayoutGuide type="top" id="SID-Jk-GJX"/>
-                        <viewControllerLayoutGuide type="bottom" id="6iV-qV-X8V"/>
-                    </layoutGuides>
                     <view key="view" contentMode="scaleToFill" id="CK5-yx-yzP">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -811,10 +775,6 @@ Log In</string>
         <scene sceneID="jOD-fC-Xj9">
             <objects>
                 <viewController id="21G-ZY-CUK" sceneMemberID="viewController">
-                    <layoutGuides>
-                        <viewControllerLayoutGuide type="top" id="Neu-Z3-GNC"/>
-                        <viewControllerLayoutGuide type="bottom" id="lOY-Zy-R2R"/>
-                    </layoutGuides>
                     <view key="view" contentMode="scaleToFill" id="X2R-hI-G48">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -851,14 +811,6 @@ What is your name?</string>
                                 </attributedString>
                                 <nil key="highlightedColor"/>
                             </label>
-                            <textField opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="left" contentVerticalAlignment="center" placeholder="Name" textAlignment="natural" minimumFontSize="17" background="type_line_login" clearButtonMode="whileEditing" translatesAutoresizingMaskIntoConstraints="NO" id="PMe-jm-UrQ">
-                                <rect key="frame" x="24" y="333" width="335" height="33"/>
-                                <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
-                                <color key="tintColor" red="0.99989169836044312" green="1" blue="0.99988096952438354" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-                                <color key="textColor" red="0.99989169836044312" green="1" blue="0.99988096952438354" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-                                <fontDescription key="fontDescription" name="HelveticaNeue-Light" family="Helvetica Neue" pointSize="20"/>
-                                <textInputTraits key="textInputTraits"/>
-                            </textField>
                             <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="kmZ-Yf-qwW">
                                 <rect key="frame" x="231" y="455" width="117" height="39"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
@@ -871,8 +823,8 @@ What is your name?</string>
                                 <rect key="frame" x="315" y="468" width="7" height="12"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                             </imageView>
-                            <textField opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="left" contentVerticalAlignment="center" placeholder="Second Name" textAlignment="natural" minimumFontSize="17" background="type_line_login" clearButtonMode="whileEditing" translatesAutoresizingMaskIntoConstraints="NO" id="f7v-TG-H4p">
-                                <rect key="frame" x="24" y="389" width="335" height="33"/>
+                            <textField opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" fixedFrame="YES" misplaced="YES" contentHorizontalAlignment="left" contentVerticalAlignment="center" placeholder="Nickname" textAlignment="natural" minimumFontSize="17" background="type_line_login" clearButtonMode="whileEditing" translatesAutoresizingMaskIntoConstraints="NO" id="f7v-TG-H4p">
+                                <rect key="frame" x="24" y="344" width="335" height="33"/>
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
                                 <color key="textColor" red="0.99989169836044312" green="1" blue="0.99988096952438354" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 <fontDescription key="fontDescription" name="HelveticaNeue-Light" family="Helvetica Neue" pointSize="20"/>
@@ -890,10 +842,6 @@ What is your name?</string>
         <scene sceneID="Zdv-cf-5xe">
             <objects>
                 <viewController id="4HU-af-jjo" sceneMemberID="viewController">
-                    <layoutGuides>
-                        <viewControllerLayoutGuide type="top" id="svg-bm-8JI"/>
-                        <viewControllerLayoutGuide type="bottom" id="SNO-gm-ucc"/>
-                    </layoutGuides>
                     <view key="view" contentMode="scaleToFill" id="ygn-x2-taC">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -989,10 +937,6 @@ What is your email adess?</string>
         <scene sceneID="OB4-OC-UxE">
             <objects>
                 <viewController id="lCI-dW-ZyY" sceneMemberID="viewController">
-                    <layoutGuides>
-                        <viewControllerLayoutGuide type="top" id="n7o-SU-9gc"/>
-                        <viewControllerLayoutGuide type="bottom" id="o2h-IA-gpp"/>
-                    </layoutGuides>
                     <view key="view" contentMode="scaleToFill" id="taE-vs-zTu">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -1061,10 +1005,6 @@ What is your email adess?</string>
         <scene sceneID="gAF-WV-bca">
             <objects>
                 <viewController id="s0B-7c-cM8" sceneMemberID="viewController">
-                    <layoutGuides>
-                        <viewControllerLayoutGuide type="top" id="gLX-Tb-lko"/>
-                        <viewControllerLayoutGuide type="bottom" id="rzm-2I-idU"/>
-                    </layoutGuides>
                     <view key="view" contentMode="scaleToFill" id="jsA-Ar-Wcg">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -1136,8 +1076,8 @@ Set a password for your account</string>
                                     </attributedString>
                                 </state>
                             </button>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" usesAttributedText="YES" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="3zG-Tr-BPa">
-                                <rect key="frame" x="43" y="327" width="312" height="47"/>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" misplaced="YES" usesAttributedText="YES" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="3zG-Tr-BPa">
+                                <rect key="frame" x="43" y="321" width="312" height="47"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <attributedString key="attributedText">
                                     <fragment content="Your password must contain at least ">
@@ -1153,17 +1093,10 @@ Set a password for your account</string>
                                             <integer key="NSUnderline" value="1"/>
                                         </attributes>
                                     </fragment>
-                                    <fragment content=" and ">
+                                    <fragment content=" ">
                                         <attributes>
                                             <color key="NSColor" red="0.99989169836044312" green="1" blue="0.99988096952438354" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                             <font key="NSFont" size="12" name="HelveticaNeue-Light"/>
-                                        </attributes>
-                                    </fragment>
-                                    <fragment content="one capital letter">
-                                        <attributes>
-                                            <color key="NSColor" red="0.99989169836044312" green="1" blue="0.99988096952438354" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-                                            <font key="NSFont" size="12" name="HelveticaNeue-Light"/>
-                                            <integer key="NSUnderline" value="1"/>
                                         </attributes>
                                     </fragment>
                                 </attributedString>
@@ -1229,10 +1162,6 @@ Set a password for your account</string>
         <scene sceneID="eae-da-pRp">
             <objects>
                 <viewController id="UjI-s8-fEy" customClass="HLHomeViewController" customModule="Hula" customModuleProvider="target" sceneMemberID="viewController">
-                    <layoutGuides>
-                        <viewControllerLayoutGuide type="top" id="MCn-Rm-Jo7"/>
-                        <viewControllerLayoutGuide type="bottom" id="TxZ-ZH-vLL"/>
-                    </layoutGuides>
                     <view key="view" contentMode="scaleToFill" id="gZO-kE-uW2">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -1443,10 +1372,6 @@ Set a password for your account</string>
         <scene sceneID="p0l-wm-yE7">
             <objects>
                 <viewController storyboardIdentifier="searchResultPage" id="enk-yS-6h7" customClass="HLSearchResultViewController" customModule="Hula" customModuleProvider="target" sceneMemberID="viewController">
-                    <layoutGuides>
-                        <viewControllerLayoutGuide type="top" id="B59-1c-bsp"/>
-                        <viewControllerLayoutGuide type="bottom" id="cMa-0h-Dmn"/>
-                    </layoutGuides>
                     <view key="view" contentMode="scaleToFill" id="w6L-HH-FmO">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -1601,10 +1526,6 @@ Set a password for your account</string>
         <scene sceneID="Xgz-Pg-IkB">
             <objects>
                 <viewController storyboardIdentifier="myProfilePage" id="Il8-O6-spU" customClass="HLProfileViewController" customModule="Hula" customModuleProvider="target" sceneMemberID="viewController">
-                    <layoutGuides>
-                        <viewControllerLayoutGuide type="top" id="vMg-YN-VBA"/>
-                        <viewControllerLayoutGuide type="bottom" id="CSa-vy-m8t"/>
-                    </layoutGuides>
                     <view key="view" contentMode="scaleToFill" id="fUy-Ve-EUl">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -1899,10 +1820,6 @@ Set a password for your account</string>
         <scene sceneID="NJf-ro-Has">
             <objects>
                 <viewController id="q2S-y8-Nnc" customClass="HLNotificationsViewController" customModule="Hula" customModuleProvider="target" sceneMemberID="viewController">
-                    <layoutGuides>
-                        <viewControllerLayoutGuide type="top" id="xo7-It-4Vd"/>
-                        <viewControllerLayoutGuide type="bottom" id="0Fa-Ee-xgj"/>
-                    </layoutGuides>
                     <view key="view" contentMode="scaleToFill" id="NFM-GU-nNA">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -2002,7 +1919,7 @@ Set a password for your account</string>
                                                 <rect key="frame" x="0.0" y="48" width="375" height="113"/>
                                                 <autoresizingMask key="autoresizingMask"/>
                                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="dr5-35-SRZ" id="lPp-Fl-qqy">
-                                                    <rect key="frame" x="0.0" y="0.0" width="375" height="112"/>
+                                                    <rect key="frame" x="0.0" y="0.0" width="375" height="112.5"/>
                                                     <autoresizingMask key="autoresizingMask"/>
                                                     <subviews>
                                                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="5 hours ago" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="ODt-f7-Y70">
@@ -2057,10 +1974,6 @@ Set a password for your account</string>
         <scene sceneID="h2T-jc-r6y">
             <objects>
                 <viewController storyboardIdentifier="myProductsPage" automaticallyAdjustsScrollViewInsets="NO" id="3uD-U0-7Gr" customClass="HLMyProductsViewController" customModule="Hula" customModuleProvider="target" sceneMemberID="viewController">
-                    <layoutGuides>
-                        <viewControllerLayoutGuide type="top" id="Jg1-cN-vQP"/>
-                        <viewControllerLayoutGuide type="bottom" id="1LL-h4-DnN"/>
-                    </layoutGuides>
                     <view key="view" contentMode="scaleToFill" id="PH0-hr-1Eq">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -2179,10 +2092,6 @@ Set a password for your account</string>
         <scene sceneID="U0s-RJ-QSf">
             <objects>
                 <viewController id="Ys6-tw-uwL" customClass="HLSignUpViewController" customModule="Hula" customModuleProvider="target" sceneMemberID="viewController">
-                    <layoutGuides>
-                        <viewControllerLayoutGuide type="top" id="aPb-cJ-eV6"/>
-                        <viewControllerLayoutGuide type="bottom" id="iov-wd-5Hc"/>
-                    </layoutGuides>
                     <view key="view" contentMode="scaleToFill" id="p05-Ss-YWn">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -2214,10 +2123,6 @@ Set a password for your account</string>
         <scene sceneID="JYg-AD-n61">
             <objects>
                 <viewController id="Qkq-8f-mCV" sceneMemberID="viewController">
-                    <layoutGuides>
-                        <viewControllerLayoutGuide type="top" id="SPd-e9-2ba"/>
-                        <viewControllerLayoutGuide type="bottom" id="Uiu-K5-Obv"/>
-                    </layoutGuides>
                     <view key="view" contentMode="scaleToFill" id="HTy-6x-cSB">
                         <rect key="frame" x="0.0" y="0.0" width="667" height="375"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -2231,7 +2136,7 @@ Set a password for your account</string>
                                         <rect key="frame" x="0.0" y="1" width="139" height="184"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="jsp-qc-74f" id="FXx-XE-va3">
-                                            <rect key="frame" x="0.0" y="0.0" width="139" height="183"/>
+                                            <rect key="frame" x="0.0" y="0.0" width="139" height="183.5"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
                                                 <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" image="pic_dummie" translatesAutoresizingMaskIntoConstraints="NO" id="5jd-zV-Iqi">
@@ -2259,7 +2164,7 @@ Set a password for your account</string>
                                         <rect key="frame" x="0.0" y="1" width="139" height="184"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="0vU-l7-nYR" id="tfK-Hx-9J4">
-                                            <rect key="frame" x="0.0" y="0.0" width="139" height="183"/>
+                                            <rect key="frame" x="0.0" y="0.0" width="139" height="183.5"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
                                                 <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" image="pic_dummie" translatesAutoresizingMaskIntoConstraints="NO" id="eRf-lm-vNj">
@@ -2373,10 +2278,6 @@ Set a password for your account</string>
         <scene sceneID="dhp-cn-MJl">
             <objects>
                 <viewController id="E7c-9K-Thg" customClass="HLFeedbackHistoryViewController" customModule="Hula" customModuleProvider="target" sceneMemberID="viewController">
-                    <layoutGuides>
-                        <viewControllerLayoutGuide type="top" id="a0b-dX-Uvp"/>
-                        <viewControllerLayoutGuide type="bottom" id="cKz-73-aJF"/>
-                    </layoutGuides>
                     <view key="view" contentMode="scaleToFill" id="IuL-Qb-CS0">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -2499,10 +2400,6 @@ Set a password for your account</string>
         <scene sceneID="epR-6S-yCG">
             <objects>
                 <viewController id="oKo-re-riK" customClass="HLSettingViewController" customModule="Hula" customModuleProvider="target" sceneMemberID="viewController">
-                    <layoutGuides>
-                        <viewControllerLayoutGuide type="top" id="3dU-0B-sQF"/>
-                        <viewControllerLayoutGuide type="bottom" id="BlT-x5-Zg7"/>
-                    </layoutGuides>
                     <view key="view" contentMode="scaleToFill" id="Ap8-KG-2vU">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -2851,10 +2748,6 @@ Set a password for your account</string>
         <scene sceneID="PAb-Fp-2fp">
             <objects>
                 <viewController storyboardIdentifier="productDetailPage" id="i6g-kv-RGK" customClass="HLProductDetailViewController" customModule="Hula" customModuleProvider="target" sceneMemberID="viewController">
-                    <layoutGuides>
-                        <viewControllerLayoutGuide type="top" id="OyD-JD-hFw"/>
-                        <viewControllerLayoutGuide type="bottom" id="krX-aX-rrn"/>
-                    </layoutGuides>
                     <view key="view" contentMode="scaleToFill" id="bHa-lV-If6">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -3226,10 +3119,6 @@ Please contact me if you have any questions.
         <scene sceneID="oGN-KW-sqr">
             <objects>
                 <viewController storyboardIdentifier="filterPage" id="CMj-OO-BMx" customClass="HLFilterViewController" customModule="Hula" customModuleProvider="target" sceneMemberID="viewController">
-                    <layoutGuides>
-                        <viewControllerLayoutGuide type="top" id="5AK-fJ-nBX"/>
-                        <viewControllerLayoutGuide type="bottom" id="pPw-kH-xGI"/>
-                    </layoutGuides>
                     <view key="view" contentMode="scaleToFill" id="qrm-t3-tLU">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -3530,10 +3419,6 @@ Please contact me if you have any questions.
         <scene sceneID="LaX-Tc-Gmc">
             <objects>
                 <viewController storyboardIdentifier="editProductMainPage" id="fop-r6-UcK" customClass="HLEditProductMainViewController" customModule="Hula" customModuleProvider="target" sceneMemberID="viewController">
-                    <layoutGuides>
-                        <viewControllerLayoutGuide type="top" id="AZk-Gf-Koh"/>
-                        <viewControllerLayoutGuide type="bottom" id="H2n-ON-37X"/>
-                    </layoutGuides>
                     <view key="view" contentMode="scaleToFill" id="SWo-Oh-kOT">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -3843,10 +3728,6 @@ Please contact me if you have any questions.
         <scene sceneID="Wqp-BU-QDf">
             <objects>
                 <viewController storyboardIdentifier="customCameraPage" id="nK1-j0-3vr" customClass="HLCustomCameraViewController" customModule="Hula" customModuleProvider="target" sceneMemberID="viewController">
-                    <layoutGuides>
-                        <viewControllerLayoutGuide type="top" id="fAp-C5-w1A"/>
-                        <viewControllerLayoutGuide type="bottom" id="bD2-k2-4Ao"/>
-                    </layoutGuides>
                     <view key="view" contentMode="scaleToFill" id="tMC-fK-Iaq">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -4065,10 +3946,6 @@ Please contact me if you have any questions.
         <scene sceneID="oBX-fk-Uai">
             <objects>
                 <viewController storyboardIdentifier="postProductPage" id="QjV-x8-CvW" customClass="HLPostProductViewController" customModule="Hula" customModuleProvider="target" sceneMemberID="viewController">
-                    <layoutGuides>
-                        <viewControllerLayoutGuide type="top" id="gWS-Hm-pM1"/>
-                        <viewControllerLayoutGuide type="bottom" id="VjF-an-LMh"/>
-                    </layoutGuides>
                     <view key="view" contentMode="scaleToFill" id="m1y-ng-ILX">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -4291,10 +4168,6 @@ Please contact me if you have any questions.
         <scene sceneID="21O-Gf-YBv">
             <objects>
                 <viewController storyboardIdentifier="completeProductProfilePage" id="KPC-Gk-U82" customClass="HLCompleteProductProfileViewController" customModule="Hula" customModuleProvider="target" sceneMemberID="viewController">
-                    <layoutGuides>
-                        <viewControllerLayoutGuide type="top" id="Ad0-B8-Sph"/>
-                        <viewControllerLayoutGuide type="bottom" id="QqB-uz-B07"/>
-                    </layoutGuides>
                     <view key="view" contentMode="scaleToFill" id="p1o-3S-Qia">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -4631,10 +4504,6 @@ Please contact me if you have any questions.
         <scene sceneID="RCR-Ty-qrt">
             <objects>
                 <viewController storyboardIdentifier="sellerInfoPage" id="euT-fj-LZ1" customClass="HLSellerInfoViewController" customModule="Hula" customModuleProvider="target" sceneMemberID="viewController">
-                    <layoutGuides>
-                        <viewControllerLayoutGuide type="top" id="R38-id-n8N"/>
-                        <viewControllerLayoutGuide type="bottom" id="6W0-eb-iam"/>
-                    </layoutGuides>
                     <view key="view" contentMode="scaleToFill" id="ulM-1z-CTT">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
