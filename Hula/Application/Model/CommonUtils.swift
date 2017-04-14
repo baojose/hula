@@ -18,7 +18,7 @@ class CommonUtils: NSObject {
     }
     // Common Utils Functions
     func attributedStringWithTextSpacing(_ str: String, _ textSpacing: CGFloat) -> NSMutableAttributedString {
-        let attributedString = NSMutableAttributedString(string: str)
+        let attributedString = NSMutableAttributedString(string: str.uppercased())
         attributedString.addAttribute(NSKernAttributeName, value: textSpacing, range: NSRange(location: 0, length: attributedString.length))
         return attributedString
     }
