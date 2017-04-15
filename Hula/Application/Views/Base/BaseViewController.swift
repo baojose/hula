@@ -34,4 +34,10 @@ class BaseViewController: UIViewController {
         self.dismiss(animated: true, completion: nil)
     }
     
+    func openUserIdentification(){
+        DispatchQueue.main.async {
+            let viewController = self.storyboard?.instantiateViewController(withIdentifier: "identification") as! HLIdentificationViewController
+            self.navigationController?.pushViewController(viewController, animated: true)
+        }
+    }
 }

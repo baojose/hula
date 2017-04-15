@@ -26,4 +26,12 @@ class UserBaseViewController: UIViewController {
         }
         
     }
+    
+    
+    func closeIdentification() {
+        
+        self.navigationController?.popViewController(animated: true);
+        
+    }
+    
 }

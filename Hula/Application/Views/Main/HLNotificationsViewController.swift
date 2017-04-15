@@ -13,6 +13,15 @@ class HLNotificationsViewController: BaseViewController, UITableViewDelegate, UI
     override func viewDidLoad() {
         super.viewDidLoad()
     }
+    override func viewDidAppear(_ animated: Bool) {
+        
+        let user = HulaUser.sharedInstance
+        if (user.token.characters.count < 10){
+            // user not logged in
+            openUserIdentification()
+            
+        }
+    }
     
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()

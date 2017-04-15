@@ -10,11 +10,14 @@ import UIKit
 
 class HulaUser: NSObject {
     
-    var userId: Int!
+    var userId: String!
     var userName: String!
     var userEmail: String!
-    var userPhotoLink: String!
+    var userPhotoURL: String!
     var userLocationName: String!
+    var userBio: String!
+    var token: String!
+    var location: CGPoint!
     
     class var sharedInstance: HulaUser {
         struct Static {
@@ -24,10 +27,13 @@ class HulaUser: NSObject {
     }
     override init() {
         super.init()
-        self.userId = -1
+        self.userId = ""
         self.userName = ""
         self.userEmail = ""
-        self.userPhotoLink = ""
+        self.userPhotoURL = ""
         self.userLocationName = ""
+        self.userBio = ""
+        self.token = ""
+        self.location = CGPoint(x:0, y:0)
     }
 }
