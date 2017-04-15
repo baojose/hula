@@ -8,12 +8,12 @@
           "width" : 1
         },
         "cap-insets" : {
-          "right" : 19,
-          "left" : 19
+          "right" : 24,
+          "left" : 24
         }
       },
       "idiom" : "universal",
-      "filename" : "transparent_background_button.pdf",
+      "filename" : "opacity_background_button.pdf",
       "scale" : "1x"
     },
     {
