@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		116669151E98222F0094B157 /* HLHomeNotificationsTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 116669141E98222F0094B157 /* HLHomeNotificationsTableViewCell.swift */; };
 		116669191E9925C20094B157 /* HulaNotifications.swift in Sources */ = {isa = PBXBuildFile; fileRef = 116669181E9925C20094B157 /* HulaNotifications.swift */; };
+		277C6C431EA2385B00530B0F /* HLRoundedButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 277C6C421EA2385B00530B0F /* HLRoundedButton.swift */; };
 		279BAAD81E9D726D00091D24 /* HLNotificationsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 279BAAD71E9D726D00091D24 /* HLNotificationsViewController.swift */; };
 		F8274D4F1E712FCB002A3164 /* HLProfileViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F8274D4E1E712FCB002A3164 /* HLProfileViewController.swift */; };
 		F83186191E6FABBA00DD61FA /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = F83186171E6FABBA00DD61FA /* Main.storyboard */; };
@@ -81,6 +82,7 @@
 /* Begin PBXFileReference section */
 		116669141E98222F0094B157 /* HLHomeNotificationsTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HLHomeNotificationsTableViewCell.swift; sourceTree = "<group>"; };
 		116669181E9925C20094B157 /* HulaNotifications.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HulaNotifications.swift; sourceTree = "<group>"; };
+		277C6C421EA2385B00530B0F /* HLRoundedButton.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HLRoundedButton.swift; sourceTree = "<group>"; };
 		279BAAD71E9D726D00091D24 /* HLNotificationsViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HLNotificationsViewController.swift; sourceTree = "<group>"; };
 		F8274D4E1E712FCB002A3164 /* HLProfileViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HLProfileViewController.swift; sourceTree = "<group>"; };
 		F83186101E6FABBA00DD61FA /* Hula.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Hula.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -175,6 +177,14 @@
 			name = Notifications;
 			sourceTree = "<group>";
 		};
+		277C6C411EA2384B00530B0F /* Utils */ = {
+			isa = PBXGroup;
+			children = (
+				277C6C421EA2385B00530B0F /* HLRoundedButton.swift */,
+			);
+			name = Utils;
+			sourceTree = "<group>";
+		};
 		F83186071E6FABB900DD61FA = {
 			isa = PBXGroup;
 			children = (
@@ -231,6 +241,7 @@
 		F866989D1E703A80002129E1 /* Application */ = {
 			isa = PBXGroup;
 			children = (
+				277C6C411EA2384B00530B0F /* Utils */,
 				F866989E1E703A80002129E1 /* Config */,
 				F866989F1E703A80002129E1 /* Controller */,
 				F86698A01E703A80002129E1 /* Libraries */,
@@ -576,6 +587,7 @@
 				F86698BD1E703DD8002129E1 /* UserBaseViewController.swift in Sources */,
 				116669191E9925C20094B157 /* HulaNotifications.swift in Sources */,
 				F890E4981E71011C008719B9 /* HLHomeViewController.swift in Sources */,
+				277C6C431EA2385B00530B0F /* HLRoundedButton.swift in Sources */,
 				F86698B51E703C34002129E1 /* HulaConstants.swift in Sources */,
 				F8B651F61E7AB643009D1DC6 /* HLCustomCameraViewController.swift in Sources */,
 				F86698C91E7044C0002129E1 /* HLSignUpViewController.swift in Sources */,
