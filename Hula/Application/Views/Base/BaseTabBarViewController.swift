@@ -48,5 +48,5 @@ class BaseTabBarViewController: UITabBarController {
         let tabbarSelectedItemBackgroundImage: UIImage! = UIImage(named: "img_tabbar_selected_bg")?.withRenderingMode(.alwaysOriginal)
         self.tabbar.selectionIndicatorImage = tabbarSelectedItemBackgroundImage;
     }
-
+    
 }

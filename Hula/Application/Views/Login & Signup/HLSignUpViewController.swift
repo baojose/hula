@@ -16,5 +16,9 @@ class HLSignUpViewController: UserBaseViewController {
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
     }
+    @IBAction func closeIdentificationVC(_ sender: Any) {
+        self.closeIdentification()
+    }
+    
 
 }
