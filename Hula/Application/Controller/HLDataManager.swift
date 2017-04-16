@@ -56,6 +56,8 @@ class HLDataManager: NSObject {
 //                         ["icon" : "icon_cat_jewelry" , "name" : "JEWELRY"],
 //                         ["icon" : "icon_cat_camping" , "name" : "CAMPING, SURVIVAL & OUTDOORS"],
 //                         ["icon" : "icon_cat_other" , "name" : "OTHERS"]]
+        
+        loadUserData()
     }
     
     
@@ -95,6 +97,7 @@ class HLDataManager: NSObject {
                         user.token = token
                         print(token)
                         loginSuccess = true;
+                        self.writeUserData()
                     }
                 } else {
                     user.token = ""
@@ -148,4 +151,87 @@ class HLDataManager: NSObject {
         }
         task.resume()
     }
+    
+    
+    private func writeUserData(){
+        let paths = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true) as NSArray
+        let documentsDirectory = paths.object(at: 0) as! NSString
+        let path = documentsDirectory.appendingPathComponent(HulaConstants.userFile + ".plist")
+        let dict: NSMutableDictionary = ["XInitializerItem": "DoNotEverChangeMe"]
+        
+        //saving values
+        
+        let user = HulaUser.sharedInstance
+        
+        dict.setObject(user.token, forKey: "token" as NSCopying)
+        dict.setObject(user.userId, forKey: "userId" as NSCopying)
+        //...
+        //writing to GameData.plist
+        dict.write(toFile: path, atomically: false)
+        let resultDictionary = NSMutableDictionary(contentsOfFile: path)
+        print("Saved UserData.plist file is --> \(String(describing: resultDictionary?.description))")
+        
+        self.loadUserData()
+    }
+    
+    
+    func loadUserData() {
+        // getting path to GameData.plist
+        
+        let paths = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true) as NSArray
+        let documentsDirectory = paths[0] as! NSString
+        let path = documentsDirectory.appendingPathComponent(HulaConstants.userFile + ".plist")
+        
+        //        let path = documentsDirectory.stringByAppendingPathComponent("GameData.plist")
+        let fileManager = FileManager.default
+        
+        //check if file exists
+        if(!fileManager.fileExists(atPath: path))
+        {
+            // If it doesn't, copy it from the default file in the Bundle
+            
+            if let bundlePath = Bundle.main.path(forResource: HulaConstants.userFile, ofType: "plist")
+            {
+                let resultDictionary = NSMutableDictionary(contentsOfFile: bundlePath)
+                print("Bundle UserData.plist file is --> \(String(describing: resultDictionary?.description))")
+                
+                do
+                {
+                    try fileManager.copyItem(atPath: bundlePath, toPath: path)
+                    print("copy")
+                }
+                catch _
+                {
+                    print("error failed loading data")
+                }
+            }
+            else
+            {
+                print("GameData.plist not found. Please, make sure it is part of the bundle.")
+            }
+        }
+        else
+        {
+            print("UserData.plist already exits at path.")
+            // use this to delete file from documents directory
+            //fileManager.removeItemAtPath(path, error: nil)
+        }
+        
+        let resultDictionary = NSMutableDictionary(contentsOfFile: path)
+        print("Loaded UserData.plist file is --> \(String(describing: resultDictionary?.description))")
+        let myDict = NSDictionary(contentsOfFile: path)
+        
+        if let dict = myDict {
+            //loading values
+            let user = HulaUser.sharedInstance
+            
+            user.token = dict.object(forKey: "token")! as! String
+            user.userId = dict.object(forKey: "userId")! as! String
+        }
+        else
+        {
+            print("WARNING: Couldn't create dictionary from GameData.plist! Default values will be used!")
+        }
+        
+    }//eom
 }
