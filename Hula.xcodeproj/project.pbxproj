@@ -519,7 +519,7 @@
 				TargetAttributes = {
 					F831860F1E6FABB900DD61FA = {
 						CreatedOnToolsVersion = 8.2;
-						DevelopmentTeam = NBT28YGA4K;
+						DevelopmentTeam = NWV9VFCLKT;
 						ProvisioningStyle = Automatic;
 					};
 					F83186261E6FABBA00DD61FA = {
@@ -784,7 +784,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
-				DEVELOPMENT_TEAM = NBT28YGA4K;
+				DEVELOPMENT_TEAM = NWV9VFCLKT;
 				INFOPLIST_FILE = Hula/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
@@ -799,7 +799,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
-				DEVELOPMENT_TEAM = NBT28YGA4K;
+				DEVELOPMENT_TEAM = NWV9VFCLKT;
 				INFOPLIST_FILE = Hula/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";

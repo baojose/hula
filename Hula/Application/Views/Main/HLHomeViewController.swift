@@ -40,12 +40,12 @@ class HLHomeViewController: BaseViewController, UIScrollViewDelegate, UITextFiel
         }
         
         let categoriesLoaded = Notification.Name("categoriesLoaded")
-        NotificationCenter.default.addObserver(self, selector: #selector(self.methodOfReceivedNotification), name: categoriesLoaded, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(self.categoriesAreLoaded), name: categoriesLoaded, object: nil)
 
         
         self.initView()
     }
-    func methodOfReceivedNotification(){
+    func categoriesAreLoaded(){
         print("Ya se ha cargado")
         refreshUI()
     }

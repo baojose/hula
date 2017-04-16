@@ -30,8 +30,9 @@ class UserBaseViewController: UIViewController {
     
     func closeIdentification() {
         
-        self.navigationController?.popViewController(animated: true);
-        
+        DispatchQueue.main.async {
+            self.navigationController?.popViewController(animated: true);
+        }
     }
     
 }

@@ -39,5 +39,9 @@ class BaseViewController: UIViewController {
             let viewController = self.storyboard?.instantiateViewController(withIdentifier: "identification") as! HLIdentificationViewController
             self.navigationController?.pushViewController(viewController, animated: true)
         }
+        
+//        let modalViewController = HLIdentificationViewController()
+//        modalViewController.modalPresentationStyle = .overCurrentContext
+//        present(modalViewController, animated: true, completion: nil)
     }
 }

@@ -15,10 +15,11 @@ class HLDataManager: NSObject {
     var currentUser: HulaUser!
     var newProduct: HulaProduct!
     var arrCategories : NSMutableArray!
+    var arrNotifications : NSMutableArray!
     var uploadMode: Bool!
-    var loadingCategories: Bool!
     
     let categoriesLoaded = Notification.Name("categoriesLoaded")
+    let loginRecieved = Notification.Name("loginRecieved")
     
     class var sharedInstance: HLDataManager {
         struct Static {
@@ -33,10 +34,10 @@ class HLDataManager: NSObject {
         uploadMode = false
         currentUser = HulaUser.init()
         newProduct = HulaProduct.init()
-        loadingCategories = true
         
         
         arrCategories = []
+        arrNotifications = []
         getCategories()
 //        arrCategories = [["icon" : "icon_cat_service" , "name" : "SERVICES"],
 //                         ["icon" : "icon_cat_cars" , "name" : "CARS, BIKES & AUTO PARTS"],
@@ -70,11 +71,38 @@ class HLDataManager: NSObject {
                         self.arrCategories.add(cat)
                     }
                 }
-                self.loadingCategories = false
+                
                 NotificationCenter.default.post(name: self.categoriesLoaded, object: nil)
             }
         })
+    }
+    
+    func loginUser(email:String, pass:String) {
         
+        //print("Login in progress...")
+        let queryURL = HulaConstants.apiURL + "authenticate"
+        var loginSuccess = false;
+        httpPost(urlstr: queryURL, postString: "email="+email+"&pass="+pass, taskCallback: { (ok, json) in
+            
+            print("done")
+            print(ok)
+            print(json!)
+            if (ok){
+                let user = HulaUser.sharedInstance
+                if let dictionary = json as? [String: Any] {
+                    if let token = dictionary["token"] as? String {
+                        // access individual value in dictionary
+                        user.token = token
+                        print(token)
+                        loginSuccess = true;
+                    }
+                } else {
+                    user.token = ""
+                }
+                
+                NotificationCenter.default.post(name: self.loginRecieved, object: loginSuccess)
+            }
+        })
     }
     
     private func httpGet(urlstr:String, taskCallback: @escaping (Bool, Any?) -> ()) {
@@ -94,10 +122,30 @@ class HLDataManager: NSObject {
             
             let json = try! JSONSerialization.jsonObject(with: data, options: [])
             taskCallback(true, json as AnyObject?)
-    }
+        }
     
-    task.resume()
+        task.resume()
     }
 
-    
+    private func httpPost(urlstr:String, postString:String, taskCallback: @escaping (Bool, Any?) -> ()) {
+        let url = URL(string: urlstr)
+        var request = URLRequest(url: url!)
+        request.httpMethod = "POST"
+        request.httpBody = postString.data(using: .utf8)
+        let task = URLSession.shared.dataTask(with: request) { data, response, error in
+            guard let data = data, error == nil else {                                                 // check for fundamental networking error
+                print(error!)
+                return
+            }
+            
+            if let httpStatus = response as? HTTPURLResponse, httpStatus.statusCode != 200 {           // check for http errors
+                print("statusCode should be 200, but is \(httpStatus.statusCode)")
+                print(response ?? "No response")
+            }
+            
+            let json = try! JSONSerialization.jsonObject(with: data, options: [])
+            taskCallback(true, json as AnyObject?)
+        }
+        task.resume()
+    }
 }
