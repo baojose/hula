@@ -22,8 +22,6 @@ class HLLogInViewController: UserBaseViewController, UITextFieldDelegate {
         NotificationCenter.default.addObserver(self, selector: #selector(self.loginDataRecieved), name: loginRecieved, object: nil)
         
         let tap: UITapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(self.dismissKeyboard))
-        //Uncomment the line below if you want the tap not not interfere and cancel other interactions.
-        //tap.cancelsTouchesInView = false
         view.addGestureRecognizer(tap)
     }
     

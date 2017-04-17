@@ -18,5 +18,6 @@ struct HulaConstants {
     // Server API Links
     static let apiURL: String = "http://138.197.1.95/v1/"
     
-    
+    // local storage
+    static let userFile: String = "UserData"
 }
