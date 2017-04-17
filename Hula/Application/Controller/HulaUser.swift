@@ -36,4 +36,9 @@ class HulaUser: NSObject {
         self.token = ""
         self.location = CGPoint(x:0, y:0)
     }
+    
+    public func logout(){
+        self.token = ""
+        self.userId = ""
+    }
 }

@@ -30,4 +30,7 @@ class HLSettingViewController: BaseViewController {
         commonUtils.circleImageView(profileImageView)
         mainScrollView.contentSize = CGSize(width: 0, height: contentView.frame.size.height)
     }
+    @IBAction func userLogout(_ sender: Any) {
+        HulaUser.sharedInstance.logout()
+    }
 }
