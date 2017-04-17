@@ -20,6 +20,7 @@ class HLDataManager: NSObject {
     
     let categoriesLoaded = Notification.Name("categoriesLoaded")
     let loginRecieved = Notification.Name("loginRecieved")
+    let signupRecieved = Notification.Name("signupRecieved")
     
     class var sharedInstance: HLDataManager {
         struct Static {
@@ -95,6 +96,7 @@ class HLDataManager: NSObject {
                     if let token = dictionary["token"] as? String {
                         // access individual value in dictionary
                         user.token = token
+                        user.userId = dictionary["userId"] as? String
                         print(token)
                         loginSuccess = true;
                         self.writeUserData()
@@ -104,6 +106,36 @@ class HLDataManager: NSObject {
                 }
                 
                 NotificationCenter.default.post(name: self.loginRecieved, object: loginSuccess)
+            }
+        })
+    }
+    
+    func signupUser(email:String, nick: String, pass:String) {
+        
+        //print("Login in progress...")
+        let queryURL = HulaConstants.apiURL + "signup"
+        var signupSuccess = false;
+        httpPost(urlstr: queryURL, postString: "email="+email+"&pass="+pass+"&name="+nick+"&nick="+nick, taskCallback: { (ok, json) in
+            
+            print("done")
+            print(ok)
+            print(json!)
+            if (ok){
+                let user = HulaUser.sharedInstance
+                if let dictionary = json as? [String: Any] {
+                    if let token = dictionary["token"] as? String {
+                        // access individual value in dictionary
+                        user.token = token
+                        user.userId = dictionary["userId"] as? String
+                        print(token)
+                        signupSuccess = true;
+                        self.writeUserData()
+                    }
+                } else {
+                    user.token = ""
+                }
+                
+                NotificationCenter.default.post(name: self.signupRecieved, object: signupSuccess)
             }
         })
     }
