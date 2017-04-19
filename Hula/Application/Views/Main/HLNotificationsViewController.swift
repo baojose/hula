@@ -18,7 +18,6 @@ class HLNotificationsViewController: BaseViewController, UITableViewDelegate, UI
         if (user.token.characters.count < 10){
             // user not logged in
             openUserIdentification()
-            
         } else {
             
         }

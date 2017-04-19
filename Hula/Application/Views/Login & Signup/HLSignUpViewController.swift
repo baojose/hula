@@ -95,6 +95,7 @@ class HLSignUpViewController: UserBaseViewController, UITextFieldDelegate  {
         }
     }
     func resetStepTexts(){
+        dismissKeyboard()
         let step_x = self.stepLabel.frame.origin.x
         let description_x = self.descriptionLabel.frame.origin.x
         let signup_x = self.signupField.frame.origin.x
@@ -135,7 +136,23 @@ class HLSignUpViewController: UserBaseViewController, UITextFieldDelegate  {
         }
         self.view.setNeedsDisplay()
     }
+    @IBAction func beginEditText(_ sender: Any) {
+        moveUpView()
+    }
+    @IBAction func endEditText(_ sender: Any) {
+        moveDownView()
+    }
     
+    func moveUpView(){
+        UIView.animate(withDuration: 0.5, animations: {
+            self.view.frame.origin.y = -140
+        })
+    }
+    func moveDownView(){
+        UIView.animate(withDuration: 0.5, animations: {
+            self.view.frame.origin.y = 0
+        })
+    }
     func dismissKeyboard(){
         view.endEditing(true)
     }
