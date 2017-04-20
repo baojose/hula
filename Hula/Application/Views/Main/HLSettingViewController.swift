@@ -31,6 +31,6 @@ class HLSettingViewController: BaseViewController {
         mainScrollView.contentSize = CGSize(width: 0, height: contentView.frame.size.height)
     }
     @IBAction func userLogout(_ sender: Any) {
-        HulaUser.sharedInstance.logout()
+        HLDataManager.sharedInstance.logout()
     }
 }

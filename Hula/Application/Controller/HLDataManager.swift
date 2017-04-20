@@ -110,6 +110,13 @@ class HLDataManager: NSObject {
         })
     }
     
+    func logout() {
+        let user = HulaUser.sharedInstance
+        user.token = ""
+        user.userId = ""
+        self.writeUserData()
+    }
+    
     func signupUser(email:String, nick: String, pass:String) {
         
         //print("Login in progress...")
