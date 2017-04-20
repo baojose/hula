@@ -1,11 +1,11 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="12118" systemVersion="16A323" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" colorMatched="YES" initialViewController="omL-QY-oVG">
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="11762" systemVersion="15G1010" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" colorMatched="YES" initialViewController="omL-QY-oVG">
     <device id="retina4_7" orientation="portrait">
         <adaptation id="fullscreen"/>
     </device>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="12086"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="11757"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <scenes>
@@ -169,7 +169,9 @@
                                 <fontDescription key="fontDescription" name="HelveticaNeue-Light" family="Helvetica Neue" pointSize="20"/>
                                 <textInputTraits key="textInputTraits" autocorrectionType="no" spellCheckingType="no" keyboardType="emailAddress" returnKeyType="done"/>
                                 <connections>
+                                    <action selector="beginEditText:" destination="4Z7-C3-lzO" eventType="editingDidBegin" id="jQ0-lR-SnY"/>
                                     <action selector="emailValueChanged:" destination="4Z7-C3-lzO" eventType="editingChanged" id="Kfm-ac-kMt"/>
+                                    <action selector="endEditText:" destination="4Z7-C3-lzO" eventType="editingDidEnd" id="M6a-MS-SzP"/>
                                     <outlet property="delegate" destination="4Z7-C3-lzO" id="udp-bb-fmy"/>
                                 </connections>
                             </textField>
@@ -188,6 +190,8 @@
                                 <fontDescription key="fontDescription" name="HelveticaNeue-Light" family="Helvetica Neue" pointSize="20"/>
                                 <textInputTraits key="textInputTraits" autocorrectionType="no" spellCheckingType="no" returnKeyType="done" secureTextEntry="YES"/>
                                 <connections>
+                                    <action selector="beginEditPass:" destination="4Z7-C3-lzO" eventType="editingDidBegin" id="mti-Wf-EZ9"/>
+                                    <action selector="endEditPass:" destination="4Z7-C3-lzO" eventType="editingDidEnd" id="6w7-NA-fhQ"/>
                                     <action selector="passwordValueChanged:" destination="4Z7-C3-lzO" eventType="editingChanged" id="ZRL-0D-Jld"/>
                                     <outlet property="delegate" destination="4Z7-C3-lzO" id="fHk-l2-LXF"/>
                                 </connections>
@@ -795,40 +799,13 @@ Log In</string>
                                 </attributedString>
                                 <nil key="highlightedColor"/>
                             </label>
-                            <view contentMode="scaleToFill" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="FlS-I1-HDc">
-                                <rect key="frame" x="0.0" y="596" width="375" height="71"/>
-                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
-                            </view>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" usesAttributedText="YES" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="EOh-4f-Jaz">
-                                <rect key="frame" x="16" y="611" width="346" height="46"/>
-                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                <attributedString key="attributedText">
-                                    <fragment content="Your email/password is not correct. Did you ">
-                                        <attributes>
-                                            <color key="NSColor" red="0.27447596192359924" green="0.27452921867370605" blue="0.27447256445884705" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-                                            <font key="NSFont" size="12" name="HelveticaNeue-Light"/>
-                                            <paragraphStyle key="NSParagraphStyle" alignment="left" lineBreakMode="wordWrapping" baseWritingDirection="natural" tighteningFactorForTruncation="0.0"/>
-                                        </attributes>
-                                    </fragment>
-                                    <fragment content="Forget your Password ">
-                                        <attributes>
-                                            <color key="NSColor" red="0.27447596192359924" green="0.27452921867370605" blue="0.27447256445884705" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-                                            <font key="NSFont" size="12" name="HelveticaNeue-Light"/>
-                                            <paragraphStyle key="NSParagraphStyle" alignment="left" lineBreakMode="wordWrapping" baseWritingDirection="natural" tighteningFactorForTruncation="0.0"/>
-                                            <integer key="NSUnderline" value="1"/>
-                                        </attributes>
-                                    </fragment>
-                                </attributedString>
-                                <nil key="highlightedColor"/>
-                            </label>
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                     </view>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="cJb-bk-1va" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="-1138" y="4935"/>
+            <point key="canvasLocation" x="-1138.5" y="4934.5"/>
         </scene>
         <!--View Controller-->
         <scene sceneID="jOD-fC-Xj9">
@@ -1803,7 +1780,7 @@ Set a password for your account</string>
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <view contentMode="scaleToFill" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="jys-uc-qfP">
+                            <view contentMode="scaleToFill" fixedFrame="YES" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="jys-uc-qfP">
                                 <rect key="frame" x="0.0" y="0.0" width="375" height="76"/>
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxY="YES"/>
                                 <subviews>
@@ -2087,7 +2064,7 @@ Set a password for your account</string>
                                     <action selector="closeIdentificationVC:" destination="Ys6-tw-uwL" eventType="touchUpInside" id="cok-Q5-QVY"/>
                                 </connections>
                             </button>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" text="What is your name?" lineBreakMode="tailTruncation" numberOfLines="3" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="ct9-He-rm6">
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" text="What is your nickname?" lineBreakMode="tailTruncation" numberOfLines="3" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="ct9-He-rm6">
                                 <rect key="frame" x="24" y="203" width="252" height="89"/>
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxY="YES"/>
                                 <fontDescription key="fontDescription" name="HelveticaNeue-Light" family="Helvetica Neue" pointSize="25"/>
@@ -2101,7 +2078,8 @@ Set a password for your account</string>
                                 <fontDescription key="fontDescription" name="HelveticaNeue-Light" family="Helvetica Neue" pointSize="20"/>
                                 <textInputTraits key="textInputTraits" autocorrectionType="no" spellCheckingType="no" keyboardType="emailAddress" returnKeyType="done" enablesReturnKeyAutomatically="YES"/>
                                 <connections>
-                                    <action selector="signupFieldChanged:" destination="Ys6-tw-uwL" eventType="editingDidEnd" id="9RI-o3-hM2"/>
+                                    <action selector="beginEditText:" destination="Ys6-tw-uwL" eventType="editingDidBegin" id="iOg-Jd-lDR"/>
+                                    <action selector="endEditText:" destination="Ys6-tw-uwL" eventType="editingDidEnd" id="R1w-Z1-F30"/>
                                     <action selector="signupFieldChanged:" destination="Ys6-tw-uwL" eventType="editingChanged" id="uu1-Ea-tBm"/>
                                     <outlet property="delegate" destination="Ys6-tw-uwL" id="3NY-ar-bzY"/>
                                 </connections>
@@ -4897,11 +4875,11 @@ Please contact me if you have any questions.
         <image name="icon_favorite" width="10" height="10"/>
         <image name="icon_filter" width="22" height="21"/>
         <image name="icon_forward" width="8" height="12"/>
-        <image name="icon_help" width="24" height="24"/>
+        <image name="icon_help" width="29" height="29"/>
         <image name="icon_info" width="11" height="11"/>
         <image name="icon_location" width="7" height="10"/>
         <image name="icon_location_setting" width="18" height="30"/>
-        <image name="icon_password" width="19" height="23"/>
+        <image name="icon_password" width="29" height="29"/>
         <image name="icon_photo_album_unselected" width="25" height="25"/>
         <image name="icon_plus" width="16" height="16"/>
         <image name="icon_product_edit" width="40" height="40"/>
@@ -4958,8 +4936,8 @@ Please contact me if you have any questions.
         <simulatedScreenMetrics key="destination" type="retina4_7.fullscreen"/>
     </simulatedMetricsContainer>
     <inferredMetricsTieBreakers>
-        <segue reference="wT5-4p-lNl"/>
-        <segue reference="K8P-U6-zN9"/>
+        <segue reference="8X8-bg-W6f"/>
         <segue reference="VQ3-GF-s6k"/>
+        <segue reference="wT5-4p-lNl"/>
     </inferredMetricsTieBreakers>
 </document>

@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		111F79421EA56B5E00904EC5 /* test_UI.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 111F79411EA56B5E00904EC5 /* test_UI.storyboard */; };
 		116669151E98222F0094B157 /* HLHomeNotificationsTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 116669141E98222F0094B157 /* HLHomeNotificationsTableViewCell.swift */; };
 		116669191E9925C20094B157 /* HulaNotifications.swift in Sources */ = {isa = PBXBuildFile; fileRef = 116669181E9925C20094B157 /* HulaNotifications.swift */; };
 		275C55501EA3FB5A00A49051 /* UserData.plist in Resources */ = {isa = PBXBuildFile; fileRef = 275C554F1EA3FB5A00A49051 /* UserData.plist */; };
@@ -84,6 +85,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		111F79411EA56B5E00904EC5 /* test_UI.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = test_UI.storyboard; sourceTree = "<group>"; };
 		116669141E98222F0094B157 /* HLHomeNotificationsTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HLHomeNotificationsTableViewCell.swift; sourceTree = "<group>"; };
 		116669181E9925C20094B157 /* HulaNotifications.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HulaNotifications.swift; sourceTree = "<group>"; };
 		275C554F1EA3FB5A00A49051 /* UserData.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = UserData.plist; sourceTree = "<group>"; };
@@ -220,6 +222,7 @@
 			isa = PBXGroup;
 			children = (
 				F83186171E6FABBA00DD61FA /* Main.storyboard */,
+				111F79411EA56B5E00904EC5 /* test_UI.storyboard */,
 				F86698AC1E703A80002129E1 /* Delegate */,
 				F866989D1E703A80002129E1 /* Application */,
 				F831861D1E6FABBA00DD61FA /* Assets.xcassets */,
@@ -522,7 +525,7 @@
 				TargetAttributes = {
 					F831860F1E6FABB900DD61FA = {
 						CreatedOnToolsVersion = 8.2;
-						DevelopmentTeam = NWV9VFCLKT;
+						DevelopmentTeam = 95QS8DAJ8Q;
 						ProvisioningStyle = Automatic;
 					};
 					F83186261E6FABBA00DD61FA = {
@@ -568,6 +571,7 @@
 				F8BE7C401E7237A100FAE07D /* BebasNeue Bold.otf in Resources */,
 				F8BE7C441E7237A100FAE07D /* BebasNeue Thin.otf in Resources */,
 				F890E4941E70937D008719B9 /* splash_intro.mp4 in Resources */,
+				111F79421EA56B5E00904EC5 /* test_UI.storyboard in Resources */,
 				F83186211E6FABBA00DD61FA /* LaunchScreen.storyboard in Resources */,
 				F831861E1E6FABBA00DD61FA /* Assets.xcassets in Resources */,
 				F8BE7C451E7237A100FAE07D /* BebasNeue.otf in Resources */,
@@ -788,7 +792,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
-				DEVELOPMENT_TEAM = NWV9VFCLKT;
+				DEVELOPMENT_TEAM = 95QS8DAJ8Q;
 				INFOPLIST_FILE = Hula/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
@@ -803,7 +807,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
-				DEVELOPMENT_TEAM = NWV9VFCLKT;
+				DEVELOPMENT_TEAM = 95QS8DAJ8Q;
 				INFOPLIST_FILE = Hula/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";

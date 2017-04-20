@@ -14,8 +14,10 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
         self.initData()
         self.initView()
+        
     }
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
@@ -24,7 +26,13 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
         super.didReceiveMemoryWarning()
     }
     override func viewDidAppear(_ animated: Bool) {
+        
         super.viewDidAppear(animated)
+        let user = HulaUser.sharedInstance
+        if (user.token.characters.count < 10){
+            // user not logged in
+            openUserIdentification()
+        }
     }
     func initData(){
         
