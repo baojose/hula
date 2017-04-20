@@ -42,8 +42,35 @@ class HLLogInViewController: UserBaseViewController, UITextFieldDelegate {
     @IBAction func passwordValueChanged(_ sender: Any) {
         checkUserInput()
     }
+    
+    
+    @IBAction func beginEditPass(_ sender: Any) {
+        moveUpView()
+    }
+    @IBAction func endEditPass(_ sender: Any) {
+        moveDownView()
+    }
+    @IBAction func beginEditText(_ sender: Any) {
+        moveUpView()
+    }
+    @IBAction func endEditText(_ sender: Any) {
+        moveDownView()
+    }
+    
+    func moveUpView(){
+        UIView.animate(withDuration: 0.5, animations: {
+            self.view.frame.origin.y = -140
+        })
+    }
+    func moveDownView(){
+        UIView.animate(withDuration: 0.5, animations: {
+            self.view.frame.origin.y = 0
+        })
+    }
+    
     @IBAction func gotoNextStep(_ sender: Any) {
         // check credentials over the API
+        dismissKeyboard()
         HLDataManager.sharedInstance.loginUser(email: emailField.text!, pass: passwordField.text!)
         
         UIView.animate(withDuration: 0.2, animations: {

@@ -17,10 +17,17 @@ class HLProfileViewController: BaseViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        self.initData()
-        self.initView()
+            self.initData()
+            self.initView()
     }
-
+    
+    func viewDidAppear() {
+        let user = HulaUser.sharedInstance
+        if (user.token.characters.count < 10){
+            // user not logged in
+            openUserIdentification()
+        }
+    }
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
     }
