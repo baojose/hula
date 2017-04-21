@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="11762" systemVersion="16B2555" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" colorMatched="YES" initialViewController="omL-QY-oVG">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="12118" systemVersion="16A323" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" colorMatched="YES" initialViewController="omL-QY-oVG">
     <device id="retina4_7" orientation="portrait">
         <adaptation id="fullscreen"/>
     </device>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="11757"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="12086"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <scenes>
@@ -1772,7 +1772,7 @@ Set a password for your account</string>
                                                 <rect key="frame" x="0.0" y="1" width="377" height="203"/>
                                                 <autoresizingMask key="autoresizingMask"/>
                                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="H0l-Mb-8Jr" id="vCM-P5-v5D">
-                                                    <rect key="frame" x="0.0" y="0.0" width="377" height="203"/>
+                                                    <rect key="frame" x="0.0" y="0.0" width="377" height="202"/>
                                                     <autoresizingMask key="autoresizingMask"/>
                                                 </tableViewCellContentView>
                                             </tableViewCell>
@@ -1865,7 +1865,7 @@ Set a password for your account</string>
                                                 <rect key="frame" x="0.0" y="48" width="375" height="113"/>
                                                 <autoresizingMask key="autoresizingMask"/>
                                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="dr5-35-SRZ" id="lPp-Fl-qqy">
-                                                    <rect key="frame" x="0.0" y="0.0" width="375" height="112"/>
+                                                    <rect key="frame" x="0.0" y="0.0" width="375" height="113"/>
                                                     <autoresizingMask key="autoresizingMask"/>
                                                     <subviews>
                                                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="5 hours ago" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="ODt-f7-Y70">
@@ -2273,7 +2273,7 @@ Set a password for your account</string>
                                         <rect key="frame" x="0.0" y="1" width="139" height="184"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="jsp-qc-74f" id="FXx-XE-va3">
-                                            <rect key="frame" x="0.0" y="0.0" width="139" height="183"/>
+                                            <rect key="frame" x="0.0" y="0.0" width="139" height="184"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
                                                 <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" image="pic_dummie" translatesAutoresizingMaskIntoConstraints="NO" id="5jd-zV-Iqi">
@@ -2301,7 +2301,7 @@ Set a password for your account</string>
                                         <rect key="frame" x="0.0" y="1" width="139" height="184"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="0vU-l7-nYR" id="tfK-Hx-9J4">
-                                            <rect key="frame" x="0.0" y="0.0" width="139" height="183"/>
+                                            <rect key="frame" x="0.0" y="0.0" width="139" height="184"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
                                                 <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" image="pic_dummie" translatesAutoresizingMaskIntoConstraints="NO" id="eRf-lm-vNj">
