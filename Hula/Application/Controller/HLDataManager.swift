@@ -110,6 +110,8 @@ class HLDataManager: NSObject {
         })
     }
     
+
+    
     func logout() {
         let user = HulaUser.sharedInstance
         user.token = ""
@@ -126,8 +128,8 @@ class HLDataManager: NSObject {
             
             print("done")
             print(ok)
-            print(json!)
             if (ok){
+                //print(json!)
                 let user = HulaUser.sharedInstance
                 if let dictionary = json as? [String: Any] {
                     if let token = dictionary["token"] as? String {
@@ -147,10 +149,18 @@ class HLDataManager: NSObject {
         })
     }
     
-    private func httpGet(urlstr:String, taskCallback: @escaping (Bool, Any?) -> ()) {
+    func httpGet(urlstr:String, taskCallback: @escaping (Bool, Any?) -> ()) {
         let url = URL(string: urlstr)
-    
-        let task = URLSession.shared.dataTask(with: url!) { data, response, error in
+        var request:URLRequest = URLRequest(url: url!)
+        
+        let user = HulaUser.sharedInstance
+        //print(user.token)
+        if (user.token.characters.count>10){
+            request.setValue(user.token, forHTTPHeaderField: "x-access-token")
+        }
+        request.httpMethod = "GET"
+        //print(request)
+        let task = URLSession.shared.dataTask(with: request) { data, response, error in
             guard error == nil else {
                 print(error!)
                 taskCallback(false, nil)
@@ -169,11 +179,15 @@ class HLDataManager: NSObject {
         task.resume()
     }
 
-    private func httpPost(urlstr:String, postString:String, taskCallback: @escaping (Bool, Any?) -> ()) {
+    func httpPost(urlstr:String, postString:String, taskCallback: @escaping (Bool, Any?) -> ()) {
         let url = URL(string: urlstr)
         var request = URLRequest(url: url!)
         request.httpMethod = "POST"
         request.httpBody = postString.data(using: .utf8)
+        let user = HulaUser.sharedInstance
+        if (user.token.characters.count>10){
+            request.addValue(user.token, forHTTPHeaderField: "x-access-token")
+        }
         let task = URLSession.shared.dataTask(with: request) { data, response, error in
             guard let data = data, error == nil else {                                                 // check for fundamental networking error
                 print(error!)
@@ -246,7 +260,7 @@ class HLDataManager: NSObject {
             }
             else
             {
-                print("GameData.plist not found. Please, make sure it is part of the bundle.")
+                print("UserData.plist not found. Please, make sure it is part of the bundle.")
             }
         }
         else
@@ -256,8 +270,8 @@ class HLDataManager: NSObject {
             //fileManager.removeItemAtPath(path, error: nil)
         }
         
-        let resultDictionary = NSMutableDictionary(contentsOfFile: path)
-        print("Loaded UserData.plist file is --> \(String(describing: resultDictionary?.description))")
+        //let resultDictionary = NSMutableDictionary(contentsOfFile: path)
+        //print("Loaded UserData.plist file is --> \(String(describing: resultDictionary?.description))")
         let myDict = NSDictionary(contentsOfFile: path)
         
         if let dict = myDict {

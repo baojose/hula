@@ -47,5 +47,10 @@
 	<string>Allow to us</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>Allow to us</string>
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsArbitraryLoads</key>
+		<true/>
+	</dict>
 </dict>
 </plist>

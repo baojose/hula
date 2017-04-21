@@ -16,7 +16,7 @@ struct HulaConstants {
     static let appMainColor = UIColor(red: 57.0/255, green: 170.0/255, blue: 164.0/255, alpha: 1.0)
     
     // Server API Links
-    static let apiURL: String = "http://138.197.1.95/v1/"
+    static let apiURL: String = "http://api.hula.trading/v1/"
     
     // local storage
     static let userFile: String = "UserData"
