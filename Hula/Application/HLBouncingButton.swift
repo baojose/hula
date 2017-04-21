@@ -19,13 +19,22 @@ class HLBouncingButton: UIButton {
      */
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
         UIView.animate(withDuration: 0.1, animations: {
-            self.transform = CGAffineTransform(scaleX: 1.1,y: 1.1);
+            self.transform = CGAffineTransform(scaleX: 0.95,y: 0.95);
+            self.alpha = 0.4
+
+            
+
         })
     }
     override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
         UIView.animate(withDuration: 0.2, animations: {
             self.transform = CGAffineTransform(scaleX: 1,y: 1);
+            self.alpha = 1.0
+
+
         })
     }
 
 }
+
+
