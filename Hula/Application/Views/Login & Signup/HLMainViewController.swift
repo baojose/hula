@@ -18,6 +18,7 @@ class HLMainViewController: UserBaseViewController {
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         self.playVideo()
+        HLDataManager.sharedInstance.loadUserData()
     }
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
@@ -41,7 +42,9 @@ class HLMainViewController: UserBaseViewController {
     
     func playerEnded (notification:NSNotification) {
         print("finished")
-        if (true){
+        let token = HulaUser.sharedInstance.token!
+        print(token)
+        if (token.characters.count>10){
             // we will jump to mainView only if intro and video did already
             self.navToMainView()
         } else {

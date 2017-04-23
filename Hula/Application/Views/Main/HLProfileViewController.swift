@@ -85,6 +85,9 @@ class HLProfileViewController: BaseViewController {
                             if (user["bio"] as? String) != nil {
                                 HulaUser.sharedInstance.userBio = user["bio"] as? String
                             }
+                            if (user["email"] as? String) != nil {
+                                HulaUser.sharedInstance.userEmail = user["email"] as? String
+                            }
                             if (user["image"] as? String) != nil {
                                 HulaUser.sharedInstance.userPhotoURL = user["image"] as? String
                                 self.loadImageOnView(imageView:self.profileImageView, withURL:HulaUser.sharedInstance.userPhotoURL)
@@ -101,21 +104,4 @@ class HLProfileViewController: BaseViewController {
         })
     }
     
-    func loadImageOnView(imageView:UIImageView, withURL:String){
-        let urlString = withURL
-        guard let url = URL(string: urlString) else { return }
-        URLSession.shared.dataTask(with: url) { (data, response, error) in
-            if error != nil {
-                print("Failed fetching image:", error!)
-                return
-            }
-            guard let response = response as? HTTPURLResponse, response.statusCode == 200 else {
-                print("Not a proper HTTPURLResponse or statusCode")
-                return
-            }
-            DispatchQueue.main.async {
-                imageView.image = UIImage(data: data!)
-            }
-        }.resume()
-    }
 }

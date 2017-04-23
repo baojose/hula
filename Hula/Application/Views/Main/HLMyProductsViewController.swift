@@ -40,6 +40,8 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
     func initView(){
         NotificationCenter.default.addObserver(self, selector: #selector(HLMyProductsViewController.newPostModeDesign(_:)), name: NSNotification.Name(rawValue: "uploadModeUpdateDesign"), object: nil)
     }
+    @IBAction func presentAddNewProductVC(_ sender: Any) {
+    }
     
     @IBAction func presentAddNewProductPage(_ sender: UIButton) {
         

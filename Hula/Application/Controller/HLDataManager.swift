@@ -58,7 +58,7 @@ class HLDataManager: NSObject {
 //                         ["icon" : "icon_cat_camping" , "name" : "CAMPING, SURVIVAL & OUTDOORS"],
 //                         ["icon" : "icon_cat_other" , "name" : "OTHERS"]]
         
-        loadUserData()
+        
     }
     
     
@@ -228,7 +228,7 @@ class HLDataManager: NSObject {
     }
     
     
-    func loadUserData() {
+    public func loadUserData() {
         // getting path to GameData.plist
         
         let paths = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true) as NSArray
@@ -283,7 +283,7 @@ class HLDataManager: NSObject {
         }
         else
         {
-            print("WARNING: Couldn't create dictionary from GameData.plist! Default values will be used!")
+            print("WARNING: Couldn't create dictionary from UserData.plist! Default values will be used!")
         }
         
     }//eom

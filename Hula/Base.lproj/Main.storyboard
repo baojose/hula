@@ -1772,7 +1772,7 @@ Set a password for your account</string>
                                                 <rect key="frame" x="0.0" y="1" width="377" height="203"/>
                                                 <autoresizingMask key="autoresizingMask"/>
                                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="H0l-Mb-8Jr" id="vCM-P5-v5D">
-                                                    <rect key="frame" x="0.0" y="0.0" width="377" height="202"/>
+                                                    <rect key="frame" x="0.0" y="0.0" width="377" height="203"/>
                                                     <autoresizingMask key="autoresizingMask"/>
                                                 </tableViewCellContentView>
                                             </tableViewCell>
@@ -2107,7 +2107,7 @@ Set a password for your account</string>
                                                 <rect key="frame" x="0.0" y="0.0" width="375" height="60"/>
                                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                             </imageView>
-                                            <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="DLS-at-ZKl" customClass="HLBouncingButton" customModule="Hula" customModuleProvider="target">
+                                            <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="DLS-at-ZKl">
                                                 <rect key="frame" x="76" y="11" width="222" height="38"/>
                                                 <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
                                                 <fontDescription key="fontDescription" name="HelveticaNeue-Light" family="Helvetica Neue" pointSize="16"/>
@@ -2115,7 +2115,7 @@ Set a password for your account</string>
                                                     <color key="titleColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                                 </state>
                                                 <connections>
-                                                    <action selector="presentAddNewProductPage:" destination="3uD-U0-7Gr" eventType="touchUpInside" id="Hta-rx-1rW"/>
+                                                    <action selector="presentAddNewProductPage:" destination="3uD-U0-7Gr" eventType="touchUpInside" id="C38-x3-yr4"/>
                                                 </connections>
                                             </button>
                                         </subviews>
@@ -2653,7 +2653,7 @@ Set a password for your account</string>
                                                                 <rect key="frame" x="28" y="19" width="21" height="22"/>
                                                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
                                                             </imageView>
-                                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="Name: Joep Boot" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="g82-r7-JUb">
+                                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="Name" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="g82-r7-JUb">
                                                                 <rect key="frame" x="65" y="8" width="265" height="44"/>
                                                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                                 <fontDescription key="fontDescription" name="HelveticaNeue-Light" family="Helvetica Neue" pointSize="16"/>
@@ -2687,7 +2687,7 @@ Set a password for your account</string>
                                                                 <rect key="frame" x="27" y="23" width="23" height="15"/>
                                                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
                                                             </imageView>
-                                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="Email : xxxxx@gmail.com" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="X4l-qy-9GA">
+                                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="Email" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="X4l-qy-9GA">
                                                                 <rect key="frame" x="65" y="8" width="265" height="44"/>
                                                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                                 <fontDescription key="fontDescription" name="HelveticaNeue-Light" family="Helvetica Neue" pointSize="16"/>
@@ -2717,11 +2717,11 @@ Set a password for your account</string>
                                                         <rect key="frame" x="0.0" y="180" width="375" height="60"/>
                                                         <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxY="YES"/>
                                                         <subviews>
-                                                            <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" image="icon_location_setting" translatesAutoresizingMaskIntoConstraints="NO" id="Dxp-2k-xem">
-                                                                <rect key="frame" x="30" y="15" width="18" height="30"/>
+                                                            <imageView userInteractionEnabled="NO" contentMode="center" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" image="icon_about" id="ucy-th-5x4">
+                                                                <rect key="frame" x="24" y="15" width="29" height="29"/>
                                                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
                                                             </imageView>
-                                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="Lcoation :  Miami, Florida" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="tzr-YM-SvJ">
+                                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="About you" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="tzr-YM-SvJ">
                                                                 <rect key="frame" x="65" y="8" width="265" height="44"/>
                                                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                                 <fontDescription key="fontDescription" name="HelveticaNeue-Light" family="Helvetica Neue" pointSize="16"/>
@@ -2751,11 +2751,11 @@ Set a password for your account</string>
                                                         <rect key="frame" x="0.0" y="240" width="375" height="60"/>
                                                         <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxY="YES"/>
                                                         <subviews>
-                                                            <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" image="icon_password" translatesAutoresizingMaskIntoConstraints="NO" id="Pg8-4Z-PKp">
-                                                                <rect key="frame" x="29" y="19" width="18" height="22"/>
+                                                            <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" misplaced="YES" image="icon_password" translatesAutoresizingMaskIntoConstraints="NO" id="Pg8-4Z-PKp">
+                                                                <rect key="frame" x="28" y="17" width="21" height="26"/>
                                                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
                                                             </imageView>
-                                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="Password : " textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="vX0-1v-UJj">
+                                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="Password" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="vX0-1v-UJj">
                                                                 <rect key="frame" x="65" y="8" width="265" height="44"/>
                                                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                                 <fontDescription key="fontDescription" name="HelveticaNeue-Light" family="Helvetica Neue" pointSize="16"/>
@@ -2875,14 +2875,23 @@ Set a password for your account</string>
                     </view>
                     <navigationItem key="navigationItem" id="CSW-PQ-icb"/>
                     <connections>
+                        <outlet property="bioView" destination="ZTS-NK-6tM" id="FZQ-hE-Hq4"/>
                         <outlet property="contentView" destination="ywx-rn-OU4" id="RQE-mW-Xkv"/>
+                        <outlet property="emailView" destination="IA4-s0-jW0" id="7Gb-Dh-WCb"/>
                         <outlet property="mainScrollView" destination="s6z-Hm-Ccw" id="7Vk-oO-iIm"/>
+                        <outlet property="nameView" destination="Q1x-Md-tuh" id="oBp-N2-HGL"/>
+                        <outlet property="passwordView" destination="nmI-cy-dVY" id="tWx-3K-8h2"/>
+                        <outlet property="pictureView" destination="9Ie-9K-MAs" id="VmL-1p-lzB"/>
                         <outlet property="profileImageView" destination="uIG-mP-6TF" id="4kV-we-6AB"/>
+                        <outlet property="smallProfileImage" destination="uIG-mP-6TF" id="5Su-bm-kdx"/>
+                        <outlet property="userBioLabel" destination="tzr-YM-SvJ" id="eE6-ei-6ag"/>
+                        <outlet property="userEmailLabel" destination="X4l-qy-9GA" id="nt7-3M-6yx"/>
+                        <outlet property="userNameLabel" destination="g82-r7-JUb" id="fP1-mO-gfe"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="Cwc-lc-wM7" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="2538" y="2894"/>
+            <point key="canvasLocation" x="2537.5" y="2893.5"/>
         </scene>
         <!--Product Detail View Controller-->
         <scene sceneID="PAb-Fp-2fp">
@@ -4059,6 +4068,7 @@ Please contact me if you have any questions.
                         </subviews>
                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
                     </view>
+                    <navigationItem key="navigationItem" id="Q6Q-TO-dLR"/>
                     <connections>
                         <outlet property="albumContainView" destination="84H-97-tRk" id="ODM-DV-wDb"/>
                         <outlet property="btnCapture" destination="R7X-6J-bGc" id="6wV-4r-EXO"/>
@@ -4080,7 +4090,7 @@ Please contact me if you have any questions.
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="tZ8-KC-U16" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="1704.5" y="2030.5"/>
+            <point key="canvasLocation" x="1705" y="2083"/>
         </scene>
         <!--Post Product View Controller-->
         <scene sceneID="oBX-fk-Uai">
@@ -4955,6 +4965,7 @@ Please contact me if you have any questions.
         <image name="close_button_trade_screen" width="40" height="40"/>
         <image name="facebook_button_icon" width="10" height="21"/>
         <image name="header_lines" width="375" height="50"/>
+        <image name="icon_about" width="29" height="29"/>
         <image name="icon_album" width="41" height="38"/>
         <image name="icon_alert_thumbnails" width="16" height="16"/>
         <image name="icon_alert_white" width="11" height="11"/>
@@ -4977,7 +4988,6 @@ Please contact me if you have any questions.
         <image name="icon_invite_friends" width="25" height="22"/>
         <image name="icon_linkedin_off" width="15" height="15"/>
         <image name="icon_location" width="7" height="10"/>
-        <image name="icon_location_setting" width="18" height="30"/>
         <image name="icon_mail_off" width="15" height="15"/>
         <image name="icon_password" width="29" height="29"/>
         <image name="icon_photo_album_unselected" width="25" height="25"/>
