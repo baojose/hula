@@ -13,6 +13,7 @@ class HLSettingViewController: BaseViewController {
     @IBOutlet var mainScrollView: UIScrollView!
     @IBOutlet var contentView: UIView!
     @IBOutlet var profileImageView: UIImageView!
+    var userData:HulaUser = HulaUser.sharedInstance
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -29,6 +30,11 @@ class HLSettingViewController: BaseViewController {
     func initView() {
         commonUtils.circleImageView(profileImageView)
         mainScrollView.contentSize = CGSize(width: 0, height: contentView.frame.size.height)
+        
+        
+        
+        
+        
     }
     @IBAction func userLogout(_ sender: Any) {
         HLDataManager.sharedInstance.logout()

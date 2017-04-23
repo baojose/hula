@@ -12,6 +12,7 @@ class HulaUser: NSObject {
     
     var userId: String!
     var userName: String!
+    var userNick: String!
     var userEmail: String!
     var userPhotoURL: String!
     var userLocationName: String!
@@ -28,6 +29,7 @@ class HulaUser: NSObject {
     override init() {
         super.init()
         self.userId = ""
+        self.userNick = ""
         self.userName = ""
         self.userEmail = ""
         self.userPhotoURL = ""
