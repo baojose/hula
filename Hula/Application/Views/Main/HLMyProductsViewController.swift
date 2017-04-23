@@ -40,11 +40,9 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
     func initView(){
         NotificationCenter.default.addObserver(self, selector: #selector(HLMyProductsViewController.newPostModeDesign(_:)), name: NSNotification.Name(rawValue: "uploadModeUpdateDesign"), object: nil)
     }
-    @IBAction func presentAddNewProductVC(_ sender: Any) {
-    }
     
     @IBAction func presentAddNewProductPage(_ sender: UIButton) {
-        
+        print("button pressed")
         dataManager.uploadMode = true
         dataManager.newProduct = HulaProduct.init()
         let cameraViewController = self.storyboard?.instantiateViewController(withIdentifier: "customCameraPage") as! HLCustomCameraViewController

@@ -2105,7 +2105,7 @@ Set a password for your account</string>
                                         <subviews>
                                             <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" image="img_footer_bg" translatesAutoresizingMaskIntoConstraints="NO" id="nkS-KY-VOZ">
                                                 <rect key="frame" x="0.0" y="0.0" width="375" height="60"/>
-                                                <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                                <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
                                             </imageView>
                                             <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="DLS-at-ZKl">
                                                 <rect key="frame" x="76" y="11" width="222" height="38"/>
@@ -2115,7 +2115,7 @@ Set a password for your account</string>
                                                     <color key="titleColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                                 </state>
                                                 <connections>
-                                                    <action selector="presentAddNewProductPage:" destination="3uD-U0-7Gr" eventType="touchUpInside" id="C38-x3-yr4"/>
+                                                    <action selector="presentAddNewProductPage:" destination="3uD-U0-7Gr" eventType="touchUpInside" id="6w6-Wf-Dcn"/>
                                                 </connections>
                                             </button>
                                         </subviews>

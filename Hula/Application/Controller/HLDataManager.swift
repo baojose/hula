@@ -280,6 +280,8 @@ class HLDataManager: NSObject {
             
             user.token = dict.object(forKey: "token")! as! String
             user.userId = dict.object(forKey: "userId")! as! String
+            
+            self.loadUserNotifications()
         }
         else
         {
@@ -287,4 +289,23 @@ class HLDataManager: NSObject {
         }
         
     }//eom
+    
+    func loadUserNotifications(){
+        print("loading notifications...")
+        let queryURL = HulaConstants.apiURL + "notifications"
+        httpGet(urlstr: queryURL, taskCallback: { (ok, json) in
+            print(ok)
+            if (ok){
+                self.arrNotifications=[];
+                if let array = json as? [Any] {
+                    for not in array {
+                        // access all objects in array
+                        self.arrNotifications.add(not)
+                    }
+                }
+                
+                //NotificationCenter.default.post(name: self.categoriesLoaded, object: nil)
+            }
+        })
+    }
 }

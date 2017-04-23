@@ -53,6 +53,8 @@ class HLProfileViewController: BaseViewController {
         mainScrollView.contentSize = CGSize(width: 0, height: userBioLabel.frame.size.height + userBioLabel.frame.origin.y)
         mainScrollView.contentOffset = CGPoint(x: 0.0, y: 0.0)
         
+        settingsAlertBadge.alpha = 0
+        completeProfileTooltip.alpha = 0
     }
     
     @IBAction func closeTooltip(_ sender: Any) {
@@ -97,6 +99,13 @@ class HLProfileViewController: BaseViewController {
                     self.userFullNameLabel.text = HulaUser.sharedInstance.userName
                     self.userNickLabel.text = HulaUser.sharedInstance.userNick
                     self.userBioLabel.text = HulaUser.sharedInstance.userBio
+                    if (self.isIncompleteProfile()){
+                        
+                        UIView.animate(withDuration: 0.4, animations: {
+                            self.completeProfileTooltip.alpha = 1
+                            self.settingsAlertBadge.alpha = 1
+                        })
+                    }
                 }
             } else {
                 // connection error
@@ -104,4 +113,23 @@ class HLProfileViewController: BaseViewController {
         })
     }
     
+    func isIncompleteProfile() -> Bool{
+        var isIncomplete = false
+        if (HulaUser.sharedInstance.userName==""){
+            isIncomplete = true
+        }
+        if (HulaUser.sharedInstance.userNick==""){
+            isIncomplete = true
+        }
+        if (HulaUser.sharedInstance.userName==""){
+            isIncomplete = true
+        }
+        if (HulaUser.sharedInstance.userBio==""){
+            isIncomplete = true
+        }
+        if (HulaUser.sharedInstance.userPhotoURL==""){
+            isIncomplete = true
+        }
+        return isIncomplete
+    }
 }
