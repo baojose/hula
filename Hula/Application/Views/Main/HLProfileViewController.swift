@@ -69,9 +69,9 @@ class HLProfileViewController: BaseViewController {
     
     func getUserProfile() {
         
-        print("Getting user info...")
+        //print("Getting user info...")
         let queryURL = HulaConstants.apiURL + "users/" + HulaUser.sharedInstance.userId
-        print(queryURL)
+        //print(queryURL)
         HLDataManager.sharedInstance.httpGet(urlstr: queryURL, taskCallback: { (ok, json) in
             if (ok){
                 DispatchQueue.main.async {
@@ -95,12 +95,32 @@ class HLProfileViewController: BaseViewController {
                                 self.loadImageOnView(imageView:self.profileImageView, withURL:HulaUser.sharedInstance.userPhotoURL)
                             }
                         }
+                        var feedback_points:CGFloat = 0
+                        var feedback_count:CGFloat = 0
+                        if let feedback = dictionary["feedback"] as? [Any] {
+                                
+                                
+                                for fb in feedback {
+                                    //print (fb)
+                                    let item = fb as! [String: Any]
+                                    // access all objects in array
+                                    if let val:CGFloat = item["val"] as? CGFloat {
+                                        print(val)
+                                        feedback_points += val/5
+                                        feedback_count += 1
+                                    }
+                                }
+                        }
+                        if (feedback_count>0){
+                            let perc: Int =  Int(round( feedback_points/feedback_count * 100))
+                            self.userFeedbackLabel.text = "\(perc)%"
+                        }
                     }
                     self.userFullNameLabel.text = HulaUser.sharedInstance.userName
                     self.userNickLabel.text = HulaUser.sharedInstance.userNick
                     self.userBioLabel.text = HulaUser.sharedInstance.userBio
                     if (self.isIncompleteProfile()){
-                        
+                        // badges to inform the user
                         UIView.animate(withDuration: 0.4, animations: {
                             self.completeProfileTooltip.alpha = 1
                             self.settingsAlertBadge.alpha = 1
