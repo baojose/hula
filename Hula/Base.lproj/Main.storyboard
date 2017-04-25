@@ -3831,6 +3831,9 @@ Please contact me if you have any questions.
                                                     <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="3FH-Tz-KYi">
                                                         <rect key="frame" x="8" y="8" width="359" height="44"/>
                                                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                                        <connections>
+                                                            <action selector="deleteProductAction:" destination="fop-r6-UcK" eventType="touchUpInside" id="zvy-v0-F2s"/>
+                                                        </connections>
                                                     </button>
                                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="I5T-ty-jtT">
                                                         <rect key="frame" x="0.0" y="59" width="375" height="1"/>
@@ -3864,9 +3867,16 @@ Please contact me if you have any questions.
                     </view>
                     <navigationItem key="navigationItem" id="ngy-Gr-Jne"/>
                     <connections>
+                        <outlet property="categoryNameLabel" destination="fgn-xy-WCk" id="DWY-Oj-LcM"/>
                         <outlet property="contentView" destination="suG-xe-05q" id="2GB-bm-L0S"/>
                         <outlet property="mainScrollVIew" destination="lph-vK-rNO" id="JH5-b4-Eab"/>
+                        <outlet property="numPicturesLabel" destination="sjK-mq-Lgh" id="Xzk-uA-4wg"/>
                         <outlet property="pageTitleLabel" destination="0iv-1l-6aL" id="tiA-aT-FJJ"/>
+                        <outlet property="productConditionLabel" destination="ENm-Ba-Gcq" id="beM-zJ-u49"/>
+                        <outlet property="productDescriptionLabel" destination="mEH-Sb-AzF" id="thg-sq-WXg"/>
+                        <outlet property="productImage" destination="ePO-e2-HVV" id="3mI-X9-rGE"/>
+                        <outlet property="productTitle" destination="Yb9-ak-L2O" id="LGV-8h-b6X"/>
+                        <outlet property="productTitleLabel" destination="zeq-i0-qbH" id="CjV-2n-asY"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="uX4-pi-K4b" userLabel="First Responder" sceneMemberID="firstResponder"/>

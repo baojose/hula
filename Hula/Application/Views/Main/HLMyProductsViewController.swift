@@ -11,6 +11,7 @@ import UIKit
 class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITableViewDataSource {
 
     @IBOutlet var productTableView: UITableView!
+    var arrayProducts: NSMutableArray!
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -54,7 +55,8 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
             if (ok){
                 DispatchQueue.main.async {
                     if let dictionary = json as? [Any] {
-                        print(dictionary)
+                        //print(dictionary)
+                        self.arrayProducts = dictionary as! NSMutableArray
                         /*
                         if let user = dictionary["user"] as? [String: Any] {
                             if (user["name"] as? String) != nil {
@@ -80,7 +82,9 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
                     //self.userFullNameLabel.text = HulaUser.sharedInstance.userName
                     //self.userNickLabel.text = HulaUser.sharedInstance.userNick
                     //self.userBioLabel.text = HulaUser.sharedInstance.userBio
-                    
+                    //self.view.setNeedsLayout()
+                    //self.view.setNeedsDisplay()
+                    self.productTableView.reloadData()
                 }
             } else {
                 // connection error
@@ -134,42 +138,36 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
         return 128.0
     }
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        if dataManager.uploadMode == true {
-            return 11
+        if (self.arrayProducts != nil){
+        return self.arrayProducts.count
+        } else {
+            return 0
         }
-        return 10
     }
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         
         let cell = tableView.dequeueReusableCell(withIdentifier: "myProductTableViewCell") as! HLMyProductTableViewCell
-        cell.productEditBtn.addTarget(self, action: #selector(HLMyProductsViewController.goEditProductPage(_:)), for: .touchUpInside)
-        if dataManager.uploadMode == true {
-            if indexPath.row == 0 {
-                cell.productImage.image = dataManager.newProduct.arrProductPhotos.object(at: 0) as? UIImage
-                cell.productDescription.text = dataManager.newProduct.productName
-                let titleHeight: CGFloat! = commonUtils.heightString(width: cell.productDescription.frame.size.width, font: cell.productDescription.font, string: cell.productDescription.text!)
-                cell.productDescription.frame = CGRect(x: cell.productDescription.frame.origin.x, y:(cell.contentView.frame.size.height - titleHeight) / 2.0, width: cell.productDescription.frame.size.width, height: titleHeight)
-                cell.warningView.frame = CGRect(x: cell.productDescription.frame.origin.x, y: cell.productDescription.frame.origin.y + cell.productDescription.frame.size.height + 4.0, width: cell.warningView.frame.size.width, height: cell.warningView.frame.size.height)
-                cell.warningView.isHidden = false
-                cell.productEditBtn.isHidden = true
-            }else{
-                let titleHeight: CGFloat! = commonUtils.heightString(width: cell.productDescription.frame.size.width, font: cell.productDescription.font, string: cell.productDescription.text!)
-                cell.productDescription.frame = CGRect(x: cell.productDescription.frame.origin.x, y:(cell.contentView.frame.size.height - titleHeight) / 2.0, width: cell.productDescription.frame.size.width, height: titleHeight)
-                cell.warningView.isHidden = true
-                cell.productEditBtn.isHidden = false
-            }
-            return cell
-        }else{
-            let titleHeight: CGFloat! = commonUtils.heightString(width: cell.productDescription.frame.size.width, font: cell.productDescription.font, string: cell.productDescription.text!)
-            cell.productDescription.frame = CGRect(x: cell.productDescription.frame.origin.x, y:(cell.contentView.frame.size.height - titleHeight) / 2.0, width: cell.productDescription.frame.size.width, height: titleHeight)
-            cell.warningView.isHidden = true
-            return cell
-        }
+        cell.productEditBtn.tag = indexPath.row
+        cell.productEditBtn.addTarget(self, action: #selector(goEditProductPage), for: .touchUpInside)
+        
+        let product : NSDictionary = self.arrayProducts.object(at: indexPath.row) as! NSDictionary
+        cell.productDescription.text = product.object(forKey: "title") as? String
+        commonUtils.loadImageOnView(imageView:cell.productImage, withURL:(product.object(forKey: "image_url") as? String)!)
+        
+        let titleHeight: CGFloat! = commonUtils.heightString(width: cell.productDescription.frame.size.width, font: cell.productDescription.font, string: cell.productDescription.text!)
+        cell.productDescription.frame = CGRect(x: cell.productDescription.frame.origin.x, y:(cell.contentView.frame.size.height - titleHeight) / 2.0, width: cell.productDescription.frame.size.width, height: titleHeight)
+        cell.warningView.isHidden = false
+        
+        return cell
     }
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath){
     }
-    func goEditProductPage(_ sender: UIButton){
+    func goEditProductPage(sender: UIButton){
+        //print(sender.tag)
+        
+        let productToDisplay : NSDictionary = self.arrayProducts.object(at: sender.tag) as! NSDictionary
         let viewController = self.storyboard?.instantiateViewController(withIdentifier: "editProductMainPage") as! HLEditProductMainViewController
+        viewController.productToDisplay = productToDisplay
         self.navigationController?.pushViewController(viewController, animated: true)
     }
 }
