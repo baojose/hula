@@ -92,7 +92,7 @@ class HLProfileViewController: BaseViewController {
                             }
                             if (user["image"] as? String) != nil {
                                 HulaUser.sharedInstance.userPhotoURL = user["image"] as? String
-                                self.loadImageOnView(imageView:self.profileImageView, withURL:HulaUser.sharedInstance.userPhotoURL)
+                                self.commonUtils.loadImageOnView(imageView:self.profileImageView, withURL:HulaUser.sharedInstance.userPhotoURL)
                             }
                         }
                         var feedback_points:CGFloat = 0

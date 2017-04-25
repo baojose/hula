@@ -62,7 +62,7 @@ class HLSettingViewController: BaseViewController {
         }
         
         if (userData.userPhotoURL.characters.count>1){
-            self.loadImageOnView(imageView:self.smallProfileImage, withURL:HulaUser.sharedInstance.userPhotoURL)
+            commonUtils.loadImageOnView(imageView:self.smallProfileImage, withURL:HulaUser.sharedInstance.userPhotoURL)
         } else {
             self.addAlertIcon(toView: self.pictureView)
         }

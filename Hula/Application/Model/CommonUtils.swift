@@ -79,6 +79,25 @@ class CommonUtils: NSObject {
         return boundingBox.height
     }
 
+    func loadImageOnView(imageView:UIImageView, withURL:String){
+        let urlString = withURL
+        guard let url = URL(string: urlString) else { return }
+        URLSession.shared.dataTask(with: url) { (data, response, error) in
+            if error != nil {
+                print("Failed fetching image:", error!)
+                return
+            }
+            guard let response = response as? HTTPURLResponse, response.statusCode == 200 else {
+                print("Not a proper HTTPURLResponse or statusCode")
+                return
+            }
+            DispatchQueue.main.async {
+                imageView.image = UIImage(data: data!)
+            }
+            }.resume()
+    }
+    
+    
     func timeAgoSinceDate(date:NSDate, numericDates:Bool) -> String {
         let calendar = NSCalendar.current
         let unitFlags: Set<Calendar.Component> = [.minute, .hour, .day, .weekOfYear, .month, .year, .second]
