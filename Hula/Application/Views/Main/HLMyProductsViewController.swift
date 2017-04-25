@@ -22,9 +22,11 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
     }
+    
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
     }
+    
     override func viewDidAppear(_ animated: Bool) {
         
         super.viewDidAppear(animated)
@@ -32,10 +34,58 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
         if (user.token.characters.count < 10){
             // user not logged in
             openUserIdentification()
+        } else {
+            self.getUserProducts()
         }
     }
     func initData(){
         
+    }
+    
+    
+    
+    
+    func getUserProducts() {
+        
+        //print("Getting user info...")
+        let queryURL = HulaConstants.apiURL + "products/user/" + HulaUser.sharedInstance.userId
+        //print(queryURL)
+        HLDataManager.sharedInstance.httpGet(urlstr: queryURL, taskCallback: { (ok, json) in
+            if (ok){
+                DispatchQueue.main.async {
+                    if let dictionary = json as? [Any] {
+                        print(dictionary)
+                        /*
+                        if let user = dictionary["user"] as? [String: Any] {
+                            if (user["name"] as? String) != nil {
+                                HulaUser.sharedInstance.userName = user["name"] as? String
+                            }
+                            if (user["nick"] as? String) != nil {
+                                HulaUser.sharedInstance.userNick = user["nick"] as? String
+                            }
+                            if (user["bio"] as? String) != nil {
+                                HulaUser.sharedInstance.userBio = user["bio"] as? String
+                            }
+                            if (user["email"] as? String) != nil {
+                                HulaUser.sharedInstance.userEmail = user["email"] as? String
+                            }
+                            if (user["image"] as? String) != nil {
+                                HulaUser.sharedInstance.userPhotoURL = user["image"] as? String
+                                self.loadImageOnView(imageView:self.profileImageView, withURL:HulaUser.sharedInstance.userPhotoURL)
+                            }
+                        }
+ */
+                    }
+                    
+                    //self.userFullNameLabel.text = HulaUser.sharedInstance.userName
+                    //self.userNickLabel.text = HulaUser.sharedInstance.userNick
+                    //self.userBioLabel.text = HulaUser.sharedInstance.userBio
+                    
+                }
+            } else {
+                // connection error
+            }
+        })
     }
     func initView(){
         NotificationCenter.default.addObserver(self, selector: #selector(HLMyProductsViewController.newPostModeDesign(_:)), name: NSNotification.Name(rawValue: "uploadModeUpdateDesign"), object: nil)

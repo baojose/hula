@@ -105,7 +105,7 @@ class HLProfileViewController: BaseViewController {
                                     let item = fb as! [String: Any]
                                     // access all objects in array
                                     if let val:CGFloat = item["val"] as? CGFloat {
-                                        print(val)
+                                        //print(val)
                                         feedback_points += val/5
                                         feedback_count += 1
                                     }

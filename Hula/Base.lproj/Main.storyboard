@@ -1283,23 +1283,23 @@ Set a password for your account</string>
                                 </subviews>
                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                             </view>
-                            <view contentMode="scaleToFill" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="XwW-Me-XKJ">
-                                <rect key="frame" x="46" y="530" width="311" height="78"/>
-                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                            <view contentMode="scaleToFill" fixedFrame="YES" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="XwW-Me-XKJ">
+                                <rect key="frame" x="34" y="530" width="313" height="78"/>
+                                <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES" heightSizable="YES"/>
                                 <subviews>
                                     <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" image="img_need_profile_complete" translatesAutoresizingMaskIntoConstraints="NO" id="efp-1f-0zh">
-                                        <rect key="frame" x="0.0" y="0.0" width="311" height="78"/>
+                                        <rect key="frame" x="-1" y="0.0" width="314" height="78"/>
                                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                     </imageView>
                                     <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="9Pb-3g-FVB">
-                                        <rect key="frame" x="271" y="0.0" width="40" height="40"/>
+                                        <rect key="frame" x="272" y="0.0" width="41" height="40"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxY="YES"/>
                                         <connections>
                                             <action selector="closeProfileCompleteAlert:" destination="UjI-s8-fEy" eventType="touchUpInside" id="x5o-a7-aXP"/>
                                         </connections>
                                     </button>
-                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="You need to complete your profile" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="dua-Uh-qXa">
-                                        <rect key="frame" x="20" y="29" width="270" height="21"/>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" misplaced="YES" text="You need to complete your profile" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="dua-Uh-qXa">
+                                        <rect key="frame" x="16" y="29" width="270" height="21"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                         <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="16"/>
                                         <color key="textColor" red="0.27450980390000002" green="0.27450980390000002" blue="0.27450980390000002" alpha="1" colorSpace="calibratedRGB"/>
@@ -1772,7 +1772,7 @@ Set a password for your account</string>
                                                 <rect key="frame" x="0.0" y="1" width="377" height="203"/>
                                                 <autoresizingMask key="autoresizingMask"/>
                                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="H0l-Mb-8Jr" id="vCM-P5-v5D">
-                                                    <rect key="frame" x="0.0" y="0.0" width="377" height="203"/>
+                                                    <rect key="frame" x="0.0" y="0.0" width="377" height="202"/>
                                                     <autoresizingMask key="autoresizingMask"/>
                                                 </tableViewCellContentView>
                                             </tableViewCell>

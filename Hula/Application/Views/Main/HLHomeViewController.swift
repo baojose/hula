@@ -55,10 +55,12 @@ class HLHomeViewController: BaseViewController, UIScrollViewDelegate, UITextFiel
         });
     }
     func initView() {
-        profileCompleteAlertView.frame = CGRect(x: HulaConstants.screenWidth / 8 * 7 - 282, y: HulaConstants.screenHeight - 136, width: 311, height: 78)
+        
         self.profileCompleteAlertView.isHidden = true;
         self.noResultView.isHidden = true;
-        self.showProfileCompleteAlertView()
+        if (HulaUser.sharedInstance.userName == ""){
+            self.showProfileCompleteAlertView()
+        }
         searchTxtField.addTarget(self, action: #selector(searchTextDidChange(_:)), for: UIControlEvents.editingChanged)
     }
     @IBAction func closeProfileCompleteAlert(_ sender: Any) {
