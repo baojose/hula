@@ -12,6 +12,10 @@ class HLSearchResultViewController: BaseViewController, UITableViewDataSource, U
     
     
     @IBOutlet var noResultAlertView: UIView!
+    var searchByCategory: Bool = false;
+    var categoryToSearch: NSDictionary = [:]
+    var keywordToSearch: String = ""
+    var productsResults: NSMutableArray = []
     
 
     override func viewDidLoad() {
@@ -50,7 +54,7 @@ class HLSearchResultViewController: BaseViewController, UITableViewDataSource, U
         return view
     }
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return 10
+        return productsResults.count
     }
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         
@@ -61,5 +65,32 @@ class HLSearchResultViewController: BaseViewController, UITableViewDataSource, U
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath){
         let viewController = self.storyboard?.instantiateViewController(withIdentifier: "productDetailPage") as! HLProductDetailViewController
         self.navigationController?.pushViewController(viewController, animated: true)
+    }
+    
+    
+    
+    
+    // Custom functions for ViewController
+    func getSearchResults() {
+        //print("Getting user info...")
+        var category_id = categoryToSearch.object(forKey: "_id") as? String
+        if (category_id == nil){
+            category_id = ""
+        }
+        let queryURL = HulaConstants.apiURL + "products/category/" + category_id!
+        //print(queryURL)
+        HLDataManager.sharedInstance.httpGet(urlstr: queryURL, taskCallback: { (ok, json) in
+            if (ok){
+                DispatchQueue.main.async {
+                    if let dictionary = json as? [Any] {
+                        //print(dictionary)
+                        self.productsResults = dictionary as! NSMutableArray
+                    }
+                    self.productTableView.reloadData()
+                }
+            } else {
+                // connection error
+            }
+        })
     }
 }

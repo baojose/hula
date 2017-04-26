@@ -47,7 +47,6 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
     
     
     func getUserProducts() {
-        
         //print("Getting user info...")
         let queryURL = HulaConstants.apiURL + "products/user/" + HulaUser.sharedInstance.userId
         //print(queryURL)
@@ -57,33 +56,7 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
                     if let dictionary = json as? [Any] {
                         //print(dictionary)
                         self.arrayProducts = dictionary as! NSMutableArray
-                        /*
-                        if let user = dictionary["user"] as? [String: Any] {
-                            if (user["name"] as? String) != nil {
-                                HulaUser.sharedInstance.userName = user["name"] as? String
-                            }
-                            if (user["nick"] as? String) != nil {
-                                HulaUser.sharedInstance.userNick = user["nick"] as? String
-                            }
-                            if (user["bio"] as? String) != nil {
-                                HulaUser.sharedInstance.userBio = user["bio"] as? String
-                            }
-                            if (user["email"] as? String) != nil {
-                                HulaUser.sharedInstance.userEmail = user["email"] as? String
-                            }
-                            if (user["image"] as? String) != nil {
-                                HulaUser.sharedInstance.userPhotoURL = user["image"] as? String
-                                self.loadImageOnView(imageView:self.profileImageView, withURL:HulaUser.sharedInstance.userPhotoURL)
-                            }
-                        }
- */
                     }
-                    
-                    //self.userFullNameLabel.text = HulaUser.sharedInstance.userName
-                    //self.userNickLabel.text = HulaUser.sharedInstance.userNick
-                    //self.userBioLabel.text = HulaUser.sharedInstance.userBio
-                    //self.view.setNeedsLayout()
-                    //self.view.setNeedsDisplay()
                     self.productTableView.reloadData()
                 }
             } else {

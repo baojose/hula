@@ -140,8 +140,14 @@ class HLHomeViewController: BaseViewController, UIScrollViewDelegate, UITextFiel
         }
     }
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath){
-        let introViewController = self.storyboard?.instantiateViewController(withIdentifier: "searchResultPage") as! HLSearchResultViewController
-        self.navigationController?.pushViewController(introViewController, animated: true)
+        let searchResultViewController = self.storyboard?.instantiateViewController(withIdentifier: "searchResultPage") as! HLSearchResultViewController
+        
+        searchResultViewController.searchByCategory = true
+        let category : NSDictionary = dataManager.arrCategories.object(at: indexPath.row) as! NSDictionary
+        searchResultViewController.categoryToSearch = category
+        searchResultViewController.keywordToSearch = ""
+        
+        self.navigationController?.pushViewController(searchResultViewController, animated: true)
     }
     //#MARK: - UITextFieldDelegate
     func textFieldShouldBeginEditing(_ textField: UITextField) -> Bool{
