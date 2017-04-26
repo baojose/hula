@@ -11,6 +11,8 @@ import UIKit
 class HLSearchResultViewController: BaseViewController, UITableViewDataSource, UITableViewDelegate {
     
     
+    @IBOutlet weak var productsTableView: UITableView!
+    @IBOutlet weak var productsResultsList: UIView!
     @IBOutlet var noResultAlertView: UIView!
     var searchByCategory: Bool = false;
     var categoryToSearch: NSDictionary = [:]
@@ -86,7 +88,7 @@ class HLSearchResultViewController: BaseViewController, UITableViewDataSource, U
                         //print(dictionary)
                         self.productsResults = dictionary as! NSMutableArray
                     }
-                    self.productTableView.reloadData()
+                    self.productsTableView.reloadData()
                 }
             } else {
                 // connection error
