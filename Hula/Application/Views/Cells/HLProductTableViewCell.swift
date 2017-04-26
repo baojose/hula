@@ -18,7 +18,6 @@ class HLProductTableViewCell: UITableViewCell {
     @IBOutlet var verifiedMethodsView: UIView!
     @IBOutlet var productOwnerImage: UIImageView!
     @IBOutlet var productOwnerName: UILabel!
-    @IBOutlet var productEditBtn: UIButton!
 
     override func awakeFromNib() {
         super.awakeFromNib()

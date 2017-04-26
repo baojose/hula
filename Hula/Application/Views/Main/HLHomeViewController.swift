@@ -58,8 +58,9 @@ class HLHomeViewController: BaseViewController, UIScrollViewDelegate, UITextFiel
         
         self.profileCompleteAlertView.isHidden = true;
         self.noResultView.isHidden = true;
+        print(HulaUser.sharedInstance.userName)
         if (HulaUser.sharedInstance.userName == ""){
-            self.showProfileCompleteAlertView()
+            //self.showProfileCompleteAlertView()
         }
         searchTxtField.addTarget(self, action: #selector(searchTextDidChange(_:)), for: UIControlEvents.editingChanged)
     }

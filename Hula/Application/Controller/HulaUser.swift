@@ -39,5 +39,24 @@ class HulaUser: NSObject {
         self.location = CGPoint(x:0, y:0)
     }
     
-
+    func isIncompleteProfile() -> Bool{
+        var isIncomplete = false
+        if (self.userName==""){
+            isIncomplete = true
+        }
+        if (self.userNick==""){
+            isIncomplete = true
+        }
+        if (self.userName==""){
+            isIncomplete = true
+        }
+        if (self.userBio==""){
+            isIncomplete = true
+        }
+        if (self.userPhotoURL==""){
+            isIncomplete = true
+        }
+        return isIncomplete
+    }
+    
 }

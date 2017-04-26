@@ -87,9 +87,9 @@ class HLDataManager: NSObject {
         var loginSuccess = false;
         httpPost(urlstr: queryURL, postString: "email="+email+"&pass="+pass, taskCallback: { (ok, json) in
             
-            print("done")
-            print(ok)
-            print(json!)
+            //print("done")
+            //print(ok)
+            //print(json!)
             if (ok){
                 let user = HulaUser.sharedInstance
                 if let dictionary = json as? [String: Any] {
@@ -97,7 +97,7 @@ class HLDataManager: NSObject {
                         // access individual value in dictionary
                         user.token = token
                         user.userId = dictionary["userId"] as? String
-                        print(token)
+                        //print(token)
                         loginSuccess = true;
                         self.writeUserData()
                     }
@@ -126,8 +126,8 @@ class HLDataManager: NSObject {
         var signupSuccess = false;
         httpPost(urlstr: queryURL, postString: "email="+email+"&pass="+pass+"&name="+nick+"&nick="+nick, taskCallback: { (ok, json) in
             
-            print("done")
-            print(ok)
+            //print("done")
+            //print(ok)
             if (ok){
                 //print(json!)
                 let user = HulaUser.sharedInstance
@@ -294,7 +294,7 @@ class HLDataManager: NSObject {
         print("loading notifications...")
         let queryURL = HulaConstants.apiURL + "notifications"
         httpGet(urlstr: queryURL, taskCallback: { (ok, json) in
-            print(ok)
+            //print(ok)
             if (ok){
                 self.arrNotifications=[];
                 if let array = json as? [Any] {

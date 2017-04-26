@@ -94,32 +94,23 @@ class HLProfileViewController: BaseViewController {
                                 HulaUser.sharedInstance.userPhotoURL = user["image"] as? String
                                 self.commonUtils.loadImageOnView(imageView:self.profileImageView, withURL:HulaUser.sharedInstance.userPhotoURL)
                             }
-                        }
-                        var feedback_points:CGFloat = 0
-                        var feedback_count:CGFloat = 0
-                        if let feedback = dictionary["feedback"] as? [Any] {
+                            if (user["feedback_count"] as? CGFloat) != nil {
                                 
-                                
-                                for fb in feedback {
-                                    //print (fb)
-                                    let item = fb as! [String: Any]
-                                    // access all objects in array
-                                    if let val:CGFloat = item["val"] as? CGFloat {
-                                        //print(val)
-                                        feedback_points += val/5
-                                        feedback_count += 1
-                                    }
+                                let feedback_points:CGFloat = (user["feedback_points"] as? CGFloat)!
+                                let feedback_count:CGFloat = (user["feedback_count"] as? CGFloat)!
+                                if (feedback_count>0){
+                                    let perc: Int =  Int(round( feedback_points/feedback_count * 100))
+                                    self.userFeedbackLabel.text = "\(perc)%"
+                                } else {
+                                    self.userFeedbackLabel.text = "-"
                                 }
-                        }
-                        if (feedback_count>0){
-                            let perc: Int =  Int(round( feedback_points/feedback_count * 100))
-                            self.userFeedbackLabel.text = "\(perc)%"
+                            }
                         }
                     }
                     self.userFullNameLabel.text = HulaUser.sharedInstance.userName
                     self.userNickLabel.text = HulaUser.sharedInstance.userNick
                     self.userBioLabel.text = HulaUser.sharedInstance.userBio
-                    if (self.isIncompleteProfile()){
+                    if (HulaUser.sharedInstance.isIncompleteProfile()){
                         // badges to inform the user
                         UIView.animate(withDuration: 0.4, animations: {
                             self.completeProfileTooltip.alpha = 1
@@ -131,25 +122,5 @@ class HLProfileViewController: BaseViewController {
                 // connection error
             }
         })
-    }
-    
-    func isIncompleteProfile() -> Bool{
-        var isIncomplete = false
-        if (HulaUser.sharedInstance.userName==""){
-            isIncomplete = true
-        }
-        if (HulaUser.sharedInstance.userNick==""){
-            isIncomplete = true
-        }
-        if (HulaUser.sharedInstance.userName==""){
-            isIncomplete = true
-        }
-        if (HulaUser.sharedInstance.userBio==""){
-            isIncomplete = true
-        }
-        if (HulaUser.sharedInstance.userPhotoURL==""){
-            isIncomplete = true
-        }
-        return isIncomplete
     }
 }
