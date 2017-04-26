@@ -44,48 +44,11 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
     }
     
     
-    
-    
-    func getUserProducts() {
-        //print("Getting user info...")
-        let queryURL = HulaConstants.apiURL + "products/user/" + HulaUser.sharedInstance.userId
-        //print(queryURL)
-        HLDataManager.sharedInstance.httpGet(urlstr: queryURL, taskCallback: { (ok, json) in
-            if (ok){
-                DispatchQueue.main.async {
-                    if let dictionary = json as? [Any] {
-                        //print(dictionary)
-                        self.arrayProducts = dictionary as! NSMutableArray
-                    }
-                    self.productTableView.reloadData()
-                }
-            } else {
-                // connection error
-            }
-        })
-    }
     func initView(){
         NotificationCenter.default.addObserver(self, selector: #selector(HLMyProductsViewController.newPostModeDesign(_:)), name: NSNotification.Name(rawValue: "uploadModeUpdateDesign"), object: nil)
     }
     
-    @IBAction func presentAddNewProductPage(_ sender: UIButton) {
-        print("button pressed")
-        dataManager.uploadMode = true
-        dataManager.newProduct = HulaProduct.init()
-        let cameraViewController = self.storyboard?.instantiateViewController(withIdentifier: "customCameraPage") as! HLCustomCameraViewController
-        self.present(cameraViewController, animated: true)
-    }
-    func newPostModeDesign(_ notification: NSNotification) {
-        productTableView.reloadData()
-        productTableView.setContentOffset(CGPoint(x: 0.0, y: 0.0), animated: false)
-        if dataManager.uploadMode == true {
-            let when = DispatchTime.now() + 3.0 // change 2 to desired number of seconds
-            DispatchQueue.main.asyncAfter(deadline: when) {
-                let viewController = self.storyboard?.instantiateViewController(withIdentifier: "completeProductProfilePage") as! HLCompleteProductProfileViewController
-                self.present(viewController, animated: true)
-            }
-        }
-    }
+    
     //#MARK: - TableViewDelegate
     func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat{
         return 48.0
@@ -135,6 +98,51 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
     }
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath){
     }
+    
+    // IB Actions
+    
+    @IBAction func presentAddNewProductPage(_ sender: UIButton) {
+        print("button pressed")
+        dataManager.uploadMode = true
+        dataManager.newProduct = HulaProduct.init()
+        let cameraViewController = self.storyboard?.instantiateViewController(withIdentifier: "customCameraPage") as! HLCustomCameraViewController
+        self.present(cameraViewController, animated: true)
+    }
+    
+    
+    // Custom functions for ViewController
+    
+    
+    func newPostModeDesign(_ notification: NSNotification) {
+        productTableView.reloadData()
+        productTableView.setContentOffset(CGPoint(x: 0.0, y: 0.0), animated: false)
+        if dataManager.uploadMode == true {
+            let when = DispatchTime.now() + 3.0 // change 2 to desired number of seconds
+            DispatchQueue.main.asyncAfter(deadline: when) {
+                let viewController = self.storyboard?.instantiateViewController(withIdentifier: "completeProductProfilePage") as! HLCompleteProductProfileViewController
+                self.present(viewController, animated: true)
+            }
+        }
+    }
+    func getUserProducts() {
+        //print("Getting user info...")
+        let queryURL = HulaConstants.apiURL + "products/user/" + HulaUser.sharedInstance.userId
+        //print(queryURL)
+        HLDataManager.sharedInstance.httpGet(urlstr: queryURL, taskCallback: { (ok, json) in
+            if (ok){
+                DispatchQueue.main.async {
+                    if let dictionary = json as? [Any] {
+                        //print(dictionary)
+                        self.arrayProducts = dictionary as! NSMutableArray
+                    }
+                    self.productTableView.reloadData()
+                }
+            } else {
+                // connection error
+            }
+        })
+    }
+    
     func goEditProductPage(sender: UIButton){
         //print(sender.tag)
         
@@ -143,4 +151,5 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
         viewController.productToDisplay = productToDisplay
         self.navigationController?.pushViewController(viewController, animated: true)
     }
+    
 }

@@ -43,9 +43,9 @@ class HLMainViewController: UserBaseViewController {
     func playerEnded (notification:NSNotification) {
         print("finished")
         let token = HulaUser.sharedInstance.token!
-        print(token)
+        //print(token)
         if (token.characters.count>10){
-            // we will jump to mainView only if intro and video did already
+            // we will jump to mainView only if user is not logged in
             self.navToMainView()
         } else {
             let introViewController = self.storyboard?.instantiateViewController(withIdentifier: "introPage") as! HLIntroViewController

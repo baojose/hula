@@ -36,7 +36,6 @@ class HLSearchResultViewController: BaseViewController, UITableViewDataSource, U
     }
     
     override func viewDidAppear(_ animated: Bool) {
-        
         getSearchResults()
     }
     
@@ -69,7 +68,7 @@ class HLSearchResultViewController: BaseViewController, UITableViewDataSource, U
         let cell = tableView.dequeueReusableCell(withIdentifier: "homeProductCell") as! HLProductTableViewCell
         
         let product = productsList[indexPath.row] as! NSDictionary
-        print(product)
+        //print(product)
         cell.productName.text = product.object(forKey: "title") as? String
         commonUtils.loadImageOnView(imageView:cell.productImage, withURL:(product.object(forKey: "image_url") as? String)!)
         
@@ -99,7 +98,7 @@ class HLSearchResultViewController: BaseViewController, UITableViewDataSource, U
                     if let dictionary = json as? [String: Any] {
                         
                         if let products = dictionary["products"] as? NSArray {
-                            print(products)
+                            //print(products)
                             self.productsList = products
                         }
                     }

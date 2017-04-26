@@ -45,15 +45,6 @@ class HLHomeViewController: BaseViewController, UIScrollViewDelegate, UITextFiel
         
         self.initView()
     }
-    func categoriesAreLoaded(){
-        print("Ya se ha cargado")
-        refreshUI()
-    }
-    func refreshUI() {
-        DispatchQueue.main.async(execute: {
-            self.productTableView.reloadData()
-        });
-    }
     func initView() {
         
         self.profileCompleteAlertView.isHidden = true;
@@ -64,29 +55,8 @@ class HLHomeViewController: BaseViewController, UIScrollViewDelegate, UITextFiel
         }
         searchTxtField.addTarget(self, action: #selector(searchTextDidChange(_:)), for: UIControlEvents.editingChanged)
     }
-    @IBAction func closeProfileCompleteAlert(_ sender: Any) {
-        self.hideProfileCompleteAlertView()
-    }
-    func showProfileCompleteAlertView() {
-        profileCompleteAlertView.isHidden = false;
-        let newFrame: CGRect! = CGRect(x: HulaConstants.screenWidth / 8 * 7 - 282, y: HulaConstants.screenHeight - 136, width: 311, height: 78)
-        profileCompleteAlertView.frame = CGRect(x: newFrame.origin.x + newFrame.size.width, y: newFrame.origin.y + newFrame.size.height, width: 0, height: 0)
-        UIView.animate(withDuration: 0.2, animations: {
-            self.profileCompleteAlertView.frame = newFrame
-        }) { (finished: Bool!) in
-            self.profileCompleteAlertView.isHidden = false;
-        }
-    }
-    func hideProfileCompleteAlertView() {
-        
-        let newFrame: CGRect! = profileCompleteAlertView.frame
-        self.profileCompleteAlertView.frame = newFrame
-        UIView.animate(withDuration: 0.2, animations: {
-            self.profileCompleteAlertView.frame = CGRect(x: newFrame.origin.x + newFrame.size.width, y: newFrame.origin.y + newFrame.size.height, width: 0, height: 0)
-        }) { (finished: Bool!) in
-            self.profileCompleteAlertView.isHidden = true;
-        }
-    }
+    
+    
     //#MARK: - TableViewDelegate
     func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat{
         return 22.0
@@ -150,6 +120,8 @@ class HLHomeViewController: BaseViewController, UIScrollViewDelegate, UITextFiel
         
         self.navigationController?.pushViewController(searchResultViewController, animated: true)
     }
+    
+    
     //#MARK: - UITextFieldDelegate
     func textFieldShouldBeginEditing(_ textField: UITextField) -> Bool{
         isSearching = true
@@ -166,9 +138,63 @@ class HLHomeViewController: BaseViewController, UIScrollViewDelegate, UITextFiel
         }
         return textField.resignFirstResponder()
     }
+    //#MARK: - ScrollViewDelegate
+    func scrollViewDidScroll(_ scrollView: UIScrollView){
+        if (scrollView == productTableView) {
+            searchTxtField.resignFirstResponder()
+        }
+    }
+    
+    //#MARK - Web service - GetAllProduct
+    func getAllProducts() {
+        
+    }
+    
+    
+    // IB Actions
+    
+    @IBAction func closeProfileCompleteAlert(_ sender: Any) {
+        self.hideProfileCompleteAlertView()
+    }
+    
+    
+    
+    // Custom functions for ViewController
+    
     func searchTextDidChange(_ textField:UITextField) {
         isSearching = true
         self.searchProduct(textField.text!)
+    }
+    
+    
+    func showProfileCompleteAlertView() {
+        profileCompleteAlertView.isHidden = false;
+        let newFrame: CGRect! = CGRect(x: HulaConstants.screenWidth / 8 * 7 - 282, y: HulaConstants.screenHeight - 136, width: 311, height: 78)
+        profileCompleteAlertView.frame = CGRect(x: newFrame.origin.x + newFrame.size.width, y: newFrame.origin.y + newFrame.size.height, width: 0, height: 0)
+        UIView.animate(withDuration: 0.2, animations: {
+            self.profileCompleteAlertView.frame = newFrame
+        }) { (finished: Bool!) in
+            self.profileCompleteAlertView.isHidden = false;
+        }
+    }
+    func hideProfileCompleteAlertView() {
+        
+        let newFrame: CGRect! = profileCompleteAlertView.frame
+        self.profileCompleteAlertView.frame = newFrame
+        UIView.animate(withDuration: 0.2, animations: {
+            self.profileCompleteAlertView.frame = CGRect(x: newFrame.origin.x + newFrame.size.width, y: newFrame.origin.y + newFrame.size.height, width: 0, height: 0)
+        }) { (finished: Bool!) in
+            self.profileCompleteAlertView.isHidden = true;
+        }
+    }
+    func categoriesAreLoaded(){
+        print("Ya se ha cargado")
+        refreshUI()
+    }
+    func refreshUI() {
+        DispatchQueue.main.async(execute: {
+            self.productTableView.reloadData()
+        });
     }
     func searchProduct(_ searchString: String) {
         if isSearching == true {
@@ -192,16 +218,5 @@ class HLHomeViewController: BaseViewController, UIScrollViewDelegate, UITextFiel
             }
         }
         productTableView.reloadData()
-    }
-    //#MARK: - ScrollViewDelegate
-    func scrollViewDidScroll(_ scrollView: UIScrollView){
-        if (scrollView == productTableView) {
-            searchTxtField.resignFirstResponder()
-        }
-    }
-    
-    //#MARK - Web service - GetAllProduct
-    func getAllProducts() {
-        
     }
 }

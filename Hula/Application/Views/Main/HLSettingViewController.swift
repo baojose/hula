@@ -69,10 +69,12 @@ class HLSettingViewController: BaseViewController {
     }
     
     
+    // IB Actions
     @IBAction func userLogout(_ sender: Any) {
         HLDataManager.sharedInstance.logout()
     }
     
+    // Custom functions for ViewController
     func addAlertIcon(toView: UIView){
         let imageName = "icon_alert_thumbnails"
         let image = UIImage(named: imageName)

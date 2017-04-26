@@ -26,6 +26,13 @@ class HLFilterViewController: BaseViewController {
         self.changeTradeFilterButtonSelctedState(1)
         self.changeConditionFilterButtonSelctedState(1)
     }
+    
+    
+    
+    
+    
+    
+    // IB Actions
     @IBAction func distanceFilterOptionBtnClicked(_ sender: Any) {
         let button: UIButton = sender as! UIButton
         self.changeDistanceFilterButtonSelctedState(button.tag)
@@ -38,6 +45,12 @@ class HLFilterViewController: BaseViewController {
         let button: UIButton = sender as! UIButton
         self.changeConditionFilterButtonSelctedState(button.tag - 11)
     }
+    
+    
+    
+    
+    
+    // Custom functions for ViewController
     
     func changeDistanceFilterButtonSelctedState(_ index: Int!) {
         for i in 1 ..< 6 {
@@ -53,6 +66,9 @@ class HLFilterViewController: BaseViewController {
             }
         }
     }
+    
+    
+    
     func changeTradeFilterButtonSelctedState(_ index: Int!) {
         for i in 6 ..< 12 {
             let button: UIButton! = self.view.viewWithTag(i) as? UIButton

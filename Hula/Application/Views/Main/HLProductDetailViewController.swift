@@ -61,17 +61,6 @@ class HLProductDetailViewController: BaseViewController, UIScrollViewDelegate, U
         userInventoryLabel.attributedText = commonUtils.attributedStringWithTextSpacing("USER'S INVENTORY", 2.33)
     }
     
-    func setUpProductImagesScrollView() {
-        for i in 0 ..< 5 {
-            let imageFrame = CGRect(x: (CGFloat)(i) * productsScrollView.frame.size.width, y: 0, width: productsScrollView.frame.size.width, height: productsScrollView.frame.size.height)
-            let imgView: UIImageView! = UIImageView.init(frame: imageFrame)
-            imgView.image = UIImage(named: "temp_product")
-            productsScrollView.addSubview(imgView)
-        }
-        productsScrollView.contentSize = CGSize(width: 5 * productsScrollView.frame.size.width, height: 0.0)
-        productsScrollView.contentOffset = CGPoint(x: 0.0, y: 0.0)
-    }
-    
     //#MARK: - TableViewDelegate
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -95,4 +84,21 @@ class HLProductDetailViewController: BaseViewController, UIScrollViewDelegate, U
             pageControl.currentPage = Int(xPos)
         }
     }
+    
+    
+    
+    // Custom functions for ViewController
+    
+    
+    func setUpProductImagesScrollView() {
+        for i in 0 ..< 5 {
+            let imageFrame = CGRect(x: (CGFloat)(i) * productsScrollView.frame.size.width, y: 0, width: productsScrollView.frame.size.width, height: productsScrollView.frame.size.height)
+            let imgView: UIImageView! = UIImageView.init(frame: imageFrame)
+            imgView.image = UIImage(named: "temp_product")
+            productsScrollView.addSubview(imgView)
+        }
+        productsScrollView.contentSize = CGSize(width: 5 * productsScrollView.frame.size.width, height: 0.0)
+        productsScrollView.contentOffset = CGPoint(x: 0.0, y: 0.0)
+    }
+    
 }

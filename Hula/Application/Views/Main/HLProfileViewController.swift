@@ -57,6 +57,8 @@ class HLProfileViewController: BaseViewController {
         completeProfileTooltip.alpha = 0
     }
     
+    // IB Actions
+    
     @IBAction func closeTooltip(_ sender: Any) {
         UIView.animate(withDuration: 0.4, animations: {
             self.completeProfileTooltip.alpha = 0
@@ -66,6 +68,7 @@ class HLProfileViewController: BaseViewController {
     
     
     
+    // Custom functions for ViewController
     
     func getUserProfile() {
         

@@ -17,6 +17,7 @@ class HLIntroViewController: UserBaseViewController, UIScrollViewDelegate {
     @IBOutlet var introView5: UIView!
     @IBOutlet var pageCtrl: UIPageControl!
     @IBOutlet var mainScrollView: UIScrollView!
+    var jump_just_once = true
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -29,6 +30,7 @@ class HLIntroViewController: UserBaseViewController, UIScrollViewDelegate {
     }
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
+        jump_just_once = true
     }
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
@@ -66,7 +68,10 @@ class HLIntroViewController: UserBaseViewController, UIScrollViewDelegate {
         let posX: Int! = Int(mainScrollView.contentOffset.x / mainScrollView.frame.size.width)
         pageCtrl.currentPage = posX
         if (mainScrollView.contentOffset.x > 4.0 * mainScrollView.frame.size.width) {
-            self.navToMainView()
+            if (jump_just_once){
+                jump_just_once = false;
+                self.navToMainView()
+            }
         }
     }
 }
