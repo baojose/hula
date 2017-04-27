@@ -19,6 +19,7 @@ class HLSearchResultViewController: BaseViewController, UITableViewDataSource, U
     var keywordToSearch: String = ""
     var productsResults: NSMutableDictionary = [:]
     var productsList: NSArray = []
+    var usersList: NSDictionary = [:]
     
 
     override func viewDidLoad() {
@@ -71,7 +72,24 @@ class HLSearchResultViewController: BaseViewController, UITableViewDataSource, U
         //print(product)
         cell.productName.text = product.object(forKey: "title") as? String
         commonUtils.loadImageOnView(imageView:cell.productImage, withURL:(product.object(forKey: "image_url") as? String)!)
-        
+        if let user_id = product.object(forKey: "owner_id") as? String{
+            //print(user_id)
+            //print(self.usersList)
+            if let user = self.usersList.object(forKey: user_id) as? NSDictionary{
+                print(user)
+                cell.productOwnerName.text = user.object(forKey: "nick") as? String
+                commonUtils.loadImageOnView(imageView:cell.productOwnerImage, withURL:(user.object(forKey: "image") as? String)!)
+                cell.productDistance.text = "10 miles"
+                let up = user.object(forKey: "feedback_points") as? Float
+                let uc = user.object(forKey: "feedback_count") as? Float
+                if (up != nil) && (uc != nil){
+                    let perc_trade = round( up! / uc! * 100)
+                    cell.productTradeRate.text = "\(perc_trade)%"
+                } else {
+                    cell.productTradeRate.text = "-"
+                }
+            }
+        }
         commonUtils.circleImageView(cell.productOwnerImage)
         return cell
     }
@@ -85,7 +103,6 @@ class HLSearchResultViewController: BaseViewController, UITableViewDataSource, U
     
     // Custom functions for ViewController
     func getSearchResults() {
-        //print("Getting user info...")
         var category_id = categoryToSearch.object(forKey: "_id") as? String
         if (category_id == nil){
             category_id = ""
@@ -96,11 +113,16 @@ class HLSearchResultViewController: BaseViewController, UITableViewDataSource, U
             if (ok){
                 DispatchQueue.main.async {
                     if let dictionary = json as? [String: Any] {
-                        
+                        //print(dictionary)
                         if let products = dictionary["products"] as? NSArray {
                             //print(products)
                             self.productsList = products
                         }
+                        if let users = dictionary["users"] as? NSDictionary {
+                            //print(products)
+                            self.usersList = users 
+                        }
+                        
                     }
                     self.productsTableView.reloadData()
                     if (self.productsList.count == 0){
