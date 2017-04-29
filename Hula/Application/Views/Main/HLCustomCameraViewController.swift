@@ -10,7 +10,7 @@ import UIKit
 import AVFoundation
 import Photos
 
-class HLCustomCameraViewController: BaseViewController, UICollectionViewDelegate, UICollectionViewDataSource {
+class HLCustomCameraViewController: BaseViewController, UICollectionViewDelegate, UICollectionViewDataSource, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
 
     @IBOutlet var navView: UIView!
     @IBOutlet var controlView: UIView!
@@ -42,8 +42,13 @@ class HLCustomCameraViewController: BaseViewController, UICollectionViewDelegate
     var arrSelectedIndexs: NSMutableArray!
     fileprivate let imageManager = PHCachingImageManager()
     
+    let picker = UIImagePickerController()
+    
+    
+    
     override func viewDidLoad() {
         super.viewDidLoad()
+        picker.delegate = self
         
         self.initView()
         self.initData()
@@ -74,7 +79,7 @@ class HLCustomCameraViewController: BaseViewController, UICollectionViewDelegate
     func initData(){
         arrAlbumPhotos = NSMutableArray.init()
         arrSelectedIndexs = NSMutableArray.init()
-        self.fetchAlbumPhotosAndShow()
+        //self.fetchAlbumPhotosAndShow()
         if dataManager.newProduct.arrProductPhotos.count > 0 {
             for i in 0 ..< dataManager.newProduct.arrProductPhotos.count{
                 if i == 0 {
@@ -124,6 +129,24 @@ class HLCustomCameraViewController: BaseViewController, UICollectionViewDelegate
     }
     
     
+    //MARK: - Delegates
+    func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [String : Any]) {
+        let chosenImage = info[UIImagePickerControllerOriginalImage] as! UIImage //2
+        showImages(chosenImage)
+        dismiss(animated:true, completion: nil) //5
+        changeSelectBtnStatus(1)
+    }
+    func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
+        dismiss(animated: true, completion: nil)
+    }
+    
+    func openImagePicker(){
+        picker.allowsEditing = false
+        picker.sourceType = .photoLibrary
+        picker.mediaTypes = UIImagePickerController.availableMediaTypes(for: .photoLibrary)!
+        present(picker, animated: true, completion: nil)
+    }
+    
     // IB Actions
     
     @IBAction func goNextPage(_ sender: UIButton) {
@@ -138,11 +161,12 @@ class HLCustomCameraViewController: BaseViewController, UICollectionViewDelegate
     }
     // #MARK - Camera Options
     @IBAction func cameraOption(_ sender: Any) {
-        changeTakePhotoWithMode(0)
+        //changeTakePhotoWithMode(0)
     }
     
     @IBAction func showAlbum(_ sender: Any) {
-        changeTakePhotoWithMode(1)
+        //changeTakePhotoWithMode(1)
+        openImagePicker()
     }
     
     @IBAction func actionCameraCapture(_ sender: AnyObject) {
@@ -210,15 +234,25 @@ class HLCustomCameraViewController: BaseViewController, UICollectionViewDelegate
                 print("Good to proceed")
                 let fetchOptions = PHFetchOptions()
                 fetchOptions.sortDescriptors = [NSSortDescriptor(key: "creationDate", ascending: false)]
+                if #available(iOS 9.0, *) {
+                    fetchOptions.fetchLimit = 100
+                }
+                fetchOptions.includeAllBurstAssets = false
+                fetchOptions.includeHiddenAssets = false
                 let allPhotos = PHAsset.fetchAssets(with: .image, options: fetchOptions)
                 print("Found \(allPhotos.count) images")
                 let thumbnailSize: CGSize! = self.imgOverlay.frame.size
                 let maxPhotoAlbumSize = 5;
                 let visiblePhotos = min(maxPhotoAlbumSize, allPhotos.count)
+                let option = PHImageRequestOptions()
+                option.isSynchronous = false
+                option.deliveryMode = .opportunistic
                 for i in 0 ..< visiblePhotos{
                     let asset = allPhotos.object(at: i)
-                    self.imageManager.requestImage(for: asset, targetSize: thumbnailSize, contentMode: .aspectFill, options: nil, resultHandler: { image, _ in
+                    print("Looping \(i)")
+                    self.imageManager.requestImage(for: asset, targetSize: thumbnailSize, contentMode: .aspectFill, options: option, resultHandler: { image, _ in
                         self.arrAlbumPhotos.add(image! as UIImage)
+                        print("Adding \(i)")
                     })
                 }
                 self.photoCollectionView.reloadData()
@@ -249,13 +283,13 @@ class HLCustomCameraViewController: BaseViewController, UICollectionViewDelegate
         }
     }
     func changeSelectBtnStatus(_ mode: Int!) {
-        if mode == 0 {
+        //if mode == 0 {
+        //    selectFromLibraryButton.isHidden = true
+        //    selectFromCameraButton.isHidden = true
+        //}else{
             selectFromLibraryButton.isHidden = true
-            selectFromCameraButton.isHidden = true
-        }else{
-            selectFromLibraryButton.isHidden = false
             selectFromCameraButton.isHidden = false
-        }
+        //}
     }
     func saveToCamera() {
         

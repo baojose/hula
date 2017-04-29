@@ -14,6 +14,7 @@ class HLMyProductTableViewCell: UITableViewCell {
     @IBOutlet var productDescription: UILabel!
     @IBOutlet var productEditBtn: UIButton!
     @IBOutlet var warningView: UIView!
+    @IBOutlet weak var cellContentView: UIView!
 
     override func awakeFromNib() {
         super.awakeFromNib()
@@ -23,4 +24,10 @@ class HLMyProductTableViewCell: UITableViewCell {
         super.setSelected(selected, animated: animated)
     }
 
+    func animateAsNew(){
+        self.cellContentView.transform = CGAffineTransform(scaleX: 0.0, y: 0.0)
+        UIView.animate(withDuration: 0.4, delay: 0.3, usingSpringWithDamping: 0.5, initialSpringVelocity: 0, options: [], animations: {
+            self.cellContentView.transform = CGAffineTransform.identity
+        }, completion: nil)
+    }
 }

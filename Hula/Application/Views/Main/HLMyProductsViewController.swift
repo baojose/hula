@@ -11,13 +11,14 @@ import UIKit
 class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITableViewDataSource {
 
     @IBOutlet var productTableView: UITableView!
-    var arrayProducts: NSMutableArray!
+    var arrayProducts = [] as Array
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
         self.initData()
         self.initView()
+        self.getUserProducts()
         
     }
     override func viewWillAppear(_ animated: Bool) {
@@ -36,7 +37,7 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
             // user not logged in
             openUserIdentification()
         } else {
-            self.getUserProducts()
+            //self.getUserProducts()
         }
     }
     func initData(){
@@ -74,8 +75,8 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
         return 128.0
     }
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        if (self.arrayProducts != nil){
-        return self.arrayProducts.count
+        if (self.arrayProducts.count != 0){
+            return self.arrayProducts.count
         } else {
             return 0
         }
@@ -86,14 +87,22 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
         cell.productEditBtn.tag = indexPath.row
         cell.productEditBtn.addTarget(self, action: #selector(goEditProductPage), for: .touchUpInside)
         
-        let product : NSDictionary = self.arrayProducts.object(at: indexPath.row) as! NSDictionary
+        let product : NSDictionary = self.arrayProducts[indexPath.row] as! NSDictionary
         cell.productDescription.text = product.object(forKey: "title") as? String
-        commonUtils.loadImageOnView(imageView:cell.productImage, withURL:(product.object(forKey: "image_url") as? String)!)
-        
+        if (product.object(forKey: "image_url") as? String == ""){
+            if let product_image = product.object(forKey: "image") as? UIImage {
+                cell.productImage.image = product_image
+            }
+        } else {
+            commonUtils.loadImageOnView(imageView:cell.productImage, withURL:(product.object(forKey: "image_url") as? String)!)
+        }
         let titleHeight: CGFloat! = commonUtils.heightString(width: cell.productDescription.frame.size.width, font: cell.productDescription.font, string: cell.productDescription.text!)
         cell.productDescription.frame = CGRect(x: cell.productDescription.frame.origin.x, y:(cell.contentView.frame.size.height - titleHeight) / 2.0, width: cell.productDescription.frame.size.width, height: titleHeight)
         cell.warningView.isHidden = false
         
+        if (indexPath.row == 0 && dataManager.uploadMode == true ){
+            cell.animateAsNew()
+        }
         return cell
     }
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath){
@@ -102,11 +111,15 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
     // IB Actions
     
     @IBAction func presentAddNewProductPage(_ sender: UIButton) {
+
+        
+        
         print("button pressed")
         dataManager.uploadMode = true
         dataManager.newProduct = HulaProduct.init()
         let cameraViewController = self.storyboard?.instantiateViewController(withIdentifier: "customCameraPage") as! HLCustomCameraViewController
         self.present(cameraViewController, animated: true)
+
     }
     
     
@@ -114,10 +127,21 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
     
     
     func newPostModeDesign(_ notification: NSNotification) {
-        productTableView.reloadData()
-        productTableView.setContentOffset(CGPoint(x: 0.0, y: 0.0), animated: false)
         if dataManager.uploadMode == true {
-            let when = DispatchTime.now() + 3.0 // change 2 to desired number of seconds
+            var newProduct = [String : AnyObject]()
+            newProduct["title"] = dataManager.newProduct.productName as AnyObject
+            newProduct["image"] = dataManager.newProduct.arrProductPhotos[0] as AnyObject
+            newProduct["image_url"] = "" as AnyObject
+            
+            self.arrayProducts.insert(newProduct, at: 0)
+            
+            print(self.arrayProducts)
+            
+            productTableView.reloadData()
+            productTableView.setContentOffset(CGPoint(x: 0.0, y: 0.0), animated: false)
+            
+            
+            let when = DispatchTime.now() + 1.5 // change 2 to desired number of seconds
             DispatchQueue.main.asyncAfter(deadline: when) {
                 let viewController = self.storyboard?.instantiateViewController(withIdentifier: "completeProductProfilePage") as! HLCompleteProductProfileViewController
                 self.present(viewController, animated: true)
@@ -126,27 +150,30 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
     }
     func getUserProducts() {
         //print("Getting user info...")
-        let queryURL = HulaConstants.apiURL + "products/user/" + HulaUser.sharedInstance.userId
-        //print(queryURL)
-        HLDataManager.sharedInstance.httpGet(urlstr: queryURL, taskCallback: { (ok, json) in
-            if (ok){
-                DispatchQueue.main.async {
-                    if let dictionary = json as? [Any] {
-                        //print(dictionary)
-                        self.arrayProducts = dictionary as! NSMutableArray
+        if (HulaUser.sharedInstance.userId.characters.count>0){
+            let queryURL = HulaConstants.apiURL + "products/user/" + HulaUser.sharedInstance.userId
+            //print(queryURL)
+            HLDataManager.sharedInstance.httpGet(urlstr: queryURL, taskCallback: { (ok, json) in
+                if (ok){
+                    DispatchQueue.main.async {
+                        if let dictionary = json as? [Any] {
+                            //print(dictionary)
+                            self.arrayProducts = dictionary
+                        }
+                        self.productTableView.reloadData()
                     }
-                    self.productTableView.reloadData()
+                } else {
+                    // connection error
+                    print("Connection error")
                 }
-            } else {
-                // connection error
-            }
-        })
+            })
+        }
     }
     
     func goEditProductPage(sender: UIButton){
         //print(sender.tag)
         
-        let productToDisplay : NSDictionary = self.arrayProducts.object(at: sender.tag) as! NSDictionary
+        let productToDisplay : NSDictionary = self.arrayProducts[sender.tag] as! NSDictionary
         let viewController = self.storyboard?.instantiateViewController(withIdentifier: "editProductMainPage") as! HLEditProductMainViewController
         viewController.productToDisplay = productToDisplay
         self.navigationController?.pushViewController(viewController, animated: true)
