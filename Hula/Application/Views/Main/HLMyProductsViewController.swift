@@ -88,6 +88,7 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
         cell.productEditBtn.addTarget(self, action: #selector(goEditProductPage), for: .touchUpInside)
         
         let product : NSDictionary = self.arrayProducts[indexPath.row] as! NSDictionary
+        print(product)
         cell.productDescription.text = product.object(forKey: "title") as? String
         if (product.object(forKey: "image_url") as? String == ""){
             if let product_image = product.object(forKey: "image") as? UIImage {
@@ -96,9 +97,15 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
         } else {
             commonUtils.loadImageOnView(imageView:cell.productImage, withURL:(product.object(forKey: "image_url") as? String)!)
         }
+        
+        if (product.object(forKey: "description") as? String) != nil {
+            print("Hidden")
+            cell.warningView.isHidden = true
+        } else {
+            cell.warningView.isHidden = false
+        }
         let titleHeight: CGFloat! = commonUtils.heightString(width: cell.productDescription.frame.size.width, font: cell.productDescription.font, string: cell.productDescription.text!)
         cell.productDescription.frame = CGRect(x: cell.productDescription.frame.origin.x, y:(cell.contentView.frame.size.height - titleHeight) / 2.0, width: cell.productDescription.frame.size.width, height: titleHeight)
-        cell.warningView.isHidden = false
         
         if (indexPath.row == 0 && dataManager.uploadMode == true ){
             cell.animateAsNew()

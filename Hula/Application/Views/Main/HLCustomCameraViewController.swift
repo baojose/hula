@@ -10,7 +10,7 @@ import UIKit
 import AVFoundation
 import Photos
 
-class HLCustomCameraViewController: BaseViewController, UICollectionViewDelegate, UICollectionViewDataSource, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
+class HLCustomCameraViewController: BaseViewController, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
 
     @IBOutlet var navView: UIView!
     @IBOutlet var controlView: UIView!
@@ -25,10 +25,7 @@ class HLCustomCameraViewController: BaseViewController, UICollectionViewDelegate
     
     @IBOutlet var cameraOptionButton: UIButton!
     @IBOutlet var cameraOptionView: UIView!
-    @IBOutlet var selectFromLibraryButton: UIButton!
     @IBOutlet var selectFromCameraButton: UIButton!
-    @IBOutlet var albumContainView: UIView!
-    @IBOutlet var photoCollectionView: UICollectionView!
     
     
     // vars related with Camera
@@ -67,14 +64,7 @@ class HLCustomCameraViewController: BaseViewController, UICollectionViewDelegate
         commonUtils.setRoundedRectBorderImageView(imageView3, 1.0, UIColor.init(white: 1, alpha: 0.9), 0.0)
         commonUtils.setRoundedRectBorderImageView(imageView4, 1.0, UIColor.init(white: 1, alpha: 0.9), 0.0)
         
-        changeTakePhotoWithMode(0)
-        changeSelectBtnStatus(0)
         
-        let num: CGFloat! = 3.0;
-        let flowLayout = self.photoCollectionView.collectionViewLayout as! UICollectionViewFlowLayout
-        let availableWidthForCells: CGFloat! = self.photoCollectionView.frame.size.width
-        let cellWidth: CGFloat! = availableWidthForCells / num
-        flowLayout.itemSize = CGSize(width: cellWidth, height: cellWidth)
     }
     func initData(){
         arrAlbumPhotos = NSMutableArray.init()
@@ -97,44 +87,13 @@ class HLCustomCameraViewController: BaseViewController, UICollectionViewDelegate
             }
         }
     }
-//#MARK - Photo Library Options
-    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return arrAlbumPhotos.count
-    }
-    
-    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        
-        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "photoAlbumCollectionViewCell", for: indexPath) as! HLPhotoAlbumCollectionViewCell
-        let image = arrAlbumPhotos.object(at: indexPath.row) as! UIImage
-        cell.photo.image = image
-        if self.isSelectedImage(indexPath.row) != -1 {
-            cell.selectedMarkImage.image = UIImage.init(named: "icon_photo_album_selected")
-        }else{
-            cell.selectedMarkImage.image = UIImage.init(named: "icon_photo_album_unselected")
-        }
-        return cell
-        
-    }
-    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath){
-        let alreadySelected = self.isSelectedImage(indexPath.row)
-        if alreadySelected != -1 {
-            self.hideImages(arrAlbumPhotos.object(at: indexPath.row) as! UIImage)
-            arrSelectedIndexs.removeObject(at: alreadySelected)
-        }else{
-            arrSelectedIndexs.add( indexPath.row as Int)
-            self.showImages(arrAlbumPhotos.object(at: indexPath.row) as! UIImage)
-            changeSelectBtnStatus(1)
-        }
-        collectionView.reloadData()
-    }
-    
+
     
     //MARK: - Delegates
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [String : Any]) {
         let chosenImage = info[UIImagePickerControllerOriginalImage] as! UIImage //2
         showImages(chosenImage)
         dismiss(animated:true, completion: nil) //5
-        changeSelectBtnStatus(1)
     }
     func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
         dismiss(animated: true, completion: nil)
@@ -225,72 +184,6 @@ class HLCustomCameraViewController: BaseViewController, UICollectionViewDelegate
         self.view.addSubview(controlView)
     }
     
-    
-    func fetchAlbumPhotosAndShow(){
-        arrAlbumPhotos = NSMutableArray.init()
-        PHPhotoLibrary.requestAuthorization { (status) in
-            switch status {
-            case .authorized:
-                print("Good to proceed")
-                let fetchOptions = PHFetchOptions()
-                fetchOptions.sortDescriptors = [NSSortDescriptor(key: "creationDate", ascending: false)]
-                if #available(iOS 9.0, *) {
-                    fetchOptions.fetchLimit = 100
-                }
-                fetchOptions.includeAllBurstAssets = false
-                fetchOptions.includeHiddenAssets = false
-                let allPhotos = PHAsset.fetchAssets(with: .image, options: fetchOptions)
-                print("Found \(allPhotos.count) images")
-                let thumbnailSize: CGSize! = self.imgOverlay.frame.size
-                let maxPhotoAlbumSize = 5;
-                let visiblePhotos = min(maxPhotoAlbumSize, allPhotos.count)
-                let option = PHImageRequestOptions()
-                option.isSynchronous = false
-                option.deliveryMode = .opportunistic
-                for i in 0 ..< visiblePhotos{
-                    let asset = allPhotos.object(at: i)
-                    print("Looping \(i)")
-                    self.imageManager.requestImage(for: asset, targetSize: thumbnailSize, contentMode: .aspectFill, options: option, resultHandler: { image, _ in
-                        self.arrAlbumPhotos.add(image! as UIImage)
-                        print("Adding \(i)")
-                    })
-                }
-                self.photoCollectionView.reloadData()
-            case .denied, .restricted:
-                print("Not allowed")
-            case .notDetermined:
-                print("Not determined yet")
-            }
-        }
-    }
-    
-    
-    func changeTakePhotoWithMode(_ mode: Int!){
-        if mode == 0 {
-            albumContainView.isHidden = true
-            viewCamera.isHidden = false
-            selectFromLibraryButton.isHidden = true
-            cameraOptionButton.isHidden = true
-            cameraOptionView.isHidden = false
-            imgOverlay.isHidden = false
-        }else{
-            albumContainView.isHidden = false
-            viewCamera.isHidden = true
-            selectFromLibraryButton.isHidden = false
-            cameraOptionButton.isHidden = false
-            cameraOptionView.isHidden = true
-            imgOverlay.isHidden = true
-        }
-    }
-    func changeSelectBtnStatus(_ mode: Int!) {
-        //if mode == 0 {
-        //    selectFromLibraryButton.isHidden = true
-        //    selectFromCameraButton.isHidden = true
-        //}else{
-            selectFromLibraryButton.isHidden = true
-            selectFromCameraButton.isHidden = false
-        //}
-    }
     func saveToCamera() {
         
         if let videoConnection = stillImageOutput.connection(withMediaType: AVMediaTypeVideo) {

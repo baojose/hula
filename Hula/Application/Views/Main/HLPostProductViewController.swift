@@ -16,14 +16,22 @@ class HLPostProductViewController: BaseViewController, UITextFieldDelegate {
     @IBOutlet var secondImage: UIImageView!
     @IBOutlet var thirdImage: UIImageView!
     @IBOutlet var forthImage: UIImageView!
-    @IBOutlet var cameraBtn: UIButton!
     @IBOutlet var mainScrollView: UIScrollView!
     @IBOutlet var contentView: UIView!
     
     @IBOutlet var productTitleTxtField: UITextField!
     @IBOutlet var publishBtn: UIButton!
+    @IBOutlet weak var cameraButton1: UIButton!
+    @IBOutlet weak var cameraButton2: UIButton!
+    @IBOutlet weak var cameraButton3: UIButton!
+    @IBOutlet weak var cameraButton4: UIButton!
+    @IBOutlet weak var imgFrameView1: UIView!
+    @IBOutlet weak var imgFrameView2: UIView!
+    @IBOutlet weak var imgFrameView3: UIView!
+    @IBOutlet weak var imgFrameView4: UIView!
     
     var arrImageViews: NSMutableArray!
+    var arrImageFrameViews: NSMutableArray!
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -42,10 +50,39 @@ class HLPostProductViewController: BaseViewController, UITextFieldDelegate {
         arrImageViews.add(thirdImage)
         arrImageViews.add(forthImage)
         
+        
+        arrImageFrameViews = NSMutableArray.init(capacity: 4)
+        arrImageFrameViews.add(imgFrameView1)
+        arrImageFrameViews.add(imgFrameView2)
+        arrImageFrameViews.add(imgFrameView3)
+        arrImageFrameViews.add(imgFrameView4)
+        
+        let arrCameraButtons = NSMutableArray.init(capacity: 4)
+        arrCameraButtons.add(cameraButton1)
+        arrCameraButtons.add(cameraButton2)
+        arrCameraButtons.add(cameraButton3)
+        arrCameraButtons.add(cameraButton4)
+        
         if dataManager.newProduct.arrProductPhotos.count > 0 {
             for i in 0 ..< dataManager.newProduct.arrProductPhotos.count{
                 let imgView: UIImageView! = arrImageViews.object(at: i) as! UIImageView
-                imgView.image = dataManager.newProduct.arrProductPhotos.object(at: i) as? UIImage
+                let buttonView: UIButton! = arrCameraButtons.object(at: i) as! UIButton
+                let frameView: UIView! = arrImageFrameViews.object(at: i) as! UIView
+                frameView.isUserInteractionEnabled = true
+                let recognizer = UITapGestureRecognizer()
+                recognizer.addTarget(self, action: #selector(HLPostProductViewController.selectedImageTapped))
+                frameView.addGestureRecognizer(recognizer)
+                if (i == 0){
+                    frameView.backgroundColor = HulaConstants.appMainColor
+                } else {
+                    frameView.backgroundColor = .white
+                }
+                if let selectedImage = dataManager.newProduct.arrProductPhotos.object(at: i) as? UIImage {
+                    imgView.image = selectedImage
+                    buttonView.isHidden = true;
+                } else {
+                    buttonView.isHidden = false;
+                }
             }
         }
     }
@@ -66,6 +103,19 @@ class HLPostProductViewController: BaseViewController, UITextFieldDelegate {
         let tapGesture: UITapGestureRecognizer! = UITapGestureRecognizer.init(target: self, action: #selector(onTapScreen))
         self.view.addGestureRecognizer(tapGesture)
     }
+    
+    func selectedImageTapped(_ sender: UITapGestureRecognizer){
+        print("Touches began")
+        for i in 0 ..< 4{
+            let imgView: UIView! = arrImageFrameViews.object(at: i) as! UIView
+            UIView.animate(withDuration: 0.2, animations: {
+                imgView.backgroundColor = .white
+            })
+        }
+        UIView.animate(withDuration: 0.5, animations: {
+            sender.view?.backgroundColor = HulaConstants.appMainColor
+        })
+    }
     func reDesignView(){
         
     }
@@ -79,6 +129,10 @@ class HLPostProductViewController: BaseViewController, UITextFieldDelegate {
     func onTapScreen(){
         productTitleTxtField.resignFirstResponder()
         mainScrollView.setContentOffset(CGPoint(x: 0.0, y: 0.0), animated: true)
+    }
+    @IBAction func cameraButtonTap(_ sender: Any) {
+        print((sender as AnyObject).tag)
+        self.presentingViewController?.dismiss(animated: true, completion: nil)
     }
     //#MARK - TextField Delegate
     func textFieldShouldBeginEditing(_ textField: UITextField) -> Bool{
