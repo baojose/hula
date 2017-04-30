@@ -23,7 +23,6 @@ class HLCustomCameraViewController: BaseViewController, UIImagePickerControllerD
     @IBOutlet weak var imgOverlay: UIImageView!
     @IBOutlet weak var btnCapture: UIButton!
     
-    @IBOutlet var cameraOptionButton: UIButton!
     @IBOutlet var cameraOptionView: UIView!
     @IBOutlet var selectFromCameraButton: UIButton!
     
@@ -92,7 +91,8 @@ class HLCustomCameraViewController: BaseViewController, UIImagePickerControllerD
     //MARK: - Delegates
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [String : Any]) {
         let chosenImage = info[UIImagePickerControllerOriginalImage] as! UIImage //2
-        showImages(chosenImage)
+        let croppedImage:UIImage = self.commonUtils.cropImage(chosenImage, HulaConstants.product_image_thumb_size)
+        showImages(croppedImage)
         dismiss(animated:true, completion: nil) //5
     }
     func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
@@ -192,8 +192,7 @@ class HLCustomCameraViewController: BaseViewController, UIImagePickerControllerD
                 if let imageData = AVCaptureStillImageOutput.jpegStillImageNSDataRepresentation(CMSampleBuffer) {
                     
                     if let cameraImage = UIImage(data: imageData) {
-                        self.showImages(self.commonUtils.cropImage(cameraImage, self.imgOverlay.frame.size))
-                        //self.imageView1.image = self.commonUtils.cropImage(cameraImage, self.imgOverlay.frame.size)
+                        self.showImages(self.commonUtils.cropImage(cameraImage, HulaConstants.product_image_thumb_size))
                         self.selectFromCameraButton.isHidden = false
                     }
                 }

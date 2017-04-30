@@ -13,6 +13,7 @@ class HulaProduct: NSObject {
     var productId: Int!
     var productName: String!
     var productCategory: String!
+    var productCondition: String!
     var arrProductPhotoLink: NSMutableArray!
     var arrProductPhotos: NSMutableArray!
     var productDescription: String!
@@ -28,6 +29,7 @@ class HulaProduct: NSObject {
         self.productId = -1
         self.productName = ""
         self.productDescription = ""
+        self.productCondition = ""
         self.productCategory = ""
         self.arrProductPhotos = NSMutableArray.init()
         self.arrProductPhotoLink = NSMutableArray.init()

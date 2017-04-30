@@ -15,8 +15,12 @@ struct HulaConstants {
     static let screenHeight = UIScreen.main.bounds.height
     static let appMainColor = UIColor(red: 57.0/255, green: 170.0/255, blue: 164.0/255, alpha: 1.0)
     
+    static let product_max_size = 800.0
+    static let product_image_thumb_size:CGSize = CGSize(width: product_max_size, height: product_max_size)
+    
     // Server API Links
     static let apiURL: String = "http://api.hula.trading/v1/"
+    static let staticServerURL: String = "http://static.hula.trading"
     
     // local storage
     static let userFile: String = "UserData"

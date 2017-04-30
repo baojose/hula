@@ -12,6 +12,7 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
 
     @IBOutlet var productTableView: UITableView!
     var arrayProducts = [] as Array
+    var arrayImagesURL = ["","","",""] as Array
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -95,7 +96,9 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
                 cell.productImage.image = product_image
             }
         } else {
-            commonUtils.loadImageOnView(imageView:cell.productImage, withURL:(product.object(forKey: "image_url") as? String)!)
+            if let mainProductImage = product.object(forKey: "image_url") as? String {
+                commonUtils.loadImageOnView(imageView:cell.productImage, withURL:(mainProductImage))
+            }
         }
         
         if (product.object(forKey: "description") as? String) != nil {
@@ -148,6 +151,10 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
             productTableView.setContentOffset(CGPoint(x: 0.0, y: 0.0), animated: false)
             
             
+            uploadImages()
+            
+            uploadProduct()
+            
             let when = DispatchTime.now() + 1.5 // change 2 to desired number of seconds
             DispatchQueue.main.asyncAfter(deadline: when) {
                 let viewController = self.storyboard?.instantiateViewController(withIdentifier: "completeProductProfilePage") as! HLCompleteProductProfileViewController
@@ -155,6 +162,7 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
             }
         }
     }
+    
     func getUserProducts() {
         //print("Getting user info...")
         if (HulaUser.sharedInstance.userId.characters.count>0){
@@ -174,6 +182,65 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
                     print("Connection error")
                 }
             })
+        }
+    }
+    func uploadProduct() {
+        if (HulaUser.sharedInstance.userId.characters.count>0){
+            let queryURL = HulaConstants.apiURL + "products/"
+            var dataString:String = "title=" + dataManager.newProduct.productName.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)!
+            dataString += "&description=" + dataManager.newProduct.productDescription.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)!
+            dataString += "&condition=" + dataManager.newProduct.productCondition.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)!
+            dataString += "&category_id=" + dataManager.newProduct.productCategory.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)!
+            dataString += "&lat=40"
+            dataString += "&lng=-3"
+            HLDataManager.sharedInstance.httpPost(urlstr: queryURL, postString: dataString, taskCallback: { (ok, json) in
+                if (ok){
+                    DispatchQueue.main.async {
+                        if let dictionary = json as? [Any] {
+                            print(dictionary)
+                        }
+                        self.productTableView.reloadData()
+                    }
+                } else {
+                    // connection error
+                    print("Connection error")
+                }
+            })
+        }
+    }
+    
+    func uploadImages() {
+        //print("Getting user info...")
+        print("Uploading images...")
+        if (HulaUser.sharedInstance.userId.characters.count>0){
+            
+            
+            for i in 0 ..< 4{
+                if ( dataManager.newProduct.arrProductPhotos.count>i ){
+                    if (dataManager.newProduct.arrProductPhotos[i] as? UIImage != nil){
+                        HLDataManager.sharedInstance.uploadImage(dataManager.newProduct.arrProductPhotos[i] as! UIImage, itemPosition:i, taskCallback: { (ok, json) in
+                            if (ok){
+                                print("Uploaded!")
+                                DispatchQueue.main.async {
+                                    if let dictionary = json as? [String: Any] {
+                                        print(dictionary)
+                                        if let filePath:String = dictionary["path"] as? String {
+                                            
+                                            if let pos:Int = dictionary["position"] as? Int {
+                                                self.arrayImagesURL[pos] = HulaConstants.staticServerURL + filePath
+                                                HLDataManager.sharedInstance.newProduct.arrProductPhotoLink[pos] = HulaConstants.staticServerURL + filePath
+                                            }
+                                        }
+                                    }
+                                }
+                            } else {
+                                // connection error
+                                print("Connection error")
+                            }
+                        });
+                    }
+                }
+            }
         }
     }
     
