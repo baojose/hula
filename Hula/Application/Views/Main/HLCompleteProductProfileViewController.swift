@@ -27,6 +27,7 @@ class HLCompleteProductProfileViewController: BaseViewController, UIScrollViewDe
     @IBOutlet var perkMarkLineLabel: UILabel!
     @IBOutlet var perkMarkImage: UIImageView!
     
+    var productCondition:String = "new"
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -86,6 +87,7 @@ class HLCompleteProductProfileViewController: BaseViewController, UIScrollViewDe
     }
     func changeConditionState(_ mode: Int!){
         if mode == 10 {
+            productCondition = "new"
             conditionNewBtn.backgroundColor = HulaConstants.appMainColor
             conditionNewBtn.setTitleColor(UIColor.white, for: UIControlState.normal)
             commonUtils.setRoundedRectBorderButton(conditionNewBtn, 0.0, UIColor.clear, conditionNewBtn.frame.size.height / 2.0)
@@ -93,6 +95,7 @@ class HLCompleteProductProfileViewController: BaseViewController, UIScrollViewDe
             conditionUsedBtn.setTitleColor(HulaConstants.appMainColor, for: UIControlState.normal)
             commonUtils.setRoundedRectBorderButton(conditionUsedBtn, 1.0, HulaConstants.appMainColor, conditionUsedBtn.frame.size.height / 2.0)
         }else if mode == 20{
+            productCondition = "used"
             conditionUsedBtn.backgroundColor = HulaConstants.appMainColor
             conditionUsedBtn.setTitleColor(UIColor.white, for: UIControlState.normal)
             commonUtils.setRoundedRectBorderButton(conditionUsedBtn, 0.0, UIColor.clear, conditionUsedBtn.frame.size.height / 2.0)
@@ -128,7 +131,8 @@ class HLCompleteProductProfileViewController: BaseViewController, UIScrollViewDe
     }
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath){
         let category : NSDictionary = dataManager.arrCategories.object(at: indexPath.row) as! NSDictionary
-        dataManager.newProduct.productCategory = category.object(forKey: "name") as! String
+        print(category)
+        dataManager.newProduct.productCategory = category.object(forKey: "_id") as! String
         
         UIView.animate(withDuration: 0.3, animations: {
             self.perkContainView.frame.origin.x = 0
@@ -155,7 +159,7 @@ class HLCompleteProductProfileViewController: BaseViewController, UIScrollViewDe
     func changeDoneBtnState(_ string: String){
         if string.characters.count != 0  {
             doneBtn.isEnabled = true
-            print("Is enabled")
+            //print("Is enabled")
         }else{
             doneBtn.isEnabled = false
         }
@@ -163,10 +167,15 @@ class HLCompleteProductProfileViewController: BaseViewController, UIScrollViewDe
     
     @IBAction func doneBtnPRessed(_ sender: Any) {
         print("Complete button pressed")
-        dataManager.newProduct.productDescription = desciptionTxtField.text
-        dataManager.uploadMode = false
-        NotificationCenter.default.post(name: NSNotification.Name(rawValue: "uploadModeUpdateDesign"), object: nil)
-        self.dismiss(animated: true, completion: nil)
+        if (dataManager.newProduct.arrProductPhotoLink.count>0){
+            dataManager.newProduct.productDescription = desciptionTxtField.text
+            dataManager.newProduct.productCondition = productCondition
+            dataManager.uploadMode = true
+            NotificationCenter.default.post(name: NSNotification.Name(rawValue: "uploadModeUpdateDesign"), object: nil)
+            self.dismiss(animated: true, completion: nil)
+        } else {
+            print("Images still uploading...")
+        }
     }
     
 }

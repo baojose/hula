@@ -10,7 +10,7 @@ import UIKit
 
 class HulaProduct: NSObject {
     
-    var productId: Int!
+    var productId: String!
     var productName: String!
     var productCategory: String!
     var productCondition: String!
@@ -26,7 +26,7 @@ class HulaProduct: NSObject {
     }
     override init() {
         super.init()
-        self.productId = -1
+        self.productId = ""
         self.productName = ""
         self.productDescription = ""
         self.productCondition = ""

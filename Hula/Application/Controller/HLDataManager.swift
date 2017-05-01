@@ -90,7 +90,7 @@ class HLDataManager: NSObject {
         //print("Login in progress...")
         let queryURL = HulaConstants.apiURL + "authenticate"
         var loginSuccess = false;
-        httpPost(urlstr: queryURL, postString: "email="+email+"&pass="+pass, taskCallback: { (ok, json) in
+        httpPost(urlstr: queryURL, postString: "email="+email+"&pass="+pass, isPut: false, taskCallback: { (ok, json) in
             
             //print("done")
             //print(ok)
@@ -129,7 +129,7 @@ class HLDataManager: NSObject {
         //print("Login in progress...")
         let queryURL = HulaConstants.apiURL + "signup"
         var signupSuccess = false;
-        httpPost(urlstr: queryURL, postString: "email="+email+"&pass="+pass+"&name="+nick+"&nick="+nick, taskCallback: { (ok, json) in
+        httpPost(urlstr: queryURL, postString: "email="+email+"&pass="+pass+"&name="+nick+"&nick="+nick, isPut: false, taskCallback: { (ok, json) in
             
             //print("done")
             //print(ok)
@@ -141,7 +141,7 @@ class HLDataManager: NSObject {
                         // access individual value in dictionary
                         user.token = token
                         user.userId = dictionary["userId"] as? String
-                        print(token)
+                        //print(token)
                         signupSuccess = true;
                         self.writeUserData()
                     }
@@ -184,15 +184,22 @@ class HLDataManager: NSObject {
         task.resume()
     }
 
-    func httpPost(urlstr:String, postString:String, taskCallback: @escaping (Bool, Any?) -> ()) {
+    func httpPost(urlstr:String, postString:String, isPut: Bool, taskCallback: @escaping (Bool, Any?) -> ()) {
         let url = URL(string: urlstr)
         var request = URLRequest(url: url!)
-        request.httpMethod = "POST"
+        if (isPut){
+            request.httpMethod = "PUT"
+        } else {
+            request.httpMethod = "POST"
+        }
+        request.addValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Content-Type") //Optional
         request.httpBody = postString.data(using: .utf8)
         let user = HulaUser.sharedInstance
         if (user.token.characters.count>10){
             request.addValue(user.token, forHTTPHeaderField: "x-access-token")
         }
+        print(request.httpBody!)
+        print(request.httpMethod!)
         let task = URLSession.shared.dataTask(with: request) { data, response, error in
             guard let data = data, error == nil else {                                                 // check for fundamental networking error
                 print(error!)
