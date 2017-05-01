@@ -85,10 +85,11 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         
         let cell = tableView.dequeueReusableCell(withIdentifier: "myProductTableViewCell") as! HLMyProductTableViewCell
-        cell.productEditBtn.tag = indexPath.row
+        let order_sorted = self.arrayProducts.count - indexPath.row - 1
+        cell.productEditBtn.tag = order_sorted
         cell.productEditBtn.addTarget(self, action: #selector(goEditProductPage), for: .touchUpInside)
         
-        let product : NSDictionary = self.arrayProducts[self.arrayProducts.count - indexPath.row - 1] as! NSDictionary
+        let product : NSDictionary = self.arrayProducts[order_sorted] as! NSDictionary
         //print(product)
         if let productTitle = product.object(forKey: "title") as? String {
             cell.productDescription.text = productTitle
