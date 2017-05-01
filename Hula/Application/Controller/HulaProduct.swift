@@ -10,9 +10,10 @@ import UIKit
 
 class HulaProduct: NSObject {
     
-    var productId: Int!
+    var productId: String!
     var productName: String!
     var productCategory: String!
+    var productCondition: String!
     var arrProductPhotoLink: NSMutableArray!
     var arrProductPhotos: NSMutableArray!
     var productDescription: String!
@@ -25,9 +26,10 @@ class HulaProduct: NSObject {
     }
     override init() {
         super.init()
-        self.productId = -1
+        self.productId = ""
         self.productName = ""
         self.productDescription = ""
+        self.productCondition = ""
         self.productCategory = ""
         self.arrProductPhotos = NSMutableArray.init()
         self.arrProductPhotoLink = NSMutableArray.init()

@@ -12,6 +12,7 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
 
     @IBOutlet var productTableView: UITableView!
     var arrayProducts = [] as Array
+    var arrayImagesURL = ["","","",""] as Array
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -87,19 +88,25 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
         cell.productEditBtn.tag = indexPath.row
         cell.productEditBtn.addTarget(self, action: #selector(goEditProductPage), for: .touchUpInside)
         
-        let product : NSDictionary = self.arrayProducts[indexPath.row] as! NSDictionary
-        print(product)
-        cell.productDescription.text = product.object(forKey: "title") as? String
+        let product : NSDictionary = self.arrayProducts[self.arrayProducts.count - indexPath.row - 1] as! NSDictionary
+        //print(product)
+        if let productTitle = product.object(forKey: "title") as? String {
+            cell.productDescription.text = productTitle
+        } else {
+            cell.productDescription.text = "Untitled product"
+        }
         if (product.object(forKey: "image_url") as? String == ""){
             if let product_image = product.object(forKey: "image") as? UIImage {
                 cell.productImage.image = product_image
             }
         } else {
-            commonUtils.loadImageOnView(imageView:cell.productImage, withURL:(product.object(forKey: "image_url") as? String)!)
+            if let mainProductImage = product.object(forKey: "image_url") as? String {
+                commonUtils.loadImageOnView(imageView:cell.productImage, withURL:(mainProductImage))
+            }
         }
         
         if (product.object(forKey: "description") as? String) != nil {
-            print("Hidden")
+            //print("Hidden")
             cell.warningView.isHidden = true
         } else {
             cell.warningView.isHidden = false
@@ -121,7 +128,7 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
 
         
         
-        print("button pressed")
+        //print("button pressed")
         dataManager.uploadMode = true
         dataManager.newProduct = HulaProduct.init()
         let cameraViewController = self.storyboard?.instantiateViewController(withIdentifier: "customCameraPage") as! HLCustomCameraViewController
@@ -139,22 +146,28 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
             newProduct["title"] = dataManager.newProduct.productName as AnyObject
             newProduct["image"] = dataManager.newProduct.arrProductPhotos[0] as AnyObject
             newProduct["image_url"] = "" as AnyObject
+            newProduct["description"] = dataManager.newProduct.productDescription as AnyObject
+            newProduct["condition"] = dataManager.newProduct.productCondition as AnyObject
             
-            self.arrayProducts.insert(newProduct, at: 0)
-            
-            print(self.arrayProducts)
-            
+            if (HLDataManager.sharedInstance.newProduct.productId.characters.count>0){
+                self.arrayProducts[self.arrayProducts.count  - 1] = newProduct
+                updateProduct()
+            } else {
+                self.arrayProducts.append(newProduct)
+                uploadImages()
+                uploadProduct()
+                let when = DispatchTime.now() + 1.5 // change 2 to desired number of seconds
+                DispatchQueue.main.asyncAfter(deadline: when) {
+                    let viewController = self.storyboard?.instantiateViewController(withIdentifier: "completeProductProfilePage") as! HLCompleteProductProfileViewController
+                    self.present(viewController, animated: true)
+                }
+            }
             productTableView.reloadData()
             productTableView.setContentOffset(CGPoint(x: 0.0, y: 0.0), animated: false)
             
-            
-            let when = DispatchTime.now() + 1.5 // change 2 to desired number of seconds
-            DispatchQueue.main.asyncAfter(deadline: when) {
-                let viewController = self.storyboard?.instantiateViewController(withIdentifier: "completeProductProfilePage") as! HLCompleteProductProfileViewController
-                self.present(viewController, animated: true)
-            }
         }
     }
+    
     func getUserProducts() {
         //print("Getting user info...")
         if (HulaUser.sharedInstance.userId.characters.count>0){
@@ -176,10 +189,104 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
             })
         }
     }
+    func uploadProduct() {
+        print("Saving product...")
+        if (HulaUser.sharedInstance.userId.characters.count>0){
+            let queryURL = HulaConstants.apiURL + "products/"
+            let dataString:String = updateProductDataString()
+            HLDataManager.sharedInstance.httpPost(urlstr: queryURL, postString: dataString, isPut: false, taskCallback: { (ok, json) in
+                if (ok){
+                    DispatchQueue.main.async {
+                        print("Saved")
+                        if let dictionary = json as? [String:Any] {
+                            print(dictionary)
+                            if let product_id = dictionary["product_id"] as? String {
+                                HLDataManager.sharedInstance.newProduct.productId = product_id
+                            }
+                        }
+                        self.productTableView.reloadData()
+                    }
+                } else {
+                    // connection error
+                    print("Connection error")
+                }
+            })
+        }
+    }
+    func updateProduct() {
+        print("Updating product...")
+        if (HLDataManager.sharedInstance.newProduct.productId.characters.count>0){
+            let queryURL = HulaConstants.apiURL + "products/" + HLDataManager.sharedInstance.newProduct.productId
+            let dataString:String = updateProductDataString()
+            print(dataString)
+            HLDataManager.sharedInstance.httpPost(urlstr: queryURL, postString: dataString, isPut: true, taskCallback: { (ok, json) in
+                if (ok){
+                    DispatchQueue.main.async {
+                        if let dictionary = json as? [String:Any] {
+                            print(dictionary)
+                        }
+                        HLDataManager.sharedInstance.uploadMode = false
+                        self.productTableView.reloadData()
+                    }
+                } else {
+                    // connection error
+                    print("Connection error")
+                }
+            })
+        }
+    }
+    
+    func updateProductDataString() -> String{
+        print(HLDataManager.sharedInstance.newProduct.arrProductPhotoLink)
+        print(self.arrayImagesURL)
+        let product_images_array = dataManager.newProduct.arrProductPhotoLink.componentsJoined(by: ",")
+        var dataString:String = "title=" + dataManager.newProduct.productName.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)!
+        dataString += "&description=" + dataManager.newProduct.productDescription.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)!
+        dataString += "&condition=" + dataManager.newProduct.productCondition.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)!
+        dataString += "&category_id=" + dataManager.newProduct.productCategory.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)!
+        dataString += "&images=" + product_images_array.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)!
+        dataString += "&lat=40"
+        dataString += "&lng=-3"
+        return dataString
+    }
+    
+    func uploadImages() {
+        //print("Getting user info...")
+        print("Uploading images...")
+        if (HulaUser.sharedInstance.userId.characters.count>0){
+            for i in 0 ..< 4{
+                if ( dataManager.newProduct.arrProductPhotos.count>i ){
+                    if (dataManager.newProduct.arrProductPhotos[i] as? UIImage != nil){
+                        dataManager.uploadImage(dataManager.newProduct.arrProductPhotos[i] as! UIImage, itemPosition:i, taskCallback: { (ok, json) in
+                            if (ok){
+                                print("Uploaded!")
+                                DispatchQueue.main.async {
+                                    if let dictionary = json as? [String: Any] {
+                                        print(dictionary)
+                                        if let filePath:String = dictionary["path"] as? String {
+                                            print(filePath)
+                                            if let pos = dictionary["position"] as? String {
+                                                print(pos)
+                                                self.arrayImagesURL[Int(pos)!] = HulaConstants.staticServerURL + filePath
+                                                HLDataManager.sharedInstance.newProduct.arrProductPhotoLink = self.arrayImagesURL as! NSMutableArray
+                                                print(self.arrayImagesURL[Int(pos)!])
+                                            }
+                                        }
+                                    }
+                                }
+                            } else {
+                                // connection error
+                                print("Connection error")
+                            }
+                        });
+                    }
+                }
+            }
+        }
+    }
     
     func goEditProductPage(sender: UIButton){
         //print(sender.tag)
-        
         let productToDisplay : NSDictionary = self.arrayProducts[sender.tag] as! NSDictionary
         let viewController = self.storyboard?.instantiateViewController(withIdentifier: "editProductMainPage") as! HLEditProductMainViewController
         viewController.productToDisplay = productToDisplay

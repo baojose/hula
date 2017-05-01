@@ -15,7 +15,7 @@ class HLCompleteProductProfileViewController: BaseViewController, UIScrollViewDe
     @IBOutlet var categoryTableView: UITableView!
     @IBOutlet var perkContainView: UIView!
     @IBOutlet var perkScrollView: UIScrollView!
-    @IBOutlet var addBtn: UIButton!
+    @IBOutlet weak var doneBtn: HLBouncingButton!
     @IBOutlet var desciptionTxtField: UITextField!
     @IBOutlet var conditionNewBtn: UIButton!
     @IBOutlet var conditionUsedBtn: UIButton!
@@ -27,6 +27,7 @@ class HLCompleteProductProfileViewController: BaseViewController, UIScrollViewDe
     @IBOutlet var perkMarkLineLabel: UILabel!
     @IBOutlet var perkMarkImage: UIImageView!
     
+    var productCondition:String = "new"
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -43,19 +44,19 @@ class HLCompleteProductProfileViewController: BaseViewController, UIScrollViewDe
     }
     func initView(){
         pageTitleLabel.attributedText = commonUtils.attributedStringWithTextSpacing(pageTitleLabel.text!, 2.33)
-        categoryTableView.frame = CGRect(x: 0.0, y: 0.0, width: mainScrollView.frame.size.width, height: mainScrollView.frame.size.height)
-        perkContainView.frame = CGRect(x: mainScrollView.frame.size.width, y: 0.0, width: mainScrollView.frame.size.width, height: mainScrollView.frame.size.height)
-        contentView.frame = CGRect(x: 0.0, y: 0, width: 2.0 * mainScrollView.frame.size.width, height: mainScrollView.frame.size.height)
+        categoryTableView.frame = CGRect(x: 0.0, y: 0.0, width: mainScrollView.frame.size.width, height: self.view.frame.size.height)
+        perkContainView.frame = CGRect(x: mainScrollView.frame.size.width, y: 0.0, width: mainScrollView.frame.size.width, height: self.view.frame.size.height)
+        contentView.frame = CGRect(x: 0.0, y: 0, width: mainScrollView.frame.size.width, height: self.view.frame.size.height)
         mainScrollView.contentSize = contentView.frame.size
         mainScrollView.setContentOffset(CGPoint(x:0.0, y:0.0), animated: false)
         self.changeMarkState(0)
         self.changeConditionState(conditionNewBtn.tag)
         
-        addBtn.setBackgroundImage(UIImage.init(named: "img_publish_btn_bg_enabled"), for: UIControlState.normal)
-        addBtn.setBackgroundImage(UIImage.init(named: "img_publish_btn_bg_disabled"), for: UIControlState.disabled)
-        addBtn.setTitleColor(UIColor.lightGray, for: UIControlState.disabled)
-        addBtn.setTitleColor(UIColor.white, for: UIControlState.normal)
-        
+        doneBtn.setBackgroundImage(UIImage.init(named: "img_publish_btn_bg_enabled"), for: UIControlState.normal)
+        doneBtn.setBackgroundImage(UIImage.init(named: "img_publish_btn_bg_disabled"), for: UIControlState.disabled)
+        doneBtn.setTitleColor(UIColor.lightGray, for: UIControlState.disabled)
+        doneBtn.setTitleColor(UIColor.white, for: UIControlState.normal)
+        doneBtn.isUserInteractionEnabled = true
         desciptionTxtField.addTarget(self, action: #selector(textchange(_:)), for: UIControlEvents.editingChanged)
         let tapGesture: UITapGestureRecognizer! = UITapGestureRecognizer.init(target: self, action: #selector(onTapScreen))
         perkContainView.addGestureRecognizer(tapGesture)
@@ -86,6 +87,7 @@ class HLCompleteProductProfileViewController: BaseViewController, UIScrollViewDe
     }
     func changeConditionState(_ mode: Int!){
         if mode == 10 {
+            productCondition = "new"
             conditionNewBtn.backgroundColor = HulaConstants.appMainColor
             conditionNewBtn.setTitleColor(UIColor.white, for: UIControlState.normal)
             commonUtils.setRoundedRectBorderButton(conditionNewBtn, 0.0, UIColor.clear, conditionNewBtn.frame.size.height / 2.0)
@@ -93,6 +95,7 @@ class HLCompleteProductProfileViewController: BaseViewController, UIScrollViewDe
             conditionUsedBtn.setTitleColor(HulaConstants.appMainColor, for: UIControlState.normal)
             commonUtils.setRoundedRectBorderButton(conditionUsedBtn, 1.0, HulaConstants.appMainColor, conditionUsedBtn.frame.size.height / 2.0)
         }else if mode == 20{
+            productCondition = "used"
             conditionUsedBtn.backgroundColor = HulaConstants.appMainColor
             conditionUsedBtn.setTitleColor(UIColor.white, for: UIControlState.normal)
             commonUtils.setRoundedRectBorderButton(conditionUsedBtn, 0.0, UIColor.clear, conditionUsedBtn.frame.size.height / 2.0)
@@ -103,21 +106,15 @@ class HLCompleteProductProfileViewController: BaseViewController, UIScrollViewDe
     }
     //#MARK: - TableViewDelegate
     func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat{
-        return 55.0
+        return 0
     }
     func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView?{
         
-        let view = UIView(frame: CGRect(x: 0, y: 0, width: tableView.frame.size.width, height: tableView.sectionHeaderHeight))
-        
-        let lineLabel = UILabel(frame: CGRect(x: 0, y: tableView.sectionHeaderHeight - 1, width: tableView.frame.size.width, height: 1))
-        lineLabel.backgroundColor = UIColor.init(red: 236.0/255, green: 236.0/255, blue: 236.0/255, alpha: 1.0)
-        view.addSubview(lineLabel)
-        view.backgroundColor = UIColor.white
-        
+        let view = UIView(frame: CGRect(x: 0, y: 0, width: tableView.frame.size.width, height: 0))
         return view
     }
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat{
-        return 89.0
+        return 60.0
     }
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return dataManager.arrCategories.count
@@ -134,14 +131,15 @@ class HLCompleteProductProfileViewController: BaseViewController, UIScrollViewDe
     }
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath){
         let category : NSDictionary = dataManager.arrCategories.object(at: indexPath.row) as! NSDictionary
-        dataManager.newProduct.productCategory = category.object(forKey: "name") as! String
+        print(category)
+        dataManager.newProduct.productCategory = category.object(forKey: "_id") as! String
         
-        mainScrollView.setContentOffset(CGPoint(x:HulaConstants.screenWidth, y:0), animated: true)
-    }
-    //#MARK - UIScrollView Delegate
-    func scrollViewDidScroll(_ scrollView: UIScrollView){
-        let posX: Int! = Int(mainScrollView.contentOffset.x / mainScrollView.frame.size.width)
-        self.changeMarkState(posX)
+        UIView.animate(withDuration: 0.3, animations: {
+            self.perkContainView.frame.origin.x = 0
+            self.categoryTableView.frame.origin.x = -self.mainScrollView.frame.size.width
+        })
+        //mainScrollView.setContentOffset(CGPoint(x:HulaConstants.screenWidth, y:0), animated: true)
+        self.changeMarkState(1)
     }
     func onTapScreen(){
         desciptionTxtField.resignFirstResponder()
@@ -152,23 +150,32 @@ class HLCompleteProductProfileViewController: BaseViewController, UIScrollViewDe
         return true
     }
     func textchange(_ textField:UITextField) {
-        self.changeAddBtnState(textField.text!)
+        self.changeDoneBtnState(textField.text!)
     }
     func textFieldShouldReturn(_ textField: UITextField) -> Bool{
         perkScrollView.setContentOffset(CGPoint(x: 0.0, y: 0.0), animated: true)
         return textField.resignFirstResponder()
     }
-    func changeAddBtnState(_ string: String){
-        if dataManager.newProduct.productCategory.characters.count != 0 && string.characters.count != 0  {
-            addBtn.isEnabled = true
+    func changeDoneBtnState(_ string: String){
+        if string.characters.count != 0  {
+            doneBtn.isEnabled = true
+            //print("Is enabled")
         }else{
-            addBtn.isEnabled = false
+            doneBtn.isEnabled = false
         }
     }
-    @IBAction func completeProfile(_ sender: Any) {
-        dataManager.newProduct.productDescription = desciptionTxtField.text
-        dataManager.uploadMode = false
-        NotificationCenter.default.post(name: NSNotification.Name(rawValue: "uploadModeUpdateDesign"), object: nil)
-        self.dismiss(animated: true, completion: nil)
+    
+    @IBAction func doneBtnPRessed(_ sender: Any) {
+        print("Complete button pressed")
+        if (dataManager.newProduct.arrProductPhotoLink.count>0){
+            dataManager.newProduct.productDescription = desciptionTxtField.text
+            dataManager.newProduct.productCondition = productCondition
+            dataManager.uploadMode = true
+            NotificationCenter.default.post(name: NSNotification.Name(rawValue: "uploadModeUpdateDesign"), object: nil)
+            self.dismiss(animated: true, completion: nil)
+        } else {
+            print("Images still uploading...")
+        }
     }
+    
 }
