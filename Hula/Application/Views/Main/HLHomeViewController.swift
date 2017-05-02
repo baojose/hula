@@ -221,19 +221,13 @@ class HLHomeViewController: BaseViewController, UIScrollViewDelegate, UITextFiel
         //print("Getting keywords...")
         if (kw.characters.count > 1){
             let encodedKw = kw.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)
-            let queryURL = HulaConstants.apiURL + "search/auto/" + encodedKw!
+            let queryURL = HulaConstants.apiURL + "search/auto/" + encodedKw!   
             //print(queryURL)
             HLDataManager.sharedInstance.httpGet(urlstr: queryURL, taskCallback: { (ok, json) in
                 self.filteredKeywordsArray.removeAllObjects()
                 self.filteredKeywordsArray.add(kw)
                 if (ok){
                     DispatchQueue.main.async {
-                        if let dictionary = json as? [String:Any] {
-                            print(dictionary)
-                            if let product_id = dictionary["product_id"] as? String {
-                                HLDataManager.sharedInstance.newProduct.productId = product_id
-                            }
-                        }
                         if let dictionary = json as? [String:Any] {
                             //print(dictionary)
                             if let keys = dictionary["keywords"] as?  [Any] {
