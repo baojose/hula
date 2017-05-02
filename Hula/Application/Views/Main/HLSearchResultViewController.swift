@@ -103,12 +103,19 @@ class HLSearchResultViewController: BaseViewController, UITableViewDataSource, U
     
     // Custom functions for ViewController
     func getSearchResults() {
-        var category_id = categoryToSearch.object(forKey: "_id") as? String
-        if (category_id == nil){
-            category_id = ""
+        var queryURL: String = ""
+        if self.searchByCategory {
+            var category_id = categoryToSearch.object(forKey: "_id") as? String
+            if (category_id == nil){
+                category_id = ""
+            }
+            queryURL = HulaConstants.apiURL + "products/category/" + category_id!
+        } else {
+            
+            let encodedKw = keywordToSearch.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)
+            queryURL = HulaConstants.apiURL + "products/search/" + encodedKw!
         }
-        let queryURL = HulaConstants.apiURL + "products/category/" + category_id!
-        //print(queryURL)
+        print(queryURL)
         HLDataManager.sharedInstance.httpGet(urlstr: queryURL, taskCallback: { (ok, json) in
             if (ok){
                 DispatchQueue.main.async {

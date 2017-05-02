@@ -156,6 +156,7 @@ class HLDataManager: NSObject {
     
     func httpGet(urlstr:String, taskCallback: @escaping (Bool, Any?) -> ()) {
         let url = URL(string: urlstr)
+        print(url!)
         var request:URLRequest = URLRequest(url: url!)
         
         let user = HulaUser.sharedInstance
@@ -176,7 +177,7 @@ class HLDataManager: NSObject {
                 taskCallback(false, nil)
                 return
             }
-            
+            print(data)
             let json = try! JSONSerialization.jsonObject(with: data, options: [])
             taskCallback(true, json as AnyObject?)
         }

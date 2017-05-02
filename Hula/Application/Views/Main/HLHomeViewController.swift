@@ -112,11 +112,18 @@ class HLHomeViewController: BaseViewController, UIScrollViewDelegate, UITextFiel
     }
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath){
         let searchResultViewController = self.storyboard?.instantiateViewController(withIdentifier: "searchResultPage") as! HLSearchResultViewController
-        
-        searchResultViewController.searchByCategory = true
-        let category : NSDictionary = dataManager.arrCategories.object(at: indexPath.row) as! NSDictionary
-        searchResultViewController.categoryToSearch = category
-        searchResultViewController.keywordToSearch = ""
+        if (isSearching){
+            
+            searchResultViewController.searchByCategory = false
+            let category : NSDictionary = [:]
+            searchResultViewController.categoryToSearch = category
+            searchResultViewController.keywordToSearch = self.filteredKeywordsArray.object(at: indexPath.row) as! String
+        } else {
+            searchResultViewController.searchByCategory = true
+            let category : NSDictionary = dataManager.arrCategories.object(at: indexPath.row) as! NSDictionary
+            searchResultViewController.categoryToSearch = category
+            searchResultViewController.keywordToSearch = ""
+        }
         
         self.navigationController?.pushViewController(searchResultViewController, animated: true)
     }
@@ -212,13 +219,13 @@ class HLHomeViewController: BaseViewController, UIScrollViewDelegate, UITextFiel
     
     func getKeywords(_ kw:String) {
         //print("Getting keywords...")
-        if (HulaUser.sharedInstance.userId.characters.count>0){
-            let queryURL = HulaConstants.apiURL + "search/auto/" + kw
+        if (kw.characters.count > 1){
+            let encodedKw = kw.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)
+            let queryURL = HulaConstants.apiURL + "search/auto/" + encodedKw!
             //print(queryURL)
             HLDataManager.sharedInstance.httpGet(urlstr: queryURL, taskCallback: { (ok, json) in
-                //print("Done!")
-                //print(json)
                 self.filteredKeywordsArray.removeAllObjects()
+                self.filteredKeywordsArray.add(kw)
                 if (ok){
                     DispatchQueue.main.async {
                         if let dictionary = json as? [String:Any] {
@@ -231,12 +238,12 @@ class HLHomeViewController: BaseViewController, UIScrollViewDelegate, UITextFiel
                             //print(dictionary)
                             if let keys = dictionary["keywords"] as?  [Any] {
                                 for i in 0 ..< keys.count {
-                                    let kw = keys[i] as! [String:Any]
-                                    self.filteredKeywordsArray.add(kw["keyword"] as! String)
+                                    let nkw = keys[i] as! [String:Any]
+                                    let nkw_str = nkw["keyword"] as! String
+                                    if (nkw_str != kw){
+                                        self.filteredKeywordsArray.add(nkw_str)
+                                    }
                                 }
-                                //self.filteredKeywordsArray = dictionary as! NSMutableArray
-                                //print(self.filteredKeywordsArray)
-                            
                             }
                         }
                         if self.filteredKeywordsArray.count == 0 {
