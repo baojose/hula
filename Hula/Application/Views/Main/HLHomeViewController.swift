@@ -19,7 +19,7 @@ class HLHomeViewController: BaseViewController, UIScrollViewDelegate, UITextFiel
 
     var isSearching: Bool!
     var productArray: NSMutableArray!
-    var filteredProductArray: NSMutableArray!
+    var filteredKeywordsArray: NSMutableArray!
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -34,7 +34,7 @@ class HLHomeViewController: BaseViewController, UIScrollViewDelegate, UITextFiel
     func initData() {
         isSearching = false
         productArray = NSMutableArray.init()
-        filteredProductArray = NSMutableArray.init()
+        filteredKeywordsArray = NSMutableArray.init()
         for _ in 0 ..< 5 {
             productArray.add("Camera")
         }
@@ -87,7 +87,7 @@ class HLHomeViewController: BaseViewController, UIScrollViewDelegate, UITextFiel
     }
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         if self.isSearching == true {
-            return filteredProductArray.count
+            return filteredKeywordsArray.count
         }else{
             return dataManager.arrCategories.count
         }
@@ -96,8 +96,8 @@ class HLHomeViewController: BaseViewController, UIScrollViewDelegate, UITextFiel
         
         if self.isSearching == true {
             let cell = tableView.dequeueReusableCell(withIdentifier: "homeSearchCell") as! HLHomeSearchTableViewCell
-            let productName: String = filteredProductArray.object(at: indexPath.row) as! String
-            cell.productMainNameLabel.attributedText = commonUtils.attributedStringWithTextSpacing(productName, CGFloat(1.0))
+            let keyword: String = filteredKeywordsArray.object(at: indexPath.row) as! String
+            cell.productMainNameLabel.attributedText = commonUtils.attributedStringWithTextSpacing(keyword, CGFloat(1.0))
             return cell
         }else{
             let cell = tableView.dequeueReusableCell(withIdentifier: "homeCategoryCell") as! HLHomeCategoryTableViewCell
@@ -199,24 +199,60 @@ class HLHomeViewController: BaseViewController, UIScrollViewDelegate, UITextFiel
     func searchProduct(_ searchString: String) {
         if isSearching == true {
             if searchString.characters.count == 0 {
-                filteredProductArray.removeAllObjects()
+                filteredKeywordsArray.removeAllObjects()
             }else{
-                filteredProductArray.removeAllObjects()
-                for i in 0 ..< productArray.count {
-                    let productName:String = productArray.object(at: i) as! String
-                    if productName.lowercased().range(of: searchString.lowercased()) != nil {
-                        filteredProductArray.add(productName)
-                    }
-                }
-                if filteredProductArray.count == 0 {
-                    noResultView.isHidden = false
-                    tableContainView.isHidden = true
-                }else{
-                    noResultView.isHidden = true
-                    tableContainView.isHidden = false
-                }
+                
+                getKeywords(searchString.lowercased())
+                
             }
         }
         productTableView.reloadData()
+    }
+    
+    
+    func getKeywords(_ kw:String) {
+        //print("Getting keywords...")
+        if (HulaUser.sharedInstance.userId.characters.count>0){
+            let queryURL = HulaConstants.apiURL + "search/auto/" + kw
+            //print(queryURL)
+            HLDataManager.sharedInstance.httpGet(urlstr: queryURL, taskCallback: { (ok, json) in
+                //print("Done!")
+                //print(json)
+                self.filteredKeywordsArray.removeAllObjects()
+                if (ok){
+                    DispatchQueue.main.async {
+                        if let dictionary = json as? [String:Any] {
+                            print(dictionary)
+                            if let product_id = dictionary["product_id"] as? String {
+                                HLDataManager.sharedInstance.newProduct.productId = product_id
+                            }
+                        }
+                        if let dictionary = json as? [String:Any] {
+                            //print(dictionary)
+                            if let keys = dictionary["keywords"] as?  [Any] {
+                                for i in 0 ..< keys.count {
+                                    let kw = keys[i] as! [String:Any]
+                                    self.filteredKeywordsArray.add(kw["keyword"] as! String)
+                                }
+                                //self.filteredKeywordsArray = dictionary as! NSMutableArray
+                                //print(self.filteredKeywordsArray)
+                            
+                            }
+                        }
+                        if self.filteredKeywordsArray.count == 0 {
+                            self.noResultView.isHidden = false
+                            self.tableContainView.isHidden = true
+                        }else{
+                            self.noResultView.isHidden = true
+                            self.tableContainView.isHidden = false
+                        }
+                        self.productTableView.reloadData()
+                    }
+                } else {
+                    // connection error
+                    print("Connection error")
+                }
+            })
+        }
     }
 }
