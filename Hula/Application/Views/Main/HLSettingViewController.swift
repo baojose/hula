@@ -72,6 +72,7 @@ class HLSettingViewController: BaseViewController {
     // IB Actions
     @IBAction func userLogout(_ sender: Any) {
         HLDataManager.sharedInstance.logout()
+        self.goBackToPreviousPage(sender)
     }
     
     // Custom functions for ViewController

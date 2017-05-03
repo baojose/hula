@@ -58,5 +58,16 @@ class HulaUser: NSObject {
         }
         return isIncomplete
     }
+    func logout() {
+        self.userId = ""
+        self.userNick = ""
+        self.userName = ""
+        self.userEmail = ""
+        self.userPhotoURL = ""
+        self.userLocationName = ""
+        self.userBio = ""
+        self.token = ""
+        self.location = CGPoint(x:0, y:0)
+    }
     
 }

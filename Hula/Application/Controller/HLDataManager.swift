@@ -121,6 +121,7 @@ class HLDataManager: NSObject {
         let user = HulaUser.sharedInstance
         user.token = ""
         user.userId = ""
+        user.logout()
         self.writeUserData()
     }
     
@@ -364,6 +365,7 @@ class HLDataManager: NSObject {
         
         if let dict = myDict {
             //loading values
+            
             let user = HulaUser.sharedInstance
             
             user.token = dict.object(forKey: "token")! as! String
@@ -391,8 +393,6 @@ class HLDataManager: NSObject {
                         self.arrNotifications.add(not)
                     }
                 }
-                
-                //NotificationCenter.default.post(name: self.categoriesLoaded, object: nil)
             }
         })
     }

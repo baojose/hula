@@ -33,6 +33,7 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
     override func viewDidAppear(_ animated: Bool) {
         
         super.viewDidAppear(animated)
+        /*
         let user = HulaUser.sharedInstance
         if (user.token.characters.count < 10){
             // user not logged in
@@ -40,6 +41,7 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
         } else {
             //self.getUserProducts()
         }
+ */
     }
     func initData(){
         
