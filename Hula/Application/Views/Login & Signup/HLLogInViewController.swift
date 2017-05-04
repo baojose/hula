@@ -99,7 +99,16 @@ class HLLogInViewController: UserBaseViewController, UITextFieldDelegate {
         let loginOk = notification.object as! Bool
         print(loginOk)
         if (loginOk){
-            self.closeIdentification()
+            //self.closeIdentification()
+            
+            DispatchQueue.main.async {
+                let storyBoard : UIStoryboard = UIStoryboard(name: "Main", bundle:nil)
+                
+                let nextViewController = storyBoard.instantiateViewController(withIdentifier: "welcome") as! HLWelcomeViewController
+                self.present(nextViewController, animated:true, completion:nil)
+                
+            }
+            
         } else {
             DispatchQueue.main.async {
                 UIView.animate(withDuration: 0.5, animations: {

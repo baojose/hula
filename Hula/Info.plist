@@ -47,6 +47,8 @@
 	<string>Allow to us</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>Allow to us</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Store your products location to calculate distances</string>
 	<key>NSAppTransportSecurity</key>
 	<dict>
 		<key>NSAllowsArbitraryLoads</key>
