@@ -1,0 +1,78 @@
+//
+//  HLEditFieldViewController.swift
+//  Hula
+//
+//  Created by Juan Searle on 04/05/2017.
+//  Copyright © 2017 star. All rights reserved.
+//
+
+import UIKit
+
+class HLEditFieldViewController: BaseViewController, UITextFieldDelegate, UITextViewDelegate {
+    var userData:HulaUser = HulaUser.sharedInstance
+    
+    var field_title:String = "Change data"
+    var field_label: String = "not selected"
+    var field_previous_val: String = ""
+    var field_new_val: String = ""
+    var field_key: String = "userNick"
+
+    @IBOutlet weak var titleLabel: UILabel!
+    @IBOutlet weak var currentValueLabel: UILabel!
+    @IBOutlet weak var newValueTextView: UITextView!
+    @IBOutlet weak var lineSeparator: UILabel!
+    @IBOutlet weak var saveButton: HLBouncingButton!
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        //titleLabel.text = "Change \(field_label)"
+        // Do any additional setup after loading the view.
+        newValueTextView.delegate = self
+        
+        titleLabel.text = field_title
+        currentValueLabel.text = "CURRENT: \(field_previous_val)"
+        newValueTextView.text = field_previous_val
+        newValueTextView.isScrollEnabled = false
+        
+        
+    }
+    override func viewDidAppear(_ animated: Bool) {
+        newValueTextView.becomeFirstResponder()
+    }
+    
+    override func didReceiveMemoryWarning() {
+        super.didReceiveMemoryWarning()
+        // Dispose of any resources that can be recreated.
+    }
+   
+    func textViewDidChange(_: UITextView){
+        let w = self.view.frame.size.width-30
+        let h = commonUtils.heightString(width: w, font: newValueTextView.font! , string: newValueTextView.text) + 40
+        
+        UIView.animate(withDuration: 0.4, delay: 0, usingSpringWithDamping: 0.5, initialSpringVelocity: 0, options: [], animations: {
+            self.newValueTextView.frame.size = CGSize(width: self.view.frame.size.width-30, height: h)
+            self.lineSeparator.frame.origin.y = self.newValueTextView.frame.origin.y + h + 15
+            self.saveButton.frame.origin.y = self.lineSeparator.frame.origin.y + 30
+        }, completion: nil)
+    
+    }
+    
+    @IBAction func saveNewValueAction(_ sender: Any) {
+        field_new_val = newValueTextView.text!
+        userData.setValue(field_new_val, forKey: field_key)
+        self.navigationController?.popViewController(animated: true)
+    }
+    /*
+    // MARK: - Navigation
+
+    // In a storyboard-based application, you will often want to do a little preparation before navigation
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        // Get the new view controller using segue.destinationViewController.
+        // Pass the selected object to the new view controller.
+    }
+    */
+    @IBAction func goBackAction(_ sender: Any) {
+        //self.dismiss(animated: true, completion: nil)
+        self.navigationController?.popViewController(animated: true)
+    }
+
+}

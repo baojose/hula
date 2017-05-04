@@ -11,6 +11,7 @@
 		116669151E98222F0094B157 /* HLHomeNotificationsTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 116669141E98222F0094B157 /* HLHomeNotificationsTableViewCell.swift */; };
 		116669191E9925C20094B157 /* HulaNotifications.swift in Sources */ = {isa = PBXBuildFile; fileRef = 116669181E9925C20094B157 /* HulaNotifications.swift */; };
 		272720431EBA9BE90084CF3C /* HLWelcomeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 272720421EBA9BE90084CF3C /* HLWelcomeViewController.swift */; };
+		27401F841EBBB87B00F0B95D /* HLEditFieldViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27401F831EBBB87B00F0B95D /* HLEditFieldViewController.swift */; };
 		275C55501EA3FB5A00A49051 /* UserData.plist in Resources */ = {isa = PBXBuildFile; fileRef = 275C554F1EA3FB5A00A49051 /* UserData.plist */; };
 		277C6C431EA2385B00530B0F /* HLRoundedButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 277C6C421EA2385B00530B0F /* HLRoundedButton.swift */; };
 		279BAAD81E9D726D00091D24 /* HLNotificationsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 279BAAD71E9D726D00091D24 /* HLNotificationsViewController.swift */; };
@@ -91,6 +92,7 @@
 		116669141E98222F0094B157 /* HLHomeNotificationsTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HLHomeNotificationsTableViewCell.swift; sourceTree = "<group>"; };
 		116669181E9925C20094B157 /* HulaNotifications.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HulaNotifications.swift; sourceTree = "<group>"; };
 		272720421EBA9BE90084CF3C /* HLWelcomeViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HLWelcomeViewController.swift; sourceTree = "<group>"; };
+		27401F831EBBB87B00F0B95D /* HLEditFieldViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HLEditFieldViewController.swift; sourceTree = "<group>"; };
 		275C554F1EA3FB5A00A49051 /* UserData.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = UserData.plist; sourceTree = "<group>"; };
 		277C6C421EA2385B00530B0F /* HLRoundedButton.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HLRoundedButton.swift; sourceTree = "<group>"; };
 		279BAAD71E9D726D00091D24 /* HLNotificationsViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HLNotificationsViewController.swift; sourceTree = "<group>"; };
@@ -416,6 +418,7 @@
 			isa = PBXGroup;
 			children = (
 				F8BE7C321E71FF5400FAE07D /* HLSettingViewController.swift */,
+				27401F831EBBB87B00F0B95D /* HLEditFieldViewController.swift */,
 			);
 			name = Setting;
 			sourceTree = "<group>";
@@ -626,6 +629,7 @@
 				F8BE7C4D1E72575300FAE07D /* HLFilterViewController.swift in Sources */,
 				F8BE7C491E7241C500FAE07D /* HLSearchResultViewController.swift in Sources */,
 				F8274D4F1E712FCB002A3164 /* HLProfileViewController.swift in Sources */,
+				27401F841EBBB87B00F0B95D /* HLEditFieldViewController.swift in Sources */,
 				279BAAD81E9D726D00091D24 /* HLNotificationsViewController.swift in Sources */,
 				F86698C41E703EA6002129E1 /* HLDataManager.swift in Sources */,
 				F86698B71E703CB9002129E1 /* HLAPIClient.swift in Sources */,

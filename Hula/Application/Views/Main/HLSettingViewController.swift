@@ -19,6 +19,7 @@ class HLSettingViewController: BaseViewController {
     @IBOutlet weak var userEmailLabel: UILabel!
     @IBOutlet weak var userNameLabel: UILabel!
     @IBOutlet weak var userBioLabel: UILabel!
+    @IBOutlet weak var locationLabel: UILabel!
     
     @IBOutlet weak var pictureView: UIView!
     @IBOutlet weak var nameView: UIView!
@@ -31,6 +32,10 @@ class HLSettingViewController: BaseViewController {
         super.viewDidLoad()
         self.intiData()
         self.initView()
+    }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        initView()
     }
 
     override func didReceiveMemoryWarning() {
@@ -73,6 +78,60 @@ class HLSettingViewController: BaseViewController {
     @IBAction func userLogout(_ sender: Any) {
         HLDataManager.sharedInstance.logout()
         self.goBackToPreviousPage(sender)
+    }
+    @IBAction func editItemAction(_ sender: Any) {
+        print((sender as! UIButton).tag)
+        var title = "";
+        var previous = "";
+        var label = ""
+        var item_toUpdate = "";
+        switch (sender as! UIButton).tag {
+        case 0: break
+            // image update
+            
+        case 1:
+            // Name
+            title = "Change your name"
+            previous = userData.userNick
+            label = "Nickname"
+            item_toUpdate = "userNick"
+        case 2:
+            // Email
+            title = "Change your email"
+            previous = userData.userEmail
+            label = "Email address"
+            item_toUpdate = "userEmail"
+        case 3:
+            // Bio
+            title = "Change your bio"
+            previous = userData.userBio
+            label = "Bio"
+            item_toUpdate = "userBio"
+        case 4:
+            // Location
+            title = "Change location"
+            previous = userData.userLocationName
+            label = "Location"
+            item_toUpdate = "userLocationName"
+        case 5:
+            // Password
+            title = "Change your password"
+            previous = ""
+            label = "Password"
+            item_toUpdate = "userPassword"
+        default:
+            // nada
+            break
+        }
+        
+        let editViewController = self.storyboard?.instantiateViewController(withIdentifier: "fieldEditor") as! HLEditFieldViewController
+        editViewController.field_label = label
+        editViewController.field_title = title
+        editViewController.field_previous_val = previous
+        editViewController.field_key = item_toUpdate
+        self.navigationController?.pushViewController(editViewController, animated: true)
+        
+        
     }
     
     // Custom functions for ViewController
