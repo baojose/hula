@@ -32,11 +32,13 @@ class HLEditFieldViewController: BaseViewController, UITextFieldDelegate, UIText
         currentValueLabel.text = "CURRENT: \(field_previous_val)"
         newValueTextView.text = field_previous_val
         newValueTextView.isScrollEnabled = false
+        textViewDidChange(newValueTextView)
         
         
     }
     override func viewDidAppear(_ animated: Bool) {
         newValueTextView.becomeFirstResponder()
+        textViewDidChange(newValueTextView)
     }
     
     override func didReceiveMemoryWarning() {

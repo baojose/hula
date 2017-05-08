@@ -48,4 +48,54 @@ class HLEditProductMainViewController: BaseViewController {
     }
     @IBAction func deleteProductAction(_ sender: Any) {
     }
+    @IBAction func editItemAction(_ sender: Any) {
+        //let userData = HulaUser.sharedInstance
+        print((sender as! UIButton).tag)
+        var title = "";
+        var previous = "";
+        var label = ""
+        var item_toUpdate = "";
+        switch (sender as! UIButton).tag {
+        case 0:
+            // image update
+            let cameraViewController = self.storyboard?.instantiateViewController(withIdentifier: "selectPictureGeneral") as! HLPictureSelectViewController
+            self.present(cameraViewController, animated: true)
+            
+        case 10:
+            // Title
+            title = "Choose a title for your product"
+            previous = productTitle.text!
+            label = "Title"
+            item_toUpdate = "title"
+        case 20:
+            // Category
+            title = "Select a category"
+            previous = categoryNameLabel.text!
+            label = "Category"
+            item_toUpdate = "category"
+        case 30:
+            // Condition
+            title = "Change your product condition"
+            previous = productConditionLabel.text!
+            label = "Condition"
+            item_toUpdate = "condition"
+        case 40:
+            // Description
+            title = "Change description"
+            previous = productDescriptionLabel.text!
+            label = "Description"
+            item_toUpdate = "description"
+        default:
+            // nada
+            break
+        }
+        if ((sender as! UIButton).tag != 0 ){
+            let editViewController = self.storyboard?.instantiateViewController(withIdentifier: "fieldEditor") as! HLEditFieldViewController
+            editViewController.field_label = label
+            editViewController.field_title = title
+            editViewController.field_previous_val = previous
+            editViewController.field_key = item_toUpdate
+            self.navigationController?.pushViewController(editViewController, animated: true)
+        }
+    }
 }
