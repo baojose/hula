@@ -107,7 +107,7 @@ class HLSettingViewController: BaseViewController {
 
         case 1:
             // Name
-            title = "Change your name"
+            title = "Change your nickname"
             previous = userData.userNick
             label = "Nickname"
             item_toUpdate = "userNick"
@@ -116,7 +116,7 @@ class HLSettingViewController: BaseViewController {
             title = "Change your full name"
             previous = userData.userName
             label = "Full name"
-            item_toUpdate = "useruserName"
+            item_toUpdate = "userName"
         case 3:
             // Bio
             title = "Change your bio"

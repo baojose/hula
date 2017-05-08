@@ -61,6 +61,7 @@ class HLEditFieldViewController: BaseViewController, UITextFieldDelegate, UIText
     @IBAction func saveNewValueAction(_ sender: Any) {
         field_new_val = newValueTextView.text!
         userData.setValue(field_new_val, forKey: field_key)
+        userData.updateServerData()
         self.navigationController?.popViewController(animated: true)
     }
     /*
