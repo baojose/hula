@@ -7,9 +7,11 @@
 //
 
 import UIKit
+import CoreLocation
 
-class HLEditFieldViewController: BaseViewController, UITextFieldDelegate, UITextViewDelegate {
+class HLEditFieldViewController: BaseViewController, UITextFieldDelegate, UITextViewDelegate, CLLocationManagerDelegate {
     var userData:HulaUser = HulaUser.sharedInstance
+    var locationManager = CLLocationManager()
     
     var field_title:String = "Change data"
     var field_label: String = "not selected"
@@ -27,6 +29,15 @@ class HLEditFieldViewController: BaseViewController, UITextFieldDelegate, UIText
         //titleLabel.text = "Change \(field_label)"
         // Do any additional setup after loading the view.
         newValueTextView.delegate = self
+        
+        
+        // location manager
+        locationManager.requestWhenInUseAuthorization()
+        locationManager.delegate = self
+        locationManager.desiredAccuracy = kCLLocationAccuracyBest
+        locationManager.startUpdatingLocation()
+        
+        
         
         titleLabel.text = field_title
         currentValueLabel.text = "CURRENT: \(field_previous_val)"
@@ -56,6 +67,39 @@ class HLEditFieldViewController: BaseViewController, UITextFieldDelegate, UIText
             self.saveButton.frame.origin.y = self.lineSeparator.frame.origin.y + 30
         }, completion: nil)
     
+    }
+    func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+        let userLocation:CLLocation = locations[0]
+        let long = userLocation.coordinate.longitude;
+        let lat = userLocation.coordinate.latitude;
+        
+        //print(long, lat)
+        userData.location = CGPoint(x:long, y:lat);
+        if (field_key == "userLocationName"){
+            setUsersClosestCity(userLocation: userLocation)
+        }
+        locationManager.stopUpdatingLocation()
+        //Do What ever you want with it
+    }
+    func setUsersClosestCity(userLocation: CLLocation){
+        let geoCoder = CLGeocoder()
+        let location = CLLocation(latitude: userLocation.coordinate.latitude, longitude: userLocation.coordinate.longitude)
+        geoCoder.reverseGeocodeLocation(location) {
+            (placemarks, error) -> Void in
+            
+            let placeArray = placemarks as [CLPlacemark]!
+            
+            // Place details
+            var placeMark: CLPlacemark!
+            placeMark = placeArray?[0]
+            
+            // Address dictionary
+            //print(placeMark.addressDictionary)
+            let country = placeMark.addressDictionary?["Country"] as? String
+            let city = placeMark.addressDictionary?["City"] as? String
+   
+            self.newValueTextView.text = city! + ", " + country!
+        }
     }
     
     @IBAction func saveNewValueAction(_ sender: Any) {
