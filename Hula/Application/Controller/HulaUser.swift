@@ -20,6 +20,7 @@ class HulaUser: NSObject {
     var userPass: String!
     var token: String!
     var location: CGPoint!
+    var fbToken: String!
     
     class var sharedInstance: HulaUser {
         struct Static {
@@ -38,6 +39,7 @@ class HulaUser: NSObject {
         self.userPass = ""
         self.userBio = ""
         self.token = ""
+        self.fbToken = ""
         self.location = CGPoint(x:0, y:0)
     }
     
@@ -70,6 +72,7 @@ class HulaUser: NSObject {
         self.userBio = ""
         self.userPass = ""
         self.token = ""
+        self.fbToken = ""
         self.location = CGPoint(x:0, y:0)
     }
     

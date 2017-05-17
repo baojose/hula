@@ -1310,6 +1310,9 @@ Log In</string>
                                         <state key="normal" title="Validate" backgroundImage="solid_green_bg_button_S">
                                             <color key="titleColor" red="0.99989169840000003" green="1" blue="0.99988096950000005" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                         </state>
+                                        <connections>
+                                            <action selector="validateAction:" destination="Il8-O6-spU" eventType="touchUpInside" id="1hK-OM-Xen"/>
+                                        </connections>
                                     </button>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" usesAttributedText="YES" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="ZOs-wU-Pph">
                                         <rect key="frame" x="17" y="247" width="151" height="14"/>

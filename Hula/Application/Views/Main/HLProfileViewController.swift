@@ -7,6 +7,8 @@
 //
 
 import UIKit
+import FacebookCore
+import FacebookLogin
 
 class HLProfileViewController: BaseViewController {
     
@@ -33,6 +35,13 @@ class HLProfileViewController: BaseViewController {
         self.initData()
         self.initView()
         self.getUserProfile()
+        
+        
+        if let accessToken = AccessToken.current {
+            // User is logged in, use 'accessToken' here.
+            verFacebookIcon.image = UIImage(named: "icon_facebook_on")
+            HulaUser.sharedInstance.fbToken = accessToken.authenticationToken as String
+        }
     }
     override func viewDidAppear(_ animated: Bool) {
         /*
@@ -67,6 +76,20 @@ class HLProfileViewController: BaseViewController {
         })
     }
     
+    @IBAction func validateAction(_ sender: Any) {
+        let loginManager = LoginManager()
+        loginManager.logIn([ .publicProfile, .email ], viewController: self) { loginResult in
+        switch loginResult {
+            case .failed(let error):
+                print(error)
+            case .cancelled:
+                print("User cancelled login.")
+            case .success(let grantedPermissions, let declinedPermissions, let accessToken):
+                print("Logged in!")
+                self.verFacebookIcon.image = UIImage(named: "icon_facebook_on")
+            }
+        }
+    }
     
     
     
