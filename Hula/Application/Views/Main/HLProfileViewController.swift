@@ -77,9 +77,33 @@ class HLProfileViewController: BaseViewController {
     }
     
     @IBAction func validateAction(_ sender: Any) {
+        let alert = UIAlertController(title: "Select a verification method",
+                                       message: nil,
+                                       preferredStyle: .actionSheet)
+        
+        let facebookAction = UIAlertAction(title: "Facebook", style: .default, handler: { action -> Void in
+                                            self.facebookValidate()
+        })
+        let emailAction = UIAlertAction(title: "Email", style: .default, handler: nil)
+        
+        alert.addAction(facebookAction)
+        alert.addAction(emailAction)
+        
+        let cancelAction = UIAlertAction(title: "Cancel",
+                                           style: .cancel, handler: nil)
+        
+        alert.addAction(cancelAction)
+        self.present(alert, animated: true)
+    }
+    
+    
+    
+    
+    
+    func facebookValidate(){
         let loginManager = LoginManager()
         loginManager.logIn([ .publicProfile, .email ], viewController: self) { loginResult in
-        switch loginResult {
+            switch loginResult {
             case .failed(let error):
                 print(error)
             case .cancelled:
