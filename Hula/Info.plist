@@ -69,6 +69,25 @@
 	  <string>fbauth2</string>
 	  <string>fbshareextension</string>
 	</array>
+    <key>Fabric</key>
+    <dict>
+        <key>APIKey</key>
+        <string>6f5751bab8dc6eb1ae1be585f3770b990fa60b03</string>
+        <key>Kits</key>
+        <array>
+            <dict>
+                <key>KitInfo</key>
+                <dict>
+                    <key>consumerKey</key>
+                    <string>IpvhOe7ZlcvPiAOAC8UGeFZFA</string>
+                    <key>consumerSecret</key>
+                    <string>yGJI3jSuVNFbls9RNujHhC3sc19KDbhCRJsAg3QQpWBQ2cmOhU</string>
+                </dict>
+                <key>KitName</key>
+                <string>Twitter</string>
+            </dict>
+        </array>
+    </dict>
 	<key>NSAppTransportSecurity</key>
 	<dict>
 		<key>NSAllowsArbitraryLoads</key>

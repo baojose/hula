@@ -21,6 +21,8 @@ class HulaUser: NSObject {
     var token: String!
     var location: CGPoint!
     var fbToken: String!
+    var twToken: String!
+    var liToken: String!
     
     class var sharedInstance: HulaUser {
         struct Static {
@@ -40,6 +42,8 @@ class HulaUser: NSObject {
         self.userBio = ""
         self.token = ""
         self.fbToken = ""
+        self.twToken = ""
+        self.liToken = ""
         self.location = CGPoint(x:0, y:0)
     }
     
@@ -73,6 +77,8 @@ class HulaUser: NSObject {
         self.userPass = ""
         self.token = ""
         self.fbToken = ""
+        self.twToken = ""
+        self.liToken = ""
         self.location = CGPoint(x:0, y:0)
     }
     
@@ -88,7 +94,7 @@ class HulaUser: NSObject {
         print("Updating user...")
         if(isUserLoggedIn()){
             let queryURL = HulaConstants.apiURL + "users/" + self.userId
-            HLDataManager.sharedInstance.httpPost(urlstr: queryURL, postString: "email=" + self.userEmail + "&name=" + self.userName + "&bio=" + self.userBio + "&nick=" + self.userNick + "&image=" + self.userPhotoURL, isPut: true, taskCallback: { (ok, json) in
+            HLDataManager.sharedInstance.httpPost(urlstr: queryURL, postString: "email=" + self.userEmail + "&name=" + self.userName + "&bio=" + self.userBio + "&nick=" + self.userNick + "&image=" + self.userPhotoURL + "&twtoken=" + self.twToken + "&litoken=" + self.liToken + "&fbtoken=" + self.fbToken, isPut: true, taskCallback: { (ok, json) in
                 
                 //print("done")
                 //print(ok)
