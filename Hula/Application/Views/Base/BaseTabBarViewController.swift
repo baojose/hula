@@ -9,6 +9,13 @@
 import UIKit
 
 class BaseTabBarViewController: UITabBarController, UITabBarControllerDelegate{
+    
+    override var supportedInterfaceOrientations : UIInterfaceOrientationMask {
+        return UIInterfaceOrientationMask.portrait
+    }
+    override var shouldAutorotate: Bool {
+        return false
+    }
     var isUserLoggedIn: Bool = false
     @IBOutlet weak var tabbar: UITabBar!
     override func viewDidLoad() {

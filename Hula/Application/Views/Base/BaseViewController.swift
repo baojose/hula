@@ -15,6 +15,13 @@ class BaseViewController: UIViewController {
     var dataManager: HLDataManager! = HLDataManager.sharedInstance
     var commonUtils: CommonUtils! = CommonUtils.sharedInstance
     
+    override var supportedInterfaceOrientations : UIInterfaceOrientationMask {
+        return UIInterfaceOrientationMask.allButUpsideDown
+    }
+    override var shouldAutorotate: Bool {
+        return true
+    }
+    
     @IBOutlet var pageTitleLabel: UILabel!
     
     override func viewDidLoad() {
