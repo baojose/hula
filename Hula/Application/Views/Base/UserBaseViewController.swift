@@ -9,12 +9,7 @@
 import UIKit
 
 class UserBaseViewController: UIViewController {
-    override var supportedInterfaceOrientations : UIInterfaceOrientationMask {
-        return UIInterfaceOrientationMask.portrait
-    }
-    override var shouldAutorotate: Bool {
-        return false
-    }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         self.automaticallyAdjustsScrollViewInsets = false

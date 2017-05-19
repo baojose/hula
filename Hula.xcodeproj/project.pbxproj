@@ -12,6 +12,8 @@
 		116669151E98222F0094B157 /* HLHomeNotificationsTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 116669141E98222F0094B157 /* HLHomeNotificationsTableViewCell.swift */; };
 		116669191E9925C20094B157 /* HulaNotifications.swift in Sources */ = {isa = PBXBuildFile; fileRef = 116669181E9925C20094B157 /* HulaNotifications.swift */; };
 		272720431EBA9BE90084CF3C /* HLWelcomeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 272720421EBA9BE90084CF3C /* HLWelcomeViewController.swift */; };
+		273A1EA21ECF9D37005D163E /* HulaPortraitNavigationController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 273A1EA11ECF9D37005D163E /* HulaPortraitNavigationController.swift */; };
+		273A1EA51ECF9F13005D163E /* HLSwappViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 273A1EA41ECF9F13005D163E /* HLSwappViewController.swift */; };
 		27401F841EBBB87B00F0B95D /* HLEditFieldViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27401F831EBBB87B00F0B95D /* HLEditFieldViewController.swift */; };
 		27401F861EC10F7300F0B95D /* HLPictureSelectViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27401F851EC10F7300F0B95D /* HLPictureSelectViewController.swift */; };
 		275C55501EA3FB5A00A49051 /* UserData.plist in Resources */ = {isa = PBXBuildFile; fileRef = 275C554F1EA3FB5A00A49051 /* UserData.plist */; };
@@ -96,6 +98,8 @@
 		116669141E98222F0094B157 /* HLHomeNotificationsTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HLHomeNotificationsTableViewCell.swift; sourceTree = "<group>"; };
 		116669181E9925C20094B157 /* HulaNotifications.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HulaNotifications.swift; sourceTree = "<group>"; };
 		272720421EBA9BE90084CF3C /* HLWelcomeViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HLWelcomeViewController.swift; sourceTree = "<group>"; };
+		273A1EA11ECF9D37005D163E /* HulaPortraitNavigationController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HulaPortraitNavigationController.swift; sourceTree = "<group>"; };
+		273A1EA41ECF9F13005D163E /* HLSwappViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HLSwappViewController.swift; sourceTree = "<group>"; };
 		27401F831EBBB87B00F0B95D /* HLEditFieldViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HLEditFieldViewController.swift; sourceTree = "<group>"; };
 		27401F851EC10F7300F0B95D /* HLPictureSelectViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HLPictureSelectViewController.swift; sourceTree = "<group>"; };
 		275C554F1EA3FB5A00A49051 /* UserData.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = UserData.plist; sourceTree = "<group>"; };
@@ -208,6 +212,14 @@
 				279BAAD71E9D726D00091D24 /* HLNotificationsViewController.swift */,
 			);
 			name = Notifications;
+			sourceTree = "<group>";
+		};
+		273A1EA31ECF9EE7005D163E /* Swapp */ = {
+			isa = PBXGroup;
+			children = (
+				273A1EA41ECF9F13005D163E /* HLSwappViewController.swift */,
+			);
+			name = Swapp;
 			sourceTree = "<group>";
 		};
 		277C6C411EA2384B00530B0F /* Utils */ = {
@@ -373,6 +385,7 @@
 				F86698BA1E703DBE002129E1 /* BaseViewController.swift */,
 				F86698BC1E703DD8002129E1 /* UserBaseViewController.swift */,
 				F86698BE1E703E10002129E1 /* BaseTabBarViewController.swift */,
+				273A1EA11ECF9D37005D163E /* HulaPortraitNavigationController.swift */,
 			);
 			path = Base;
 			sourceTree = "<group>";
@@ -407,6 +420,7 @@
 		F86698AB1E703A80002129E1 /* Main */ = {
 			isa = PBXGroup;
 			children = (
+				273A1EA31ECF9EE7005D163E /* Swapp */,
 				F86698C01E703E3A002129E1 /* Home */,
 				1166691A1E992C760094B157 /* Notifications */,
 				F8B651EC1E7A34F8009D1DC6 /* My Products */,
@@ -830,8 +844,10 @@
 				F86698C41E703EA6002129E1 /* HLDataManager.swift in Sources */,
 				F86698B71E703CB9002129E1 /* HLAPIClient.swift in Sources */,
 				F8BE7C4B1E724F3D00FAE07D /* HLProductDetailViewController.swift in Sources */,
+				273A1EA51ECF9F13005D163E /* HLSwappViewController.swift in Sources */,
 				27C733C91EA2D1E0003A6FD6 /* HLRoundedNextButton.swift in Sources */,
 				F8BE7C371E72010D00FAE07D /* HLFeedbackHistoryTableViewCell.swift in Sources */,
+				273A1EA21ECF9D37005D163E /* HulaPortraitNavigationController.swift in Sources */,
 				F8B651F21E7A6A1E009D1DC6 /* HLPostProductViewController.swift in Sources */,
 				27401F861EC10F7300F0B95D /* HLPictureSelectViewController.swift in Sources */,
 				F890E49A1E710187008719B9 /* HLHomeCategoryTableViewCell.swift in Sources */,
