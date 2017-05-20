@@ -18,6 +18,7 @@ class HLPostProductViewController: BaseViewController, UITextFieldDelegate {
     @IBOutlet var forthImage: UIImageView!
     @IBOutlet var mainScrollView: UIScrollView!
     @IBOutlet var contentView: UIView!
+    @IBOutlet weak var mainImageLabel: UILabel!
     
     @IBOutlet var productTitleTxtField: UITextField!
     @IBOutlet var publishBtn: UIButton!
@@ -114,7 +115,13 @@ class HLPostProductViewController: BaseViewController, UITextFieldDelegate {
         }
         UIView.animate(withDuration: 0.5, animations: {
             sender.view?.backgroundColor = HulaConstants.appMainColor
+            self.mainImageLabel.center.x = (sender.view?.center.x)!
         })
+        let tappedIndex: Int = (sender.view?.tag)!
+        if (tappedIndex != 0){
+            print(tappedIndex)
+            swap(&dataManager.newProduct.arrProductPhotos[0], &dataManager.newProduct.arrProductPhotos[tappedIndex])
+        }
     }
     func reDesignView(){
         

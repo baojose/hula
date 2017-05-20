@@ -10,8 +10,17 @@ import UIKit
 
 class BaseViewController: UIViewController {
     
+    
+    var isUserLoggedIn = false
     var dataManager: HLDataManager! = HLDataManager.sharedInstance
     var commonUtils: CommonUtils! = CommonUtils.sharedInstance
+    
+    override var supportedInterfaceOrientations : UIInterfaceOrientationMask {
+        return UIInterfaceOrientationMask.allButUpsideDown
+    }
+    override var shouldAutorotate: Bool {
+        return true
+    }
     
     @IBOutlet var pageTitleLabel: UILabel!
     
@@ -25,16 +34,18 @@ class BaseViewController: UIViewController {
     
     //#MARK: Common Functions
     
-    
     //#MARK: Common Actions
     @IBAction func goBackToPreviousPage(_ sender: Any) {
         _ = self.navigationController?.popViewController(animated: true)
+        
     }
     @IBAction func dismissToPreviousPage(_ sender: Any) {
         self.dismiss(animated: true, completion: nil)
     }
     
     func openUserIdentification(){
+        
+        //
         DispatchQueue.main.async {
             let viewController = self.storyboard?.instantiateViewController(withIdentifier: "identification") as! HLIdentificationViewController
             self.navigationController?.pushViewController(viewController, animated: true)
@@ -44,5 +55,13 @@ class BaseViewController: UIViewController {
 //        modalViewController.modalPresentationStyle = .overCurrentContext
 //        present(modalViewController, animated: true, completion: nil)
     }
-    
+    func checkUserLogin() -> Bool{
+        let user = HulaUser.sharedInstance
+        if (user.token.characters.count < 10){
+            isUserLoggedIn = false
+        } else {
+            isUserLoggedIn = true
+        }
+        return isUserLoggedIn
+    }
 }

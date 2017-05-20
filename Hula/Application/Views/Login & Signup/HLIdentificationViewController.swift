@@ -30,6 +30,9 @@ class HLIdentificationViewController: UserBaseViewController {
     
     @IBAction func closeIdentificationVC(_ sender: Any) {
         self.closeIdentification()
+        
+        //_ = self.tabBarController?.selectedIndex = 0
+        //_ = self.navigationController?.popViewController(animated: true)
     }
     
 }

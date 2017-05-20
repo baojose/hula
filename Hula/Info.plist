@@ -31,6 +31,8 @@
 	<key>UISupportedInterfaceOrientations</key>
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>
+		<string>UIInterfaceOrientationLandscapeLeft</string>
+		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
 	<key>UIAppFonts</key>
 	<array>
@@ -47,6 +49,47 @@
 	<string>Allow to us</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>Allow to us</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Store your products location to calculate distances</string>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>fb128854257665971</string>
+			</array>
+		</dict>
+	</array>
+	<key>FacebookAppID</key>
+	<string>128854257665971</string>
+	<key>FacebookDisplayName</key>
+	<string>Hula Trade</string>
+	<key>LSApplicationQueriesSchemes</key>
+	<array>
+		<string>fbapi</string>
+		<string>fb-messenger-api</string>
+		<string>fbauth2</string>
+		<string>fbshareextension</string>
+	</array>
+	<key>Fabric</key>
+	<dict>
+		<key>APIKey</key>
+		<string>6f5751bab8dc6eb1ae1be585f3770b990fa60b03</string>
+		<key>Kits</key>
+		<array>
+			<dict>
+				<key>KitInfo</key>
+				<dict>
+					<key>consumerKey</key>
+					<string>IpvhOe7ZlcvPiAOAC8UGeFZFA</string>
+					<key>consumerSecret</key>
+					<string>yGJI3jSuVNFbls9RNujHhC3sc19KDbhCRJsAg3QQpWBQ2cmOhU</string>
+				</dict>
+				<key>KitName</key>
+				<string>Twitter</string>
+			</dict>
+		</array>
+	</dict>
 	<key>NSAppTransportSecurity</key>
 	<dict>
 		<key>NSAllowsArbitraryLoads</key>

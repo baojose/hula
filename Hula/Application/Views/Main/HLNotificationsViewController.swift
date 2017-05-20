@@ -9,24 +9,24 @@
 import UIKit
 
 class HLNotificationsViewController: BaseViewController, UITableViewDelegate, UITableViewDataSource {
+    
+    
     override func viewDidLoad() {
         super.viewDidLoad()
+        
     }
     override func viewDidAppear(_ animated: Bool) {
-        
-        let user = HulaUser.sharedInstance
-        if (user.token.characters.count < 10){
-            // user not logged in
+        /*
+        let _ = checkUserLogin()
+        if (!isUserLoggedIn){
             openUserIdentification()
-        } else {
-            
         }
+ */
     }
     
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
     }
-    
     
     //#MARK: - TableViewDelegate
     

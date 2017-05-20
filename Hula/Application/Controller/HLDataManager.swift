@@ -121,6 +121,7 @@ class HLDataManager: NSObject {
         let user = HulaUser.sharedInstance
         user.token = ""
         user.userId = ""
+        user.logout()
         self.writeUserData()
     }
     
@@ -156,6 +157,7 @@ class HLDataManager: NSObject {
     
     func httpGet(urlstr:String, taskCallback: @escaping (Bool, Any?) -> ()) {
         let url = URL(string: urlstr)
+        //print(url!)
         var request:URLRequest = URLRequest(url: url!)
         
         let user = HulaUser.sharedInstance
@@ -176,7 +178,7 @@ class HLDataManager: NSObject {
                 taskCallback(false, nil)
                 return
             }
-            
+            //print(data)
             let json = try! JSONSerialization.jsonObject(with: data, options: [])
             taskCallback(true, json as AnyObject?)
         }
@@ -363,6 +365,7 @@ class HLDataManager: NSObject {
         
         if let dict = myDict {
             //loading values
+            
             let user = HulaUser.sharedInstance
             
             user.token = dict.object(forKey: "token")! as! String
@@ -390,8 +393,6 @@ class HLDataManager: NSObject {
                         self.arrNotifications.add(not)
                     }
                 }
-                
-                //NotificationCenter.default.post(name: self.categoriesLoaded, object: nil)
             }
         })
     }

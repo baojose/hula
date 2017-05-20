@@ -7,9 +7,15 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0FBCBEED5C53860E39E37BDB /* Pods_Hula.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2949F49E550423C849CC8C66 /* Pods_Hula.framework */; };
 		111F79421EA56B5E00904EC5 /* test_UI.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 111F79411EA56B5E00904EC5 /* test_UI.storyboard */; };
 		116669151E98222F0094B157 /* HLHomeNotificationsTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 116669141E98222F0094B157 /* HLHomeNotificationsTableViewCell.swift */; };
 		116669191E9925C20094B157 /* HulaNotifications.swift in Sources */ = {isa = PBXBuildFile; fileRef = 116669181E9925C20094B157 /* HulaNotifications.swift */; };
+		272720431EBA9BE90084CF3C /* HLWelcomeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 272720421EBA9BE90084CF3C /* HLWelcomeViewController.swift */; };
+		273A1EA21ECF9D37005D163E /* HulaPortraitNavigationController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 273A1EA11ECF9D37005D163E /* HulaPortraitNavigationController.swift */; };
+		273A1EA51ECF9F13005D163E /* HLSwappViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 273A1EA41ECF9F13005D163E /* HLSwappViewController.swift */; };
+		27401F841EBBB87B00F0B95D /* HLEditFieldViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27401F831EBBB87B00F0B95D /* HLEditFieldViewController.swift */; };
+		27401F861EC10F7300F0B95D /* HLPictureSelectViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27401F851EC10F7300F0B95D /* HLPictureSelectViewController.swift */; };
 		275C55501EA3FB5A00A49051 /* UserData.plist in Resources */ = {isa = PBXBuildFile; fileRef = 275C554F1EA3FB5A00A49051 /* UserData.plist */; };
 		277C6C431EA2385B00530B0F /* HLRoundedButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 277C6C421EA2385B00530B0F /* HLRoundedButton.swift */; };
 		279BAAD81E9D726D00091D24 /* HLNotificationsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 279BAAD71E9D726D00091D24 /* HLNotificationsViewController.swift */; };
@@ -17,6 +23,8 @@
 		27C733C51EA2BC7E003A6FD6 /* HLIdentificationViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27C733C41EA2BC7E003A6FD6 /* HLIdentificationViewController.swift */; };
 		27C733C71EA2D051003A6FD6 /* HLRoundedGradientButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27C733C61EA2D050003A6FD6 /* HLRoundedGradientButton.swift */; };
 		27C733C91EA2D1E0003A6FD6 /* HLRoundedNextButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27C733C81EA2D1E0003A6FD6 /* HLRoundedNextButton.swift */; };
+		99F54F96A90A0DEF39B4F77F /* Pods_HulaTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BB38D039DCF53784B1101219 /* Pods_HulaTests.framework */; };
+		D4C767CE36A44207F314461B /* Pods_HulaUITests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AA99A61775E451E94755B6FC /* Pods_HulaUITests.framework */; };
 		F8274D4F1E712FCB002A3164 /* HLProfileViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F8274D4E1E712FCB002A3164 /* HLProfileViewController.swift */; };
 		F83186191E6FABBA00DD61FA /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = F83186171E6FABBA00DD61FA /* Main.storyboard */; };
 		F831861C1E6FABBA00DD61FA /* Hula.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = F831861A1E6FABBA00DD61FA /* Hula.xcdatamodeld */; };
@@ -89,6 +97,11 @@
 		111F79411EA56B5E00904EC5 /* test_UI.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = test_UI.storyboard; sourceTree = "<group>"; };
 		116669141E98222F0094B157 /* HLHomeNotificationsTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HLHomeNotificationsTableViewCell.swift; sourceTree = "<group>"; };
 		116669181E9925C20094B157 /* HulaNotifications.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HulaNotifications.swift; sourceTree = "<group>"; };
+		272720421EBA9BE90084CF3C /* HLWelcomeViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HLWelcomeViewController.swift; sourceTree = "<group>"; };
+		273A1EA11ECF9D37005D163E /* HulaPortraitNavigationController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HulaPortraitNavigationController.swift; sourceTree = "<group>"; };
+		273A1EA41ECF9F13005D163E /* HLSwappViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HLSwappViewController.swift; sourceTree = "<group>"; };
+		27401F831EBBB87B00F0B95D /* HLEditFieldViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HLEditFieldViewController.swift; sourceTree = "<group>"; };
+		27401F851EC10F7300F0B95D /* HLPictureSelectViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HLPictureSelectViewController.swift; sourceTree = "<group>"; };
 		275C554F1EA3FB5A00A49051 /* UserData.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = UserData.plist; sourceTree = "<group>"; };
 		277C6C421EA2385B00530B0F /* HLRoundedButton.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HLRoundedButton.swift; sourceTree = "<group>"; };
 		279BAAD71E9D726D00091D24 /* HLNotificationsViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HLNotificationsViewController.swift; sourceTree = "<group>"; };
@@ -96,6 +109,15 @@
 		27C733C41EA2BC7E003A6FD6 /* HLIdentificationViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HLIdentificationViewController.swift; sourceTree = "<group>"; };
 		27C733C61EA2D050003A6FD6 /* HLRoundedGradientButton.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HLRoundedGradientButton.swift; sourceTree = "<group>"; };
 		27C733C81EA2D1E0003A6FD6 /* HLRoundedNextButton.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HLRoundedNextButton.swift; sourceTree = "<group>"; };
+		2949F49E550423C849CC8C66 /* Pods_Hula.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Hula.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		366F1CB838330F3A7BA3CF6B /* Pods-HulaUITests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-HulaUITests.debug.xcconfig"; path = "Pods/Target Support Files/Pods-HulaUITests/Pods-HulaUITests.debug.xcconfig"; sourceTree = "<group>"; };
+		3684442621355F3BD05B8FCD /* Pods-HulaUITests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-HulaUITests.release.xcconfig"; path = "Pods/Target Support Files/Pods-HulaUITests/Pods-HulaUITests.release.xcconfig"; sourceTree = "<group>"; };
+		37F8D37FAFF0B4083DF59EC7 /* Pods-Hula.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Hula.debug.xcconfig"; path = "Pods/Target Support Files/Pods-Hula/Pods-Hula.debug.xcconfig"; sourceTree = "<group>"; };
+		5D5633F9D4B56B23451A4983 /* Pods-Hula.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Hula.release.xcconfig"; path = "Pods/Target Support Files/Pods-Hula/Pods-Hula.release.xcconfig"; sourceTree = "<group>"; };
+		AA99A61775E451E94755B6FC /* Pods_HulaUITests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_HulaUITests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		BB38D039DCF53784B1101219 /* Pods_HulaTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_HulaTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		E379C4A067091A7F9620B1D7 /* Pods-HulaTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-HulaTests.release.xcconfig"; path = "Pods/Target Support Files/Pods-HulaTests/Pods-HulaTests.release.xcconfig"; sourceTree = "<group>"; };
+		F71C141494B20C830ED53226 /* Pods-HulaTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-HulaTests.debug.xcconfig"; path = "Pods/Target Support Files/Pods-HulaTests/Pods-HulaTests.debug.xcconfig"; sourceTree = "<group>"; };
 		F8274D4E1E712FCB002A3164 /* HLProfileViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HLProfileViewController.swift; sourceTree = "<group>"; };
 		F83186101E6FABBA00DD61FA /* Hula.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Hula.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		F83186181E6FABBA00DD61FA /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
@@ -161,6 +183,7 @@
 				F8B651FD1E7B5381009D1DC6 /* PhotosUI.framework in Frameworks */,
 				F8B651FB1E7B4B19009D1DC6 /* Photos.framework in Frameworks */,
 				F8B651F91E7B4B11009D1DC6 /* AVFoundation.framework in Frameworks */,
+				0FBCBEED5C53860E39E37BDB /* Pods_Hula.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -168,6 +191,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				99F54F96A90A0DEF39B4F77F /* Pods_HulaTests.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -175,6 +199,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D4C767CE36A44207F314461B /* Pods_HulaUITests.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -189,6 +214,14 @@
 			name = Notifications;
 			sourceTree = "<group>";
 		};
+		273A1EA31ECF9EE7005D163E /* Swapp */ = {
+			isa = PBXGroup;
+			children = (
+				273A1EA41ECF9F13005D163E /* HLSwappViewController.swift */,
+			);
+			name = Swapp;
+			sourceTree = "<group>";
+		};
 		277C6C411EA2384B00530B0F /* Utils */ = {
 			isa = PBXGroup;
 			children = (
@@ -200,6 +233,19 @@
 			name = Utils;
 			sourceTree = "<group>";
 		};
+		C70F28FD3DF24CE4C060CE07 /* Pods */ = {
+			isa = PBXGroup;
+			children = (
+				37F8D37FAFF0B4083DF59EC7 /* Pods-Hula.debug.xcconfig */,
+				5D5633F9D4B56B23451A4983 /* Pods-Hula.release.xcconfig */,
+				F71C141494B20C830ED53226 /* Pods-HulaTests.debug.xcconfig */,
+				E379C4A067091A7F9620B1D7 /* Pods-HulaTests.release.xcconfig */,
+				366F1CB838330F3A7BA3CF6B /* Pods-HulaUITests.debug.xcconfig */,
+				3684442621355F3BD05B8FCD /* Pods-HulaUITests.release.xcconfig */,
+			);
+			name = Pods;
+			sourceTree = "<group>";
+		};
 		F83186071E6FABB900DD61FA = {
 			isa = PBXGroup;
 			children = (
@@ -208,6 +254,7 @@
 				F83186351E6FABBA00DD61FA /* HulaUITests */,
 				F83186111E6FABBA00DD61FA /* Products */,
 				F8B651F71E7B4B10009D1DC6 /* Frameworks */,
+				C70F28FD3DF24CE4C060CE07 /* Pods */,
 			);
 			sourceTree = "<group>";
 		};
@@ -338,6 +385,7 @@
 				F86698BA1E703DBE002129E1 /* BaseViewController.swift */,
 				F86698BC1E703DD8002129E1 /* UserBaseViewController.swift */,
 				F86698BE1E703E10002129E1 /* BaseTabBarViewController.swift */,
+				273A1EA11ECF9D37005D163E /* HulaPortraitNavigationController.swift */,
 			);
 			path = Base;
 			sourceTree = "<group>";
@@ -359,6 +407,7 @@
 		F86698AA1E703A80002129E1 /* Login & Signup */ = {
 			isa = PBXGroup;
 			children = (
+				272720421EBA9BE90084CF3C /* HLWelcomeViewController.swift */,
 				F86698C61E7044A6002129E1 /* HLMainViewController.swift */,
 				F86698CC1E7044F2002129E1 /* HLIntroViewController.swift */,
 				F86698C81E7044C0002129E1 /* HLSignUpViewController.swift */,
@@ -371,6 +420,7 @@
 		F86698AB1E703A80002129E1 /* Main */ = {
 			isa = PBXGroup;
 			children = (
+				273A1EA31ECF9EE7005D163E /* Swapp */,
 				F86698C01E703E3A002129E1 /* Home */,
 				1166691A1E992C760094B157 /* Notifications */,
 				F8B651EC1E7A34F8009D1DC6 /* My Products */,
@@ -413,6 +463,8 @@
 			isa = PBXGroup;
 			children = (
 				F8BE7C321E71FF5400FAE07D /* HLSettingViewController.swift */,
+				27401F831EBBB87B00F0B95D /* HLEditFieldViewController.swift */,
+				27401F851EC10F7300F0B95D /* HLPictureSelectViewController.swift */,
 			);
 			name = Setting;
 			sourceTree = "<group>";
@@ -435,6 +487,9 @@
 				F8B651FC1E7B5381009D1DC6 /* PhotosUI.framework */,
 				F8B651FA1E7B4B19009D1DC6 /* Photos.framework */,
 				F8B651F81E7B4B11009D1DC6 /* AVFoundation.framework */,
+				2949F49E550423C849CC8C66 /* Pods_Hula.framework */,
+				BB38D039DCF53784B1101219 /* Pods_HulaTests.framework */,
+				AA99A61775E451E94755B6FC /* Pods_HulaUITests.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -467,9 +522,13 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = F831863B1E6FABBA00DD61FA /* Build configuration list for PBXNativeTarget "Hula" */;
 			buildPhases = (
+				4E9277A37369652854D3210B /* [CP] Check Pods Manifest.lock */,
 				F831860C1E6FABB900DD61FA /* Sources */,
 				F831860D1E6FABB900DD61FA /* Frameworks */,
 				F831860E1E6FABB900DD61FA /* Resources */,
+				583DF2E3BCF34E1CE12214B7 /* [CP] Embed Pods Frameworks */,
+				BA09F20F64235A499D2D4D28 /* [CP] Copy Pods Resources */,
+				27E7E3621ECD150300666A65 /* ShellScript */,
 			);
 			buildRules = (
 			);
@@ -484,9 +543,12 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = F831863E1E6FABBA00DD61FA /* Build configuration list for PBXNativeTarget "HulaTests" */;
 			buildPhases = (
+				722B4A8CD5B78CAD9953F619 /* [CP] Check Pods Manifest.lock */,
 				F83186231E6FABBA00DD61FA /* Sources */,
 				F83186241E6FABBA00DD61FA /* Frameworks */,
 				F83186251E6FABBA00DD61FA /* Resources */,
+				F946E12E41B50BF81ADBFCD4 /* [CP] Embed Pods Frameworks */,
+				01ACECD20212BE6EF7436261 /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -502,9 +564,12 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = F83186411E6FABBA00DD61FA /* Build configuration list for PBXNativeTarget "HulaUITests" */;
 			buildPhases = (
+				05DC20118F1A7E122AACAA42 /* [CP] Check Pods Manifest.lock */,
 				F831862E1E6FABBA00DD61FA /* Sources */,
 				F831862F1E6FABBA00DD61FA /* Frameworks */,
 				F83186301E6FABBA00DD61FA /* Resources */,
+				DB082F603184CFF5C66B1BE5 /* [CP] Embed Pods Frameworks */,
+				F7C1CD41D3043E6B55F24299 /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -599,6 +664,157 @@
 		};
 /* End PBXResourcesBuildPhase section */
 
+/* Begin PBXShellScriptBuildPhase section */
+		01ACECD20212BE6EF7436261 /* [CP] Copy Pods Resources */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "[CP] Copy Pods Resources";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-HulaTests/Pods-HulaTests-resources.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		05DC20118F1A7E122AACAA42 /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n";
+			showEnvVarsInLog = 0;
+		};
+		27E7E3621ECD150300666A65 /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Fabric/run\" 6f5751bab8dc6eb1ae1be585f3770b990fa60b03 be6a3a63ddfc5ab3b6dc5ef207dcce8c40ecf9f9f66981f09827689d04f1a5b0";
+		};
+		4E9277A37369652854D3210B /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n";
+			showEnvVarsInLog = 0;
+		};
+		583DF2E3BCF34E1CE12214B7 /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-Hula/Pods-Hula-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		722B4A8CD5B78CAD9953F619 /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n";
+			showEnvVarsInLog = 0;
+		};
+		BA09F20F64235A499D2D4D28 /* [CP] Copy Pods Resources */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "[CP] Copy Pods Resources";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-Hula/Pods-Hula-resources.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		DB082F603184CFF5C66B1BE5 /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-HulaUITests/Pods-HulaUITests-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		F7C1CD41D3043E6B55F24299 /* [CP] Copy Pods Resources */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "[CP] Copy Pods Resources";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-HulaUITests/Pods-HulaUITests-resources.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		F946E12E41B50BF81ADBFCD4 /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-HulaTests/Pods-HulaTests-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+/* End PBXShellScriptBuildPhase section */
+
 /* Begin PBXSourcesBuildPhase section */
 		F831860C1E6FABB900DD61FA /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
@@ -616,19 +832,24 @@
 				F86698AF1E703A80002129E1 /* AppDelegate.swift in Sources */,
 				F8BE7C331E71FF5400FAE07D /* HLSettingViewController.swift in Sources */,
 				F86698BF1E703E10002129E1 /* BaseTabBarViewController.swift in Sources */,
+				272720431EBA9BE90084CF3C /* HLWelcomeViewController.swift in Sources */,
 				F8B651F01E7A6275009D1DC6 /* HLEditProductMainViewController.swift in Sources */,
 				F831861C1E6FABBA00DD61FA /* Hula.xcdatamodeld in Sources */,
 				F86698C71E7044A6002129E1 /* HLMainViewController.swift in Sources */,
 				F8BE7C4D1E72575300FAE07D /* HLFilterViewController.swift in Sources */,
 				F8BE7C491E7241C500FAE07D /* HLSearchResultViewController.swift in Sources */,
 				F8274D4F1E712FCB002A3164 /* HLProfileViewController.swift in Sources */,
+				27401F841EBBB87B00F0B95D /* HLEditFieldViewController.swift in Sources */,
 				279BAAD81E9D726D00091D24 /* HLNotificationsViewController.swift in Sources */,
 				F86698C41E703EA6002129E1 /* HLDataManager.swift in Sources */,
 				F86698B71E703CB9002129E1 /* HLAPIClient.swift in Sources */,
 				F8BE7C4B1E724F3D00FAE07D /* HLProductDetailViewController.swift in Sources */,
+				273A1EA51ECF9F13005D163E /* HLSwappViewController.swift in Sources */,
 				27C733C91EA2D1E0003A6FD6 /* HLRoundedNextButton.swift in Sources */,
 				F8BE7C371E72010D00FAE07D /* HLFeedbackHistoryTableViewCell.swift in Sources */,
+				273A1EA21ECF9D37005D163E /* HulaPortraitNavigationController.swift in Sources */,
 				F8B651F21E7A6A1E009D1DC6 /* HLPostProductViewController.swift in Sources */,
+				27401F861EC10F7300F0B95D /* HLPictureSelectViewController.swift in Sources */,
 				F890E49A1E710187008719B9 /* HLHomeCategoryTableViewCell.swift in Sources */,
 				27C733C51EA2BC7E003A6FD6 /* HLIdentificationViewController.swift in Sources */,
 				F86698B11E703AB7002129E1 /* HulaUser.swift in Sources */,
@@ -793,6 +1014,7 @@
 		};
 		F831863C1E6FABBA00DD61FA /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 37F8D37FAFF0B4083DF59EC7 /* Pods-Hula.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
@@ -808,6 +1030,7 @@
 		};
 		F831863D1E6FABBA00DD61FA /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 5D5633F9D4B56B23451A4983 /* Pods-Hula.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
@@ -823,6 +1046,7 @@
 		};
 		F831863F1E6FABBA00DD61FA /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = F71C141494B20C830ED53226 /* Pods-HulaTests.debug.xcconfig */;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(TEST_HOST)";
@@ -837,6 +1061,7 @@
 		};
 		F83186401E6FABBA00DD61FA /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = E379C4A067091A7F9620B1D7 /* Pods-HulaTests.release.xcconfig */;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(TEST_HOST)";
@@ -851,6 +1076,7 @@
 		};
 		F83186421E6FABBA00DD61FA /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 366F1CB838330F3A7BA3CF6B /* Pods-HulaUITests.debug.xcconfig */;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				INFOPLIST_FILE = HulaUITests/Info.plist;
@@ -864,6 +1090,7 @@
 		};
 		F83186431E6FABBA00DD61FA /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 3684442621355F3BD05B8FCD /* Pods-HulaUITests.release.xcconfig */;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				INFOPLIST_FILE = HulaUITests/Info.plist;

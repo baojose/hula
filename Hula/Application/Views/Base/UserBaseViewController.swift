@@ -9,7 +9,7 @@
 import UIKit
 
 class UserBaseViewController: UIViewController {
-
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         self.automaticallyAdjustsScrollViewInsets = false

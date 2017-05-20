@@ -7,6 +7,10 @@
 //
 
 import UIKit
+import FacebookCore
+import FacebookLogin
+import TwitterKit
+
 
 class HLProfileViewController: BaseViewController {
     
@@ -32,15 +36,21 @@ class HLProfileViewController: BaseViewController {
         super.viewDidLoad()
         self.initData()
         self.initView()
+        self.getUserProfile()
+        
+        
+        
+        
     }
     override func viewDidAppear(_ animated: Bool) {
+        /*
         let user = HulaUser.sharedInstance
         if (user.token.characters.count < 10){
             // user not logged in
             openUserIdentification()
         } else {
-            getUserProfile()
         }
+ */
     }
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
@@ -65,6 +75,73 @@ class HLProfileViewController: BaseViewController {
         })
     }
     
+    @IBAction func validateAction(_ sender: Any) {
+        let alert = UIAlertController(title: "Select a verification method",
+                                       message: nil,
+                                       preferredStyle: .actionSheet)
+        
+        let facebookAction = UIAlertAction(title: "Facebook", style: .default, handler: { action -> Void in
+                                            self.facebookValidate()
+        })
+        let linkedinAction = UIAlertAction(title: "Linkedin", style: .default, handler: nil)
+        let twitterAction = UIAlertAction(title: "Twitter", style: .default, handler: { action -> Void in
+            self.twitterValidate()
+        })
+        let emailAction = UIAlertAction(title: "Email", style: .default, handler: nil)
+        
+        alert.addAction(facebookAction)
+        alert.addAction(linkedinAction)
+        alert.addAction(twitterAction)
+        alert.addAction(emailAction)
+        
+        let cancelAction = UIAlertAction(title: "Cancel",
+                                           style: .cancel, handler: nil)
+        
+        alert.addAction(cancelAction)
+        self.present(alert, animated: true)
+    }
+    
+    
+    
+    
+    
+    func facebookValidate(){
+        let loginManager = LoginManager()
+        loginManager.logIn([ .publicProfile, .email ], viewController: self) { loginResult in
+            switch loginResult {
+            case .failed(let error):
+                print(error)
+            case .cancelled:
+                print("User cancelled login.")
+            case .success(let grantedPermissions, let declinedPermissions, let accessToken):
+                print("Logged in!")
+                HulaUser.sharedInstance.fbToken = accessToken.authenticationToken as String
+                self.verFacebookIcon.image = UIImage(named: "icon_facebook_on")
+            }
+        }
+    }
+    
+    
+    func twitterValidate(){
+        
+        Twitter.sharedInstance().logIn(completion: { (session, error) in
+            if let unwrappedSession = session {
+                print(unwrappedSession);
+                unwrappedSession.authToken
+                let alert = UIAlertController(title: "Logged In",
+                                              message: "User \(unwrappedSession.userName) has logged in",
+                    preferredStyle: UIAlertControllerStyle.alert
+                )
+                alert.addAction(UIAlertAction(title: "OK", style: UIAlertActionStyle.default, handler: nil))
+                self.present(alert, animated: true, completion: nil)
+                
+                self.verTwitterIcon.image = UIImage(named: "icon_twitter_on")
+                HulaUser.sharedInstance.twToken = unwrappedSession.authToken as String
+            } else {
+                NSLog("Login error: %@", error!.localizedDescription);
+            }
+        })
+    }
     
     
     
@@ -97,6 +174,32 @@ class HLProfileViewController: BaseViewController {
                                 HulaUser.sharedInstance.userPhotoURL = user["image"] as? String
                                 self.commonUtils.loadImageOnView(imageView:self.profileImageView, withURL:HulaUser.sharedInstance.userPhotoURL)
                             }
+                            
+                            
+                            if let fbt = (user["fb_token"] as? String) {
+                                if (fbt != ""){
+                                    HulaUser.sharedInstance.fbToken = fbt
+                                    self.verFacebookIcon.image = UIImage(named: "icon_facebook_on")
+                                }
+                            }
+                            if let lit = (user["li_token"] as? String) {
+                                if (lit != ""){
+                                    HulaUser.sharedInstance.liToken = user["li_token"] as? String
+                                    self.verLinkedinIcon.image = UIImage(named: "icon_linkedin_on")
+                                }
+                            }
+                                if let twt = (user["tw_token"] as? String){
+                                    if (twt != ""){
+                                        HulaUser.sharedInstance.twToken = user["tw_token"] as? String
+                                        self.verTwitterIcon.image = UIImage(named: "icon_twitter_on")
+                                    }
+                            }
+                            if let uStatus = (user["status"] as? String) {
+                                if (uStatus == "verified"){
+                                    self.verMailIcon.image = UIImage(named: "icon_mail_on")
+                                }
+                            }
+                            
                             if (user["feedback_count"] as? CGFloat) != nil {
                                 
                                 let feedback_points:CGFloat = (user["feedback_points"] as? CGFloat)!

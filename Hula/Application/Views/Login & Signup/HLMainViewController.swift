@@ -26,6 +26,21 @@ class HLMainViewController: UserBaseViewController {
     override var preferredStatusBarStyle: UIStatusBarStyle {
         return .lightContent
     }
+    
+    /*
+    override func shouldAutorotate() -> Bool {
+            return false
+    }
+    override func preferredInterfaceOrientationForPresentation() -> UIInterfaceOrientation{
+            return UIInterfaceOrientation.portrait
+    }
+    
+    override func supportedInterfaceOrientations() -> UIInterfaceOrientationMask{
+            return UIInterfaceOrientationMask.portrait
+    }
+    
+    */
+    
     private func playVideo(){
         guard let path = Bundle.main.path(forResource: "splash_intro", ofType:"mp4") else {
             debugPrint("splash_intro.mp4 file not found")
