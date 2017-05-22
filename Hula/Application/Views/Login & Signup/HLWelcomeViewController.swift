@@ -37,12 +37,43 @@ class HLWelcomeViewController: UserBaseViewController, CLLocationManagerDelegate
     */
 
     @IBAction func okButtonTapped(_ sender: Any) {
-        locationManager.requestWhenInUseAuthorization()
+        
+        if CLLocationManager.locationServicesEnabled() {
+            print("Location services are enabled")
+            switch(CLLocationManager.authorizationStatus()) {
+            case .notDetermined, .restricted:
+                print("Pending...")
+                locationManager.requestWhenInUseAuthorization()
+                self.closeIdentification()
+            case .denied:
+                print("Not authorized")
+                let alert = UIAlertController(title: "Location unavailable", message: "Sorry but we do not have access to your current location and we will not be able to have the location of your products. Please change the permissions on the Settings app", preferredStyle: UIAlertControllerStyle.alert)
+                alert.addAction(UIAlertAction(title: "OK", style: UIAlertActionStyle.default, handler: nil))
+                self.present(alert, animated: true, completion: {
+                    self.closeIdentification()
+                })
+                
+            case .authorizedAlways, .authorizedWhenInUse:
+                print("Authorized")
+                self.closeIdentification()
+                
+            }
+        } else {
+            print("Location services are not enabled")
+            
+            self.closeIdentification()
+        }
+        
+        
+        
+        
     }
     
     func locationManager(_ manager: CLLocationManager, didChangeAuthorization status: CLAuthorizationStatus) {
+        print("changedAuth")
+        print(status)
         if status == .authorizedWhenInUse {
-            self.closeIdentification()
+            //self.closeIdentification()
         }
     }
 }

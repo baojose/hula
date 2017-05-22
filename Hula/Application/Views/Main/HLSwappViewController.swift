@@ -13,6 +13,10 @@ class HLSwappViewController: UIViewController {
     @IBOutlet weak var landscapeView: UIView!
     @IBOutlet weak var portraitView: UIView!
     @IBOutlet weak var initialCoverView: UIImageView!
+    @IBOutlet weak var myProfileImage: UIImageView!
+    @IBOutlet weak var hisProfileImage: UIImageView!
+    @IBOutlet weak var myProfileLabel: UILabel!
+    @IBOutlet weak var hisProfileLabel: UILabel!
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -20,6 +24,11 @@ class HLSwappViewController: UIViewController {
         // Do any additional setup after loading the view.
         NotificationCenter.default.addObserver(self, selector: #selector(self.rotated), name: NSNotification.Name.UIDeviceOrientationDidChange, object: nil)
         
+        
+        CommonUtils.sharedInstance.circleImageView(myProfileImage)
+        CommonUtils.sharedInstance.circleImageView(hisProfileImage)
+        myProfileLabel.text = HulaUser.sharedInstance.userNick
+        CommonUtils.sharedInstance.loadImageOnView(imageView:myProfileImage, withURL:HulaUser.sharedInstance.userPhotoURL)
         
         rotated()
     }
@@ -40,6 +49,11 @@ class HLSwappViewController: UIViewController {
         self.dismiss(animated: true) { 
             // After dismiss
         }
+        
+    }
+    @IBAction func closeSwappInterfaceAction(_ sender: Any) {
+        portraitView.isHidden = false
+        landscapeView.isHidden = true
         
     }
 

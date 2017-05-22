@@ -1611,7 +1611,7 @@ Log In</string>
                                                 <rect key="frame" x="0.0" y="48" width="375" height="113"/>
                                                 <autoresizingMask key="autoresizingMask"/>
                                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="dr5-35-SRZ" id="lPp-Fl-qqy">
-                                                    <rect key="frame" x="0.0" y="0.0" width="375" height="113"/>
+                                                    <rect key="frame" x="0.0" y="0.0" width="375" height="112.5"/>
                                                     <autoresizingMask key="autoresizingMask"/>
                                                     <subviews>
                                                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="5 hours ago" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="ODt-f7-Y70">
@@ -2170,14 +2170,14 @@ Log In</string>
                                         <rect key="frame" x="73" y="341" width="95" height="21"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                         <fontDescription key="fontDescription" name="HelveticaNeue-Medium" family="Helvetica Neue" pointSize="12"/>
-                                        <color key="textColor" red="0.062745098039215685" green="0.28627450980392155" blue="0.25490196078431371" alpha="1" colorSpace="calibratedRGB"/>
+                                        <color key="textColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                         <nil key="highlightedColor"/>
                                     </label>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" text="User2" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="ot9-fy-2WG">
                                         <rect key="frame" x="579" y="341" width="71" height="21"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMinY="YES"/>
                                         <fontDescription key="fontDescription" name="HelveticaNeue-Medium" family="Helvetica Neue" pointSize="12"/>
-                                        <color key="textColor" red="0.062745098040000002" green="0.28627450980000002" blue="0.25490196079999999" alpha="1" colorSpace="calibratedRGB"/>
+                                        <color key="textColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                         <nil key="highlightedColor"/>
                                     </label>
                                     <view contentMode="scaleToFill" misplaced="YES" id="m6g-sk-901">
@@ -2193,6 +2193,9 @@ Log In</string>
                                                 <rect key="frame" x="8" y="5" width="38" height="38"/>
                                                 <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES"/>
                                                 <state key="normal" backgroundImage="close_button_trade_screen"/>
+                                                <connections>
+                                                    <action selector="closeSwappInterfaceAction:" destination="Qkq-8f-mCV" eventType="touchUpInside" id="Asj-PG-MLA"/>
+                                                </connections>
                                             </button>
                                             <button opaque="NO" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" id="M8a-5d-nNF">
                                                 <rect key="frame" x="283" y="4" width="40" height="40"/>
@@ -2210,8 +2213,12 @@ Log In</string>
                     <freeformSimulatedSizeMetrics key="simulatedDestinationMetrics"/>
                     <size key="freeformSize" width="667" height="375"/>
                     <connections>
+                        <outlet property="hisProfileImage" destination="rd2-ac-5xc" id="eaO-1t-xyH"/>
+                        <outlet property="hisProfileLabel" destination="ot9-fy-2WG" id="D25-bh-e39"/>
                         <outlet property="initialCoverView" destination="WUQ-DH-8iT" id="lZu-2B-cLW"/>
                         <outlet property="landscapeView" destination="xYF-M1-jng" id="wdr-x4-BrF"/>
+                        <outlet property="myProfileImage" destination="ymU-7O-dqf" id="xQY-zr-t8b"/>
+                        <outlet property="myProfileLabel" destination="dr1-S7-xGh" id="Nga-7o-1Tz"/>
                         <outlet property="portraitView" destination="K9V-hz-1Uk" id="8uY-nx-zd9"/>
                     </connections>
                 </viewController>

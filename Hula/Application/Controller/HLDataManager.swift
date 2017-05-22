@@ -115,6 +115,35 @@ class HLDataManager: NSObject {
         })
     }
     
+    func loginUserWithFacebook(token:String){
+        let queryURL = HulaConstants.apiURL + "authenticate"
+        var loginSuccess = false;
+        /*
+        httpPost(urlstr: queryURL, postString: "email="+email+"&pass="+pass, isPut: false, taskCallback: { (ok, json) in
+            
+            //print("done")
+            //print(ok)
+            //print(json!)
+            if (ok){
+                let user = HulaUser.sharedInstance
+                if let dictionary = json as? [String: Any] {
+                    if let token = dictionary["token"] as? String {
+                        // access individual value in dictionary
+                        user.token = token
+                        user.userId = dictionary["userId"] as? String
+                        //print(token)
+                        loginSuccess = true;
+                        self.writeUserData()
+                    }
+                } else {
+                    user.token = ""
+                }
+                
+                NotificationCenter.default.post(name: self.loginRecieved, object: loginSuccess)
+            }
+        })
+ */
+    }
 
     
     func logout() {
@@ -138,14 +167,11 @@ class HLDataManager: NSObject {
                 //print(json!)
                 let user = HulaUser.sharedInstance
                 if let dictionary = json as? [String: Any] {
-                    if let token = dictionary["token"] as? String {
-                        // access individual value in dictionary
-                        user.token = token
-                        user.userId = dictionary["userId"] as? String
-                        //print(token)
-                        signupSuccess = true;
-                        self.writeUserData()
-                    }
+                    // access individual value in dictionary
+                    self.updateUserFromDict(dict: dictionary as NSDictionary)
+                    //print(token)
+                    signupSuccess = true;
+                    self.writeUserData()
                 } else {
                     user.token = ""
                 }
@@ -307,6 +333,12 @@ class HLDataManager: NSObject {
         
         dict.setObject(user.token, forKey: "token" as NSCopying)
         dict.setObject(user.userId, forKey: "userId" as NSCopying)
+        dict.setObject(user.userNick, forKey: "userNick" as NSCopying)
+        dict.setObject(user.userName, forKey: "userName" as NSCopying)
+        dict.setObject(user.userEmail, forKey: "userEmail" as NSCopying)
+        dict.setObject(user.userLocationName, forKey: "userLocationName" as NSCopying)
+        dict.setObject(user.userPhotoURL, forKey: "userPhotoURL" as NSCopying)
+        dict.setObject(user.userBio, forKey: "userBio" as NSCopying)
         //...
         //writing to GameData.plist
         dict.write(toFile: path, atomically: false)
@@ -366,10 +398,11 @@ class HLDataManager: NSObject {
         if let dict = myDict {
             //loading values
             
-            let user = HulaUser.sharedInstance
+            print("User data loaded:")
+            print(dict)
             
-            user.token = dict.object(forKey: "token")! as! String
-            user.userId = dict.object(forKey: "userId")! as! String
+            updateUserFromDict(dict: dict)
+            
             
             self.loadUserNotifications()
         }
@@ -379,6 +412,48 @@ class HLDataManager: NSObject {
         }
         
     }//eom
+    
+    func updateUserFromDict(dict: NSDictionary){
+        let user = HulaUser.sharedInstance
+        user.token = dict.object(forKey: "token")! as! String
+        user.userId = dict.object(forKey: "userId")! as! String
+        if dict.object(forKey: "userNick") as? String != nil {
+            user.userNick = dict.object(forKey: "userNick")! as! String
+        }
+        if dict.object(forKey: "nick") as? String != nil {
+            user.userNick = dict.object(forKey: "nick")! as! String
+        }
+        if dict.object(forKey: "userName") as? String != nil {
+            user.userName = dict.object(forKey: "userName")! as! String
+        }
+        if dict.object(forKey: "name") as? String != nil {
+            user.userName = dict.object(forKey: "name")! as! String
+        }
+        if dict.object(forKey: "userEmail") as? String != nil {
+            user.userEmail = dict.object(forKey: "userEmail")! as! String
+        }
+        if dict.object(forKey: "email") as? String != nil {
+            user.userEmail = dict.object(forKey: "email")! as! String
+        }
+        if dict.object(forKey: "userBio") as? String != nil {
+            user.userBio = dict.object(forKey: "userBio")! as! String
+        }
+        if dict.object(forKey: "bio") as? String != nil {
+            user.userBio = dict.object(forKey: "bio")! as! String
+        }
+        if dict.object(forKey: "userPhotoURL") as? String != nil {
+            user.userPhotoURL = dict.object(forKey: "userPhotoURL")! as! String
+        }
+        if dict.object(forKey: "image") as? String != nil {
+            user.userPhotoURL = dict.object(forKey: "image")! as! String
+        }
+        if dict.object(forKey: "userLocationName") as? String != nil {
+            user.userLocationName = dict.object(forKey: "userLocationName")! as! String
+        }
+        if dict.object(forKey: "location_name") as? String != nil {
+            user.userLocationName = dict.object(forKey: "location_name")! as! String
+        }
+    }
     
     func loadUserNotifications(){
         print("loading notifications...")

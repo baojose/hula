@@ -31,7 +31,28 @@ class UserBaseViewController: UIViewController {
     func closeIdentification() {
         
         DispatchQueue.main.async {
-            self.navigationController?.popViewController(animated: true);
+            //self.navigationController?.popViewController(animated: true);
+            //self.navigationController?.popToRootViewController(animated: true)
+            
+            
+            
+            let viewControllers: [UIViewController] = self.navigationController!.viewControllers as [UIViewController];
+            for aViewController:UIViewController in viewControllers {
+                if aViewController.isKind(of: BaseTabBarViewController.self) {
+                    if let tb = aViewController as? BaseTabBarViewController {
+                        print("BaseTabBarViewController index:")
+                        print(tb.selectedIndex)
+                        tb.tabBarController?.selectedIndex = 0
+                        tb.selectedIndex = 0
+                    }
+                    _ = self.navigationController?.popToViewController(aViewController, animated: true)
+                }
+            }
+            /*
+            let viewController = self.storyboard?.instantiateViewController(withIdentifier: "baseTabBarPage") as! BaseTabBarViewController
+            
+            self.navigationController?.popToViewController(viewController, animated: true)
+ */
         }
     }
     

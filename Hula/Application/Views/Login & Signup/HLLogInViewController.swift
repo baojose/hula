@@ -7,6 +7,8 @@
 //
 
 import UIKit
+import FacebookCore
+import FacebookLogin
 
 class HLLogInViewController: UserBaseViewController, UITextFieldDelegate {
     @IBOutlet weak var nextButton: HLRoundedNextButton!
@@ -95,18 +97,15 @@ class HLLogInViewController: UserBaseViewController, UITextFieldDelegate {
     }
     
     func loginDataRecieved(notification: NSNotification) {
-        print("Login received. Closing VC")
+        print("Login received. Going to welcome vc")
         let loginOk = notification.object as! Bool
         print(loginOk)
         if (loginOk){
-            //self.closeIdentification()
-            
             DispatchQueue.main.async {
                 let storyBoard : UIStoryboard = UIStoryboard(name: "Main", bundle:nil)
-                
                 let nextViewController = storyBoard.instantiateViewController(withIdentifier: "welcome") as! HLWelcomeViewController
-                self.present(nextViewController, animated:true, completion:nil)
-                
+                //self.present(nextViewController, animated:true, completion:nil)
+                self.navigationController?.pushViewController(nextViewController, animated: true)
             }
             
         } else {
@@ -122,5 +121,22 @@ class HLLogInViewController: UserBaseViewController, UITextFieldDelegate {
     
     func dismissKeyboard(){
         view.endEditing(true)
+    }
+    
+    func facebookLogin(){
+        let loginManager = LoginManager()
+        loginManager.logIn([ .publicProfile, .email ], viewController: self) { loginResult in
+            switch loginResult {
+            case .failed(let error):
+                print(error)
+            case .cancelled:
+                print("User cancelled login.")
+            case .success( _, _, let accessToken):
+                print("Logged in!")
+                HulaUser.sharedInstance.fbToken = accessToken.authenticationToken as String
+                HLDataManager.sharedInstance.loginUserWithFacebook(token: HulaUser.sharedInstance.fbToken)
+                
+            }
+        }
     }
 }
