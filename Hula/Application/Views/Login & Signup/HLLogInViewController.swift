@@ -7,8 +7,6 @@
 //
 
 import UIKit
-import FacebookCore
-import FacebookLogin
 
 class HLLogInViewController: UserBaseViewController, UITextFieldDelegate {
     @IBOutlet weak var nextButton: HLRoundedNextButton!
@@ -121,22 +119,5 @@ class HLLogInViewController: UserBaseViewController, UITextFieldDelegate {
     
     func dismissKeyboard(){
         view.endEditing(true)
-    }
-    
-    func facebookLogin(){
-        let loginManager = LoginManager()
-        loginManager.logIn([ .publicProfile, .email ], viewController: self) { loginResult in
-            switch loginResult {
-            case .failed(let error):
-                print(error)
-            case .cancelled:
-                print("User cancelled login.")
-            case .success( _, _, let accessToken):
-                print("Logged in!")
-                HulaUser.sharedInstance.fbToken = accessToken.authenticationToken as String
-                HLDataManager.sharedInstance.loginUserWithFacebook(token: HulaUser.sharedInstance.fbToken)
-                
-            }
-        }
     }
 }

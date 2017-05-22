@@ -25,6 +25,7 @@ class HLDataManager: NSObject {
     
     let categoriesLoaded = Notification.Name("categoriesLoaded")
     let loginRecieved = Notification.Name("loginRecieved")
+    let fbLoginRecieved = Notification.Name("fbLoginRecieved")
     let signupRecieved = Notification.Name("signupRecieved")
     
     class var sharedInstance: HLDataManager {
@@ -98,10 +99,12 @@ class HLDataManager: NSObject {
             if (ok){
                 let user = HulaUser.sharedInstance
                 if let dictionary = json as? [String: Any] {
-                    if let token = dictionary["token"] as? String {
+                    if (dictionary["token"] as? String) != nil {
                         // access individual value in dictionary
-                        user.token = token
-                        user.userId = dictionary["userId"] as? String
+                        
+                        self.updateUserFromDict(dict: dictionary as NSDictionary)
+                        //user.token = token
+                        //user.userId = dictionary["userId"] as? String
                         //print(token)
                         loginSuccess = true;
                         self.writeUserData()
@@ -116,10 +119,10 @@ class HLDataManager: NSObject {
     }
     
     func loginUserWithFacebook(token:String){
-        let queryURL = HulaConstants.apiURL + "authenticate"
+        let queryURL = HulaConstants.apiURL + "fbauth"
         var loginSuccess = false;
-        /*
-        httpPost(urlstr: queryURL, postString: "email="+email+"&pass="+pass, isPut: false, taskCallback: { (ok, json) in
+        
+        httpPost(urlstr: queryURL, postString: "fbtoken="+token, isPut: false, taskCallback: { (ok, json) in
             
             //print("done")
             //print(ok)
@@ -127,10 +130,9 @@ class HLDataManager: NSObject {
             if (ok){
                 let user = HulaUser.sharedInstance
                 if let dictionary = json as? [String: Any] {
-                    if let token = dictionary["token"] as? String {
+                    if (dictionary["token"] as? String) != nil {
                         // access individual value in dictionary
-                        user.token = token
-                        user.userId = dictionary["userId"] as? String
+                        self.updateUserFromDict(dict: dictionary as NSDictionary)
                         //print(token)
                         loginSuccess = true;
                         self.writeUserData()
@@ -139,10 +141,10 @@ class HLDataManager: NSObject {
                     user.token = ""
                 }
                 
-                NotificationCenter.default.post(name: self.loginRecieved, object: loginSuccess)
+                NotificationCenter.default.post(name: self.fbLoginRecieved, object: loginSuccess)
             }
         })
- */
+ 
     }
 
     
