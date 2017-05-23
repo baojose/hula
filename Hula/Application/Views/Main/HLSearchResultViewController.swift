@@ -95,6 +95,9 @@ class HLSearchResultViewController: BaseViewController, UITableViewDataSource, U
     }
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath){
         let viewController = self.storyboard?.instantiateViewController(withIdentifier: "productDetailPage") as! HLProductDetailViewController
+        
+        let product = productsList[indexPath.row] as! NSDictionary
+        viewController.productData = product
         self.navigationController?.pushViewController(viewController, animated: true)
     }
     

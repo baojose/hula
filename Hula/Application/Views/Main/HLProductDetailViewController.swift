@@ -31,6 +31,8 @@ class HLProductDetailViewController: BaseViewController, UIScrollViewDelegate, U
     @IBOutlet var sellerLabel: UILabel!
     @IBOutlet var userInventoryLabel: UILabel!
     
+    var productData: NSDictionary!
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         self.initData()
@@ -47,12 +49,15 @@ class HLProductDetailViewController: BaseViewController, UIScrollViewDelegate, U
     }
 
     func initData() {
-        
+        print(productData);
     }
     func initView() {
         var newFrame: CGRect! = productTableView.frame
         newFrame.size.height = 10 * 129;
         productTableView.frame = newFrame
+        insertIfAvailable(label:productNameLabel, maybeText: productData["title"] as Any)
+        insertIfAvailable(label:productDescriptionLabel, maybeText: productData["description"] as Any)
+        
         mainScrollView.contentSize = CGSize(width: 0, height: productTableView.frame.origin.y + productTableView.frame.size.height)
         self.setUpProductImagesScrollView()
         commonUtils.setRoundedRectBorderButton(addToTradeBtn, 1.0, UIColor.white, addToTradeBtn.frame.size.height / 2.0)
@@ -91,14 +96,31 @@ class HLProductDetailViewController: BaseViewController, UIScrollViewDelegate, U
     
     
     func setUpProductImagesScrollView() {
-        for i in 0 ..< 5 {
-            let imageFrame = CGRect(x: (CGFloat)(i) * productsScrollView.frame.size.width, y: 0, width: productsScrollView.frame.size.width, height: productsScrollView.frame.size.height)
-            let imgView: UIImageView! = UIImageView.init(frame: imageFrame)
-            imgView.image = UIImage(named: "temp_product")
-            productsScrollView.addSubview(imgView)
+        var num_images: CGFloat = 0;
+        if let img_arr = productData["images"] as? NSArray {
+            
+            for i in 0 ..< 4 {
+                if let img_url = img_arr[i] as? String{
+                    if (img_url.characters.count > 0){
+                        let imageFrame = CGRect(x: (CGFloat)(i) * productsScrollView.frame.size.width, y: 0, width: productsScrollView.frame.size.width, height: productsScrollView.frame.size.height)
+                        let imgView: UIImageView! = UIImageView.init(frame: imageFrame)
+                        commonUtils.loadImageOnView(imageView: imgView, withURL: img_url)
+                        //imgView.image = UIImage(named: "temp_product")
+                        productsScrollView.addSubview(imgView)
+                        num_images += 1
+                    }
+                }
+            }
         }
-        productsScrollView.contentSize = CGSize(width: 5 * productsScrollView.frame.size.width, height: 0.0)
+        productsScrollView.contentSize = CGSize(width: num_images * productsScrollView.frame.size.width, height: 0.0)
+        pageControl.numberOfPages = Int(num_images)
+        pageControl.currentPage = 0
         productsScrollView.contentOffset = CGPoint(x: 0.0, y: 0.0)
     }
     
+    func insertIfAvailable(label: UILabel, maybeText: Any){
+        if let tx = maybeText as? String {
+            label.text = tx
+        }
+    }
 }
