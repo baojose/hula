@@ -10,6 +10,8 @@ import UIKit
 
 class HLNotificationsViewController: BaseViewController, UITableViewDelegate, UITableViewDataSource {
     
+    @IBOutlet weak var notificationsView: UIView!
+    @IBOutlet weak var noNotificatiosnFoundView: UIView!
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -22,6 +24,13 @@ class HLNotificationsViewController: BaseViewController, UITableViewDelegate, UI
             openUserIdentification()
         }
  */
+        if (dataManager.arrNotifications.count == 0){
+            notificationsView.isHidden = true
+            noNotificatiosnFoundView.isHidden = false
+        } else {
+            notificationsView.isHidden = false
+            noNotificatiosnFoundView.isHidden = true
+        }
     }
     
     override func didReceiveMemoryWarning() {
