@@ -23,6 +23,7 @@ class HulaUser: NSObject {
     var fbToken: String!
     var twToken: String!
     var liToken: String!
+    var arrayProducts = [] as Array
     
     class var sharedInstance: HulaUser {
         struct Static {
@@ -45,6 +46,7 @@ class HulaUser: NSObject {
         self.twToken = ""
         self.liToken = ""
         self.location = CGPoint(x:0, y:0)
+        self.arrayProducts = []
     }
     
     func isIncompleteProfile() -> Bool{
@@ -80,6 +82,7 @@ class HulaUser: NSObject {
         self.twToken = ""
         self.liToken = ""
         self.location = CGPoint(x:0, y:0)
+        self.arrayProducts = []
     }
     
     func isUserLoggedIn() -> Bool{

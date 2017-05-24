@@ -182,6 +182,7 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
                         if let dictionary = json as? [Any] {
                             //print(dictionary)
                             self.arrayProducts = dictionary
+                            HulaUser.sharedInstance.arrayProducts = dictionary
                         }
                         self.productTableView.reloadData()
                     }

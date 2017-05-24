@@ -9,7 +9,7 @@
 import UIKit
 
 class HLSwappViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
-
+    
     @IBOutlet weak var landscapeView: UIView!
     @IBOutlet weak var portraitView: UIView!
     @IBOutlet weak var initialCoverView: UIImageView!
@@ -52,7 +52,7 @@ class HLSwappViewController: UIViewController, UITableViewDelegate, UITableViewD
         return 110.0
     }
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return 6
+        return HulaUser.sharedInstance.arrayProducts.count
         /*
         if (self.arrayProducts.count != 0){
             return self.arrayProducts.count
@@ -62,12 +62,27 @@ class HLSwappViewController: UIViewController, UITableViewDelegate, UITableViewD
  */
     }
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let cell: HLSwappProductTableViewCell;
+        if (tableView.dequeueReusableCell(withIdentifier: "swappcell") as? HLSwappProductTableViewCell) != nil {
+            cell = tableView.dequeueReusableCell(withIdentifier: "swappcell") as! HLSwappProductTableViewCell
+        } else {
+            cell = tableView.dequeueReusableCell(withIdentifier: "swappcell2") as! HLSwappProductTableViewCell
+        }
         
-        let cell = tableView.dequeueReusableCell(withIdentifier: "swappcell") as! HLSwappProductTableViewCell
+        let product : NSDictionary = HulaUser.sharedInstance.arrayProducts[indexPath.row] as! NSDictionary
+        //print(product)
+        if let productTitle = product.object(forKey: "title") as? String {
+            cell.productName.text = productTitle
+        } else {
+            cell.productName.text = "Untitled product"
+        }
         
-        cell.productName.text = "Product name a bit longer!"
-        CommonUtils.sharedInstance.loadImageOnView(imageView:cell.productImage, withURL:HulaUser.sharedInstance.userPhotoURL)
+        if let productImage = product.object(forKey: "image_url") as? String {
+            CommonUtils.sharedInstance.loadImageOnView(imageView:cell.productImage, withURL:productImage)
+        }
         
+        
+    
         return cell
     }
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath){
