@@ -8,7 +8,7 @@
 
 import UIKit
 
-class HLSwappViewController: UIViewController {
+class HLSwappViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
 
     @IBOutlet weak var landscapeView: UIView!
     @IBOutlet weak var portraitView: UIView!
@@ -17,6 +17,8 @@ class HLSwappViewController: UIViewController {
     @IBOutlet weak var hisProfileImage: UIImageView!
     @IBOutlet weak var myProfileLabel: UILabel!
     @IBOutlet weak var hisProfileLabel: UILabel!
+    @IBOutlet weak var myTableView: UITableView!
+    @IBOutlet weak var hisTableView: UITableView!
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -44,6 +46,36 @@ class HLSwappViewController: UIViewController {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
     }
+    
+    //#MARK: - TableViewDelegate
+    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat{
+        return 110.0
+    }
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        return 6
+        /*
+        if (self.arrayProducts.count != 0){
+            return self.arrayProducts.count
+        } else {
+            return 0
+        }
+ */
+    }
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        
+        let cell = tableView.dequeueReusableCell(withIdentifier: "swappcell") as! HLSwappProductTableViewCell
+        
+        cell.productName.text = "Product name a bit longer!"
+        CommonUtils.sharedInstance.loadImageOnView(imageView:cell.productImage, withURL:HulaUser.sharedInstance.userPhotoURL)
+        
+        return cell
+    }
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath){
+    }
+    
+    
+    
+    
     
     @IBAction func backButtonAction(_ sender: Any) {
         self.dismiss(animated: true) { 
