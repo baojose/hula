@@ -74,7 +74,7 @@ class HLEditFieldViewController: BaseViewController, UITextFieldDelegate, UIText
         let lat = userLocation.coordinate.latitude;
         
         //print(long, lat)
-        userData.location = CGPoint(x:long, y:lat);
+        userData.location = CLLocation(latitude:lat, longitude:long);
         if (field_key == "userLocationName"){
             setUsersClosestCity(userLocation: userLocation)
         }

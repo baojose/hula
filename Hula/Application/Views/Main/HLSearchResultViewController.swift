@@ -79,7 +79,11 @@ class HLSearchResultViewController: BaseViewController, UITableViewDataSource, U
                 print(user)
                 cell.productOwnerName.text = user.object(forKey: "nick") as? String
                 commonUtils.loadImageOnView(imageView:cell.productOwnerImage, withURL:(user.object(forKey: "image") as? String)!)
-                cell.productDistance.text = "10 miles"
+                if let location = product.object(forKey: "location") as? [CGFloat]{
+                    cell.productDistance.text = "(" + commonUtils.getDistanceFrom(lat: location[0], lon: location[1]) + ")"
+                } else {
+                    cell.productDistance.text = "-"
+                }
                 let up = user.object(forKey: "feedback_points") as? Float
                 let uc = user.object(forKey: "feedback_count") as? Float
                 if (up != nil) && (uc != nil){

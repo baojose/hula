@@ -41,8 +41,9 @@ class HulaTrade: NSObject {
     }
     
     func saveNewTrade(){
-        let queryURL = HulaConstants.apiURL + "trade"
-        HLDataManager.sharedInstance.httpPost(urlstr: queryURL, postString: "product_id=" + self.product_id + "&owner_id=" + self.owner_id + "&other_id=" + self.other_id + "&date=" + self.date.iso8601 + "&owner_products=" + self.owner_products.joined() + "&other_products=" + self.other_products.joined() + "&next_bid=" + self.next_bid + "&status=" + self.status, isPut: false, taskCallback: { (ok, json) in
+        let queryURL = HulaConstants.apiURL + "trades"
+        let post_string = get_post_string();
+        HLDataManager.sharedInstance.httpPost(urlstr: queryURL, postString: post_string, isPut: false, taskCallback: { (ok, json) in
             if (ok){
                 //print(json!)
                 if let dictionary = json as? NSDictionary {
@@ -55,8 +56,12 @@ class HulaTrade: NSObject {
         })
     }
     
+    func get_post_string() -> String {
+        return "product_id=" + self.product_id + "&owner_id=" + self.owner_id + "&other_id=" + self.other_id + "&date=" + self.date.iso8601 + "&owner_products=" + self.owner_products.joined() + "&other_products=" + self.other_products.joined() + "&next_bid=" + self.next_bid + "&status=" + self.status
+    }
+    
     func loadTrade(tradeId:String, callback: @escaping (Bool) -> ()){
-        let queryURL = HulaConstants.apiURL + "trade/" + tradeId
+        let queryURL = HulaConstants.apiURL + "trades/" + tradeId
         HLDataManager.sharedInstance.httpGet(urlstr: queryURL, taskCallback: { (ok, json) in
             if (ok){
                 if let loaded_trade = json as? NSDictionary {
@@ -101,7 +106,8 @@ class HulaTrade: NSObject {
         print("Updating trade...")
         if(tradeId.characters.count > 0){
             let queryURL = HulaConstants.apiURL + "trades/" + self.tradeId
-            HLDataManager.sharedInstance.httpPost(urlstr: queryURL, postString: "product_id=" + self.product_id + "&owner_id=" + self.owner_id + "&other_id=" + self.other_id + "&date=" + self.date.iso8601 + "&owner_products=" + self.owner_products.joined() + "&other_products=" + self.other_products.joined() + "&next_bid=" + self.next_bid + "&status=" + self.status, isPut: true, taskCallback: { (ok, json) in
+            let post_string = get_post_string();
+            HLDataManager.sharedInstance.httpPost(urlstr: queryURL, postString: post_string, isPut: true, taskCallback: { (ok, json) in
                 if (ok){
                     //print(json!)
                     if let dictionary = json as? [String: Any] {

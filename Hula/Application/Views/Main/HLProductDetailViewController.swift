@@ -17,6 +17,10 @@ class HLProductDetailViewController: BaseViewController, UIScrollViewDelegate, U
     @IBOutlet var sellerView: UIView!
     @IBOutlet var productTableView: UITableView!
     @IBOutlet var addToTradeBtn: UIButton!
+    @IBOutlet weak var addToTradeBg: UIImageView!
+    @IBOutlet weak var productDistance: UILabel!
+    @IBOutlet weak var productCategory: UILabel!
+    @IBOutlet weak var productCondition: UILabel!
     
     @IBOutlet var productsScrollView: UIScrollView!
     @IBOutlet var productNameLabel: UILabel!
@@ -58,12 +62,29 @@ class HLProductDetailViewController: BaseViewController, UIScrollViewDelegate, U
         insertIfAvailable(label:productNameLabel, maybeText: productData["title"] as Any)
         insertIfAvailable(label:productDescriptionLabel, maybeText: productData["description"] as Any)
         
-        mainScrollView.contentSize = CGSize(width: 0, height: productTableView.frame.origin.y + productTableView.frame.size.height)
+        mainScrollView.contentSize = CGSize(width: 0, height: productTableView.frame.origin.y + productTableView.frame.size.height + 200)
         self.setUpProductImagesScrollView()
         commonUtils.setRoundedRectBorderButton(addToTradeBtn, 1.0, UIColor.white, addToTradeBtn.frame.size.height / 2.0)
         commonUtils.circleImageView(sellerImageView)
         sellerLabel.attributedText = commonUtils.attributedStringWithTextSpacing("SELLER", 2.33)
         userInventoryLabel.attributedText = commonUtils.attributedStringWithTextSpacing("USER'S INVENTORY", 2.33)
+        insertIfAvailable(label:productCategory, maybeText: productData["category_name"] as Any)
+        insertIfAvailable(label:productCondition, maybeText: productData["condition"] as Any)
+        if let location = productData["location"] as? [CGFloat] {
+            let lt = location[0] as CGFloat
+            let ln = location[1] as CGFloat
+            productDistance.text = commonUtils.getDistanceFrom(lat: lt, lon: ln)
+        } else {
+            productDistance.text = "-"
+        }
+        if (productData["owner_id"] as! String == HulaUser.sharedInstance.userId){
+            // this is my own product, so i cannot swapp it with me
+            addToTradeBtn.isHidden = true
+            addToTradeBg.isHidden = true
+        } else {
+            addToTradeBtn.isHidden = false
+            addToTradeBg.isHidden = false
+        }
     }
     
     //#MARK: - TableViewDelegate
@@ -122,5 +143,7 @@ class HLProductDetailViewController: BaseViewController, UIScrollViewDelegate, U
         if let tx = maybeText as? String {
             label.text = tx
         }
+    }
+    @IBAction func addToTradeAction(_ sender: Any) {
     }
 }
