@@ -2170,7 +2170,7 @@ Log In</string>
                                                 <rect key="frame" x="0.0" y="28" width="128" height="110"/>
                                                 <autoresizingMask key="autoresizingMask"/>
                                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="ZO9-wt-Jum" id="Sj5-Rm-YtI">
-                                                    <rect key="frame" x="0.0" y="0.0" width="128" height="109.5"/>
+                                                    <rect key="frame" x="0.0" y="0.0" width="128" height="110"/>
                                                     <autoresizingMask key="autoresizingMask"/>
                                                     <subviews>
                                                         <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" id="h9Z-Pl-3uT">
@@ -2206,7 +2206,7 @@ Log In</string>
                                                 <rect key="frame" x="0.0" y="28" width="128" height="110"/>
                                                 <autoresizingMask key="autoresizingMask"/>
                                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="CDy-hX-QXF" id="t3i-r2-DYi">
-                                                    <rect key="frame" x="0.0" y="0.0" width="128" height="109.5"/>
+                                                    <rect key="frame" x="0.0" y="0.0" width="128" height="110"/>
                                                     <autoresizingMask key="autoresizingMask"/>
                                                     <subviews>
                                                         <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" id="FGf-91-Fl7">
@@ -2345,7 +2345,7 @@ Log In</string>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <view contentMode="scaleToFill" misplaced="YES" id="kYB-lt-SNT">
-                                <rect key="frame" x="167" y="36" width="333" height="301"/>
+                                <rect key="frame" x="167" y="55" width="333" height="301"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES"/>
                                 <subviews>
                                     <imageView opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleAspectFit" misplaced="YES" image="calculator-layout" id="fpr-si-otl">

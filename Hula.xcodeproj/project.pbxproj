@@ -11,6 +11,7 @@
 		111F79421EA56B5E00904EC5 /* test_UI.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 111F79411EA56B5E00904EC5 /* test_UI.storyboard */; };
 		116669151E98222F0094B157 /* HLHomeNotificationsTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 116669141E98222F0094B157 /* HLHomeNotificationsTableViewCell.swift */; };
 		116669191E9925C20094B157 /* HulaNotifications.swift in Sources */ = {isa = PBXBuildFile; fileRef = 116669181E9925C20094B157 /* HulaNotifications.swift */; };
+		271F5C5A1EDAD90C00A7B1C1 /* HulaTrade.swift in Sources */ = {isa = PBXBuildFile; fileRef = 271F5C591EDAD90C00A7B1C1 /* HulaTrade.swift */; };
 		272720431EBA9BE90084CF3C /* HLWelcomeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 272720421EBA9BE90084CF3C /* HLWelcomeViewController.swift */; };
 		273A1EA21ECF9D37005D163E /* HulaPortraitNavigationController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 273A1EA11ECF9D37005D163E /* HulaPortraitNavigationController.swift */; };
 		273A1EA51ECF9F13005D163E /* HLSwappViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 273A1EA41ECF9F13005D163E /* HLSwappViewController.swift */; };
@@ -99,6 +100,7 @@
 		111F79411EA56B5E00904EC5 /* test_UI.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = test_UI.storyboard; sourceTree = "<group>"; };
 		116669141E98222F0094B157 /* HLHomeNotificationsTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HLHomeNotificationsTableViewCell.swift; sourceTree = "<group>"; };
 		116669181E9925C20094B157 /* HulaNotifications.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HulaNotifications.swift; sourceTree = "<group>"; };
+		271F5C591EDAD90C00A7B1C1 /* HulaTrade.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HulaTrade.swift; sourceTree = "<group>"; };
 		272720421EBA9BE90084CF3C /* HLWelcomeViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HLWelcomeViewController.swift; sourceTree = "<group>"; };
 		273A1EA11ECF9D37005D163E /* HulaPortraitNavigationController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HulaPortraitNavigationController.swift; sourceTree = "<group>"; };
 		273A1EA41ECF9F13005D163E /* HLSwappViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HLSwappViewController.swift; sourceTree = "<group>"; };
@@ -336,6 +338,7 @@
 				116669181E9925C20094B157 /* HulaNotifications.swift */,
 				F86698B61E703CB9002129E1 /* HLAPIClient.swift */,
 				F86698C31E703EA6002129E1 /* HLDataManager.swift */,
+				271F5C591EDAD90C00A7B1C1 /* HulaTrade.swift */,
 			);
 			path = Controller;
 			sourceTree = "<group>";
@@ -841,6 +844,7 @@
 				F86698BF1E703E10002129E1 /* BaseTabBarViewController.swift in Sources */,
 				272720431EBA9BE90084CF3C /* HLWelcomeViewController.swift in Sources */,
 				273A1EA71ED6440A005D163E /* HLSwappProductTableViewCell.swift in Sources */,
+				271F5C5A1EDAD90C00A7B1C1 /* HulaTrade.swift in Sources */,
 				F8B651F01E7A6275009D1DC6 /* HLEditProductMainViewController.swift in Sources */,
 				F831861C1E6FABBA00DD61FA /* Hula.xcdatamodeld in Sources */,
 				F86698C71E7044A6002129E1 /* HLMainViewController.swift in Sources */,
