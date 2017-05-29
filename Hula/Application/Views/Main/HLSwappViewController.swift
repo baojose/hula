@@ -19,6 +19,7 @@ class HLSwappViewController: UIViewController, UITableViewDelegate, UITableViewD
     @IBOutlet weak var hisProfileLabel: UILabel!
     @IBOutlet weak var myTableView: UITableView!
     @IBOutlet weak var hisTableView: UITableView!
+    @IBOutlet weak var mainPageControl: UIPageControl!
     
     override func viewDidLoad() {
         super.viewDidLoad()
