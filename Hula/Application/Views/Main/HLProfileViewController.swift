@@ -40,7 +40,13 @@ class HLProfileViewController: BaseViewController {
         
         
         
+    }
+    override func viewWillAppear(_ animated: Bool) {
         
+        if !HulaUser.sharedInstance.isUserLoggedIn() {
+            
+            self.tabBarController?.selectedIndex = 0
+        }
     }
     override func viewDidAppear(_ animated: Bool) {
         /*
@@ -50,7 +56,7 @@ class HLProfileViewController: BaseViewController {
             openUserIdentification()
         } else {
         }
- */
+         */
     }
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()

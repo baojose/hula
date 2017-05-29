@@ -95,18 +95,15 @@ class HLLogInViewController: UserBaseViewController, UITextFieldDelegate {
     }
     
     func loginDataRecieved(notification: NSNotification) {
-        print("Login received. Closing VC")
+        print("Login received. Going to welcome vc")
         let loginOk = notification.object as! Bool
         print(loginOk)
         if (loginOk){
-            //self.closeIdentification()
-            
             DispatchQueue.main.async {
                 let storyBoard : UIStoryboard = UIStoryboard(name: "Main", bundle:nil)
-                
                 let nextViewController = storyBoard.instantiateViewController(withIdentifier: "welcome") as! HLWelcomeViewController
-                self.present(nextViewController, animated:true, completion:nil)
-                
+                //self.present(nextViewController, animated:true, completion:nil)
+                self.navigationController?.pushViewController(nextViewController, animated: true)
             }
             
         } else {

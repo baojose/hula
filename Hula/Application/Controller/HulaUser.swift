@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import CoreLocation
 
 class HulaUser: NSObject {
     
@@ -19,10 +20,11 @@ class HulaUser: NSObject {
     var userBio: String!
     var userPass: String!
     var token: String!
-    var location: CGPoint!
+    var location: CLLocation!
     var fbToken: String!
     var twToken: String!
     var liToken: String!
+    var arrayProducts = [] as Array
     
     class var sharedInstance: HulaUser {
         struct Static {
@@ -44,7 +46,8 @@ class HulaUser: NSObject {
         self.fbToken = ""
         self.twToken = ""
         self.liToken = ""
-        self.location = CGPoint(x:0, y:0)
+        self.location = CLLocation(latitude: 0, longitude: 0)
+        self.arrayProducts = []
     }
     
     func isIncompleteProfile() -> Bool{
@@ -79,7 +82,8 @@ class HulaUser: NSObject {
         self.fbToken = ""
         self.twToken = ""
         self.liToken = ""
-        self.location = CGPoint(x:0, y:0)
+        self.location = CLLocation(latitude: 0, longitude: 0)
+        self.arrayProducts = []
     }
     
     func isUserLoggedIn() -> Bool{
@@ -94,7 +98,7 @@ class HulaUser: NSObject {
         print("Updating user...")
         if(isUserLoggedIn()){
             let queryURL = HulaConstants.apiURL + "users/" + self.userId
-            HLDataManager.sharedInstance.httpPost(urlstr: queryURL, postString: "email=" + self.userEmail + "&name=" + self.userName + "&bio=" + self.userBio + "&nick=" + self.userNick + "&image=" + self.userPhotoURL + "&twtoken=" + self.twToken + "&litoken=" + self.liToken + "&fbtoken=" + self.fbToken, isPut: true, taskCallback: { (ok, json) in
+            HLDataManager.sharedInstance.httpPost(urlstr: queryURL, postString: getPostString(), isPut: true, taskCallback: { (ok, json) in
                 
                 //print("done")
                 //print(ok)
@@ -108,5 +112,10 @@ class HulaUser: NSObject {
                 }
             })
         }
+    }
+    func getPostString() -> String {
+        var str = "email=" + self.userEmail + "&name=" + self.userName + "&bio=" + self.userBio + "&nick=" + self.userNick + "&image=" + self.userPhotoURL + "&twtoken=" + self.twToken
+        str = str + "&litoken=" + self.liToken + "&fbtoken=" + self.fbToken + "&lat=\(self.location.coordinate.latitude)&lon=\(self.location.coordinate.longitude)"
+        return str
     }
 }

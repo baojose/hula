@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import CoreLocation
 
 class CommonUtils: NSObject {
     
@@ -97,6 +98,23 @@ class CommonUtils: NSObject {
             }.resume()
     }
     
+    func getDistanceFrom(lat:CGFloat, lon:CGFloat) -> String{
+        let coordinate₀ = CLLocation(latitude: CLLocationDegrees(lat), longitude: CLLocationDegrees(lon))
+        let coordinate₁ = CLLocation(latitude: 5.0, longitude: 3.0)
+        
+        let distanceInMeters = coordinate₀.distance(from: coordinate₁) // result is in meters
+        
+        var distance = round( distanceInMeters / 1609 )
+        if (distance<1){
+            distance = round( distanceInMeters / 161 ) / 10
+        } else {
+            if (distance>100){
+                distance = 999
+            }
+        }
+        return "\(distance) miles"
+    }
+    
     
     func timeAgoSinceDate(date:NSDate, numericDates:Bool) -> String {
         let calendar = NSCalendar.current
@@ -173,5 +191,27 @@ class CommonUtils: NSObject {
         } else {
             return NSDate()
         }
+    }
+}
+
+extension Formatter {
+    static let iso8601: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.calendar = Calendar(identifier: .iso8601)
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.timeZone = TimeZone(secondsFromGMT: 0)
+        formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSXXXXX"
+        return formatter
+    }()
+}
+extension Date {
+    var iso8601: String {
+        return Formatter.iso8601.string(from: self)
+    }
+}
+
+extension String {
+    var dateFromISO8601: Date? {
+        return Formatter.iso8601.date(from: self)   // "Mar 22, 2017, 10:22 AM"
     }
 }
