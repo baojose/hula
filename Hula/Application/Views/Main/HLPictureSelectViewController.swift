@@ -73,7 +73,7 @@ class HLPictureSelectViewController: BaseViewController, UIImagePickerController
         let croppedImage:UIImage = self.commonUtils.cropImage(chosenImage, HulaConstants.product_image_thumb_size)
         // save the image
         uploadImage(croppedImage)
-        dismiss(animated:true, completion: nil) //5
+        //dismiss(animated:true, completion: nil) //5
         dismissToPreviousPage(croppedImage)
     }
     func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
@@ -129,7 +129,7 @@ class HLPictureSelectViewController: BaseViewController, UIImagePickerController
 
     @IBAction func takePhotoAction(_ sender: Any) {
         saveToCamera(sender)
-        dismissToPreviousPage(sender)
+        //dismissToPreviousPage(sender)
     }
     func openImagePicker(){
         picker.allowsEditing = false
@@ -171,7 +171,6 @@ class HLPictureSelectViewController: BaseViewController, UIImagePickerController
                                 print(pos)
                                 self.resultingImage = HulaConstants.staticServerURL + filePath
                                 HulaUser.sharedInstance.userPhotoURL = self.resultingImage
-                                
                                 HulaUser.sharedInstance.updateServerData()
                                 self.dismissToPreviousPage(self.resultingImage)
                             }

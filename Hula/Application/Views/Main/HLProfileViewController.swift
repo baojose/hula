@@ -86,19 +86,32 @@ class HLProfileViewController: BaseViewController {
                                        message: nil,
                                        preferredStyle: .actionSheet)
         
-        let facebookAction = UIAlertAction(title: "Facebook", style: .default, handler: { action -> Void in
-                                            self.facebookValidate()
-        })
-        let linkedinAction = UIAlertAction(title: "Linkedin", style: .default, handler: nil)
-        let twitterAction = UIAlertAction(title: "Twitter", style: .default, handler: { action -> Void in
-            self.twitterValidate()
-        })
-        let emailAction = UIAlertAction(title: "Email", style: .default, handler: nil)
+        if HulaUser.sharedInstance.fbToken.characters.count == 0 {
+            let facebookAction = UIAlertAction(title: "Facebook", style: .default, handler: { action -> Void in
+                self.facebookValidate()
+            })
+            alert.addAction(facebookAction)
+        }
         
-        alert.addAction(facebookAction)
+        let linkedinAction = UIAlertAction(title: "Linkedin", style: .default, handler: nil)
         alert.addAction(linkedinAction)
-        alert.addAction(twitterAction)
-        alert.addAction(emailAction)
+        
+        
+        if HulaUser.sharedInstance.twToken.characters.count == 0 {
+            let twitterAction = UIAlertAction(title: "Twitter", style: .default, handler: { action -> Void in
+                self.twitterValidate()
+            })
+            alert.addAction(twitterAction)
+        }
+        
+        
+        if HulaUser.sharedInstance.status != "verified" {
+            let emailAction = UIAlertAction(title: "Email", style: .default, handler: { action -> Void in
+                self.emailValidate()
+            })
+            alert.addAction(emailAction)
+        }
+        
         
         let cancelAction = UIAlertAction(title: "Cancel",
                                            style: .cancel, handler: nil)
@@ -121,8 +134,11 @@ class HLProfileViewController: BaseViewController {
                 print("User cancelled login.")
             case .success(let grantedPermissions, let declinedPermissions, let accessToken):
                 print("Logged in!")
+                print(grantedPermissions)
+                print(declinedPermissions)
                 HulaUser.sharedInstance.fbToken = accessToken.authenticationToken as String
                 self.verFacebookIcon.image = UIImage(named: "icon_facebook_on")
+                HulaUser.sharedInstance.updateServerData()
             }
         }
     }
@@ -133,22 +149,33 @@ class HLProfileViewController: BaseViewController {
         Twitter.sharedInstance().logIn(completion: { (session, error) in
             if let unwrappedSession = session {
                 print(unwrappedSession);
-                unwrappedSession.authToken
-                let alert = UIAlertController(title: "Logged In",
-                                              message: "User \(unwrappedSession.userName) has logged in",
+                /*
+                let alert = UIAlertController(title: "Logged In", message: "User \(unwrappedSession.userName) has logged in",
                     preferredStyle: UIAlertControllerStyle.alert
                 )
                 alert.addAction(UIAlertAction(title: "OK", style: UIAlertActionStyle.default, handler: nil))
-                self.present(alert, animated: true, completion: nil)
+                 self.present(alert, animated: true, completion: nil)
+                 */
                 
                 self.verTwitterIcon.image = UIImage(named: "icon_twitter_on")
                 HulaUser.sharedInstance.twToken = unwrappedSession.authToken as String
+                HulaUser.sharedInstance.updateServerData()
             } else {
                 NSLog("Login error: %@", error!.localizedDescription);
             }
         })
     }
     
+    
+    func emailValidate(){
+        
+        HulaUser.sharedInstance.resendValidationMail()
+        let alert = UIAlertController(title: "Logged In", message: "We have just sent you an email to \(HulaUser.sharedInstance.userEmail!). Please follow the instructions provided on that message.",
+            preferredStyle: UIAlertControllerStyle.alert
+        )
+        alert.addAction(UIAlertAction(title: "OK", style: UIAlertActionStyle.default, handler: nil))
+        self.present(alert, animated: true, completion: nil)
+    }
     
     
     // Custom functions for ViewController
@@ -194,14 +221,15 @@ class HLProfileViewController: BaseViewController {
                                     self.verLinkedinIcon.image = UIImage(named: "icon_linkedin_on")
                                 }
                             }
-                                if let twt = (user["tw_token"] as? String){
-                                    if (twt != ""){
-                                        HulaUser.sharedInstance.twToken = user["tw_token"] as? String
-                                        self.verTwitterIcon.image = UIImage(named: "icon_twitter_on")
-                                    }
+                            if let twt = (user["tw_token"] as? String){
+                                if (twt != ""){
+                                    HulaUser.sharedInstance.twToken = user["tw_token"] as? String
+                                    self.verTwitterIcon.image = UIImage(named: "icon_twitter_on")
+                                }
                             }
                             if let uStatus = (user["status"] as? String) {
                                 if (uStatus == "verified"){
+                                    HulaUser.sharedInstance.status = user["status"] as? String
                                     self.verMailIcon.image = UIImage(named: "icon_mail_on")
                                 }
                             }

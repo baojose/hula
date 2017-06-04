@@ -20,6 +20,7 @@ class HulaUser: NSObject {
     var userBio: String!
     var userPass: String!
     var token: String!
+    var status: String!
     var location: CLLocation!
     var fbToken: String!
     var twToken: String!
@@ -43,6 +44,7 @@ class HulaUser: NSObject {
         self.userPass = ""
         self.userBio = ""
         self.token = ""
+        self.status = ""
         self.fbToken = ""
         self.twToken = ""
         self.liToken = ""
@@ -79,6 +81,7 @@ class HulaUser: NSObject {
         self.userBio = ""
         self.userPass = ""
         self.token = ""
+        self.status = ""
         self.fbToken = ""
         self.twToken = ""
         self.liToken = ""
@@ -104,6 +107,23 @@ class HulaUser: NSObject {
                 //print(ok)
                 if (ok){
                     //print(json!)
+                    if let dictionary = json as? [String: Any] {
+                        print(dictionary)
+                    }
+                    
+                    //NotificationCenter.default.post(name: self.signupRecieved, object: signupSuccess)
+                }
+            })
+        }
+    }
+    
+    func resendValidationMail(){
+        print("Sending validation mail...")
+        if(isUserLoggedIn()){
+            let queryURL = HulaConstants.apiURL + "users/resend/" + self.userId
+            HLDataManager.sharedInstance.httpPost(urlstr: queryURL, postString: getPostString(), isPut: true, taskCallback: { (ok, json) in
+                print("Message sent!")
+                if (ok){
                     if let dictionary = json as? [String: Any] {
                         print(dictionary)
                     }

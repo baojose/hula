@@ -13,6 +13,7 @@
 		116669191E9925C20094B157 /* HulaNotifications.swift in Sources */ = {isa = PBXBuildFile; fileRef = 116669181E9925C20094B157 /* HulaNotifications.swift */; };
 		271F5C5A1EDAD90C00A7B1C1 /* HulaTrade.swift in Sources */ = {isa = PBXBuildFile; fileRef = 271F5C591EDAD90C00A7B1C1 /* HulaTrade.swift */; };
 		272720431EBA9BE90084CF3C /* HLWelcomeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 272720421EBA9BE90084CF3C /* HLWelcomeViewController.swift */; };
+		2728141D1EDCA6D000984562 /* HLTradesCollectionViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2728141C1EDCA6D000984562 /* HLTradesCollectionViewCell.swift */; };
 		273A1EA21ECF9D37005D163E /* HulaPortraitNavigationController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 273A1EA11ECF9D37005D163E /* HulaPortraitNavigationController.swift */; };
 		273A1EA51ECF9F13005D163E /* HLSwappViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 273A1EA41ECF9F13005D163E /* HLSwappViewController.swift */; };
 		273A1EA71ED6440A005D163E /* HLSwappProductTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 273A1EA61ED6440A005D163E /* HLSwappProductTableViewCell.swift */; };
@@ -102,6 +103,7 @@
 		116669181E9925C20094B157 /* HulaNotifications.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HulaNotifications.swift; sourceTree = "<group>"; };
 		271F5C591EDAD90C00A7B1C1 /* HulaTrade.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HulaTrade.swift; sourceTree = "<group>"; };
 		272720421EBA9BE90084CF3C /* HLWelcomeViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HLWelcomeViewController.swift; sourceTree = "<group>"; };
+		2728141C1EDCA6D000984562 /* HLTradesCollectionViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HLTradesCollectionViewCell.swift; sourceTree = "<group>"; };
 		273A1EA11ECF9D37005D163E /* HulaPortraitNavigationController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HulaPortraitNavigationController.swift; sourceTree = "<group>"; };
 		273A1EA41ECF9F13005D163E /* HLSwappViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HLSwappViewController.swift; sourceTree = "<group>"; };
 		273A1EA61ED6440A005D163E /* HLSwappProductTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HLSwappProductTableViewCell.swift; sourceTree = "<group>"; };
@@ -409,6 +411,7 @@
 				F8B651EA1E787B35009D1DC6 /* HLHomeSearchTableViewCell.swift */,
 				F8B651FE1E7B677A009D1DC6 /* HLMyProductTableViewCell.swift */,
 				F8B652001E7B7D6B009D1DC6 /* HLPhotoAlbumCollectionViewCell.swift */,
+				2728141C1EDCA6D000984562 /* HLTradesCollectionViewCell.swift */,
 			);
 			path = Cells;
 			sourceTree = "<group>";
@@ -858,6 +861,7 @@
 				F8BE7C4B1E724F3D00FAE07D /* HLProductDetailViewController.swift in Sources */,
 				273A1EA51ECF9F13005D163E /* HLSwappViewController.swift in Sources */,
 				27C733C91EA2D1E0003A6FD6 /* HLRoundedNextButton.swift in Sources */,
+				2728141D1EDCA6D000984562 /* HLTradesCollectionViewCell.swift in Sources */,
 				F8BE7C371E72010D00FAE07D /* HLFeedbackHistoryTableViewCell.swift in Sources */,
 				273A1EA21ECF9D37005D163E /* HulaPortraitNavigationController.swift in Sources */,
 				F8B651F21E7A6A1E009D1DC6 /* HLPostProductViewController.swift in Sources */,
