@@ -99,6 +99,7 @@ class HLEditFieldViewController: BaseViewController, UITextFieldDelegate, UIText
             let city = placeMark.addressDictionary?["City"] as? String
    
             self.newValueTextView.text = city! + ", " + country!
+            self.userData.userLocationName = city! + ", " + country!
         }
     }
     

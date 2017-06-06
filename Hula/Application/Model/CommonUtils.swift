@@ -110,6 +110,7 @@ class CommonUtils: NSObject {
         } else {
             if (distance>100){
                 distance = 999
+                return "Too far"
             }
         }
         return "\(distance) miles"
