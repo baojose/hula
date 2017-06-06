@@ -19,8 +19,8 @@ struct HulaConstants {
     static let product_image_thumb_size:CGSize = CGSize(width: product_max_size, height: product_max_size)
     
     // Server API Links
-    static let apiURL: String = "http://api.hula.trading/v1/"
-    static let staticServerURL: String = "http://static.hula.trading"
+    static let apiURL: String = "https://api.hula.trading/v1/"
+    static let staticServerURL: String = "https://hula.trading"
     
     // local storage
     static let userFile: String = "UserData"

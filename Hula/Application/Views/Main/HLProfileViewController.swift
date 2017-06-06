@@ -10,6 +10,7 @@ import UIKit
 import FacebookCore
 import FacebookLogin
 import TwitterKit
+import CoreLocation
 
 
 class HLProfileViewController: BaseViewController {
@@ -31,6 +32,8 @@ class HLProfileViewController: BaseViewController {
     @IBOutlet weak var verTwitterIcon: UIImageView!
     @IBOutlet weak var verMailIcon: UIImageView!
     @IBOutlet weak var completeProfileTooltip: UIView!
+    @IBOutlet weak var viewFeedbackBtn: UIButton!
+    @IBOutlet weak var fullsizeViewReference: UIView!
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -66,7 +69,7 @@ class HLProfileViewController: BaseViewController {
     }
     func initView() {
         commonUtils.circleImageView(profileImageView)
-        mainScrollView.contentSize = CGSize(width: 0, height: userBioLabel.frame.size.height + userBioLabel.frame.origin.y)
+        mainScrollView.contentSize = CGSize(width: 0, height: fullsizeViewReference.frame.size.height + 100)
         mainScrollView.contentOffset = CGPoint(x: 0.0, y: 0.0)
         
         settingsAlertBadge.alpha = 0
@@ -208,6 +211,16 @@ class HLProfileViewController: BaseViewController {
                                 self.commonUtils.loadImageOnView(imageView:self.profileImageView, withURL:HulaUser.sharedInstance.userPhotoURL)
                             }
                             
+                            if (user["location_name"] as? String) != nil {
+                                HulaUser.sharedInstance.userLocationName = user["location_name"] as? String
+                            }
+                            
+                            if let loc = user["location"] as? [CGFloat] {
+                                let lat = loc[0]
+                                let lon = loc[1]
+                                HulaUser.sharedInstance.location = CLLocation(latitude:CLLocationDegrees(lat), longitude:CLLocationDegrees(lon));
+                                print(HulaUser.sharedInstance.location)
+                            }
                             
                             if let fbt = (user["fb_token"] as? String) {
                                 if (fbt != ""){

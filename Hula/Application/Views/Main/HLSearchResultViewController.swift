@@ -51,7 +51,11 @@ class HLSearchResultViewController: BaseViewController, UITableViewDataSource, U
         label.textColor = UIColor(red: 70.0/255, green: 70.0/255, blue: 70.0/255, alpha: 1.0)
         label.backgroundColor = UIColor.clear
         label.font = UIFont(name: "HelveticaNeue", size: 12.0)
-        label.attributedText = commonUtils.attributedStringWithTextSpacing("SEARCH RESULTS", 2.33)
+        if self.searchByCategory {
+            label.attributedText = commonUtils.attributedStringWithTextSpacing("CATEGORY RESULTS", 2.33)
+        } else {
+            label.attributedText = commonUtils.attributedStringWithTextSpacing("SEARCH RESULTS", 2.33)
+        }
         view.addSubview(label)
         
         let lineLabel = UILabel(frame: CGRect(x: 0, y: tableView.sectionHeaderHeight - 1, width: tableView.frame.size.width, height: 1))
@@ -86,7 +90,7 @@ class HLSearchResultViewController: BaseViewController, UITableViewDataSource, U
                 }
                 let up = user.object(forKey: "feedback_points") as? Float
                 let uc = user.object(forKey: "feedback_count") as? Float
-                if (up != nil) && (uc != nil){
+                if (up != nil) && (uc != nil) && (uc != 0) {
                     let perc_trade = round( up! / uc! * 100)
                     cell.productTradeRate.text = "\(perc_trade)%"
                 } else {

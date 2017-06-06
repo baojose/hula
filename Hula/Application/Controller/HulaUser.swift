@@ -135,7 +135,11 @@ class HulaUser: NSObject {
     }
     func getPostString() -> String {
         var str = "email=" + self.userEmail + "&name=" + self.userName + "&bio=" + self.userBio + "&nick=" + self.userNick + "&image=" + self.userPhotoURL + "&twtoken=" + self.twToken
-        str = str + "&litoken=" + self.liToken + "&fbtoken=" + self.fbToken + "&lat=\(self.location.coordinate.latitude)&lon=\(self.location.coordinate.longitude)"
+        str = str + "&litoken=" + self.liToken + "&fbtoken=" + self.fbToken
+        
+        if (self.location.coordinate.latitude != 0 && self.location.coordinate.longitude != 0){
+           str = str + "&lat=\(self.location.coordinate.latitude)&lon=\(self.location.coordinate.longitude)&location_name=" + self.userLocationName
+        }
         return str
     }
 }
