@@ -14,6 +14,7 @@ class HLSearchResultViewController: BaseViewController, UITableViewDataSource, U
     @IBOutlet weak var productsTableView: UITableView!
     @IBOutlet weak var productsResultsList: UIView!
     @IBOutlet var noResultAlertView: UIView!
+    @IBOutlet weak var screenTitle: UILabel!
     var searchByCategory: Bool = false;
     var categoryToSearch: NSDictionary = [:]
     var keywordToSearch: String = ""
