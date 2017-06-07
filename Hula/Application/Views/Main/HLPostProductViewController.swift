@@ -21,7 +21,7 @@ class HLPostProductViewController: BaseViewController, UITextFieldDelegate {
     @IBOutlet weak var mainImageLabel: UILabel!
     
     @IBOutlet var productTitleTxtField: UITextField!
-    @IBOutlet var publishBtn: UIButton!
+    @IBOutlet var publishBtn: HLRoundedNextButton!
     @IBOutlet weak var cameraButton1: UIButton!
     @IBOutlet weak var cameraButton2: UIButton!
     @IBOutlet weak var cameraButton3: UIButton!
@@ -94,12 +94,13 @@ class HLPostProductViewController: BaseViewController, UITextFieldDelegate {
         commonUtils.setRoundedRectBorderImageView(thirdImage, 1.0, UIColor.lightGray, 0.0)
         commonUtils.setRoundedRectBorderImageView(forthImage, 1.0, UIColor.lightGray, 0.0)
         
-        publishBtn.setBackgroundImage(UIImage.init(named: "img_publish_btn_bg_enabled"), for: UIControlState.normal)
-        publishBtn.setBackgroundImage(UIImage.init(named: "img_publish_btn_bg_disabled"), for: UIControlState.disabled)
-        publishBtn.setTitleColor(UIColor.lightGray, for: UIControlState.disabled)
-        publishBtn.setTitleColor(UIColor.white, for: UIControlState.normal)
+        //publishBtn.setBackgroundImage(UIImage.init(named: "img_publish_btn_bg_enabled"), for: UIControlState.normal)
+        //publishBtn.setBackgroundImage(UIImage.init(named: "img_publish_btn_bg_disabled"), for: UIControlState.disabled)
+        //publishBtn.setTitleColor(UIColor.lightGray, for: UIControlState.disabled)
+        //publishBtn.setTitleColor(UIColor.white, for: UIControlState.normal)
         
         productTitleTxtField.addTarget(self, action: #selector(textchange(_:)), for: UIControlEvents.editingChanged)
+        publishBtn.setup()
         self.changePublishBtnState("")
         let tapGesture: UITapGestureRecognizer! = UITapGestureRecognizer.init(target: self, action: #selector(onTapScreen))
         self.view.addGestureRecognizer(tapGesture)
@@ -129,8 +130,10 @@ class HLPostProductViewController: BaseViewController, UITextFieldDelegate {
     func changePublishBtnState(_ string: String){
         if dataManager.newProduct.arrProductPhotos.count != 0 && string.characters.count != 0  {
             publishBtn.isEnabled = true
+            publishBtn.startAnimation()
         }else{
             publishBtn.isEnabled = false
+            publishBtn.stopAnimation()
         }
     }
     func onTapScreen(){
@@ -143,7 +146,7 @@ class HLPostProductViewController: BaseViewController, UITextFieldDelegate {
     }
     //#MARK - TextField Delegate
     func textFieldShouldBeginEditing(_ textField: UITextField) -> Bool{
-        mainScrollView.setContentOffset(CGPoint(x: 0.0, y: 60.0), animated: true)
+        mainScrollView.setContentOffset(CGPoint(x: 0.0, y: 195.0), animated: true)
         return true
     }
     func textchange(_ textField:UITextField) {

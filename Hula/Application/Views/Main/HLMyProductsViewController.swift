@@ -162,10 +162,12 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
                 self.arrayProducts.append(newProduct)
                 uploadImages()
                 uploadProduct()
-                let when = DispatchTime.now() + 1.5 // change 2 to desired number of seconds
+                let when = DispatchTime.now() + 2 // change 2 to desired number of seconds
                 DispatchQueue.main.asyncAfter(deadline: when) {
                     let viewController = self.storyboard?.instantiateViewController(withIdentifier: "completeProductProfilePage") as! HLCompleteProductProfileViewController
                     self.present(viewController, animated: true)
+                    
+                    HLDataManager.sharedInstance.uploadMode = false
                 }
             }
             productTableView.reloadData()
@@ -183,7 +185,7 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
                 if (ok){
                     DispatchQueue.main.async {
                         if let dictionary = json as? [Any] {
-                            print(dictionary)
+                            //print(dictionary)
                             self.arrayProducts = dictionary
                             HulaUser.sharedInstance.arrayProducts = dictionary
                             if (self.arrayProducts.count != 0){

@@ -15,7 +15,7 @@ class HLCompleteProductProfileViewController: BaseViewController, UIScrollViewDe
     @IBOutlet var categoryTableView: UITableView!
     @IBOutlet var perkContainView: UIView!
     @IBOutlet var perkScrollView: UIScrollView!
-    @IBOutlet weak var doneBtn: HLBouncingButton!
+    @IBOutlet weak var doneBtn: HLRoundedNextButton!
     @IBOutlet var desciptionTxtField: UITextField!
     @IBOutlet var conditionNewBtn: UIButton!
     @IBOutlet var conditionUsedBtn: UIButton!
@@ -52,11 +52,7 @@ class HLCompleteProductProfileViewController: BaseViewController, UIScrollViewDe
         self.changeMarkState(0)
         self.changeConditionState(conditionNewBtn.tag)
         
-        doneBtn.setBackgroundImage(UIImage.init(named: "img_publish_btn_bg_enabled"), for: UIControlState.normal)
-        doneBtn.setBackgroundImage(UIImage.init(named: "img_publish_btn_bg_disabled"), for: UIControlState.disabled)
-        doneBtn.setTitleColor(UIColor.lightGray, for: UIControlState.disabled)
-        doneBtn.setTitleColor(UIColor.white, for: UIControlState.normal)
-        doneBtn.isUserInteractionEnabled = true
+        doneBtn.setup()
         desciptionTxtField.addTarget(self, action: #selector(textchange(_:)), for: UIControlEvents.editingChanged)
         let tapGesture: UITapGestureRecognizer! = UITapGestureRecognizer.init(target: self, action: #selector(onTapScreen))
         perkContainView.addGestureRecognizer(tapGesture)
@@ -159,9 +155,11 @@ class HLCompleteProductProfileViewController: BaseViewController, UIScrollViewDe
     func changeDoneBtnState(_ string: String){
         if string.characters.count != 0  {
             doneBtn.isEnabled = true
+            doneBtn.startAnimation()
             //print("Is enabled")
         }else{
             doneBtn.isEnabled = false
+            doneBtn.stopAnimation()
         }
     }
     

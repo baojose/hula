@@ -15,6 +15,7 @@ class HLMyProductTableViewCell: UITableViewCell {
     @IBOutlet var productEditBtn: UIButton!
     @IBOutlet var warningView: UIView!
     @IBOutlet weak var cellContentView: UIView!
+    var alreadyAnimated = false
 
     override func awakeFromNib() {
         super.awakeFromNib()
@@ -25,9 +26,12 @@ class HLMyProductTableViewCell: UITableViewCell {
     }
 
     func animateAsNew(){
-        self.cellContentView.transform = CGAffineTransform(scaleX: 0.0, y: 0.0)
-        UIView.animate(withDuration: 0.4, delay: 0.3, usingSpringWithDamping: 0.5, initialSpringVelocity: 0, options: [], animations: {
-            self.cellContentView.transform = CGAffineTransform.identity
-        }, completion: nil)
+        if (!alreadyAnimated){
+            self.cellContentView.transform = CGAffineTransform(scaleX: 0.0, y: 0.0)
+            UIView.animate(withDuration: 0.5, delay: 0.4, usingSpringWithDamping: 0.5, initialSpringVelocity: 0, options: [], animations: {
+                self.cellContentView.transform = CGAffineTransform.identity
+            }, completion: nil)
+            alreadyAnimated = true
+        }
     }
 }
