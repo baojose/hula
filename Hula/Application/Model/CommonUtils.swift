@@ -233,13 +233,13 @@ extension UIImageView {
         URLSession.shared.dataTask(with: NSURL(string: urlString)! as URL, completionHandler: { (data, response, error) -> Void in
             
             if error != nil {
-                print(error)
+                print(error!)
                 return
             }
             DispatchQueue.main.async(execute: { () -> Void in
                 let image = UIImage(data: data!)
                 self.image = image
-                imageCache.setObject(image, forKey: urlString as AnyObject)
+                imageCache.setObject(image!, forKey: urlString as AnyObject)
                 
             })
             
