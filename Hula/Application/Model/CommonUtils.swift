@@ -216,3 +216,33 @@ extension String {
         return Formatter.iso8601.date(from: self)   // "Mar 22, 2017, 10:22 AM"
     }
 }
+
+
+let imageCache = NSCache<AnyObject, AnyObject>()
+
+extension UIImageView {
+    func loadImageFromURL(urlString: String) {
+        self.image = nil
+        
+        // check for cache
+        if let cachedImage = imageCache.object(forKey: urlString as AnyObject) as? UIImage {
+            self.image = cachedImage
+            return
+        }
+        
+        URLSession.shared.dataTask(with: NSURL(string: urlString)! as URL, completionHandler: { (data, response, error) -> Void in
+            
+            if error != nil {
+                print(error!)
+                return
+            }
+            DispatchQueue.main.async(execute: { () -> Void in
+                let image = UIImage(data: data!)
+                self.image = image
+                imageCache.setObject(image!, forKey: urlString as AnyObject)
+                
+            })
+            
+        }).resume()
+    }
+}
