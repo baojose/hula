@@ -38,7 +38,9 @@ class HLEditProductMainViewController: BaseViewController {
         mainScrollVIew.contentSize = contentView.frame.size
         print(productToDisplay);
         if let mainProductImage = productToDisplay.object(forKey: "image_url") as? String {
-            commonUtils.loadImageOnView(imageView: productImage, withURL: (mainProductImage))
+            //commonUtils.loadImageOnView(imageView: productImage, withURL: (mainProductImage))
+            
+            productImage.loadImageFromURL(urlString: mainProductImage)
         }
         productTitle.text = productToDisplay.object(forKey: "title") as? String
         productTitleLabel.text = productToDisplay.object(forKey: "title") as? String

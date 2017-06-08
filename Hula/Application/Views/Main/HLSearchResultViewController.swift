@@ -76,14 +76,17 @@ class HLSearchResultViewController: BaseViewController, UITableViewDataSource, U
         let product = productsList[indexPath.row] as! NSDictionary
         //print(product)
         cell.productName.text = product.object(forKey: "title") as? String
-        commonUtils.loadImageOnView(imageView:cell.productImage, withURL:(product.object(forKey: "image_url") as? String)!)
+        //commonUtils.loadImageOnView(imageView:cell.productImage, withURL:(product.object(forKey: "image_url") as? String)!)
+        
+        cell.productImage.loadImageFromURL(urlString: (product.object(forKey: "image_url") as? String)!)
         if let user_id = product.object(forKey: "owner_id") as? String{
             //print(user_id)
             //print(self.usersList)
             if let user = self.usersList.object(forKey: user_id) as? NSDictionary{
                 print(user)
                 cell.productOwnerName.text = user.object(forKey: "nick") as? String
-                commonUtils.loadImageOnView(imageView:cell.productOwnerImage, withURL:(user.object(forKey: "image") as? String)!)
+                //commonUtils.loadImageOnView(imageView:cell.productOwnerImage, withURL:(user.object(forKey: "image") as? String)!)
+                cell.productOwnerImage.loadImageFromURL(urlString: (user.object(forKey: "image") as? String)!)
                 if let location = product.object(forKey: "location") as? [CGFloat]{
                     cell.productDistance.text = "(" + commonUtils.getDistanceFrom(lat: location[0], lon: location[1]) + ")"
                 } else {

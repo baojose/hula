@@ -246,3 +246,16 @@ extension UIImageView {
         }).resume()
     }
 }
+
+extension UIView {
+    
+    func bouncer() {
+        UIView.animate(withDuration: 0.1, animations: {
+            self.transform = CGAffineTransform(scaleX: 1.5,y: 1.5);
+        }, completion: { action -> Void in
+            UIView.animate(withDuration: 0.1, animations: {
+                self.transform = CGAffineTransform(scaleX: 1,y: 1);
+            })
+        })
+    }
+}

@@ -106,7 +106,8 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
             }
         } else {
             if let mainProductImage = product.object(forKey: "image_url") as? String {
-                commonUtils.loadImageOnView(imageView:cell.productImage, withURL:(mainProductImage))
+                //commonUtils.loadImageOnView(imageView:cell.productImage, withURL:(mainProductImage))
+                cell.productImage.loadImageFromURL(urlString: mainProductImage)
             }
         }
         

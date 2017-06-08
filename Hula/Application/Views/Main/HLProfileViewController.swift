@@ -141,6 +141,7 @@ class HLProfileViewController: BaseViewController {
                 print(declinedPermissions)
                 HulaUser.sharedInstance.fbToken = accessToken.authenticationToken as String
                 self.verFacebookIcon.image = UIImage(named: "icon_facebook_on")
+                self.verFacebookIcon.bouncer()
                 HulaUser.sharedInstance.updateServerData()
             }
         }
@@ -161,6 +162,7 @@ class HLProfileViewController: BaseViewController {
                  */
                 
                 self.verTwitterIcon.image = UIImage(named: "icon_twitter_on")
+                self.verTwitterIcon.bouncer()
                 HulaUser.sharedInstance.twToken = unwrappedSession.authToken as String
                 HulaUser.sharedInstance.updateServerData()
             } else {
@@ -208,7 +210,8 @@ class HLProfileViewController: BaseViewController {
                             }
                             if (user["image"] as? String) != nil {
                                 HulaUser.sharedInstance.userPhotoURL = user["image"] as? String
-                                self.commonUtils.loadImageOnView(imageView:self.profileImageView, withURL:HulaUser.sharedInstance.userPhotoURL)
+                                //self.commonUtils.loadImageOnView(imageView:self.profileImageView, withURL:HulaUser.sharedInstance.userPhotoURL)
+                                self.profileImageView.loadImageFromURL(urlString: HulaUser.sharedInstance.userPhotoURL)
                             }
                             
                             if (user["location_name"] as? String) != nil {
@@ -226,24 +229,28 @@ class HLProfileViewController: BaseViewController {
                                 if (fbt != ""){
                                     HulaUser.sharedInstance.fbToken = fbt
                                     self.verFacebookIcon.image = UIImage(named: "icon_facebook_on")
+                                    self.verFacebookIcon.bouncer()
                                 }
                             }
                             if let lit = (user["li_token"] as? String) {
                                 if (lit != ""){
                                     HulaUser.sharedInstance.liToken = user["li_token"] as? String
                                     self.verLinkedinIcon.image = UIImage(named: "icon_linkedin_on")
+                                    self.verLinkedinIcon.bouncer()
                                 }
                             }
                             if let twt = (user["tw_token"] as? String){
                                 if (twt != ""){
                                     HulaUser.sharedInstance.twToken = user["tw_token"] as? String
                                     self.verTwitterIcon.image = UIImage(named: "icon_twitter_on")
+                                    self.verTwitterIcon.bouncer()
                                 }
                             }
                             if let uStatus = (user["status"] as? String) {
                                 if (uStatus == "verified"){
                                     HulaUser.sharedInstance.status = user["status"] as? String
                                     self.verMailIcon.image = UIImage(named: "icon_mail_on")
+                                    self.verMailIcon.bouncer()
                                 }
                             }
                             

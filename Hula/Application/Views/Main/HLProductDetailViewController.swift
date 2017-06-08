@@ -130,7 +130,8 @@ class HLProductDetailViewController: BaseViewController, UIScrollViewDelegate, U
                     if (img_url.characters.count > 0){
                         let imageFrame = CGRect(x: (CGFloat)(i) * productsScrollView.frame.size.width, y: 0, width: productsScrollView.frame.size.width, height: productsScrollView.frame.size.height)
                         let imgView: UIImageView! = UIImageView.init(frame: imageFrame)
-                        commonUtils.loadImageOnView(imageView: imgView, withURL: img_url)
+                        //commonUtils.loadImageOnView(imageView: imgView, withURL: img_url)
+                        imgView.loadImageFromURL(urlString: img_url)
                         //imgView.image = UIImage(named: "temp_product")
                         imgView.contentMode = .scaleAspectFill
                         productsScrollView.addSubview(imgView)
