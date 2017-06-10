@@ -1674,6 +1674,33 @@
                                 <rect key="frame" x="0.0" y="0.0" width="668" height="375"/>
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                 <subviews>
+                                    <view contentMode="scaleToFill" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="KKW-lI-lRg">
+                                        <rect key="frame" x="238" y="302" width="173" height="41"/>
+                                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                        <subviews>
+                                            <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" image="nav_bar_container" translatesAutoresizingMaskIntoConstraints="NO" id="UcP-j0-QG8">
+                                                <rect key="frame" x="0.0" y="0.0" width="173" height="41"/>
+                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                            </imageView>
+                                            <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" image="nav_var_home" translatesAutoresizingMaskIntoConstraints="NO" id="qbD-Zv-IbG">
+                                                <rect key="frame" x="74" y="7" width="9" height="9"/>
+                                                <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                            </imageView>
+                                            <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" image="nav_var_home_active" translatesAutoresizingMaskIntoConstraints="NO" id="75D-Yv-0XU">
+                                                <rect key="frame" x="91" y="7" width="9" height="9"/>
+                                                <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                            </imageView>
+                                            <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" image="nav_var_circle" translatesAutoresizingMaskIntoConstraints="NO" id="50F-zG-KH3">
+                                                <rect key="frame" x="55" y="8" width="7" height="7"/>
+                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                            </imageView>
+                                            <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" image="nav_var_circle_active" translatesAutoresizingMaskIntoConstraints="NO" id="QEG-n5-PNc">
+                                                <rect key="frame" x="108" y="8" width="7" height="7"/>
+                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                            </imageView>
+                                        </subviews>
+                                        <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                    </view>
                                     <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" image="bottom_bar_trade_screen" translatesAutoresizingMaskIntoConstraints="NO" id="PO6-fP-uyt">
                                         <rect key="frame" x="0.0" y="326" width="669" height="52"/>
                                         <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
@@ -1734,7 +1761,7 @@
                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                     </imageView>
                                     <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" image="barter_icon_trade" translatesAutoresizingMaskIntoConstraints="NO" id="z2p-Qr-Ng7">
-                                        <rect key="frame" x="321" y="27" width="14" height="16"/>
+                                        <rect key="frame" x="318" y="27" width="14" height="16"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                     </imageView>
                                     <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" image="barter_icon_trade" translatesAutoresizingMaskIntoConstraints="NO" id="nL3-Bn-MTG">
@@ -1786,7 +1813,7 @@
                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                     </imageView>
                                     <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="8Q1-Z3-lMo">
-                                        <rect key="frame" x="209" y="252" width="230" height="30"/>
+                                        <rect key="frame" x="212" y="252" width="230" height="30"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                         <fontDescription key="fontDescription" name="HelveticaNeue-Light" family="Helvetica Neue" pointSize="16"/>
                                         <state key="normal" title="+ Add New Barter Screen">
@@ -1949,10 +1976,6 @@
                                 <nil key="textColor"/>
                                 <nil key="highlightedColor"/>
                             </label>
-                            <pageControl opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" numberOfPages="3" translatesAutoresizingMaskIntoConstraints="NO" id="4tr-Gw-BYp">
-                                <rect key="frame" x="314" y="297" width="39" height="37"/>
-                                <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES"/>
-                            </pageControl>
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                     </view>
@@ -1962,7 +1985,6 @@
                     <connections>
                         <outlet property="initialCoverView" destination="IER-tD-fSN" id="7gT-g6-VaL"/>
                         <outlet property="landscapeView" destination="VtK-Jd-5R2" id="29h-vC-VTV"/>
-                        <outlet property="mainPageControl" destination="4tr-Gw-BYp" id="CBt-Sd-km1"/>
                         <outlet property="myProfileImage" destination="USH-qV-c7n" id="4RQ-mx-6nc"/>
                         <outlet property="myProfileLabel" destination="D5Y-fB-U1r" id="9iV-qe-ZMF"/>
                         <outlet property="portraitView" destination="kyP-px-CtZ" id="Byv-na-iGQ"/>
@@ -2008,6 +2030,11 @@
         <image name="img_intro_bg4" width="375" height="667"/>
         <image name="img_profile_seperate_bg" width="375" height="38"/>
         <image name="more_options_trade" width="5" height="19"/>
+        <image name="nav_bar_container" width="173" height="41"/>
+        <image name="nav_var_circle" width="9" height="9"/>
+        <image name="nav_var_circle_active" width="9" height="9"/>
+        <image name="nav_var_home" width="9" height="9"/>
+        <image name="nav_var_home_active" width="9" height="9"/>
         <image name="opacity_background_button_S" width="39" height="39"/>
         <image name="profile_deals_box" width="375" height="67"/>
         <image name="profile_placeholder" width="140" height="140"/>
