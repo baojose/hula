@@ -21,6 +21,7 @@ class HLProductDetailViewController: BaseViewController, UIScrollViewDelegate, U
     @IBOutlet weak var productDistance: UILabel!
     @IBOutlet weak var productCategory: UILabel!
     @IBOutlet weak var productCondition: UILabel!
+    @IBOutlet weak var screenTitle: UILabel!
     
     @IBOutlet var productsScrollView: UIScrollView!
     @IBOutlet var productNameLabel: UILabel!
@@ -61,11 +62,15 @@ class HLProductDetailViewController: BaseViewController, UIScrollViewDelegate, U
         productTableView.frame = newFrame
         insertIfAvailable(label:productNameLabel, maybeText: productData["title"] as Any)
         insertIfAvailable(label:productDescriptionLabel, maybeText: productData["description"] as Any)
+        let h = commonUtils.heightString(width: productDescriptionLabel.frame.width, font: productDescriptionLabel.font! , string: productDescriptionLabel.text!) 
+        productDescriptionLabel.frame.size = CGSize(width: productDescriptionLabel.frame.size.width, height: h)
         
-        mainScrollView.contentSize = CGSize(width: 0, height: productTableView.frame.origin.y + productTableView.frame.size.height + 200)
+        sellerView.frame.origin.y = productDescriptionLabel.frame.origin.y + productDescriptionLabel.frame.size.height
         self.setUpProductImagesScrollView()
         commonUtils.setRoundedRectBorderButton(addToTradeBtn, 1.0, UIColor.white, addToTradeBtn.frame.size.height / 2.0)
         commonUtils.circleImageView(sellerImageView)
+        mainScrollView.contentSize = CGSize(width: 0, height: sellerView.frame.origin.y + productTableView.frame.size.height + 300)
+        
         sellerLabel.attributedText = commonUtils.attributedStringWithTextSpacing("SELLER", 2.33)
         userInventoryLabel.attributedText = commonUtils.attributedStringWithTextSpacing("USER'S INVENTORY", 2.33)
         insertIfAvailable(label:productCategory, maybeText: productData["category_name"] as Any)
@@ -125,8 +130,10 @@ class HLProductDetailViewController: BaseViewController, UIScrollViewDelegate, U
                     if (img_url.characters.count > 0){
                         let imageFrame = CGRect(x: (CGFloat)(i) * productsScrollView.frame.size.width, y: 0, width: productsScrollView.frame.size.width, height: productsScrollView.frame.size.height)
                         let imgView: UIImageView! = UIImageView.init(frame: imageFrame)
-                        commonUtils.loadImageOnView(imageView: imgView, withURL: img_url)
+                        //commonUtils.loadImageOnView(imageView: imgView, withURL: img_url)
+                        imgView.loadImageFromURL(urlString: img_url)
                         //imgView.image = UIImage(named: "temp_product")
+                        imgView.contentMode = .scaleAspectFill
                         productsScrollView.addSubview(imgView)
                         num_images += 1
                     }

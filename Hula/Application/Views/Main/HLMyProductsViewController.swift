@@ -11,6 +11,7 @@ import UIKit
 class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITableViewDataSource {
 
     @IBOutlet var productTableView: UITableView!
+    @IBOutlet weak var noProductsView: UIView!
     var arrayProducts = [] as Array
     var arrayImagesURL = ["","","",""] as Array
     
@@ -50,6 +51,7 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
     
     func initView(){
         NotificationCenter.default.addObserver(self, selector: #selector(HLMyProductsViewController.newPostModeDesign(_:)), name: NSNotification.Name(rawValue: "uploadModeUpdateDesign"), object: nil)
+        noProductsView.isHidden = true
     }
     
     
@@ -104,15 +106,17 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
             }
         } else {
             if let mainProductImage = product.object(forKey: "image_url") as? String {
-                commonUtils.loadImageOnView(imageView:cell.productImage, withURL:(mainProductImage))
+                //commonUtils.loadImageOnView(imageView:cell.productImage, withURL:(mainProductImage))
+                cell.productImage.loadImageFromURL(urlString: mainProductImage)
             }
         }
         
-        if (product.object(forKey: "description") as? String) != nil {
+        cell.warningView.isHidden = false
+        if let desc = product.object(forKey: "description") as? String {
             //print("Hidden")
-            cell.warningView.isHidden = true
-        } else {
-            cell.warningView.isHidden = false
+            if (desc != ""){
+                cell.warningView.isHidden = true
+            }
         }
         let titleHeight: CGFloat! = commonUtils.heightString(width: cell.productDescription.frame.size.width, font: cell.productDescription.font, string: cell.productDescription.text!)
         cell.productDescription.frame = CGRect(x: cell.productDescription.frame.origin.x, y:(cell.contentView.frame.size.height - titleHeight) / 2.0, width: cell.productDescription.frame.size.width, height: titleHeight)
@@ -159,10 +163,12 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
                 self.arrayProducts.append(newProduct)
                 uploadImages()
                 uploadProduct()
-                let when = DispatchTime.now() + 1.5 // change 2 to desired number of seconds
+                let when = DispatchTime.now() + 2 // change 2 to desired number of seconds
                 DispatchQueue.main.asyncAfter(deadline: when) {
                     let viewController = self.storyboard?.instantiateViewController(withIdentifier: "completeProductProfilePage") as! HLCompleteProductProfileViewController
                     self.present(viewController, animated: true)
+                    
+                    HLDataManager.sharedInstance.uploadMode = false
                 }
             }
             productTableView.reloadData()
@@ -183,25 +189,31 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
                             //print(dictionary)
                             self.arrayProducts = dictionary
                             HulaUser.sharedInstance.arrayProducts = dictionary
+                            if (self.arrayProducts.count != 0){
+                                self.noProductsView.isHidden = true
+                            } else {
+                                self.noProductsView.isHidden = false
+                            }
                         }
                         self.productTableView.reloadData()
                     }
                 } else {
                     // connection error
-                    print("Connection error")
+                    //print("Connection error")
+                    self.noProductsView.isHidden = true
                 }
             })
         }
     }
     func uploadProduct() {
-        print("Saving product...")
+        //print("Saving product...")
         if (HulaUser.sharedInstance.userId.characters.count>0){
             let queryURL = HulaConstants.apiURL + "products/"
             let dataString:String = updateProductDataString()
             HLDataManager.sharedInstance.httpPost(urlstr: queryURL, postString: dataString, isPut: false, taskCallback: { (ok, json) in
                 if (ok){
                     DispatchQueue.main.async {
-                        print("Saved")
+                        //print("Saved")
                         if let dictionary = json as? [String:Any] {
                             print(dictionary)
                             if let product_id = dictionary["product_id"] as? String {

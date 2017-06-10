@@ -14,8 +14,8 @@ class HLRoundedGradientButton: UIButton {
     override func draw(_ rect: CGRect) {
         // Drawing code
         let gradient: CAGradientLayer = CAGradientLayer()
-        let colorTop = UIColor(red: 112.0/255.0, green: 219.0/255.0, blue: 155.0/255.0, alpha: 1.0).cgColor
-        let colorBottom = UIColor(red: 86.0/255.0, green: 197.0/255.0, blue: 238.0/255.0, alpha: 1.0).cgColor
+        let colorTop = UIColor(red: 35/255.0, green: 192/255.0, blue: 166.0/255.0, alpha: 1.0).cgColor
+        let colorBottom = UIColor(red: 30.0/255.0, green: 161.0/255.0, blue: 162.0/255.0, alpha: 1.0).cgColor
         
         gradient.colors = [colorTop, colorBottom]
         gradient.startPoint = CGPoint(x: 0.0, y: 0.2)
@@ -26,7 +26,7 @@ class HLRoundedGradientButton: UIButton {
         
         self.layer.insertSublayer(gradient, at: 0)
         self.setTitleColor(UIColor.white, for: .normal)
-        self.setTitleColor(UIColor.blue, for: .highlighted)
+        self.setTitleColor(UIColor.lightGray, for: .highlighted)
         
     }
     

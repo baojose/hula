@@ -51,7 +51,8 @@ class HLSettingViewController: BaseViewController {
         mainScrollView.contentSize = CGSize(width: 0, height: contentView.frame.size.height)
         
         if (userData.userPhotoURL.characters.count>1){
-            commonUtils.loadImageOnView(imageView:self.smallProfileImage, withURL:HulaUser.sharedInstance.userPhotoURL)
+            //commonUtils.loadImageOnView(imageView:self.smallProfileImage, withURL:HulaUser.sharedInstance.userPhotoURL)
+            self.smallProfileImage.loadImageFromURL(urlString: HulaUser.sharedInstance.userPhotoURL)
         } else {
             self.addAlertIcon(toView: self.pictureView)
         }

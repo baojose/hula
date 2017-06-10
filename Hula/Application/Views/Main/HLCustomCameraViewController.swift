@@ -138,6 +138,8 @@ class HLCustomCameraViewController: BaseViewController, UIImagePickerControllerD
     // custom functions on VC
     
     func initCamera(){
+        selectFromCameraButton.isEnabled = false
+        selectFromCameraButton.alpha = 0.4
         captureSession.sessionPreset = AVCaptureSessionPresetHigh
         if let devices = AVCaptureDevice.devices() as? [AVCaptureDevice] {
             // Loop through all the capture devices on this phone
@@ -228,6 +230,8 @@ class HLCustomCameraViewController: BaseViewController, UIImagePickerControllerD
         }else{
             imageView1.image = image
         }
+        selectFromCameraButton.isEnabled = true
+        selectFromCameraButton.alpha = 1
     }
     func hideImages(_ image: UIImage){
         if imageView1.image == image{
