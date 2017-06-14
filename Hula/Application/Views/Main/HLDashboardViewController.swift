@@ -13,9 +13,6 @@ class HLDashboardViewController: UIViewController {
     @IBOutlet weak var landscapeView: UIView!
     @IBOutlet weak var portraitView: UIView!
     @IBOutlet weak var initialCoverView: UIImageView!
-    @IBOutlet weak var myProfileImage: UIImageView!
-    @IBOutlet weak var myProfileLabel: UILabel!
-    @IBOutlet weak var mainPageControl: UIPageControl!
     @IBOutlet weak var mainCollectionView: UICollectionView!
     
     
@@ -28,9 +25,6 @@ class HLDashboardViewController: UIViewController {
         NotificationCenter.default.addObserver(self, selector: #selector(self.rotated), name: NSNotification.Name.UIDeviceOrientationDidChange, object: nil)
         
         
-        CommonUtils.sharedInstance.circleImageView(myProfileImage)
-        myProfileLabel.text = HulaUser.sharedInstance.userNick
-        CommonUtils.sharedInstance.loadImageOnView(imageView:myProfileImage, withURL:HulaUser.sharedInstance.userPhotoURL)
         
         rotated()
     }

@@ -10,6 +10,11 @@ import UIKit
 
 class HLSwappViewController: UIViewController {
 
+    @IBOutlet weak var closedLabel: UILabel!
+    @IBOutlet weak var endedLabel: UILabel!
+    @IBOutlet weak var startedLabel: UILabel!
+    @IBOutlet weak var myProfileLabel: UILabel!
+    @IBOutlet weak var myProfileImage: UIImageView!
     @IBOutlet weak var mainContainer: UIView!
     @IBOutlet weak var swappPageControl: UIPageControl!
     
@@ -17,6 +22,10 @@ class HLSwappViewController: UIViewController {
         super.viewDidLoad()
 
         // Do any additional setup after loading the view.
+        
+        CommonUtils.sharedInstance.circleImageView(myProfileImage)
+        myProfileLabel.text = HulaUser.sharedInstance.userNick
+        CommonUtils.sharedInstance.loadImageOnView(imageView:myProfileImage, withURL:HulaUser.sharedInstance.userPhotoURL)
     }
 
     override func didReceiveMemoryWarning() {
