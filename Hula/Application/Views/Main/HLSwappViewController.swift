@@ -10,6 +10,7 @@ import UIKit
 
 class HLSwappViewController: UIViewController {
 
+    @IBOutlet weak var portraitView: UIView!
     @IBOutlet weak var closedLabel: UILabel!
     @IBOutlet weak var endedLabel: UILabel!
     @IBOutlet weak var startedLabel: UILabel!
@@ -22,10 +23,15 @@ class HLSwappViewController: UIViewController {
         super.viewDidLoad()
 
         // Do any additional setup after loading the view.
+        NotificationCenter.default.addObserver(self, selector: #selector(self.rotated), name: NSNotification.Name.UIDeviceOrientationDidChange, object: nil)
+        
+        
+        
         
         CommonUtils.sharedInstance.circleImageView(myProfileImage)
         myProfileLabel.text = HulaUser.sharedInstance.userNick
         CommonUtils.sharedInstance.loadImageOnView(imageView:myProfileImage, withURL:HulaUser.sharedInstance.userPhotoURL)
+        rotated()
     }
 
     override func didReceiveMemoryWarning() {
@@ -49,7 +55,18 @@ class HLSwappViewController: UIViewController {
         // Pass the selected object to the new view controller.
     }
     */
-
+    
+    
+    func rotated() {
+        if UIDeviceOrientationIsPortrait(UIDevice.current.orientation) {
+            portraitView.isHidden = false
+            self.dismiss(animated: true) {
+                // After dismiss
+            }
+        } else {
+            portraitView.isHidden = true
+        }
+    }
 }
 
 extension HLSwappViewController: SwappPageViewControllerDelegate {

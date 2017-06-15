@@ -2272,6 +2272,33 @@ Log In</string>
                                 </subviews>
                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                             </view>
+                            <view hidden="YES" contentMode="scaleToFill" id="8Qd-eS-47d">
+                                <rect key="frame" x="0.0" y="-1" width="667" height="377"/>
+                                <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                <subviews>
+                                    <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="bg_green_splash" id="GY3-if-P23">
+                                        <rect key="frame" x="0.0" y="0.0" width="667" height="377"/>
+                                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                    </imageView>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Please rotate this device to enter into swapp mode" textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="rxX-oL-noL">
+                                        <rect key="frame" x="46" y="77" width="186" height="172"/>
+                                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                        <fontDescription key="fontDescription" name="HelveticaNeue-Light" family="Helvetica Neue" pointSize="25"/>
+                                        <color key="textColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                        <nil key="highlightedColor"/>
+                                    </label>
+                                    <button opaque="NO" contentMode="center" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" id="XyC-Sw-SgH">
+                                        <rect key="frame" x="46" y="47" width="14" height="24"/>
+                                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                        <state key="normal" backgroundImage="icon_back_L"/>
+                                        <connections>
+                                            <action selector="backButtonAction:" destination="Qkq-8f-mCV" eventType="touchUpInside" id="etF-9p-Uq5"/>
+                                            <action selector="closeIdentificationVC:" destination="4Z7-C3-lzO" eventType="touchUpInside" id="5VM-za-3NI"/>
+                                        </connections>
+                                    </button>
+                                </subviews>
+                                <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                            </view>
                             <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" image="bottom_bar_trade_screen" id="7ru-Zz-6rA">
                                 <rect key="frame" x="0.0" y="323" width="669" height="52"/>
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
@@ -2382,6 +2409,7 @@ Log In</string>
                         <outlet property="mainContainer" destination="MN8-Pi-VFB" id="niE-yO-Q0O"/>
                         <outlet property="myProfileImage" destination="igZ-Dh-U67" id="tT6-If-CKc"/>
                         <outlet property="myProfileLabel" destination="ui0-9m-980" id="2yg-Wf-BYM"/>
+                        <outlet property="portraitView" destination="8Qd-eS-47d" id="P2v-zm-pga"/>
                         <outlet property="startedLabel" destination="CmH-2M-f2K" id="sm6-Ie-eho"/>
                         <outlet property="swappPageControl" destination="7K9-Gb-lpJ" id="dZ2-F9-7aL"/>
                     </connections>
@@ -5476,6 +5504,10 @@ Log In</string>
                                                         </label>
                                                     </subviews>
                                                 </tableViewCellContentView>
+                                                <connections>
+                                                    <outlet property="productImage" destination="aVv-2m-QQF" id="8Pz-wz-IBc"/>
+                                                    <outlet property="productName" destination="pXc-D6-ptc" id="sfF-cz-4v3"/>
+                                                </connections>
                                             </tableViewCell>
                                         </prototypes>
                                     </tableView>
@@ -5504,6 +5536,10 @@ Log In</string>
                                                         </label>
                                                     </subviews>
                                                 </tableViewCellContentView>
+                                                <connections>
+                                                    <outlet property="productImage" destination="Clo-MI-92f" id="eRV-Xf-Pex"/>
+                                                    <outlet property="productName" destination="hm9-cn-ZRR" id="bYA-mf-yCE"/>
+                                                </connections>
                                             </tableViewCell>
                                         </prototypes>
                                     </tableView>

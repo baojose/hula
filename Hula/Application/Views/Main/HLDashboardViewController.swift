@@ -18,15 +18,11 @@ class HLDashboardViewController: UIViewController {
     
     let sectionInsets = UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 0)
     
+    
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        // Do any additional setup after loading the view.
-        NotificationCenter.default.addObserver(self, selector: #selector(self.rotated), name: NSNotification.Name.UIDeviceOrientationDidChange, object: nil)
-        
-        
-        
-        rotated()
+
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -49,21 +45,6 @@ class HLDashboardViewController: UIViewController {
         }
         
     }
-    
-    func rotated() {
-        if UIDeviceOrientationIsPortrait(UIDevice.current.orientation) {
-            print("portrait")
-            portraitView.isHidden = false
-            landscapeView.isHidden = true
-            self.dismiss(animated: true) {
-                // After dismiss
-            }
-        } else {
-            print("landscape")
-            portraitView.isHidden = true
-            landscapeView.isHidden = false
-        }
-    }
 }
 
 
@@ -73,13 +54,13 @@ extension HLDashboardViewController: UICollectionViewDelegate, UICollectionViewD
         return 1
     }
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return 10
+        return 5
     }
     func collectionView(_ collectionView: UICollectionView,
                                  cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "tradeCell",
                                                       for: indexPath) as! HLTradesCollectionViewCell
-        cell.tradeNumber.text = "\(indexPath.row)"
+        cell.tradeNumber.text = "\(indexPath.row+1)"
         // Configure the cell
         return cell
     }
