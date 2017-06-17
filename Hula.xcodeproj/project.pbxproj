@@ -17,6 +17,8 @@
 		2728141F1EF08B8A00984562 /* HLBarterScreenViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2728141E1EF08B8A00984562 /* HLBarterScreenViewController.swift */; };
 		272814211EF08BD200984562 /* HLSwappPageViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 272814201EF08BD200984562 /* HLSwappPageViewController.swift */; };
 		272814231EF099BB00984562 /* HLSwappViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 272814221EF099BB00984562 /* HLSwappViewController.swift */; };
+		272814251EF52BDD00984562 /* HLDashboardNormalViewFlowLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = 272814241EF52BDD00984562 /* HLDashboardNormalViewFlowLayout.swift */; };
+		272814271EF530EE00984562 /* HLDashboardExpandedViewFlowLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = 272814261EF530EE00984562 /* HLDashboardExpandedViewFlowLayout.swift */; };
 		273A1EA21ECF9D37005D163E /* HulaPortraitNavigationController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 273A1EA11ECF9D37005D163E /* HulaPortraitNavigationController.swift */; };
 		273A1EA51ECF9F13005D163E /* HLDashboardViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 273A1EA41ECF9F13005D163E /* HLDashboardViewController.swift */; };
 		273A1EA71ED6440A005D163E /* HLSwappProductTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 273A1EA61ED6440A005D163E /* HLSwappProductTableViewCell.swift */; };
@@ -110,6 +112,8 @@
 		2728141E1EF08B8A00984562 /* HLBarterScreenViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HLBarterScreenViewController.swift; sourceTree = "<group>"; };
 		272814201EF08BD200984562 /* HLSwappPageViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HLSwappPageViewController.swift; sourceTree = "<group>"; };
 		272814221EF099BB00984562 /* HLSwappViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HLSwappViewController.swift; sourceTree = "<group>"; };
+		272814241EF52BDD00984562 /* HLDashboardNormalViewFlowLayout.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HLDashboardNormalViewFlowLayout.swift; sourceTree = "<group>"; };
+		272814261EF530EE00984562 /* HLDashboardExpandedViewFlowLayout.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HLDashboardExpandedViewFlowLayout.swift; sourceTree = "<group>"; };
 		273A1EA11ECF9D37005D163E /* HulaPortraitNavigationController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HulaPortraitNavigationController.swift; sourceTree = "<group>"; };
 		273A1EA41ECF9F13005D163E /* HLDashboardViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HLDashboardViewController.swift; sourceTree = "<group>"; };
 		273A1EA61ED6440A005D163E /* HLSwappProductTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HLSwappProductTableViewCell.swift; sourceTree = "<group>"; };
@@ -421,6 +425,8 @@
 				F8B651FE1E7B677A009D1DC6 /* HLMyProductTableViewCell.swift */,
 				F8B652001E7B7D6B009D1DC6 /* HLPhotoAlbumCollectionViewCell.swift */,
 				2728141C1EDCA6D000984562 /* HLTradesCollectionViewCell.swift */,
+				272814241EF52BDD00984562 /* HLDashboardNormalViewFlowLayout.swift */,
+				272814261EF530EE00984562 /* HLDashboardExpandedViewFlowLayout.swift */,
 			);
 			path = Cells;
 			sourceTree = "<group>";
@@ -849,6 +855,7 @@
 				F8B651F61E7AB643009D1DC6 /* HLCustomCameraViewController.swift in Sources */,
 				F86698C91E7044C0002129E1 /* HLSignUpViewController.swift in Sources */,
 				278988FB1ED7933600C0FBA9 /* HLCalculatorViewController.swift in Sources */,
+				272814271EF530EE00984562 /* HLDashboardExpandedViewFlowLayout.swift in Sources */,
 				2728141F1EF08B8A00984562 /* HLBarterScreenViewController.swift in Sources */,
 				27C733C71EA2D051003A6FD6 /* HLRoundedGradientButton.swift in Sources */,
 				27B228B81EA89FF10079EED6 /* HLBouncingButton.swift in Sources */,
@@ -888,6 +895,7 @@
 				F8B652031E7C77BF009D1DC6 /* HLSellerInfoViewController.swift in Sources */,
 				F8B651F41E7A82F6009D1DC6 /* HLCompleteProductProfileViewController.swift in Sources */,
 				116669151E98222F0094B157 /* HLHomeNotificationsTableViewCell.swift in Sources */,
+				272814251EF52BDD00984562 /* HLDashboardNormalViewFlowLayout.swift in Sources */,
 				F86698B91E703D02002129E1 /* CommonUtils.swift in Sources */,
 				F8B651EB1E787B35009D1DC6 /* HLHomeSearchTableViewCell.swift in Sources */,
 				F86698CB1E7044D6002129E1 /* HLLogInViewController.swift in Sources */,

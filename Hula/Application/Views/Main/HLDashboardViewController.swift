@@ -14,6 +14,7 @@ class HLDashboardViewController: UIViewController {
     @IBOutlet weak var portraitView: UIView!
     @IBOutlet weak var initialCoverView: UIImageView!
     @IBOutlet weak var mainCollectionView: UICollectionView!
+    var selectedBarter: Int = 0
     
     
     let sectionInsets = UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 0)
@@ -64,13 +65,35 @@ extension HLDashboardViewController: UICollectionViewDelegate, UICollectionViewD
         // Configure the cell
         return cell
     }
+    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        
+        
+        print("Barter room clicked")
+        print(indexPath.row)
+        
+        //mainCollectionView.collectionViewLayout.prepareForTransition(from: HLDashboardExpandedViewFlowLayout())
+        
+        //mainCollectionView.collectionViewLayout = HLDashboardExpandedViewFlowLayout()
+        
+        
+        if let swappPageVC = self.parent as? HLSwappPageViewController{
+            selectedBarter = indexPath.row
+            swappPageVC.goTo(page: selectedBarter + 1)
+        }
+        print(self.parent!)
+ 
+    }
+    
+    override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
+        mainCollectionView.collectionViewLayout.invalidateLayout()
+    }
+    
 }
 extension HLDashboardViewController : UICollectionViewDelegateFlowLayout {
     func collectionView(_ collectionView: UICollectionView,
                         layout collectionViewLayout: UICollectionViewLayout,
                         sizeForItemAt indexPath: IndexPath) -> CGSize {
         let availableWidth = view.frame.width
-        
         return CGSize(width: availableWidth, height: 70)
     }
     func collectionView(_ collectionView: UICollectionView,
