@@ -81,7 +81,7 @@ extension HLDashboardViewController: UICollectionViewDelegate, UICollectionViewD
         cell.tradeNumber.text = "\(indexPath.row+1)"
         // Configure the cell
         if (self.arrTrades.count > indexPath.row){
-            print("Drawing row \(indexPath.row)")
+            //print("Drawing row \(indexPath.row)")
             let thisTrade : NSDictionary = self.arrTrades.object(at: indexPath.row) as! NSDictionary
             cell.emptyRoomLabel.text = ""
             print(thisTrade)
@@ -118,7 +118,7 @@ extension HLDashboardViewController: UICollectionViewDelegate, UICollectionViewD
             cell.middleArrows.isHidden = false
             cell.optionsDotsImage.isHidden = false
         } else {
-            print("Empty row \(indexPath.row)")
+            //print("Empty row \(indexPath.row)")
             cell.emptyRoomLabel.text = "Empty Trade Room"
             cell.optionsDotsImage.isHidden = true
             cell.userImage.image = nil
@@ -136,16 +136,18 @@ extension HLDashboardViewController: UICollectionViewDelegate, UICollectionViewD
         print("Barter room clicked")
         print(indexPath.row)
         
-        //mainCollectionView.collectionViewLayout.prepareForTransition(from: HLDashboardExpandedViewFlowLayout())
-        
-        //mainCollectionView.collectionViewLayout = HLDashboardExpandedViewFlowLayout()
-        
-        
-        if let swappPageVC = self.parent as? HLSwappPageViewController{
-            selectedBarter = indexPath.row
-            swappPageVC.goTo(page: selectedBarter + 1)
+        if (self.arrTrades.count > indexPath.row){
+            //mainCollectionView.collectionViewLayout.prepareForTransition(from: HLDashboardExpandedViewFlowLayout())
+            
+            //mainCollectionView.collectionViewLayout = HLDashboardExpandedViewFlowLayout()
+            
+            
+            if let swappPageVC = self.parent as? HLSwappPageViewController{
+                selectedBarter = indexPath.row
+                swappPageVC.goTo(page: selectedBarter + 1)
+            }
+            print(self.parent!)
         }
-        print(self.parent!)
  
     }
     
