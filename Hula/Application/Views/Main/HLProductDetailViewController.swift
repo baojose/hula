@@ -54,7 +54,7 @@ class HLProductDetailViewController: BaseViewController, UIScrollViewDelegate, U
     }
 
     func initData() {
-        print(productData);
+        //print(productData);
     }
     func initView() {
         var newFrame: CGRect! = productTableView.frame
@@ -152,5 +152,29 @@ class HLProductDetailViewController: BaseViewController, UIScrollViewDelegate, U
         }
     }
     @IBAction func addToTradeAction(_ sender: Any) {
+        if let productId = productData["_id"] as? String{
+            print(productId)
+            let otherId = productData["owner_id"] as? String
+            if (HulaUser.sharedInstance.userId.characters.count>0){
+                // user is loggedin
+                let queryURL = HulaConstants.apiURL + "trades/"
+                let dataString:String = "product_id=\(productId)&other_id=\(otherId!)"
+                HLDataManager.sharedInstance.httpPost(urlstr: queryURL, postString: dataString, isPut: false, taskCallback: { (ok, json) in
+                    if (ok){
+                        // show barter screen
+                        DispatchQueue.main.async {
+                            let storyboard = UIStoryboard(name: "Main", bundle: nil)
+                            let myModalViewController = storyboard.instantiateViewController(withIdentifier: "swappView")
+                            myModalViewController.modalPresentationStyle = UIModalPresentationStyle.fullScreen
+                            myModalViewController.modalTransitionStyle = UIModalTransitionStyle.crossDissolve
+                            self.present(myModalViewController, animated: true, completion: nil)
+                        }
+                    } else {
+                        // connection error
+                        print("Connection error")
+                    }
+                })
+            }
+        }
     }
 }

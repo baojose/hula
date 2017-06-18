@@ -9,10 +9,6 @@
 import UIKit
 
 class HLBarterScreenViewController: UIViewController {
-    @IBOutlet weak var myUserImage: UIImageView!
-    @IBOutlet weak var otherUserImage: UIImageView!
-    @IBOutlet weak var myUserNameLabel: UILabel!
-    @IBOutlet weak var otherUserNameLabel: UILabel!
 
     override func viewDidLoad() {
         super.viewDidLoad()

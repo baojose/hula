@@ -20,6 +20,7 @@ class HLDataManager: NSObject {
     var currentUser: HulaUser!
     var newProduct: HulaProduct!
     var arrCategories : NSMutableArray!
+    var arrTrades : NSMutableArray!
     var arrNotifications : NSMutableArray!
     var uploadMode: Bool!
     
@@ -45,6 +46,7 @@ class HLDataManager: NSObject {
         
         arrCategories = []
         arrNotifications = []
+        arrTrades = []
         getCategories()
 //        arrCategories = [["icon" : "icon_cat_service" , "name" : "SERVICES"],
 //                         ["icon" : "icon_cat_cars" , "name" : "CARS, BIKES & AUTO PARTS"],
@@ -82,6 +84,24 @@ class HLDataManager: NSObject {
                 }
                 
                 NotificationCenter.default.post(name: self.categoriesLoaded, object: nil)
+            }
+        })
+    }
+    func getTrades(taskCallback: @escaping (Bool) -> ()) {
+        let queryURL = HulaConstants.apiURL + "trades"
+        httpGet(urlstr: queryURL, taskCallback: { (ok, json) in
+            print(ok)
+            if (ok){
+                self.arrTrades=[];
+                if let array = json as? [Any] {
+                    for trade in array {
+                        // access all objects in array
+                        self.arrTrades.add(trade)
+                    }
+                }
+                taskCallback(true)
+            } else {
+                taskCallback(false)
             }
         })
     }

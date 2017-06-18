@@ -110,6 +110,18 @@ extension HLSwappPageViewController: UIPageViewControllerDataSource, UIPageViewC
         }
     }
     
+    public func goTo(page: Int){
+        if (page < orderedViewControllers.count){
+            let newVC = orderedViewControllers[page]
+            setViewControllers([newVC],
+                           direction: .forward,
+                           animated: true,
+                           completion: nil)
+            swappDelegate?.swappPageViewController(swappPageViewController: self,
+                                                   didUpdatePageIndex: page)
+        }
+    }
+    
 }
 
 protocol SwappPageViewControllerDelegate: class {
