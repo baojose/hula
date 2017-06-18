@@ -136,7 +136,7 @@ extension HLDashboardViewController: UICollectionViewDelegate, UICollectionViewD
         print("Barter room clicked")
         print(indexPath.row)
         
-        if (self.arrTrades.count > indexPath.row){
+        //if (self.arrTrades.count > indexPath.row){
             //mainCollectionView.collectionViewLayout.prepareForTransition(from: HLDashboardExpandedViewFlowLayout())
             
             //mainCollectionView.collectionViewLayout = HLDashboardExpandedViewFlowLayout()
@@ -147,7 +147,7 @@ extension HLDashboardViewController: UICollectionViewDelegate, UICollectionViewD
                 swappPageVC.goTo(page: selectedBarter + 1)
             }
             print(self.parent!)
-        }
+        //}
  
     }
     
