@@ -11,6 +11,9 @@ import UIKit
 class HLTradesCollectionViewCell: UICollectionViewCell {
     @IBOutlet weak var userImage: UIImageView!
     @IBOutlet weak var tradeNumber: UILabel!
+    @IBOutlet weak var emptyRoomLabel: UILabel!
+    @IBOutlet weak var middleArrows: UIImageView!
+    @IBOutlet weak var optionsDotsImage: UIImageView!
     
     override func apply(_ layoutAttributes: UICollectionViewLayoutAttributes?) {
         self.layoutIfNeeded()

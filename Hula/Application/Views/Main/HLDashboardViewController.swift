@@ -15,6 +15,8 @@ class HLDashboardViewController: UIViewController {
     @IBOutlet weak var initialCoverView: UIImageView!
     @IBOutlet weak var mainCollectionView: UICollectionView!
     var selectedBarter: Int = 0
+    var arrTrades: NSMutableArray = []
+    let productImagesWidth: CGFloat = 35.0
     
     
     let sectionInsets = UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 0)
@@ -22,7 +24,10 @@ class HLDashboardViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-
+        
+        if (HLDataManager.sharedInstance.arrTrades.count > 0){
+            self.arrTrades = HLDataManager.sharedInstance.arrTrades
+        }
 
     }
     
@@ -30,6 +35,14 @@ class HLDashboardViewController: UIViewController {
         UIView.animate(withDuration: 0.4) {
             self.initialCoverView.center.y += 1000
             self.initialCoverView.transform = CGAffineTransform(rotationAngle: 0.8)
+        }
+        HLDataManager.sharedInstance.getTrades { (success) in
+            if (success){
+                self.arrTrades = HLDataManager.sharedInstance.arrTrades
+                print("Trades ok")
+                //print(self.arrTrades)
+                self.mainCollectionView.reloadData()
+            }
         }
     }
 
@@ -55,7 +68,7 @@ extension HLDashboardViewController: UICollectionViewDelegate, UICollectionViewD
         return 1
     }
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return 5
+        return max(self.arrTrades.count, 5)
     }
     func collectionView(_ collectionView: UICollectionView,
                                  cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
@@ -63,6 +76,48 @@ extension HLDashboardViewController: UICollectionViewDelegate, UICollectionViewD
                                                       for: indexPath) as! HLTradesCollectionViewCell
         cell.tradeNumber.text = "\(indexPath.row+1)"
         // Configure the cell
+        if (self.arrTrades.count > indexPath.row){
+            let thisTrade : NSDictionary = self.arrTrades.object(at: indexPath.row) as! NSDictionary
+            cell.emptyRoomLabel.text = ""
+            print(thisTrade)
+            var otherUserId = thisTrade.object(forKey: "other_id") as? String
+            if otherUserId == HulaUser.sharedInstance.userId {
+                otherUserId = thisTrade.object(forKey: "owner_id") as? String
+            }
+            if( otherUserId != nil){
+                cell.userImage.loadImageFromURL(urlString: HulaConstants.apiURL + "users/\(otherUserId!)/image")
+            }
+            if let other_products_arr = thisTrade.object(forKey: "other_products") as? [String]{
+                var counter:Int = 0;
+                for img in other_products_arr {
+                    let newImg = UIImageView()
+                    
+                    newImg.frame = CGRect(x: cell.frame.width/2 + ( CGFloat(counter) * (productImagesWidth * 10)) + 20, y: cell.frame.height/2 - productImagesWidth/2, width: productImagesWidth, height: productImagesWidth)
+                    newImg.loadImageFromURL(urlString: HulaConstants.apiURL + "products/\(img)/image")
+                    cell.addSubview(newImg)
+                    counter += 1
+                }
+            }
+            if let owner_products_arr = thisTrade.object(forKey: "owner_products") as? [String]{
+                var counter:Int = 0;
+                for img in owner_products_arr {
+                    let newImg = UIImageView()
+                    
+                    newImg.frame = CGRect(x: cell.frame.width/2 - ( CGFloat(counter) * (productImagesWidth * 10)) - 20, y: cell.frame.height/2 - productImagesWidth/2, width: productImagesWidth, height: productImagesWidth)
+                    newImg.loadImageFromURL(urlString: HulaConstants.apiURL + "products/\(img)/image")
+                    cell.addSubview(newImg)
+                    counter += 1
+                }
+            }
+            
+            cell.middleArrows.isHidden = false
+        } else {
+            
+            cell.userImage.image = nil
+            cell.middleArrows.isHidden = true
+        }
+        
+        
         return cell
     }
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
