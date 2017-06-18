@@ -14,6 +14,8 @@ class HLTradesCollectionViewCell: UICollectionViewCell {
     @IBOutlet weak var emptyRoomLabel: UILabel!
     @IBOutlet weak var middleArrows: UIImageView!
     @IBOutlet weak var optionsDotsImage: UIImageView!
+    @IBOutlet weak var left_side: UIView!
+    @IBOutlet weak var right_side: UIView!
     
     override func apply(_ layoutAttributes: UICollectionViewLayoutAttributes?) {
         self.layoutIfNeeded()

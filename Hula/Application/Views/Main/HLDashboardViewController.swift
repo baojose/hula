@@ -28,6 +28,17 @@ class HLDashboardViewController: UIViewController {
         if (HLDataManager.sharedInstance.arrTrades.count > 0){
             self.arrTrades = HLDataManager.sharedInstance.arrTrades
         }
+        HLDataManager.sharedInstance.getTrades { (success) in
+            if (success){
+                print("Trades ok")
+                if (self.arrTrades.count != HLDataManager.sharedInstance.arrTrades.count){
+                    self.arrTrades = HLDataManager.sharedInstance.arrTrades
+                    self.mainCollectionView.reloadData()
+                } else {
+                    self.arrTrades = HLDataManager.sharedInstance.arrTrades
+                }
+            }
+        }
 
     }
     
@@ -36,14 +47,7 @@ class HLDashboardViewController: UIViewController {
             self.initialCoverView.center.y += 1000
             self.initialCoverView.transform = CGAffineTransform(rotationAngle: 0.8)
         }
-        HLDataManager.sharedInstance.getTrades { (success) in
-            if (success){
-                self.arrTrades = HLDataManager.sharedInstance.arrTrades
-                print("Trades ok")
-                //print(self.arrTrades)
-                self.mainCollectionView.reloadData()
-            }
-        }
+        self.mainCollectionView.reloadData()
     }
 
     override func didReceiveMemoryWarning() {
@@ -77,6 +81,7 @@ extension HLDashboardViewController: UICollectionViewDelegate, UICollectionViewD
         cell.tradeNumber.text = "\(indexPath.row+1)"
         // Configure the cell
         if (self.arrTrades.count > indexPath.row){
+            print("Drawing row \(indexPath.row)")
             let thisTrade : NSDictionary = self.arrTrades.object(at: indexPath.row) as! NSDictionary
             cell.emptyRoomLabel.text = ""
             print(thisTrade)
@@ -92,9 +97,9 @@ extension HLDashboardViewController: UICollectionViewDelegate, UICollectionViewD
                 for img in other_products_arr {
                     let newImg = UIImageView()
                     
-                    newImg.frame = CGRect(x: cell.frame.width/2 + ( CGFloat(counter) * (productImagesWidth * 10)) + 20, y: cell.frame.height/2 - productImagesWidth/2, width: productImagesWidth, height: productImagesWidth)
+                    newImg.frame = CGRect(x: ( CGFloat(counter) * (productImagesWidth * 10)) + 20, y: cell.frame.height/2 - productImagesWidth/2, width: productImagesWidth, height: productImagesWidth)
                     newImg.loadImageFromURL(urlString: HulaConstants.apiURL + "products/\(img)/image")
-                    cell.addSubview(newImg)
+                    cell.right_side.addSubview(newImg)
                     counter += 1
                 }
             }
@@ -103,18 +108,23 @@ extension HLDashboardViewController: UICollectionViewDelegate, UICollectionViewD
                 for img in owner_products_arr {
                     let newImg = UIImageView()
                     
-                    newImg.frame = CGRect(x: cell.frame.width/2 - ( CGFloat(counter) * (productImagesWidth * 10)) - 20, y: cell.frame.height/2 - productImagesWidth/2, width: productImagesWidth, height: productImagesWidth)
+                    newImg.frame = CGRect(x: cell.left_side.frame.width - ( CGFloat(counter) * (productImagesWidth * 10)) - 20, y: cell.frame.height/2 - productImagesWidth/2, width: productImagesWidth, height: productImagesWidth)
                     newImg.loadImageFromURL(urlString: HulaConstants.apiURL + "products/\(img)/image")
-                    cell.addSubview(newImg)
+                    cell.left_side.addSubview(newImg)
                     counter += 1
                 }
             }
             
             cell.middleArrows.isHidden = false
+            cell.optionsDotsImage.isHidden = false
         } else {
-            
+            print("Empty row \(indexPath.row)")
+            cell.emptyRoomLabel.text = "Empty Trade Room"
+            cell.optionsDotsImage.isHidden = true
             cell.userImage.image = nil
             cell.middleArrows.isHidden = true
+            cell.left_side.subviews.forEach({ $0.removeFromSuperview() })
+            cell.right_side.subviews.forEach({ $0.removeFromSuperview() })
         }
         
         
