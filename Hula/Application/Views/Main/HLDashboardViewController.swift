@@ -17,6 +17,7 @@ class HLDashboardViewController: UIViewController {
     var selectedBarter: Int = 0
     var arrTrades: NSMutableArray = []
     let productImagesWidth: CGFloat = 35.0
+    var isExpandedFlowLayoutUsed:Bool = false
     
     
     let sectionInsets = UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 0)
@@ -39,7 +40,8 @@ class HLDashboardViewController: UIViewController {
                 }
             }
         }
-
+        mainCollectionView.collectionViewLayout = HLDashboardNormalViewFlowLayout()
+        isExpandedFlowLayoutUsed = false
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -48,6 +50,10 @@ class HLDashboardViewController: UIViewController {
             self.initialCoverView.transform = CGAffineTransform(rotationAngle: 0.8)
         }
         self.mainCollectionView.reloadData()
+        self.mainCollectionView.collectionViewLayout.invalidateLayout()
+        self.mainCollectionView.setCollectionViewLayout(HLDashboardNormalViewFlowLayout(), animated: false)
+        self.mainCollectionView.scrollToItem(at: IndexPath(row: 0, section: 0) , at: .top, animated: false)
+        isExpandedFlowLayoutUsed = false
     }
 
     override func didReceiveMemoryWarning() {
@@ -136,18 +142,32 @@ extension HLDashboardViewController: UICollectionViewDelegate, UICollectionViewD
         print("Barter room clicked")
         print(indexPath.row)
         
-        //if (self.arrTrades.count > indexPath.row){
-            //mainCollectionView.collectionViewLayout.prepareForTransition(from: HLDashboardExpandedViewFlowLayout())
+        if (self.arrTrades.count > indexPath.row){
+        
             
-            //mainCollectionView.collectionViewLayout = HLDashboardExpandedViewFlowLayout()
+            isExpandedFlowLayoutUsed = !isExpandedFlowLayoutUsed
             
-            
-            if let swappPageVC = self.parent as? HLSwappPageViewController{
-                selectedBarter = indexPath.row
-                swappPageVC.goTo(page: selectedBarter + 1)
+            UIView.animate(withDuration: 0.4, animations: { () -> Void in
+                self.mainCollectionView.collectionViewLayout.invalidateLayout()
+                UIScreen.main.snapshotView(afterScreenUpdates: true)
+                if(self.isExpandedFlowLayoutUsed){
+                    self.mainCollectionView.setCollectionViewLayout(HLDashboardExpandedViewFlowLayout(), animated: false)
+                } else {
+                    self.mainCollectionView.setCollectionViewLayout(HLDashboardNormalViewFlowLayout(), animated: false)
+                }
+                self.mainCollectionView.scrollToItem(at: indexPath, at: .top, animated: false)
+            })
+            let when = DispatchTime.now() + 0.2
+            DispatchQueue.main.asyncAfter(deadline: when) {
+                if let swappPageVC = self.parent as? HLSwappPageViewController{
+                    self.selectedBarter = indexPath.row
+                    swappPageVC.goTo(page: self.selectedBarter + 1)
+                }
+                print(self.parent!)
             }
-            print(self.parent!)
-        //}
+            
+        
+        }
  
     }
     
@@ -156,6 +176,7 @@ extension HLDashboardViewController: UICollectionViewDelegate, UICollectionViewD
     }
     
 }
+/*
 extension HLDashboardViewController : UICollectionViewDelegateFlowLayout {
     func collectionView(_ collectionView: UICollectionView,
                         layout collectionViewLayout: UICollectionViewLayout,
@@ -174,3 +195,4 @@ extension HLDashboardViewController : UICollectionViewDelegateFlowLayout {
         return 0
     }
 }
+ */
