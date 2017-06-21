@@ -31,7 +31,7 @@ class HLDashboardViewController: UIViewController {
         }
         HLDataManager.sharedInstance.getTrades { (success) in
             if (success){
-                print("Trades ok")
+                //print("Trades ok")
                 if (self.arrTrades.count != HLDataManager.sharedInstance.arrTrades.count){
                     self.arrTrades = HLDataManager.sharedInstance.arrTrades
                     self.mainCollectionView.reloadData()
@@ -78,59 +78,52 @@ extension HLDashboardViewController: UICollectionViewDelegate, UICollectionViewD
         return 1
     }
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return max(self.arrTrades.count, 5)
+        return max(self.arrTrades.count, HulaUser.sharedInstance.maxTrades)
     }
     func collectionView(_ collectionView: UICollectionView,
                                  cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "tradeCell",
                                                       for: indexPath) as! HLTradesCollectionViewCell
         cell.tradeNumber.text = "\(indexPath.row+1)"
+        
         // Configure the cell
         if (self.arrTrades.count > indexPath.row){
             //print("Drawing row \(indexPath.row)")
             let thisTrade : NSDictionary = self.arrTrades.object(at: indexPath.row) as! NSDictionary
             cell.emptyRoomLabel.text = ""
-            print(thisTrade)
+            //print(thisTrade)
             var otherUserId = thisTrade.object(forKey: "other_id") as? String
             if otherUserId == HulaUser.sharedInstance.userId {
                 otherUserId = thisTrade.object(forKey: "owner_id") as? String
             }
             if( otherUserId != nil){
                 cell.userImage.loadImageFromURL(urlString: HulaConstants.apiURL + "users/\(otherUserId!)/image")
+                
             }
             if let other_products_arr = thisTrade.object(forKey: "other_products") as? [String]{
-                var counter:Int = 0;
-                for img in other_products_arr {
-                    let newImg = UIImageView()
-                    
-                    newImg.frame = CGRect(x: ( CGFloat(counter) * (productImagesWidth * 10)) + 20, y: cell.frame.height/2 - productImagesWidth/2, width: productImagesWidth, height: productImagesWidth)
-                    newImg.loadImageFromURL(urlString: HulaConstants.apiURL + "products/\(img)/image")
-                    cell.right_side.addSubview(newImg)
-                    counter += 1
-                }
+                drawProducts(inCell: cell, fromArr: other_products_arr, side: "right")
             }
             if let owner_products_arr = thisTrade.object(forKey: "owner_products") as? [String]{
-                var counter:Int = 0;
-                for img in owner_products_arr {
-                    let newImg = UIImageView()
-                    
-                    newImg.frame = CGRect(x: cell.left_side.frame.width - ( CGFloat(counter) * (productImagesWidth * 10)) - 20, y: cell.frame.height/2 - productImagesWidth/2, width: productImagesWidth, height: productImagesWidth)
-                    newImg.loadImageFromURL(urlString: HulaConstants.apiURL + "products/\(img)/image")
-                    cell.left_side.addSubview(newImg)
-                    counter += 1
-                }
+                drawProducts(inCell: cell, fromArr: owner_products_arr, side: "left")
             }
+            //CommonUtils.sharedInstance.loadImageOnView(imageView:cell.myImage, withURL:HulaUser.sharedInstance.userPhotoURL)
             
+            cell.myImage.loadImageFromURL(urlString: HulaUser.sharedInstance.userPhotoURL)
+            print(HulaUser.sharedInstance.userPhotoURL)
+            cell.myImage.isHidden = false
             cell.middleArrows.isHidden = false
             cell.optionsDotsImage.isHidden = false
+            cell.tradeNumber.textColor = HulaConstants.appMainColor
         } else {
             //print("Empty row \(indexPath.row)")
             cell.emptyRoomLabel.text = "Empty Trade Room"
+            cell.myImage.isHidden = true
             cell.optionsDotsImage.isHidden = true
             cell.userImage.image = nil
             cell.middleArrows.isHidden = true
             cell.left_side.subviews.forEach({ $0.removeFromSuperview() })
             cell.right_side.subviews.forEach({ $0.removeFromSuperview() })
+            cell.tradeNumber.textColor = UIColor.gray
         }
         
         
@@ -140,7 +133,7 @@ extension HLDashboardViewController: UICollectionViewDelegate, UICollectionViewD
         
         
         print("Barter room clicked")
-        print(indexPath.row)
+        //print(indexPath.row)
         
         if (self.arrTrades.count > indexPath.row){
         
@@ -161,9 +154,12 @@ extension HLDashboardViewController: UICollectionViewDelegate, UICollectionViewD
             DispatchQueue.main.asyncAfter(deadline: when) {
                 if let swappPageVC = self.parent as? HLSwappPageViewController{
                     self.selectedBarter = indexPath.row
+                    let thisTrade = self.arrTrades.object(at: indexPath.row) as? NSDictionary
+                    swappPageVC.currentTrade = thisTrade
+                    print(swappPageVC.currentTrade!)
                     swappPageVC.goTo(page: self.selectedBarter + 1)
                 }
-                print(self.parent!)
+                //print(self.parent!)
             }
             
         
@@ -173,6 +169,29 @@ extension HLDashboardViewController: UICollectionViewDelegate, UICollectionViewD
     
     override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
         mainCollectionView.collectionViewLayout.invalidateLayout()
+    }
+    
+    
+    func drawProducts(inCell:HLTradesCollectionViewCell, fromArr: [String], side: String){
+        var counter:Int = 0;
+        
+        if (side=="right"){
+            inCell.right_side.subviews.forEach({ $0.removeFromSuperview() })
+        } else {
+            inCell.left_side.subviews.forEach({ $0.removeFromSuperview() })
+        }
+        for img in fromArr {
+            let newImg = UIImageView()
+            if (side=="right"){
+                newImg.frame = CGRect(x: ( CGFloat(counter) * (productImagesWidth * 10)) + 20, y: 70.0/2 - productImagesWidth/2, width: productImagesWidth, height: productImagesWidth)
+                inCell.right_side.addSubview(newImg)
+            } else {
+                newImg.frame = CGRect(x: inCell.left_side.frame.width - ( CGFloat(counter) * (productImagesWidth * 10)) - 20, y: 70.0/2 - productImagesWidth/2, width: productImagesWidth, height: productImagesWidth)
+                inCell.left_side.addSubview(newImg)
+            }
+            newImg.loadImageFromURL(urlString: HulaConstants.apiURL + "products/\(img)/image")
+            counter += 1
+        }
     }
     
 }

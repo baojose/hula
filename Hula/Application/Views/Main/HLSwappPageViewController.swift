@@ -11,6 +11,7 @@ import UIKit
 class HLSwappPageViewController: UIPageViewController {
     
     weak var swappDelegate: SwappPageViewControllerDelegate?
+    var currentTrade: NSDictionary?
     
     private(set) lazy var orderedViewControllers: [UIViewController] = {
         return [UIStoryboard(name: "Main", bundle: nil) .
@@ -21,6 +22,7 @@ class HLSwappPageViewController: UIPageViewController {
                     instantiateViewController(withIdentifier: "barterRoom"),
                 UIStoryboard(name: "Main", bundle: nil) .
                     instantiateViewController(withIdentifier: "barterRoom")]
+        //HulaUser.sharedInstance.maxTrades
     }()
     
     
@@ -40,6 +42,7 @@ class HLSwappPageViewController: UIPageViewController {
         
         swappDelegate?.swappPageViewController(swappPageViewController: self,
                                                      didUpdatePageCount: orderedViewControllers.count)
+        
     }
 
     override func didReceiveMemoryWarning() {

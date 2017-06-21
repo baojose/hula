@@ -11,11 +11,6 @@ import UIKit
 class HLSwappViewController: UIViewController {
 
     @IBOutlet weak var portraitView: UIView!
-    @IBOutlet weak var closedLabel: UILabel!
-    @IBOutlet weak var endedLabel: UILabel!
-    @IBOutlet weak var startedLabel: UILabel!
-    @IBOutlet weak var myProfileLabel: UILabel!
-    @IBOutlet weak var myProfileImage: UIImageView!
     @IBOutlet weak var mainContainer: UIView!
     @IBOutlet weak var swappPageControl: UIPageControl!
     var selectedScreen = 0
@@ -29,9 +24,6 @@ class HLSwappViewController: UIViewController {
         
         
         
-        CommonUtils.sharedInstance.circleImageView(myProfileImage)
-        myProfileLabel.text = HulaUser.sharedInstance.userNick
-        CommonUtils.sharedInstance.loadImageOnView(imageView:myProfileImage, withURL:HulaUser.sharedInstance.userPhotoURL)
         rotated()
     }
 

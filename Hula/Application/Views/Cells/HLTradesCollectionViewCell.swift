@@ -9,6 +9,7 @@
 import UIKit
 
 class HLTradesCollectionViewCell: UICollectionViewCell {
+    @IBOutlet weak var myImage: UIImageView!
     @IBOutlet weak var userImage: UIImageView!
     @IBOutlet weak var tradeNumber: UILabel!
     @IBOutlet weak var emptyRoomLabel: UILabel!
@@ -25,6 +26,7 @@ class HLTradesCollectionViewCell: UICollectionViewCell {
         super.awakeFromNib()
         
         CommonUtils.sharedInstance.circleImageView(userImage)
+        CommonUtils.sharedInstance.circleImageView(myImage)
     }
     
 

@@ -21,6 +21,12 @@ class HLBarterScreenViewController: UIViewController {
         // Dispose of any resources that can be recreated.
     }
     
+    override func viewWillAppear(_ animated: Bool) {
+        if let swappPageVC = self.parent as? HLSwappPageViewController{
+            //print("viewWillAppear" )
+            //print(swappPageVC.currentTrade ?? "empty trade" )
+        }
+    }
 
     /*
     // MARK: - Navigation
@@ -31,5 +37,5 @@ class HLBarterScreenViewController: UIViewController {
         // Pass the selected object to the new view controller.
     }
     */
-
+    
 }

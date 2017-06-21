@@ -25,6 +25,7 @@ class HulaUser: NSObject {
     var fbToken: String!
     var twToken: String!
     var liToken: String!
+    var maxTrades: Int = 3
     var arrayProducts = [] as Array
     
     class var sharedInstance: HulaUser {
@@ -49,6 +50,7 @@ class HulaUser: NSObject {
         self.twToken = ""
         self.liToken = ""
         self.location = CLLocation(latitude: 0, longitude: 0)
+        self.maxTrades = 3
         self.arrayProducts = []
     }
     
@@ -85,6 +87,7 @@ class HulaUser: NSObject {
         self.fbToken = ""
         self.twToken = ""
         self.liToken = ""
+        self.maxTrades = 3
         self.location = CLLocation(latitude: 0, longitude: 0)
         self.arrayProducts = []
     }
