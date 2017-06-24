@@ -5440,7 +5440,7 @@ Log In</string>
                                                     <rect key="frame" x="0.0" y="0.0" width="128" height="109.5"/>
                                                     <autoresizingMask key="autoresizingMask"/>
                                                     <subviews>
-                                                        <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" id="aVv-2m-QQF">
+                                                        <imageView userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" id="aVv-2m-QQF">
                                                             <rect key="frame" x="9" y="8" width="112" height="70"/>
                                                             <autoresizingMask key="autoresizingMask" flexibleMaxY="YES"/>
                                                         </imageView>
@@ -5459,6 +5459,10 @@ Log In</string>
                                                 </connections>
                                             </tableViewCell>
                                         </prototypes>
+                                        <connections>
+                                            <outlet property="dataSource" destination="owL-xI-leu" id="vTo-on-SrS"/>
+                                            <outlet property="delegate" destination="owL-xI-leu" id="NmB-mF-qVu"/>
+                                        </connections>
                                     </tableView>
                                     <tableView clipsSubviews="YES" contentMode="scaleToFill" misplaced="YES" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="110" sectionHeaderHeight="28" sectionFooterHeight="28" id="Jf9-h4-S9d">
                                         <rect key="frame" x="539" y="0.0" width="128" height="375"/>
@@ -5469,7 +5473,7 @@ Log In</string>
                                                 <rect key="frame" x="0.0" y="28" width="128" height="110"/>
                                                 <autoresizingMask key="autoresizingMask"/>
                                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="hTj-9r-gZl" id="YUy-5k-pfy">
-                                                    <rect key="frame" x="0.0" y="0.0" width="128" height="110"/>
+                                                    <rect key="frame" x="0.0" y="0.0" width="128" height="109.5"/>
                                                     <autoresizingMask key="autoresizingMask"/>
                                                     <subviews>
                                                         <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" id="Clo-MI-92f">
@@ -5491,6 +5495,10 @@ Log In</string>
                                                 </connections>
                                             </tableViewCell>
                                         </prototypes>
+                                        <connections>
+                                            <outlet property="dataSource" destination="owL-xI-leu" id="fWd-fd-Ixd"/>
+                                            <outlet property="delegate" destination="owL-xI-leu" id="H93-eS-5Qg"/>
+                                        </connections>
                                     </tableView>
                                     <button opaque="NO" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" id="xXH-sC-plA">
                                         <rect key="frame" x="510" y="346" width="23" height="23"/>
@@ -5517,6 +5525,10 @@ Log In</string>
                     <nil key="simulatedStatusBarMetrics"/>
                     <freeformSimulatedSizeMetrics key="simulatedDestinationMetrics"/>
                     <size key="freeformSize" width="667" height="375"/>
+                    <connections>
+                        <outlet property="myProductsTable" destination="K9B-PW-fX9" id="o9e-92-zgs"/>
+                        <outlet property="otherProductsTable" destination="Jf9-h4-S9d" id="C3Y-CT-2as"/>
+                    </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="4nm-9t-4fb" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>

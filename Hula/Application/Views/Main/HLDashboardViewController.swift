@@ -55,6 +55,9 @@ class HLDashboardViewController: UIViewController {
         self.mainCollectionView.scrollToItem(at: IndexPath(row: 0, section: 0) , at: .top, animated: false)
         isExpandedFlowLayoutUsed = false
     }
+    override func viewDidAppear(_ animated: Bool) {
+        self.mainCollectionView.collectionViewLayout.invalidateLayout()
+    }
 
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
