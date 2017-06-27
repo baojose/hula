@@ -12,6 +12,10 @@ class HLBarterScreenViewController: UIViewController {
 
     @IBOutlet weak var myProductsTable: UITableView!
     @IBOutlet weak var otherProductsTable: UITableView!
+    @IBOutlet weak var otherProductsDragView: UIImageView!
+    @IBOutlet weak var myProductsDragView: UIImageView!
+    @IBOutlet weak var otherProductsLabel: UILabel!
+    @IBOutlet weak var myProductsLabel: UILabel!
     
     var myProducts : [Any] = []
     var otherProducts : [Any] = []
@@ -34,31 +38,32 @@ class HLBarterScreenViewController: UIViewController {
     override func viewWillAppear(_ animated: Bool) {
         if let swappPageVC = self.parent as? HLSwappPageViewController{
             //print("viewWillAppear" )
-            //print(swappPageVC.currentTrade ?? "empty trade" )
-            if (swappPageVC.currentTrade?.object(forKey: "owner_id") as? String == HulaUser.sharedInstance.userId){
-                // I am the owner
-                myTradedProducts = (swappPageVC.currentTrade?.object(forKey: "owner_products") as? [String])!
-                otherTradedProducts = (swappPageVC.currentTrade?.object(forKey: "other_products") as? [String])!
-                otherUserId = (swappPageVC.currentTrade?.object(forKey: "other_id") as? String)!
+            if let ct = swappPageVC.currentTrade {
+                if (ct.object(forKey: "owner_id") as? String == HulaUser.sharedInstance.userId){
+                    // I am the owner
+                    myTradedProducts = (ct.object(forKey: "owner_products") as? [String])!
+                    otherTradedProducts = (ct.object(forKey: "other_products") as? [String])!
+                    otherUserId = (ct.object(forKey: "other_id") as? String)!
+                    
+                } else {
+                    // I am the other
+                    myTradedProducts = (ct.object(forKey: "other_products") as? [String])!
+                    otherTradedProducts = (ct.object(forKey: "owner_products") as? [String])!
+                    otherUserId = (ct.object(forKey: "owner_id") as? String)!
+                }
                 
-            } else {
-                // I am the other
-                myTradedProducts = (swappPageVC.currentTrade?.object(forKey: "other_products") as? [String])!
-                otherTradedProducts = (swappPageVC.currentTrade?.object(forKey: "owner_products") as? [String])!
-                otherUserId = (swappPageVC.currentTrade?.object(forKey: "owner_id") as? String)!
+                getUserProducts(user: otherUserId, taskCallback: {(result) in
+                    self.otherProducts = result
+                    print (self.otherProducts)
+                    self.otherProductsTable.reloadData()
+                    
+                })
+                getUserProducts(user: HulaUser.sharedInstance.userId, taskCallback: {(result) in
+                    self.myProducts = result
+                    //print (self.myProducts)
+                    self.myProductsTable.reloadData()
+                })
             }
-            
-            getUserProducts(user: otherUserId, taskCallback: {(result) in
-                self.otherProducts = result
-                print (self.otherProducts)
-                self.otherProductsTable.reloadData()
-                
-            })
-            getUserProducts(user: HulaUser.sharedInstance.userId, taskCallback: {(result) in
-                self.myProducts = result
-                //print (self.myProducts)
-                self.myProductsTable.reloadData()
-            })
         }
     }
 

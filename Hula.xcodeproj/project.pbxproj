@@ -19,6 +19,7 @@
 		272814231EF099BB00984562 /* HLSwappViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 272814221EF099BB00984562 /* HLSwappViewController.swift */; };
 		272814251EF52BDD00984562 /* HLDashboardNormalViewFlowLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = 272814241EF52BDD00984562 /* HLDashboardNormalViewFlowLayout.swift */; };
 		272814271EF530EE00984562 /* HLDashboardExpandedViewFlowLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = 272814261EF530EE00984562 /* HLDashboardExpandedViewFlowLayout.swift */; };
+		272814291F0314C100984562 /* HLDragableImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 272814281F0314C100984562 /* HLDragableImage.swift */; };
 		273A1EA21ECF9D37005D163E /* HulaPortraitNavigationController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 273A1EA11ECF9D37005D163E /* HulaPortraitNavigationController.swift */; };
 		273A1EA51ECF9F13005D163E /* HLDashboardViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 273A1EA41ECF9F13005D163E /* HLDashboardViewController.swift */; };
 		273A1EA71ED6440A005D163E /* HLSwappProductTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 273A1EA61ED6440A005D163E /* HLSwappProductTableViewCell.swift */; };
@@ -114,6 +115,7 @@
 		272814221EF099BB00984562 /* HLSwappViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HLSwappViewController.swift; sourceTree = "<group>"; };
 		272814241EF52BDD00984562 /* HLDashboardNormalViewFlowLayout.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HLDashboardNormalViewFlowLayout.swift; sourceTree = "<group>"; };
 		272814261EF530EE00984562 /* HLDashboardExpandedViewFlowLayout.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HLDashboardExpandedViewFlowLayout.swift; sourceTree = "<group>"; };
+		272814281F0314C100984562 /* HLDragableImage.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HLDragableImage.swift; sourceTree = "<group>"; };
 		273A1EA11ECF9D37005D163E /* HulaPortraitNavigationController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HulaPortraitNavigationController.swift; sourceTree = "<group>"; };
 		273A1EA41ECF9F13005D163E /* HLDashboardViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HLDashboardViewController.swift; sourceTree = "<group>"; };
 		273A1EA61ED6440A005D163E /* HLSwappProductTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HLSwappProductTableViewCell.swift; sourceTree = "<group>"; };
@@ -240,6 +242,7 @@
 				2728141E1EF08B8A00984562 /* HLBarterScreenViewController.swift */,
 				272814201EF08BD200984562 /* HLSwappPageViewController.swift */,
 				272814221EF099BB00984562 /* HLSwappViewController.swift */,
+				272814281F0314C100984562 /* HLDragableImage.swift */,
 			);
 			name = Swapp;
 			sourceTree = "<group>";
@@ -851,6 +854,7 @@
 				116669191E9925C20094B157 /* HulaNotifications.swift in Sources */,
 				F890E4981E71011C008719B9 /* HLHomeViewController.swift in Sources */,
 				277C6C431EA2385B00530B0F /* HLRoundedButton.swift in Sources */,
+				272814291F0314C100984562 /* HLDragableImage.swift in Sources */,
 				F86698B51E703C34002129E1 /* HulaConstants.swift in Sources */,
 				F8B651F61E7AB643009D1DC6 /* HLCustomCameraViewController.swift in Sources */,
 				F86698C91E7044C0002129E1 /* HLSignUpViewController.swift in Sources */,

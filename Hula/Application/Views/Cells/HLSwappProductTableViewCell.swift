@@ -10,7 +10,7 @@ import UIKit
 
 class HLSwappProductTableViewCell: UITableViewCell {
 
-    @IBOutlet weak var productImage: UIImageView!
+    @IBOutlet weak var productImage: HLDragableImage!
     @IBOutlet weak var productName: UILabel!
     override func awakeFromNib() {
         super.awakeFromNib()

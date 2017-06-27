@@ -2434,17 +2434,51 @@ Log In</string>
                                                             <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                                         </imageView>
                                                         <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" image="s_05" id="m3F-rO-tgR">
-                                                            <rect key="frame" x="579" y="14" width="38" height="38"/>
+                                                            <rect key="frame" x="579" y="17" width="38" height="38"/>
                                                             <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxY="YES"/>
                                                         </imageView>
                                                         <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" image="s_05" id="QHv-5l-iJ1">
-                                                            <rect key="frame" x="52" y="14" width="38" height="38"/>
+                                                            <rect key="frame" x="52" y="17" width="38" height="38"/>
                                                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                                         </imageView>
                                                         <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" image="more_options_trade" id="8QG-u3-rge">
                                                             <rect key="frame" x="639" y="24" width="5" height="19"/>
                                                             <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxY="YES"/>
                                                         </imageView>
+                                                        <view contentMode="scaleToFill" misplaced="YES" id="4Sj-TA-JVq">
+                                                            <rect key="frame" x="488" y="0.0" width="138" height="17"/>
+                                                            <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxY="YES"/>
+                                                            <subviews>
+                                                                <imageView opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" misplaced="YES" image="exclamation" id="47Q-kf-RI6">
+                                                                    <rect key="frame" x="126" y="1" width="16" height="16"/>
+                                                                    <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxY="YES"/>
+                                                                </imageView>
+                                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="PENDING" textAlignment="right" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="Uiv-AD-uec">
+                                                                    <rect key="frame" x="15" y="-2" width="111" height="21"/>
+                                                                    <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxY="YES"/>
+                                                                    <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="9"/>
+                                                                    <nil key="textColor"/>
+                                                                    <nil key="highlightedColor"/>
+                                                                </label>
+                                                            </subviews>
+                                                        </view>
+                                                        <view contentMode="scaleToFill" misplaced="YES" id="hJT-eg-SlF">
+                                                            <rect key="frame" x="51" y="0.0" width="138" height="17"/>
+                                                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                                            <subviews>
+                                                                <imageView opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" misplaced="YES" image="exclamation" id="8VV-z6-rLZ">
+                                                                    <rect key="frame" x="-3" y="1" width="16" height="16"/>
+                                                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                                                </imageView>
+                                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" text="PENDING" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="ToI-v1-67W">
+                                                                    <rect key="frame" x="15" y="-2" width="99" height="21"/>
+                                                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                                                    <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="9"/>
+                                                                    <nil key="textColor"/>
+                                                                    <nil key="highlightedColor"/>
+                                                                </label>
+                                                            </subviews>
+                                                        </view>
                                                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" text="1" textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="dhH-18-eDj">
                                                             <rect key="frame" x="22" y="19" width="22" height="31"/>
                                                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
@@ -2474,7 +2508,9 @@ Log In</string>
                                                     <outlet property="left_side" destination="Ejm-j2-xzG" id="FQl-PO-xIY"/>
                                                     <outlet property="middleArrows" destination="JM8-6Q-JCz" id="NRx-w3-aVy"/>
                                                     <outlet property="myImage" destination="QHv-5l-iJ1" id="1hS-i8-Vvf"/>
+                                                    <outlet property="myTurnView" destination="hJT-eg-SlF" id="Bv6-GH-NOB"/>
                                                     <outlet property="optionsDotsImage" destination="8QG-u3-rge" id="Tg5-ob-y1u"/>
+                                                    <outlet property="otherTurnView" destination="4Sj-TA-JVq" id="Cp7-gs-X4j"/>
                                                     <outlet property="right_side" destination="itt-Zv-E7i" id="Dyu-2f-u5k"/>
                                                     <outlet property="tradeNumber" destination="dhH-18-eDj" id="Eny-nt-O7r"/>
                                                     <outlet property="userImage" destination="m3F-rO-tgR" id="OLg-NG-caz"/>
@@ -5440,7 +5476,7 @@ Log In</string>
                                                     <rect key="frame" x="0.0" y="0.0" width="128" height="109.5"/>
                                                     <autoresizingMask key="autoresizingMask"/>
                                                     <subviews>
-                                                        <imageView userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" id="aVv-2m-QQF">
+                                                        <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" id="aVv-2m-QQF">
                                                             <rect key="frame" x="9" y="8" width="112" height="70"/>
                                                             <autoresizingMask key="autoresizingMask" flexibleMaxY="YES"/>
                                                         </imageView>
@@ -5464,7 +5500,7 @@ Log In</string>
                                             <outlet property="delegate" destination="owL-xI-leu" id="NmB-mF-qVu"/>
                                         </connections>
                                     </tableView>
-                                    <tableView clipsSubviews="YES" contentMode="scaleToFill" misplaced="YES" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="110" sectionHeaderHeight="28" sectionFooterHeight="28" id="Jf9-h4-S9d">
+                                    <tableView contentMode="scaleToFill" misplaced="YES" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="110" sectionHeaderHeight="28" sectionFooterHeight="28" id="Jf9-h4-S9d">
                                         <rect key="frame" x="539" y="0.0" width="128" height="375"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMinX="YES" heightSizable="YES"/>
                                         <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
@@ -5476,7 +5512,7 @@ Log In</string>
                                                     <rect key="frame" x="0.0" y="0.0" width="128" height="109.5"/>
                                                     <autoresizingMask key="autoresizingMask"/>
                                                     <subviews>
-                                                        <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" id="Clo-MI-92f">
+                                                        <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" id="Clo-MI-92f" customClass="HLDragableImage" customModule="Hula" customModuleProvider="target">
                                                             <rect key="frame" x="9" y="8" width="112" height="70"/>
                                                             <autoresizingMask key="autoresizingMask" flexibleMaxY="YES"/>
                                                         </imageView>
@@ -5516,6 +5552,28 @@ Log In</string>
                                             <segue destination="UdN-LB-3En" kind="modal" id="XXg-jN-Ckd"/>
                                         </connections>
                                     </button>
+                                    <imageView opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" misplaced="YES" image="drag-rect" id="RNt-5Z-xam">
+                                        <rect key="frame" x="356" y="49" width="152" height="266"/>
+                                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" widthSizable="YES" flexibleMaxX="YES" flexibleMinY="YES" heightSizable="YES" flexibleMaxY="YES"/>
+                                    </imageView>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" text="Drag here what you want" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="6" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="0Oz-kA-vb9">
+                                        <rect key="frame" x="375" y="64" width="115" height="236"/>
+                                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
+                                        <fontDescription key="fontDescription" name="HelveticaNeue-Light" family="Helvetica Neue" pointSize="18"/>
+                                        <color key="textColor" white="0.25" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
+                                        <nil key="highlightedColor"/>
+                                    </label>
+                                    <imageView opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" misplaced="YES" image="drag-rect" id="kJx-gG-UNP">
+                                        <rect key="frame" x="160" y="49" width="152" height="266"/>
+                                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" widthSizable="YES" flexibleMaxX="YES" flexibleMinY="YES" heightSizable="YES" flexibleMaxY="YES"/>
+                                    </imageView>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" text="Drag here what you offer" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="6" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="1lO-hZ-tUF">
+                                        <rect key="frame" x="177" y="64" width="118" height="236"/>
+                                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
+                                        <fontDescription key="fontDescription" name="HelveticaNeue-Light" family="Helvetica Neue" pointSize="18"/>
+                                        <color key="textColor" white="0.25" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
+                                        <nil key="highlightedColor"/>
+                                    </label>
                                 </subviews>
                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                             </view>
@@ -5526,7 +5584,11 @@ Log In</string>
                     <freeformSimulatedSizeMetrics key="simulatedDestinationMetrics"/>
                     <size key="freeformSize" width="667" height="375"/>
                     <connections>
+                        <outlet property="myProductsDragView" destination="kJx-gG-UNP" id="QGK-vi-85j"/>
+                        <outlet property="myProductsLabel" destination="1lO-hZ-tUF" id="c1F-IX-w6b"/>
                         <outlet property="myProductsTable" destination="K9B-PW-fX9" id="o9e-92-zgs"/>
+                        <outlet property="otherProductsDragView" destination="RNt-5Z-xam" id="38c-JT-iI8"/>
+                        <outlet property="otherProductsLabel" destination="0Oz-kA-vb9" id="SI3-cQ-NFa"/>
                         <outlet property="otherProductsTable" destination="Jf9-h4-S9d" id="C3Y-CT-2as"/>
                     </connections>
                 </viewController>
@@ -5546,6 +5608,8 @@ Log In</string>
         <image name="cash_button_trade_interface" width="25" height="25"/>
         <image name="close-cross" width="44" height="47"/>
         <image name="close_alert_button" width="32" height="32"/>
+        <image name="drag-rect" width="152" height="266"/>
+        <image name="exclamation" width="12" height="12"/>
         <image name="facebook_button_icon" width="10" height="21"/>
         <image name="forward_trade" width="8" height="12"/>
         <image name="header_lines" width="375" height="50"/>

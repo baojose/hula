@@ -17,6 +17,8 @@ class HLTradesCollectionViewCell: UICollectionViewCell {
     @IBOutlet weak var optionsDotsImage: UIImageView!
     @IBOutlet weak var left_side: UIView!
     @IBOutlet weak var right_side: UIView!
+    @IBOutlet weak var myTurnView: UIView!
+    @IBOutlet weak var otherTurnView: UIView!
     
     override func apply(_ layoutAttributes: UICollectionViewLayoutAttributes?) {
         self.layoutIfNeeded()

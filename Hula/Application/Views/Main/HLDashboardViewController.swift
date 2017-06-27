@@ -16,7 +16,7 @@ class HLDashboardViewController: UIViewController {
     @IBOutlet weak var mainCollectionView: UICollectionView!
     var selectedBarter: Int = 0
     var arrTrades: NSMutableArray = []
-    let productImagesWidth: CGFloat = 35.0
+    let productImagesWidth: CGFloat = 27.0
     var isExpandedFlowLayoutUsed:Bool = false
     
     
@@ -117,6 +117,18 @@ extension HLDashboardViewController: UICollectionViewDelegate, UICollectionViewD
             cell.middleArrows.isHidden = false
             cell.optionsDotsImage.isHidden = false
             cell.tradeNumber.textColor = HulaConstants.appMainColor
+            if let turnUser = thisTrade.object(forKey: "turn_user_id") as? String{
+                if turnUser == otherUserId {
+                    cell.myTurnView.isHidden = true
+                    cell.otherTurnView.isHidden = false
+                } else {
+                    cell.myTurnView.isHidden = false
+                    cell.otherTurnView.isHidden = true
+                }
+            } else {
+                cell.myTurnView.isHidden = false
+                cell.otherTurnView.isHidden = true
+            }
         } else {
             //print("Empty row \(indexPath.row)")
             cell.emptyRoomLabel.text = "Empty Trade Room"
@@ -127,6 +139,8 @@ extension HLDashboardViewController: UICollectionViewDelegate, UICollectionViewD
             cell.left_side.subviews.forEach({ $0.removeFromSuperview() })
             cell.right_side.subviews.forEach({ $0.removeFromSuperview() })
             cell.tradeNumber.textColor = UIColor.gray
+            cell.myTurnView.isHidden = true
+            cell.otherTurnView.isHidden = true
         }
         
         
