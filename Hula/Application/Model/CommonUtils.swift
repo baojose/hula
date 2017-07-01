@@ -231,7 +231,7 @@ extension UIImageView {
         }
         
         URLSession.shared.dataTask(with: NSURL(string: urlString)! as URL, completionHandler: { (data, response, error) -> Void in
-            
+            print("getting: \(urlString)")
             if error != nil {
                 print(error!)
                 return
@@ -239,8 +239,9 @@ extension UIImageView {
             DispatchQueue.main.async(execute: { () -> Void in
                 let image = UIImage(data: data!)
                 self.image = image
-                imageCache.setObject(image!, forKey: urlString as AnyObject)
-                
+                if self.image != nil {
+                    imageCache.setObject(image!, forKey: urlString as AnyObject)
+                }
             })
             
         }).resume()

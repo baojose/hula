@@ -17,6 +17,7 @@ class HulaProduct: NSObject {
     var arrProductPhotoLink: NSMutableArray!
     var arrProductPhotos: NSMutableArray!
     var productDescription: String!
+    var productImage: String!
     
     class var sharedInstance: HulaProduct {
         struct Static {
@@ -31,6 +32,17 @@ class HulaProduct: NSObject {
         self.productDescription = ""
         self.productCondition = ""
         self.productCategory = ""
+        self.productImage = ""
+        self.arrProductPhotos = NSMutableArray.init()
+        self.arrProductPhotoLink = NSMutableArray.init()
+    }
+    init(id : String, name : String, image: String) {
+        self.productId = id
+        self.productName = name
+        self.productDescription = ""
+        self.productCondition = ""
+        self.productCategory = ""
+        self.productImage = image
         self.arrProductPhotos = NSMutableArray.init()
         self.arrProductPhotoLink = NSMutableArray.init()
     }
