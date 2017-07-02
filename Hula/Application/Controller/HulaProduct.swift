@@ -18,6 +18,7 @@ class HulaProduct: NSObject {
     var arrProductPhotos: NSMutableArray!
     var productDescription: String!
     var productImage: String!
+    var tradeStatus: Int = 0
     
     class var sharedInstance: HulaProduct {
         struct Static {
@@ -35,6 +36,7 @@ class HulaProduct: NSObject {
         self.productImage = ""
         self.arrProductPhotos = NSMutableArray.init()
         self.arrProductPhotoLink = NSMutableArray.init()
+        self.tradeStatus = 0
     }
     init(id : String, name : String, image: String) {
         self.productId = id
@@ -45,5 +47,6 @@ class HulaProduct: NSObject {
         self.productImage = image
         self.arrProductPhotos = NSMutableArray.init()
         self.arrProductPhotoLink = NSMutableArray.init()
+        self.tradeStatus = 0
     }
 }

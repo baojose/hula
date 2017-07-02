@@ -27,20 +27,27 @@ class HLBarterScreenViewController: UIViewController {
     var otherProducts : [HulaProduct] = []
     var myTradedProducts : [HulaProduct] = []
     var otherTradedProducts : [HulaProduct] = []
+    var myProductsDiff : [String] = []
+    var otherProductsDiff : [String] = []
+    var myTradeIndex: Int = 1
+    var firstLoad: Bool = true
+    
+    let arrowImagesName = ["","added-arrow", "removed-arrow", "eliminated_trade_icon"]
     
     var otherUserId: String = ""
     
     
-    var dragAndDropManager : KDDragAndDropManager?
+    var dragAndDropManager1 : KDDragAndDropManager?
+    var dragAndDropManager2 : KDDragAndDropManager?
     
     override func viewDidLoad() {
         super.viewDidLoad()
 
         // Do any additional setup after loading the view.
-        loadProductsArrays();
         
         
-        self.dragAndDropManager = KDDragAndDropManager(canvas: self.view, collectionViews: [otherProductsCollection, otherSelectedProductsCollection, myProductsCollection, mySelectedProductsCollection ])
+        self.dragAndDropManager1 = KDDragAndDropManager(canvas: self.view, collectionViews: [otherProductsCollection, otherSelectedProductsCollection ])
+        self.dragAndDropManager2 = KDDragAndDropManager(canvas: self.view, collectionViews: [myProductsCollection, mySelectedProductsCollection ])
     }
 
     override func didReceiveMemoryWarning() {
@@ -49,53 +56,103 @@ class HLBarterScreenViewController: UIViewController {
     }
     
     func loadProductsArrays(){
-        //myProducts
+        myTradeIndex = 0
         if let swappPageVC = self.parent as? HLSwappPageViewController{
-            //print("viewWillAppear" )
-            if let ct = swappPageVC.currentTrade {
+            print(swappPageVC.orderedViewControllers )
+            if let firstViewController = swappPageVC.viewControllers?.first,
+                let index = swappPageVC.orderedViewControllers.index(of: firstViewController) {
+                print(firstViewController )
+                print("Current Index: \(index)" )
+                myTradeIndex = index - 1
                 
-                if (ct.object(forKey: "owner_id") as? String == HulaUser.sharedInstance.userId){
-                    // I am the owner
-                    //myTradedProducts = (ct.object(forKey: "owner_products") as? [String])!
-                    //otherTradedProducts = (ct.object(forKey: "other_products") as? [String])!
-                    otherUserId = (ct.object(forKey: "other_id") as? String)!
-                    
-                } else {
-                    // I am the other
-                    //myTradedProducts = (ct.object(forKey: "other_products") as? [String])!
-                    //otherTradedProducts = (ct.object(forKey: "owner_products") as? [String])!
-                    otherUserId = (ct.object(forKey: "owner_id") as? String)!
-                }
-                getUserProducts(user: otherUserId, taskCallback: {(result) in
-                    self.otherProducts = result
-                    //print (self.otherProducts)
-                    self.otherProductsCollection.reloadData()
-                    
-                })
-                
-                getUserProducts(user: HulaUser.sharedInstance.userId, taskCallback: {(result) in
-                    self.myProducts = result
-                    //print (self.myProducts)
-                    self.myProductsCollection.reloadData()
-                })
- 
             }
         }
-        
-        
-        /*
-        for i in 0...5 {
-            let aProduct = HulaProduct(id : "nada", name : "Test product \(i)", image: "https://api.hula.trading/v1/products/59400e5ce8825609f281bc68/image")
-            myProducts.append(aProduct)
+        myTradeIndex = max(0, myTradeIndex);
+        //myProducts
+        var mtp:[String] = []
+        var otp:[String] = []
+        if firstLoad {
+            firstLoad = false
+            if let swappPageVC = self.parent as? HLSwappPageViewController{
+                if let ct = swappPageVC.arrTrades[myTradeIndex] as? NSDictionary {
+                    if (ct.object(forKey: "owner_id") as? String == HulaUser.sharedInstance.userId){
+                        // I am the owner
+                        if let mtp_temp = ct.object(forKey: "owner_products") as? [String]{
+                            mtp = mtp_temp
+                        }
+                        if let otp_temp = ct.object(forKey: "other_products") as? [String]{
+                            otp = otp_temp
+                        }
+                        myProductsDiff = (ct.object(forKey: "owner_products") as? [String])!
+                        otherProductsDiff = (ct.object(forKey: "other_products") as? [String])!
+                        otherUserId = (ct.object(forKey: "other_id") as? String)!
+                        
+                    } else {
+                        // I am the other
+                        if let mtp_temp = ct.object(forKey: "other_products") as? [String]{
+                            mtp = mtp_temp
+                        }
+                        if let otp_temp = ct.object(forKey: "owner_products") as? [String]{
+                            otp = otp_temp
+                        }
+                        otherUserId = (ct.object(forKey: "owner_id") as? String)!
+                    }
+                    
+                    getUserProducts(user: otherUserId, taskCallback: {(result) in
+                        //print (self.otherProducts)
+                        self.otherProducts = result
+                        self.populateTradedProducts(list:otp, type:"other")
+                        self.otherProductsCollection.reloadData()
+                        self.otherSelectedProductsCollection.reloadData()
+                        
+                    })
+                    
+                    getUserProducts(user: HulaUser.sharedInstance.userId, taskCallback: {(result) in
+                        //print (self.myProducts)
+                        self.myProducts = result
+                        self.populateTradedProducts(list:mtp, type:"owner")
+                        self.myProductsCollection.reloadData()
+                        self.mySelectedProductsCollection.reloadData()
+                    })
+     
+                }
+                
+            }
         }
-        for i in 0...5 {
-            let aProduct = HulaProduct(id : "nada", name : "Test product \(i)", image: "https://api.hula.trading/v1/products/59400e5ce8825609f281bc68/image")
-            otherTradedProducts.append(aProduct)
+    }
+    
+    func populateTradedProducts(list: [String], type: String){
+        let reference_list: [HulaProduct]
+        var final_arr: [HulaProduct] = []
+        switch type {
+        case "other":
+            reference_list = self.otherProducts
+        default:
+            reference_list = self.myProducts
         }
- */
+        for pr_id in list{
+            for pr in reference_list{
+                if pr.productId == pr_id{
+                    final_arr.append(pr)
+                }
+            }
+        }
+        switch type {
+        case "other":
+            otherTradedProducts = final_arr
+        default:
+            myTradedProducts = final_arr
+        }
+        
+    }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        
+        loadProductsArrays();
     }
     
     override func viewWillAppear(_ animated: Bool) {
+        
         /*
         if let swappPageVC = self.parent as? HLSwappPageViewController{
             //print("viewWillAppear" )
@@ -151,8 +208,8 @@ class HLBarterScreenViewController: UIViewController {
                             //print(dictionary)
                             var productList: [HulaProduct] = []
                             for item in dictionary{
-                                print("item")
-                                print(item)
+                                //print("item")
+                                //print(item)
                                 if let product_data = item as? [String : Any]{
                                     let id = product_data["_id"] as! String
                                     let name = product_data["title"] as! String
@@ -217,7 +274,7 @@ extension HLBarterScreenViewController: KDDragAndDropCollectionViewDataSource, U
             product = otherProducts[indexPath.item]
             cell = collectionView.dequeueReusableCell(withReuseIdentifier: "productcell4", for: indexPath) as! HLProductCollectionViewCell
         default:
-            print("Error no product found")
+            print("Error: no product found")
             product = HulaProduct(id : "nada", name : "Test product", image: "https://api.hula.trading/v1/products/59400e5ce8825609f281bc68/image")
             cell = collectionView.dequeueReusableCell(withReuseIdentifier: "productcell4", for: indexPath) as! HLProductCollectionViewCell
         }
@@ -225,7 +282,11 @@ extension HLBarterScreenViewController: KDDragAndDropCollectionViewDataSource, U
         cell.label.text = product.productName
         //print(product.productImage)
         cell.image.loadImageFromURL(urlString: product.productImage)
-        
+        if (product.tradeStatus != 0){
+            cell.statusImage.image = UIImage.init(named: arrowImagesName[product.tradeStatus])
+        } else {
+            cell.statusImage.image = nil
+        }
         cell.isHidden = false
         
         if let kdCollectionView = collectionView as? KDDragAndDropCollectionView {
@@ -376,60 +437,4 @@ extension HLBarterScreenViewController: KDDragAndDropCollectionViewDataSource, U
     }
     
 }
-
-/*
-extension HLBarterScreenViewController: DraggableProductDelegate {
-    
-    func productDropped(image: HLDragableImage, item: Int){
-        print("Item dropped! \(item)")
-        let imageView = UIImageView(image: image.image )
-        imageView.frame = CGRect(x: 600, y: item*40, width: 80, height: 80)
-        imageView.alpha = 0
-        if let prod = otherProducts[item] as? [String:Any]{
-            otherTradedProducts.append( prod["_id"] as! String )
-        }
-        self.view.addSubview(imageView)
-        moveImageToPosition(image:imageView)
-        
-    }
-    func moveImageToPosition(image:UIImageView){
-        UIView.animate(withDuration: 0.3) {
-            image.frame = CGRect(x: self.otherProductsDragView.frame.origin.x, y: self.otherProductsDragView.frame.origin.y, width: 50, height: 50)
-            image.alpha = 1
-        }
-    }
-}
-*/
-
-/*
-extension HLBarterScreenViewController: UITableViewDelegate, UITableViewDataSource {
-    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        if tableView == self.myProductsTable {
-            return myProducts.count
-        } else {
-            return otherProducts.count
-        }
-    }
-    
-    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        
-        var cell: HLSwappProductTableViewCell?
-        if tableView == self.myProductsTable {
-            cell = tableView.dequeueReusableCell(withIdentifier: "swappcell") as? HLSwappProductTableViewCell
-            let prod = myProducts[indexPath.row]
-            if let prodTitle = prod.productName {
-                cell!.productName.text = prodTitle
-            }
-            if let prodImg = prod.productImage {
-                cell!.productImage.loadImageFromURL(urlString: prodImg)
-            }
-            //cell!.productImage.item = indexPath.row
-            //cell!.productImage.delegate = self
-        }
-        
-        
-        return cell!
-    }
- }
- */
 

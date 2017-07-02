@@ -42,7 +42,15 @@ class KDDragAndDropCollectionView: UICollectionView, KDDraggable, KDDroppable {
     
     }
     
-
+    override func reloadData() {
+        super.reloadData()
+        if self.numberOfItems(inSection: 0) == 0 {
+            self.alpha = 0.4
+        } else {
+            self.alpha = 1
+        }
+        
+    }
     // MARK : KDDraggable
     func canDragAtPoint(_ point : CGPoint) -> Bool {
         

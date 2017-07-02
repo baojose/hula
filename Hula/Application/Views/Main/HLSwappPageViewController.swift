@@ -12,6 +12,8 @@ class HLSwappPageViewController: UIPageViewController {
     
     weak var swappDelegate: SwappPageViewControllerDelegate?
     var currentTrade: NSDictionary?
+    var arrTrades: [NSDictionary] = []
+    var currentIndex: Int = 0
     
     private(set) lazy var orderedViewControllers: [UIViewController] = {
         return [UIStoryboard(name: "Main", bundle: nil) .
@@ -65,8 +67,7 @@ class HLSwappPageViewController: UIPageViewController {
 
 extension HLSwappPageViewController: UIPageViewControllerDataSource, UIPageViewControllerDelegate {
     
-    func pageViewController(_ pageViewController: UIPageViewController,
-                                 viewControllerBefore viewController: UIViewController) -> UIViewController? {
+    func pageViewController(_ pageViewController: UIPageViewController, viewControllerBefore viewController: UIViewController) -> UIViewController? {
         guard let viewControllerIndex = orderedViewControllers.index(of: viewController) else {
             return nil
         }
@@ -84,8 +85,7 @@ extension HLSwappPageViewController: UIPageViewControllerDataSource, UIPageViewC
         return orderedViewControllers[previousIndex]
     }
     
-    func pageViewController(_ pageViewController: UIPageViewController,
-                                 viewControllerAfter viewController: UIViewController) -> UIViewController? {
+    func pageViewController(_ pageViewController: UIPageViewController, viewControllerAfter viewController: UIViewController) -> UIViewController? {
         guard let viewControllerIndex = orderedViewControllers.index(of: viewController) else {
             return nil
         }
@@ -109,6 +109,7 @@ extension HLSwappPageViewController: UIPageViewControllerDataSource, UIPageViewC
             let index = orderedViewControllers.index(of: firstViewController) {
             swappDelegate?.swappPageViewController(swappPageViewController: self,
                                                       didUpdatePageIndex: index)
+            self.currentIndex = index
             
         }
     }
@@ -124,6 +125,7 @@ extension HLSwappPageViewController: UIPageViewControllerDataSource, UIPageViewC
                                                    didUpdatePageIndex: page)
         }
     }
+    
     
 }
 
@@ -146,5 +148,7 @@ protocol SwappPageViewControllerDelegate: class {
      */
     func swappPageViewController(swappPageViewController: HLSwappPageViewController,
                                     didUpdatePageIndex index: Int)
+    
+    
     
 }

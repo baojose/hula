@@ -73,7 +73,7 @@ class HLDataManager: NSObject {
     func getCategories() {
         let queryURL = HulaConstants.apiURL + "categories"
         httpGet(urlstr: queryURL, taskCallback: { (ok, json) in
-            print(ok)
+            //print(ok)
             if (ok){
                 self.arrCategories=[];
                 if let array = json as? [Any] {
@@ -90,7 +90,7 @@ class HLDataManager: NSObject {
     func getTrades(taskCallback: @escaping (Bool) -> ()) {
         let queryURL = HulaConstants.apiURL + "trades"
         httpGet(urlstr: queryURL, taskCallback: { (ok, json) in
-            print(ok)
+            //print(ok)
             if (ok){
                 self.arrTrades=[];
                 if let array = json as? [Any] {
@@ -248,8 +248,8 @@ class HLDataManager: NSObject {
         if (user.token.characters.count>10){
             request.addValue(user.token, forHTTPHeaderField: "x-access-token")
         }
-        print(request.httpBody!)
-        print(request.httpMethod!)
+        //print(request.httpBody!)
+        //print(request.httpMethod!)
         let task = URLSession.shared.dataTask(with: request) { data, response, error in
             guard let data = data, error == nil else {                                                 // check for fundamental networking error
                 print(error!)
@@ -365,7 +365,7 @@ class HLDataManager: NSObject {
         //writing to GameData.plist
         dict.write(toFile: path, atomically: false)
         let resultDictionary = NSMutableDictionary(contentsOfFile: path)
-        print("Saved UserData.plist file is --> \(String(describing: resultDictionary?.description))")
+        //print("Saved UserData.plist file is --> \(String(describing: resultDictionary?.description))")
         
         self.loadUserData()
     }
@@ -389,12 +389,12 @@ class HLDataManager: NSObject {
             if let bundlePath = Bundle.main.path(forResource: HulaConstants.userFile, ofType: "plist")
             {
                 let resultDictionary = NSMutableDictionary(contentsOfFile: bundlePath)
-                print("Bundle UserData.plist file is --> \(String(describing: resultDictionary?.description))")
+                //print("Bundle UserData.plist file is --> \(String(describing: resultDictionary?.description))")
                 
                 do
                 {
                     try fileManager.copyItem(atPath: bundlePath, toPath: path)
-                    print("copy")
+                    //print("copy")
                 }
                 catch _
                 {
@@ -408,7 +408,7 @@ class HLDataManager: NSObject {
         }
         else
         {
-            print("UserData.plist already exits at path.")
+            //print("UserData.plist already exits at path.")
             // use this to delete file from documents directory
             //fileManager.removeItemAtPath(path, error: nil)
         }
@@ -420,8 +420,8 @@ class HLDataManager: NSObject {
         if let dict = myDict {
             //loading values
             
-            print("User data loaded:")
-            print(dict)
+            //print("User data loaded:")
+            //print(dict)
             
             updateUserFromDict(dict: dict)
             
@@ -478,7 +478,7 @@ class HLDataManager: NSObject {
     }
     
     func loadUserNotifications(){
-        print("loading notifications...")
+        //print("loading notifications...")
         let queryURL = HulaConstants.apiURL + "notifications"
         httpGet(urlstr: queryURL, taskCallback: { (ok, json) in
             //print(ok)

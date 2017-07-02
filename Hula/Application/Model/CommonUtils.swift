@@ -231,7 +231,7 @@ extension UIImageView {
         }
         
         URLSession.shared.dataTask(with: NSURL(string: urlString)! as URL, completionHandler: { (data, response, error) -> Void in
-            print("getting: \(urlString)")
+            //print("getting: \(urlString)")
             if error != nil {
                 print(error!)
                 return

@@ -5461,7 +5461,7 @@ Log In</string>
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                 <subviews>
                                     <imageView opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" misplaced="YES" image="drag-rect" id="RNt-5Z-xam">
-                                        <rect key="frame" x="356" y="49" width="152" height="266"/>
+                                        <rect key="frame" x="353" y="49" width="152" height="266"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMinX="YES" widthSizable="YES" flexibleMaxX="YES" flexibleMinY="YES" heightSizable="YES" flexibleMaxY="YES"/>
                                     </imageView>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" text="Drag here what you want" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="6" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="0Oz-kA-vb9">
@@ -5472,7 +5472,7 @@ Log In</string>
                                         <nil key="highlightedColor"/>
                                     </label>
                                     <imageView opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" misplaced="YES" image="drag-rect" id="kJx-gG-UNP">
-                                        <rect key="frame" x="160" y="49" width="152" height="266"/>
+                                        <rect key="frame" x="163" y="49" width="152" height="266"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMinX="YES" widthSizable="YES" flexibleMaxX="YES" flexibleMinY="YES" heightSizable="YES" flexibleMaxY="YES"/>
                                     </imageView>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" text="Drag here what you offer" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="6" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="1lO-hZ-tUF">
@@ -5511,11 +5511,21 @@ Log In</string>
                                                             <color key="textColor" red="0.22352941179999999" green="0.66666666669999997" blue="0.64313725489999995" alpha="1" colorSpace="calibratedRGB"/>
                                                             <nil key="highlightedColor"/>
                                                         </label>
+                                                        <imageView opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" misplaced="YES" image="added_left_trade_icon" id="dV1-3A-A0m">
+                                                            <rect key="frame" x="11" y="13" width="17" height="17"/>
+                                                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                                        </imageView>
+                                                        <view contentMode="scaleToFill" misplaced="YES" id="IsL-m9-Mbw">
+                                                            <rect key="frame" x="0.0" y="117" width="128" height="1"/>
+                                                            <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
+                                                            <color key="backgroundColor" white="0.91565290180000003" alpha="1" colorSpace="calibratedWhite"/>
+                                                        </view>
                                                     </subviews>
                                                 </view>
                                                 <connections>
                                                     <outlet property="image" destination="Clo-MI-92f" id="uVF-2S-8Rc"/>
                                                     <outlet property="label" destination="hm9-cn-ZRR" id="oV5-Gt-QhA"/>
+                                                    <outlet property="statusImage" destination="dV1-3A-A0m" id="zfl-6a-cGY"/>
                                                 </connections>
                                             </collectionViewCell>
                                         </cells>
@@ -5525,8 +5535,8 @@ Log In</string>
                                         </connections>
                                     </collectionView>
                                     <collectionView clipsSubviews="YES" multipleTouchEnabled="YES" tag="3" contentMode="scaleToFill" misplaced="YES" dataMode="prototypes" id="n4h-ml-8YQ" customClass="KDDragAndDropCollectionView" customModule="Hula" customModuleProvider="target">
-                                        <rect key="frame" x="339" y="0.0" width="199" height="375"/>
-                                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" heightSizable="YES"/>
+                                        <rect key="frame" x="346" y="0.0" width="192" height="375"/>
+                                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" widthSizable="YES" heightSizable="YES"/>
                                         <color key="backgroundColor" white="0.97011718749999998" alpha="1" colorSpace="calibratedWhite"/>
                                         <edgeInsets key="layoutMargins" top="0.0" left="0.0" bottom="0.0" right="0.0"/>
                                         <collectionViewFlowLayout key="collectionViewLayout" minimumLineSpacing="0.0" minimumInteritemSpacing="0.0" id="1xK-6t-bDD">
@@ -5554,12 +5564,17 @@ Log In</string>
                                                             <rect key="frame" x="6" y="6" width="52" height="52"/>
                                                             <autoresizingMask key="autoresizingMask"/>
                                                         </imageView>
+                                                        <imageView opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" misplaced="YES" image="added_left_trade_icon" id="h7s-6g-WGP">
+                                                            <rect key="frame" x="8" y="8" width="17" height="17"/>
+                                                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                                        </imageView>
                                                     </subviews>
                                                 </view>
                                                 <size key="customSize" width="64" height="64"/>
                                                 <connections>
                                                     <outlet property="image" destination="mPh-jH-Afq" id="TO9-gt-g4O"/>
                                                     <outlet property="label" destination="Zo9-No-Lkw" id="r5I-TI-jLf"/>
+                                                    <outlet property="statusImage" destination="h7s-6g-WGP" id="xNq-Vq-joB"/>
                                                 </connections>
                                             </collectionViewCell>
                                         </cells>
@@ -5590,18 +5605,28 @@ Log In</string>
                                                             <rect key="frame" x="8" y="8" width="112" height="70"/>
                                                             <autoresizingMask key="autoresizingMask" flexibleMaxY="YES"/>
                                                         </imageView>
-                                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Name of the product a bit large" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="Mpr-PV-Lrh">
-                                                            <rect key="frame" x="8" y="83" width="112" height="35"/>
+                                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" text="Name of the product a bit large" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="Mpr-PV-Lrh">
+                                                            <rect key="frame" x="8" y="79" width="112" height="35"/>
                                                             <autoresizingMask key="autoresizingMask" flexibleMaxY="YES"/>
-                                                            <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="11"/>
+                                                            <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="13"/>
                                                             <color key="textColor" red="0.22352941179999999" green="0.66666666669999997" blue="0.64313725489999995" alpha="1" colorSpace="calibratedRGB"/>
                                                             <nil key="highlightedColor"/>
                                                         </label>
+                                                        <imageView opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" misplaced="YES" image="added_left_trade_icon" id="jfy-iy-bXH">
+                                                            <rect key="frame" x="12" y="12" width="17" height="17"/>
+                                                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                                        </imageView>
+                                                        <view contentMode="scaleToFill" misplaced="YES" id="k1v-fq-OCp">
+                                                            <rect key="frame" x="0.0" y="117" width="128" height="1"/>
+                                                            <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
+                                                            <color key="backgroundColor" white="0.91565290180000003" alpha="1" colorSpace="calibratedWhite"/>
+                                                        </view>
                                                     </subviews>
                                                 </view>
                                                 <connections>
                                                     <outlet property="image" destination="AI2-HO-pZQ" id="Qf1-WP-QjT"/>
                                                     <outlet property="label" destination="Mpr-PV-Lrh" id="enL-Gf-1Ak"/>
+                                                    <outlet property="statusImage" destination="jfy-iy-bXH" id="V6x-uD-4Hf"/>
                                                 </connections>
                                             </collectionViewCell>
                                         </cells>
@@ -5611,9 +5636,9 @@ Log In</string>
                                         </connections>
                                     </collectionView>
                                     <collectionView clipsSubviews="YES" multipleTouchEnabled="YES" tag="2" contentMode="scaleToFill" misplaced="YES" dataMode="prototypes" id="bfI-4N-h7M" customClass="KDDragAndDropCollectionView" customModule="Hula" customModuleProvider="target">
-                                        <rect key="frame" x="130" y="0.0" width="199" height="375"/>
+                                        <rect key="frame" x="130" y="0.0" width="193" height="375"/>
                                         <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxX="YES" heightSizable="YES"/>
-                                        <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                        <color key="backgroundColor" white="0.97011718749999998" alpha="1" colorSpace="calibratedWhite"/>
                                         <edgeInsets key="layoutMargins" top="0.0" left="0.0" bottom="0.0" right="0.0"/>
                                         <collectionViewFlowLayout key="collectionViewLayout" minimumLineSpacing="0.0" minimumInteritemSpacing="0.0" id="aWZ-wv-FSs">
                                             <size key="itemSize" width="64" height="64"/>
@@ -5640,12 +5665,17 @@ Log In</string>
                                                             <rect key="frame" x="6" y="6" width="52" height="52"/>
                                                             <autoresizingMask key="autoresizingMask"/>
                                                         </imageView>
+                                                        <imageView opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" misplaced="YES" image="added_left_trade_icon" id="ZYb-CU-QXG">
+                                                            <rect key="frame" x="9" y="8" width="17" height="17"/>
+                                                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                                        </imageView>
                                                     </subviews>
                                                 </view>
                                                 <size key="customSize" width="64" height="64"/>
                                                 <connections>
                                                     <outlet property="image" destination="GBU-wD-Y5S" id="G39-Te-QcV"/>
                                                     <outlet property="label" destination="SQl-X9-FzW" id="Kej-MY-5sK"/>
+                                                    <outlet property="statusImage" destination="ZYb-CU-QXG" id="9px-Uw-hCv"/>
                                                 </connections>
                                             </collectionViewCell>
                                         </cells>
@@ -5701,6 +5731,7 @@ Log In</string>
     </scenes>
     <resources>
         <image name="add-btn" width="31" height="31"/>
+        <image name="added_left_trade_icon" width="17" height="17"/>
         <image name="alert_top_right" width="44" height="84"/>
         <image name="barter_icon_trade" width="14" height="16"/>
         <image name="bg_green_splash" width="375" height="667"/>

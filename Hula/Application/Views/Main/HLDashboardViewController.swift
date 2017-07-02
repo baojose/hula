@@ -15,9 +15,9 @@ class HLDashboardViewController: UIViewController {
     @IBOutlet weak var initialCoverView: UIImageView!
     @IBOutlet weak var mainCollectionView: UICollectionView!
     var selectedBarter: Int = 0
-    var arrTrades: NSMutableArray = []
     let productImagesWidth: CGFloat = 27.0
     var isExpandedFlowLayoutUsed:Bool = false
+    var swappPageVC : HLSwappPageViewController?
     
     
     let sectionInsets = UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 0)
@@ -25,23 +25,29 @@ class HLDashboardViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
-        if (HLDataManager.sharedInstance.arrTrades.count > 0){
-            self.arrTrades = HLDataManager.sharedInstance.arrTrades
-        }
-        HLDataManager.sharedInstance.getTrades { (success) in
-            if (success){
-                //print("Trades ok")
-                if (self.arrTrades.count != HLDataManager.sharedInstance.arrTrades.count){
-                    self.arrTrades = HLDataManager.sharedInstance.arrTrades
-                    self.mainCollectionView.reloadData()
-                } else {
-                    self.arrTrades = HLDataManager.sharedInstance.arrTrades
+        if let vc = self.parent as? HLSwappPageViewController {
+            swappPageVC = vc
+            if (HLDataManager.sharedInstance.arrTrades.count > 0){
+                swappPageVC?.arrTrades = HLDataManager.sharedInstance.arrTrades as! [NSDictionary]
+            }
+            HLDataManager.sharedInstance.getTrades { (success) in
+                if (success){
+                    //print("Trades ok")
+                    DispatchQueue.main.async {
+                        if (self.swappPageVC?.arrTrades.count != HLDataManager.sharedInstance.arrTrades.count){
+                            self.swappPageVC?.arrTrades = HLDataManager.sharedInstance.arrTrades as! [NSDictionary]
+                            self.mainCollectionView.reloadData()
+                        } else {
+                            self.swappPageVC?.arrTrades = HLDataManager.sharedInstance.arrTrades as! [NSDictionary]
+                        }
+                    }
                 }
             }
+            mainCollectionView.collectionViewLayout = HLDashboardNormalViewFlowLayout()
+            isExpandedFlowLayoutUsed = false
+        } else {
+            print("Error. Not detected parent parent vc")
         }
-        mainCollectionView.collectionViewLayout = HLDashboardNormalViewFlowLayout()
-        isExpandedFlowLayoutUsed = false
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -81,7 +87,7 @@ extension HLDashboardViewController: UICollectionViewDelegate, UICollectionViewD
         return 1
     }
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return max(self.arrTrades.count, HulaUser.sharedInstance.maxTrades)
+        return max((swappPageVC?.arrTrades.count)!, HulaUser.sharedInstance.maxTrades)
     }
     func collectionView(_ collectionView: UICollectionView,
                                  cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
@@ -90,9 +96,9 @@ extension HLDashboardViewController: UICollectionViewDelegate, UICollectionViewD
         cell.tradeNumber.text = "\(indexPath.row+1)"
         
         // Configure the cell
-        if (self.arrTrades.count > indexPath.row){
+        if ((swappPageVC?.arrTrades.count)! > indexPath.row){
             //print("Drawing row \(indexPath.row)")
-            let thisTrade : NSDictionary = self.arrTrades.object(at: indexPath.row) as! NSDictionary
+            let thisTrade : NSDictionary = (swappPageVC?.arrTrades[indexPath.row])!
             cell.emptyRoomLabel.text = ""
             //print(thisTrade)
             var otherUserId = thisTrade.object(forKey: "other_id") as? String
@@ -152,7 +158,7 @@ extension HLDashboardViewController: UICollectionViewDelegate, UICollectionViewD
         print("Barter room clicked")
         //print(indexPath.row)
         
-        if (self.arrTrades.count > indexPath.row){
+        if ((swappPageVC?.arrTrades.count)! > indexPath.row){
         
             
             isExpandedFlowLayoutUsed = !isExpandedFlowLayoutUsed
@@ -171,10 +177,10 @@ extension HLDashboardViewController: UICollectionViewDelegate, UICollectionViewD
             DispatchQueue.main.asyncAfter(deadline: when) {
                 if let swappPageVC = self.parent as? HLSwappPageViewController{
                     self.selectedBarter = indexPath.row
-                    let thisTrade = self.arrTrades.object(at: indexPath.row) as? NSDictionary
-                    swappPageVC.currentTrade = thisTrade
-                    print(swappPageVC.currentTrade!)
-                    swappPageVC.goTo(page: self.selectedBarter + 1)
+                    let thisTrade: NSDictionary = swappPageVC.arrTrades[indexPath.row]
+                    self.swappPageVC?.currentTrade = thisTrade
+                    //print(swappPageVC.currentTrade!)
+                    self.swappPageVC?.goTo(page: self.selectedBarter + 1)
                 }
                 //print(self.parent!)
             }
