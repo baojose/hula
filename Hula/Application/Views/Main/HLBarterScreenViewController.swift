@@ -58,11 +58,11 @@ class HLBarterScreenViewController: UIViewController {
     func loadProductsArrays(){
         myTradeIndex = 0
         if let swappPageVC = self.parent as? HLSwappPageViewController{
-            print(swappPageVC.orderedViewControllers )
+            //print(swappPageVC.orderedViewControllers )
             if let firstViewController = swappPageVC.viewControllers?.first,
                 let index = swappPageVC.orderedViewControllers.index(of: firstViewController) {
-                print(firstViewController )
-                print("Current Index: \(index)" )
+                //print(firstViewController )
+                //print("Current Index: \(index)" )
                 myTradeIndex = index - 1
                 
             }
@@ -74,49 +74,47 @@ class HLBarterScreenViewController: UIViewController {
         if firstLoad {
             firstLoad = false
             if let swappPageVC = self.parent as? HLSwappPageViewController{
-                if let ct = swappPageVC.arrTrades[myTradeIndex] as? NSDictionary {
-                    if (ct.object(forKey: "owner_id") as? String == HulaUser.sharedInstance.userId){
-                        // I am the owner
-                        if let mtp_temp = ct.object(forKey: "owner_products") as? [String]{
-                            mtp = mtp_temp
-                        }
-                        if let otp_temp = ct.object(forKey: "other_products") as? [String]{
-                            otp = otp_temp
-                        }
-                        myProductsDiff = (ct.object(forKey: "owner_products") as? [String])!
-                        otherProductsDiff = (ct.object(forKey: "other_products") as? [String])!
-                        otherUserId = (ct.object(forKey: "other_id") as? String)!
-                        
-                    } else {
-                        // I am the other
-                        if let mtp_temp = ct.object(forKey: "other_products") as? [String]{
-                            mtp = mtp_temp
-                        }
-                        if let otp_temp = ct.object(forKey: "owner_products") as? [String]{
-                            otp = otp_temp
-                        }
-                        otherUserId = (ct.object(forKey: "owner_id") as? String)!
+                let ct = swappPageVC.arrTrades[myTradeIndex]
+                if (ct.object(forKey: "owner_id") as? String == HulaUser.sharedInstance.userId){
+                    // I am the owner
+                    if let mtp_temp = ct.object(forKey: "owner_products") as? [String]{
+                        mtp = mtp_temp
                     }
+                    if let otp_temp = ct.object(forKey: "other_products") as? [String]{
+                        otp = otp_temp
+                    }
+                    myProductsDiff = (ct.object(forKey: "owner_products") as? [String])!
+                    otherProductsDiff = (ct.object(forKey: "other_products") as? [String])!
+                    otherUserId = (ct.object(forKey: "other_id") as? String)!
                     
-                    getUserProducts(user: otherUserId, taskCallback: {(result) in
-                        //print (self.otherProducts)
-                        self.otherProducts = result
-                        self.populateTradedProducts(list:otp, type:"other")
-                        self.otherProductsCollection.reloadData()
-                        self.otherSelectedProductsCollection.reloadData()
-                        
-                    })
-                    
-                    getUserProducts(user: HulaUser.sharedInstance.userId, taskCallback: {(result) in
-                        //print (self.myProducts)
-                        self.myProducts = result
-                        self.populateTradedProducts(list:mtp, type:"owner")
-                        self.myProductsCollection.reloadData()
-                        self.mySelectedProductsCollection.reloadData()
-                    })
-     
+                } else {
+                    // I am the other
+                    if let mtp_temp = ct.object(forKey: "other_products") as? [String]{
+                        mtp = mtp_temp
+                    }
+                    if let otp_temp = ct.object(forKey: "owner_products") as? [String]{
+                        otp = otp_temp
+                    }
+                    otherUserId = (ct.object(forKey: "owner_id") as? String)!
                 }
                 
+                getUserProducts(user: otherUserId, taskCallback: {(result) in
+                    //print (self.otherProducts)
+                    self.otherProducts = result
+                    self.populateTradedProducts(list:otp, type:"other")
+                    self.otherProductsCollection.reloadData()
+                    self.otherSelectedProductsCollection.reloadData()
+                    
+                })
+                
+                getUserProducts(user: HulaUser.sharedInstance.userId, taskCallback: {(result) in
+                    //print (self.myProducts)
+                    self.myProducts = result
+                    self.populateTradedProducts(list:mtp, type:"owner")
+                    self.myProductsCollection.reloadData()
+                    self.mySelectedProductsCollection.reloadData()
+                })
+ 
             }
         }
     }

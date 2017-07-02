@@ -12,7 +12,8 @@ class HLSwappViewController: UIViewController {
 
     @IBOutlet weak var portraitView: UIView!
     @IBOutlet weak var mainContainer: UIView!
-    @IBOutlet weak var swappPageControl: UIPageControl!
+    @IBOutlet weak var swappPageControl: HLPageControl!
+    
     var selectedScreen = 0
     
     override func viewDidLoad() {

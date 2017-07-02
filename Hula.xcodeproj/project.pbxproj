@@ -32,6 +32,7 @@
 		277C6C431EA2385B00530B0F /* HLRoundedButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 277C6C421EA2385B00530B0F /* HLRoundedButton.swift */; };
 		278988FB1ED7933600C0FBA9 /* HLCalculatorViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 278988FA1ED7933600C0FBA9 /* HLCalculatorViewController.swift */; };
 		279BAAD81E9D726D00091D24 /* HLNotificationsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 279BAAD71E9D726D00091D24 /* HLNotificationsViewController.swift */; };
+		27AA28FE1F09A0B100AB1895 /* HLPageControl.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27AA28FD1F09A0B100AB1895 /* HLPageControl.swift */; };
 		27B228B81EA89FF10079EED6 /* HLBouncingButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27B228B71EA89FF10079EED6 /* HLBouncingButton.swift */; };
 		27C733C51EA2BC7E003A6FD6 /* HLIdentificationViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27C733C41EA2BC7E003A6FD6 /* HLIdentificationViewController.swift */; };
 		27C733C71EA2D051003A6FD6 /* HLRoundedGradientButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27C733C61EA2D050003A6FD6 /* HLRoundedGradientButton.swift */; };
@@ -131,6 +132,7 @@
 		277C6C421EA2385B00530B0F /* HLRoundedButton.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HLRoundedButton.swift; sourceTree = "<group>"; };
 		278988FA1ED7933600C0FBA9 /* HLCalculatorViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HLCalculatorViewController.swift; sourceTree = "<group>"; };
 		279BAAD71E9D726D00091D24 /* HLNotificationsViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HLNotificationsViewController.swift; sourceTree = "<group>"; };
+		27AA28FD1F09A0B100AB1895 /* HLPageControl.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HLPageControl.swift; sourceTree = "<group>"; };
 		27B228B71EA89FF10079EED6 /* HLBouncingButton.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HLBouncingButton.swift; sourceTree = "<group>"; };
 		27C733C41EA2BC7E003A6FD6 /* HLIdentificationViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HLIdentificationViewController.swift; sourceTree = "<group>"; };
 		27C733C61EA2D050003A6FD6 /* HLRoundedGradientButton.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HLRoundedGradientButton.swift; sourceTree = "<group>"; };
@@ -262,6 +264,7 @@
 				27B228B71EA89FF10079EED6 /* HLBouncingButton.swift */,
 				271533401F07C15600E5F319 /* KDDragAndDropCollectionView.swift */,
 				271533411F07C15600E5F319 /* KDDragAndDropManager.swift */,
+				27AA28FD1F09A0B100AB1895 /* HLPageControl.swift */,
 			);
 			name = Utils;
 			sourceTree = "<group>";
@@ -891,6 +894,7 @@
 				F86698B71E703CB9002129E1 /* HLAPIClient.swift in Sources */,
 				F8BE7C4B1E724F3D00FAE07D /* HLProductDetailViewController.swift in Sources */,
 				273A1EA51ECF9F13005D163E /* HLDashboardViewController.swift in Sources */,
+				27AA28FE1F09A0B100AB1895 /* HLPageControl.swift in Sources */,
 				27C733C91EA2D1E0003A6FD6 /* HLRoundedNextButton.swift in Sources */,
 				2728141D1EDCA6D000984562 /* HLTradesCollectionViewCell.swift in Sources */,
 				F8BE7C371E72010D00FAE07D /* HLFeedbackHistoryTableViewCell.swift in Sources */,

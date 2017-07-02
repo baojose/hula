@@ -17,7 +17,7 @@ class HLHomeViewController: BaseViewController, UIScrollViewDelegate, UITextFiel
     @IBOutlet var noResultView: UIView!
     @IBOutlet var tableContainView: UIView!
 
-    var isSearching: Bool!
+    var isSearching: Bool = false
     var productArray: NSMutableArray!
     var filteredKeywordsArray: NSMutableArray!
 
