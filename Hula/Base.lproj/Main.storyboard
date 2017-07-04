@@ -1648,7 +1648,7 @@ Log In</string>
                                                 <rect key="frame" x="0.0" y="48" width="375" height="113"/>
                                                 <autoresizingMask key="autoresizingMask"/>
                                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="dr5-35-SRZ" id="lPp-Fl-qqy">
-                                                    <rect key="frame" x="0.0" y="0.0" width="375" height="112"/>
+                                                    <rect key="frame" x="0.0" y="0.0" width="375" height="113"/>
                                                     <autoresizingMask key="autoresizingMask"/>
                                                     <subviews>
                                                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="5 hours ago" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="ODt-f7-Y70">
@@ -2314,6 +2314,9 @@ Log In</string>
                                 <state key="normal" title="Next">
                                     <color key="titleColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                 </state>
+                                <connections>
+                                    <action selector="nextTradeAction:" destination="YHt-Pc-Ojx" eventType="touchUpInside" id="nhS-M9-9Bf"/>
+                                </connections>
                             </button>
                             <imageView opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" misplaced="YES" image="add-btn" id="ZSf-Me-ckT">
                                 <rect key="frame" x="11" y="336" width="31" height="31"/>
@@ -2326,6 +2329,9 @@ Log In</string>
                                 <state key="normal" title="Extra Room">
                                     <color key="titleColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                 </state>
+                                <connections>
+                                    <action selector="extraRoomAction:" destination="YHt-Pc-Ojx" eventType="touchUpInside" id="3id-cD-9DN"/>
+                                </connections>
                             </button>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" text="Available Trade Rooms" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="A7C-1J-WdA">
                                 <rect key="frame" x="213" y="341" width="241" height="21"/>
@@ -2340,7 +2346,11 @@ Log In</string>
                     <freeformSimulatedSizeMetrics key="simulatedDestinationMetrics"/>
                     <size key="freeformSize" width="667" height="375"/>
                     <connections>
+                        <outlet property="extraRoomBtn" destination="6Gn-89-JBh" id="rgQ-AX-hjy"/>
+                        <outlet property="extraRoomImage" destination="ZSf-Me-ckT" id="epD-pg-37s"/>
+                        <outlet property="mainCentralLabel" destination="A7C-1J-WdA" id="Rmq-Iv-hIq"/>
                         <outlet property="mainContainer" destination="MN8-Pi-VFB" id="niE-yO-Q0O"/>
+                        <outlet property="nextTradeBtn" destination="4G4-V5-YVy" id="Sv8-fe-R1P"/>
                         <outlet property="portraitView" destination="8Qd-eS-47d" id="P2v-zm-pga"/>
                         <outlet property="swappPageControl" destination="7K9-Gb-lpJ" id="Qwy-wh-3vP"/>
                     </connections>
@@ -2395,10 +2405,6 @@ Log In</string>
                                 </subviews>
                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                             </view>
-                            <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="bg_green_splash" id="WUQ-DH-8iT">
-                                <rect key="frame" x="0.0" y="-1" width="667" height="377"/>
-                                <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                            </imageView>
                             <view contentMode="scaleToFill" misplaced="YES" id="xYF-M1-jng">
                                 <rect key="frame" x="0.0" y="0.0" width="668" height="375"/>
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -2533,7 +2539,6 @@ Log In</string>
                     <freeformSimulatedSizeMetrics key="simulatedDestinationMetrics"/>
                     <size key="freeformSize" width="667" height="375"/>
                     <connections>
-                        <outlet property="initialCoverView" destination="WUQ-DH-8iT" id="lZu-2B-cLW"/>
                         <outlet property="landscapeView" destination="xYF-M1-jng" id="wdr-x4-BrF"/>
                         <outlet property="mainCollectionView" destination="8xi-f5-Icc" id="mcC-0q-DPg"/>
                         <outlet property="portraitView" destination="K9V-hz-1Uk" id="8uY-nx-zd9"/>

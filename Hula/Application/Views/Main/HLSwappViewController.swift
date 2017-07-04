@@ -13,6 +13,10 @@ class HLSwappViewController: UIViewController {
     @IBOutlet weak var portraitView: UIView!
     @IBOutlet weak var mainContainer: UIView!
     @IBOutlet weak var swappPageControl: HLPageControl!
+    @IBOutlet weak var nextTradeBtn: UIButton!
+    @IBOutlet weak var extraRoomBtn: UIButton!
+    @IBOutlet weak var extraRoomImage: UIImageView!
+    @IBOutlet weak var mainCentralLabel: UILabel!
     
     var selectedScreen = 0
     
@@ -53,14 +57,31 @@ class HLSwappViewController: UIViewController {
     
     func rotated() {
         if UIDeviceOrientationIsPortrait(UIDevice.current.orientation) {
+            self.portraitView.frame.origin.y = 0
+            self.portraitView.transform = CGAffineTransform(rotationAngle: 0)
             portraitView.isHidden = false
             self.dismiss(animated: true) {
                 // After dismiss
             }
         } else {
-            portraitView.isHidden = true
+            //portraitView.isHidden = true
+            print("animating..,")
+            UIView.animate(withDuration: 0.9) {
+                self.portraitView.frame.origin.y = 1000
+                self.portraitView.transform = CGAffineTransform(rotationAngle: 0.8)
+                print(self.portraitView.frame.origin.y)
+            }
         }
     }
+    
+    @IBAction func extraRoomAction(_ sender: Any) {
+    }
+    
+    @IBAction func nextTradeAction(_ sender: Any) {
+        print(mainContainer)
+        
+    }
+    
 }
 
 extension HLSwappViewController: SwappPageViewControllerDelegate {
@@ -73,6 +94,11 @@ extension HLSwappViewController: SwappPageViewControllerDelegate {
     func swappPageViewController(swappPageViewController: HLSwappPageViewController,
                                     didUpdatePageIndex index: Int) {
         swappPageControl.currentPage = index
+        if (index != 0){
+            extraRoomBtn.isHidden = true
+            extraRoomImage.isHidden = true
+            nextTradeBtn.isHidden = true
+        }
     }
     
 }

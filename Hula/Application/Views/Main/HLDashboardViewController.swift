@@ -12,7 +12,6 @@ class HLDashboardViewController: UIViewController {
     
     @IBOutlet weak var landscapeView: UIView!
     @IBOutlet weak var portraitView: UIView!
-    @IBOutlet weak var initialCoverView: UIImageView!
     @IBOutlet weak var mainCollectionView: UICollectionView!
     var selectedBarter: Int = 0
     let productImagesWidth: CGFloat = 27.0
@@ -52,10 +51,6 @@ class HLDashboardViewController: UIViewController {
     
     override func viewWillAppear(_ animated: Bool) {
         mainCollectionView.frame = self.view.frame
-        UIView.animate(withDuration: 0.4) {
-            self.initialCoverView.center.y += 1000
-            self.initialCoverView.transform = CGAffineTransform(rotationAngle: 0.8)
-        }
         self.mainCollectionView.reloadData()
         self.mainCollectionView.collectionViewLayout.invalidateLayout()
         self.mainCollectionView.setCollectionViewLayout(HLDashboardNormalViewFlowLayout(), animated: false)
