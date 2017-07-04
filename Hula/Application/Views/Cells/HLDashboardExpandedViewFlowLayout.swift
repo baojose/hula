@@ -9,7 +9,7 @@
 import UIKit
 
 class HLDashboardExpandedViewFlowLayout: UICollectionViewFlowLayout {
-    let itemHeight: CGFloat = 400
+    let itemHeight: CGFloat = 250
     
     override init() {
         super.init()
@@ -27,12 +27,12 @@ class HLDashboardExpandedViewFlowLayout: UICollectionViewFlowLayout {
     func setupLayout() {
         minimumInteritemSpacing = 1
         minimumLineSpacing = 1
-        scrollDirection = .vertical
+        scrollDirection = .horizontal
     }
     
     /// here we define the width of each cell, creating a 2 column layout. In case you would create 3 columns, change the number 2 to 3
     func itemWidth() -> CGFloat {
-        return collectionView!.frame.width
+        return collectionView!.frame.width/2
     }
     
     override var itemSize: CGSize {

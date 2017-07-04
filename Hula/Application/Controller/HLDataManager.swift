@@ -20,7 +20,7 @@ class HLDataManager: NSObject {
     var currentUser: HulaUser!
     var newProduct: HulaProduct!
     var arrCategories : NSMutableArray!
-    var arrTrades : NSMutableArray!
+    var arrTrades : [NSDictionary]! = []
     var arrNotifications : NSMutableArray!
     var uploadMode: Bool!
     
@@ -96,7 +96,7 @@ class HLDataManager: NSObject {
                 if let array = json as? [Any] {
                     for trade in array {
                         // access all objects in array
-                        self.arrTrades.add(trade)
+                        self.arrTrades.append(trade as! NSDictionary)
                     }
                 }
                 taskCallback(true)
@@ -364,7 +364,7 @@ class HLDataManager: NSObject {
         //...
         //writing to GameData.plist
         dict.write(toFile: path, atomically: false)
-        let resultDictionary = NSMutableDictionary(contentsOfFile: path)
+        //let resultDictionary = NSMutableDictionary(contentsOfFile: path)
         //print("Saved UserData.plist file is --> \(String(describing: resultDictionary?.description))")
         
         self.loadUserData()
@@ -388,7 +388,7 @@ class HLDataManager: NSObject {
             
             if let bundlePath = Bundle.main.path(forResource: HulaConstants.userFile, ofType: "plist")
             {
-                let resultDictionary = NSMutableDictionary(contentsOfFile: bundlePath)
+                //let resultDictionary = NSMutableDictionary(contentsOfFile: bundlePath)
                 //print("Bundle UserData.plist file is --> \(String(describing: resultDictionary?.description))")
                 
                 do

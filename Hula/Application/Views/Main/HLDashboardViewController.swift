@@ -12,7 +12,6 @@ class HLDashboardViewController: UIViewController {
     
     @IBOutlet weak var landscapeView: UIView!
     @IBOutlet weak var portraitView: UIView!
-    @IBOutlet weak var initialCoverView: UIImageView!
     @IBOutlet weak var mainCollectionView: UICollectionView!
     var selectedBarter: Int = 0
     let productImagesWidth: CGFloat = 27.0
@@ -28,17 +27,17 @@ class HLDashboardViewController: UIViewController {
         if let vc = self.parent as? HLSwappPageViewController {
             swappPageVC = vc
             if (HLDataManager.sharedInstance.arrTrades.count > 0){
-                swappPageVC?.arrTrades = HLDataManager.sharedInstance.arrTrades as! [NSDictionary]
+                swappPageVC?.arrTrades = HLDataManager.sharedInstance.arrTrades as [NSDictionary]
             }
             HLDataManager.sharedInstance.getTrades { (success) in
                 if (success){
                     //print("Trades ok")
                     DispatchQueue.main.async {
                         if (self.swappPageVC?.arrTrades.count != HLDataManager.sharedInstance.arrTrades.count){
-                            self.swappPageVC?.arrTrades = HLDataManager.sharedInstance.arrTrades as! [NSDictionary]
+                            self.swappPageVC?.arrTrades = HLDataManager.sharedInstance.arrTrades as [NSDictionary]
                             self.mainCollectionView.reloadData()
                         } else {
-                            self.swappPageVC?.arrTrades = HLDataManager.sharedInstance.arrTrades as! [NSDictionary]
+                            self.swappPageVC?.arrTrades = HLDataManager.sharedInstance.arrTrades as [NSDictionary]
                         }
                     }
                 }
@@ -51,10 +50,7 @@ class HLDashboardViewController: UIViewController {
     }
     
     override func viewWillAppear(_ animated: Bool) {
-        UIView.animate(withDuration: 0.4) {
-            self.initialCoverView.center.y += 1000
-            self.initialCoverView.transform = CGAffineTransform(rotationAngle: 0.8)
-        }
+        mainCollectionView.frame = self.view.frame
         self.mainCollectionView.reloadData()
         self.mainCollectionView.collectionViewLayout.invalidateLayout()
         self.mainCollectionView.setCollectionViewLayout(HLDashboardNormalViewFlowLayout(), animated: false)
@@ -163,7 +159,7 @@ extension HLDashboardViewController: UICollectionViewDelegate, UICollectionViewD
             
             isExpandedFlowLayoutUsed = !isExpandedFlowLayoutUsed
             
-            UIView.animate(withDuration: 0.4, animations: { () -> Void in
+            UIView.animate(withDuration: 0.6, animations: { () -> Void in
                 self.mainCollectionView.collectionViewLayout.invalidateLayout()
                 UIScreen.main.snapshotView(afterScreenUpdates: true)
                 if(self.isExpandedFlowLayoutUsed){
@@ -171,9 +167,10 @@ extension HLDashboardViewController: UICollectionViewDelegate, UICollectionViewD
                 } else {
                     self.mainCollectionView.setCollectionViewLayout(HLDashboardNormalViewFlowLayout(), animated: false)
                 }
-                self.mainCollectionView.scrollToItem(at: indexPath, at: .top, animated: false)
+                collectionView.frame = CGRect(origin: collectionView.frame.origin, size: CGSize(width:1000.0 * 5, height:collectionView.frame.height) )
+                self.mainCollectionView.scrollToItem(at: indexPath, at: .left , animated: false)
             })
-            let when = DispatchTime.now() + 0.2
+            let when = DispatchTime.now() + 0.3
             DispatchQueue.main.asyncAfter(deadline: when) {
                 if let swappPageVC = self.parent as? HLSwappPageViewController{
                     self.selectedBarter = indexPath.row
