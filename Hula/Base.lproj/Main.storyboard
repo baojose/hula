@@ -1,11 +1,11 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="11762" systemVersion="15G1010" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" colorMatched="YES" initialViewController="omL-QY-oVG">
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="12118" systemVersion="16A323" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" colorMatched="YES" initialViewController="omL-QY-oVG">
     <device id="retina4_7" orientation="portrait">
         <adaptation id="fullscreen"/>
     </device>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="11757"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="12086"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <scenes>
@@ -2272,8 +2272,8 @@ Log In</string>
                                 </subviews>
                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                             </view>
-                            <view hidden="YES" contentMode="scaleToFill" id="8Qd-eS-47d">
-                                <rect key="frame" x="0.0" y="-1" width="667" height="377"/>
+                            <view contentMode="scaleToFill" misplaced="YES" id="8Qd-eS-47d">
+                                <rect key="frame" x="0.0" y="0.0" width="667" height="377"/>
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                 <subviews>
                                     <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="bg_green_splash" id="GY3-if-P23">
@@ -2334,24 +2334,77 @@ Log In</string>
                                 </connections>
                             </button>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" text="Available Trade Rooms" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="A7C-1J-WdA">
-                                <rect key="frame" x="213" y="341" width="241" height="21"/>
+                                <rect key="frame" x="213" y="339" width="241" height="21"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES"/>
                                 <fontDescription key="fontDescription" name="HelveticaNeue-Light" family="Helvetica Neue" pointSize="16"/>
                                 <color key="textColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                 <nil key="highlightedColor"/>
                             </label>
+                            <view contentMode="scaleToFill" misplaced="YES" id="mpW-pj-Piw">
+                                <rect key="frame" x="441" y="323" width="226" height="54"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMinY="YES"/>
+                                <subviews>
+                                    <imageView opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" misplaced="YES" image="temp_profile_1" id="Ht0-c0-f1i">
+                                        <rect key="frame" x="163" y="12" width="30" height="30"/>
+                                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMinY="YES"/>
+                                    </imageView>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" text="Username" textAlignment="right" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="aLx-VA-4WH">
+                                        <rect key="frame" x="-5" y="17" width="160" height="21"/>
+                                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMinY="YES"/>
+                                        <fontDescription key="fontDescription" name="HelveticaNeue-Light" family="Helvetica Neue" pointSize="14"/>
+                                        <color key="textColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                        <nil key="highlightedColor"/>
+                                    </label>
+                                </subviews>
+                            </view>
+                            <button opaque="NO" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" id="MyB-ee-C6Y" customClass="HLRoundedButton" customModule="Hula" customModuleProvider="target">
+                                <rect key="frame" x="241" y="335" width="185" height="30"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="17"/>
+                                <state key="normal" title="Send offer">
+                                    <color key="titleColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                </state>
+                                <connections>
+                                    <action selector="sendOfferAction:" destination="YHt-Pc-Ojx" eventType="touchUpInside" id="6ey-iZ-aXm"/>
+                                </connections>
+                            </button>
+                            <view contentMode="scaleToFill" misplaced="YES" id="KoC-IE-SVR">
+                                <rect key="frame" x="0.0" y="321" width="226" height="54"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                <subviews>
+                                    <imageView opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" misplaced="YES" image="temp_profile_1" id="iXD-jj-EIv">
+                                        <rect key="frame" x="31" y="14" width="30" height="30"/>
+                                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMinY="YES"/>
+                                    </imageView>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" text="Username" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="ILl-3s-Q5z">
+                                        <rect key="frame" x="68" y="19" width="160" height="21"/>
+                                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMinY="YES"/>
+                                        <fontDescription key="fontDescription" name="HelveticaNeue-Light" family="Helvetica Neue" pointSize="14"/>
+                                        <color key="textColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                        <nil key="highlightedColor"/>
+                                    </label>
+                                </subviews>
+                            </view>
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                     </view>
                     <freeformSimulatedSizeMetrics key="simulatedDestinationMetrics"/>
                     <size key="freeformSize" width="667" height="375"/>
                     <connections>
+                        <outlet property="bottomBarView" destination="7ru-Zz-6rA" id="O7r-db-COh"/>
                         <outlet property="extraRoomBtn" destination="6Gn-89-JBh" id="rgQ-AX-hjy"/>
                         <outlet property="extraRoomImage" destination="ZSf-Me-ckT" id="epD-pg-37s"/>
                         <outlet property="mainCentralLabel" destination="A7C-1J-WdA" id="Rmq-Iv-hIq"/>
                         <outlet property="mainContainer" destination="MN8-Pi-VFB" id="niE-yO-Q0O"/>
+                        <outlet property="myUserImage" destination="iXD-jj-EIv" id="pbD-Uj-h8L"/>
+                        <outlet property="myUserNick" destination="ILl-3s-Q5z" id="zKK-2F-x3f"/>
+                        <outlet property="myUserView" destination="KoC-IE-SVR" id="a6n-ur-Y7A"/>
                         <outlet property="nextTradeBtn" destination="4G4-V5-YVy" id="Sv8-fe-R1P"/>
+                        <outlet property="otherUserImage" destination="Ht0-c0-f1i" id="8aT-Kl-uzP"/>
+                        <outlet property="otherUserNick" destination="aLx-VA-4WH" id="9HV-nN-XXy"/>
+                        <outlet property="otherUserView" destination="mpW-pj-Piw" id="Bgm-3L-abD"/>
                         <outlet property="portraitView" destination="8Qd-eS-47d" id="P2v-zm-pga"/>
+                        <outlet property="sendOfferBtn" destination="MyB-ee-C6Y" id="2WY-7I-M0F"/>
                         <outlet property="swappPageControl" destination="7K9-Gb-lpJ" id="Qwy-wh-3vP"/>
                     </connections>
                 </viewController>
@@ -5821,6 +5874,7 @@ Log In</string>
         <image name="s_05" width="160" height="160"/>
         <image name="solid_green_bg_button_S" width="125" height="31"/>
         <image name="temp_product" width="157" height="157"/>
+        <image name="temp_profile_1" width="30" height="30"/>
         <image name="temp_user" width="210" height="210"/>
         <image name="transparent_background_button_L" width="51" height="50"/>
         <image name="type_line_login" width="321" height="32"/>

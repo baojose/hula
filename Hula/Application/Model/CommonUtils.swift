@@ -193,6 +193,12 @@ class CommonUtils: NSObject {
             return NSDate()
         }
     }
+    func userImageURL(userId: String) -> String{
+        return HulaConstants.apiURL + "users/\(userId)/image"
+    }
+    func productImageURL(productId: String) -> String{
+        return HulaConstants.apiURL + "products/\(productId)/image"
+    }
 }
 
 extension Formatter {

@@ -17,6 +17,16 @@ class HLSwappViewController: UIViewController {
     @IBOutlet weak var extraRoomBtn: UIButton!
     @IBOutlet weak var extraRoomImage: UIImageView!
     @IBOutlet weak var mainCentralLabel: UILabel!
+    @IBOutlet weak var otherUserNick: UILabel!
+    @IBOutlet weak var otherUserImage: UIImageView!
+    @IBOutlet weak var otherUserView: UIView!
+    @IBOutlet weak var myUserView: UIView!
+    @IBOutlet weak var myUserNick: UILabel!
+    @IBOutlet weak var myUserImage: UIImageView!
+    @IBOutlet weak var bottomBarView: UIImageView!
+    @IBOutlet weak var sendOfferBtn: HLRoundedButton!
+    
+    var initialOtherUserX:CGFloat = 0.0
     
     var selectedScreen = 0
     
@@ -26,10 +36,21 @@ class HLSwappViewController: UIViewController {
         // Do any additional setup after loading the view.
         NotificationCenter.default.addObserver(self, selector: #selector(self.rotated), name: NSNotification.Name.UIDeviceOrientationDidChange, object: nil)
         
-        
-        
-        
+        myUserNick.text = HulaUser.sharedInstance.userNick
+        myUserImage.loadImageFromURL(urlString: HulaUser.sharedInstance.userPhotoURL)
+        CommonUtils.sharedInstance.circleImageView(otherUserImage)
+        CommonUtils.sharedInstance.circleImageView(myUserImage)
+        self.myUserView.isHidden = true;
+        self.otherUserView.isHidden = true;
         rotated()
+    }
+    override func viewDidAppear(_ animated: Bool) {
+        initialOtherUserX = otherUserView.frame.origin.x
+        self.myUserView.frame.origin.x = -500
+        self.otherUserView.frame.origin.x = self.initialOtherUserX + 500
+        self.myUserView.isHidden = false;
+        self.otherUserView.isHidden = false;
+        controlSetupBottomBar(index: 0)
     }
 
     override func didReceiveMemoryWarning() {
@@ -65,11 +86,9 @@ class HLSwappViewController: UIViewController {
             }
         } else {
             //portraitView.isHidden = true
-            print("animating..,")
             UIView.animate(withDuration: 0.9) {
                 self.portraitView.frame.origin.y = 1000
                 self.portraitView.transform = CGAffineTransform(rotationAngle: 0.8)
-                print(self.portraitView.frame.origin.y)
             }
         }
     }
@@ -78,8 +97,59 @@ class HLSwappViewController: UIViewController {
     }
     
     @IBAction func nextTradeAction(_ sender: Any) {
-        print(mainContainer)
+        //print(self.childViewControllers)
         
+        if let swappPageVC = self.childViewControllers.first as? HLSwappPageViewController {
+            let nextPage = swappPageControl.currentPage + 1
+            print(nextPage)
+            print(swappPageVC.arrTrades.count)
+            let thisTrade: NSDictionary = swappPageVC.arrTrades[nextPage - 1]
+            swappPageVC.currentTrade = thisTrade
+            swappPageVC.goTo(page: nextPage)
+            
+        }
+        
+    }
+    
+    @IBAction func sendOfferAction(_ sender: Any) {
+        
+    }
+    func controlSetupBottomBar(index:Int){
+        if (index != 0){
+            UIView.animate(withDuration: 0.3) {
+                self.extraRoomBtn.alpha = 0
+                self.extraRoomImage.alpha = 0
+                self.nextTradeBtn.alpha = 0
+                self.mainCentralLabel.alpha=0;
+                self.myUserView.frame.origin.x = 0
+                self.otherUserView.frame.origin.x = self.initialOtherUserX
+                self.sendOfferBtn.alpha = 1
+            }
+            
+            if let swappPageVC = self.childViewControllers.first as? HLSwappPageViewController {
+                let thisTrade: NSDictionary = swappPageVC.arrTrades[min(max(0, swappPageControl.currentPage - 1), swappPageVC.arrTrades.count - 1) ]
+                print(thisTrade)
+                if (HulaUser.sharedInstance.userId == thisTrade.object(forKey: "owner_id") as! String){
+                    // I am the owner
+                    otherUserImage.loadImageFromURL(urlString: CommonUtils.sharedInstance.userImageURL(userId: thisTrade.object(forKey: "other_id") as! String))
+                } else {
+                    otherUserImage.loadImageFromURL(urlString: CommonUtils.sharedInstance.userImageURL(userId: thisTrade.object(forKey: "owner_id") as! String))
+                }
+                otherUserNick.text = "User in room \(index)"
+            }
+            
+            
+        } else {
+            UIView.animate(withDuration: 0.3) {
+                self.extraRoomBtn.alpha = 1
+                self.extraRoomImage.alpha = 1
+                self.nextTradeBtn.alpha = 1
+                self.mainCentralLabel.alpha=1;
+                self.myUserView.frame.origin.x = -500
+                self.otherUserView.frame.origin.x = self.initialOtherUserX + 500
+                self.sendOfferBtn.alpha = 0
+            }
+        }
     }
     
 }
@@ -94,11 +164,9 @@ extension HLSwappViewController: SwappPageViewControllerDelegate {
     func swappPageViewController(swappPageViewController: HLSwappPageViewController,
                                     didUpdatePageIndex index: Int) {
         swappPageControl.currentPage = index
-        if (index != 0){
-            extraRoomBtn.isHidden = true
-            extraRoomImage.isHidden = true
-            nextTradeBtn.isHidden = true
-        }
+        
+        controlSetupBottomBar(index: index)
     }
+    
     
 }

@@ -102,7 +102,7 @@ extension HLDashboardViewController: UICollectionViewDelegate, UICollectionViewD
                 otherUserId = thisTrade.object(forKey: "owner_id") as? String
             }
             if( otherUserId != nil){
-                cell.userImage.loadImageFromURL(urlString: HulaConstants.apiURL + "users/\(otherUserId!)/image")
+                cell.userImage.loadImageFromURL(urlString: CommonUtils.sharedInstance.userImageURL(userId: otherUserId!) )
                 
             }
             if let other_products_arr = thisTrade.object(forKey: "other_products") as? [String]{
@@ -114,7 +114,7 @@ extension HLDashboardViewController: UICollectionViewDelegate, UICollectionViewD
             //CommonUtils.sharedInstance.loadImageOnView(imageView:cell.myImage, withURL:HulaUser.sharedInstance.userPhotoURL)
             
             cell.myImage.loadImageFromURL(urlString: HulaUser.sharedInstance.userPhotoURL)
-            print(HulaUser.sharedInstance.userPhotoURL)
+            //print(HulaUser.sharedInstance.userPhotoURL)
             cell.myImage.isHidden = false
             cell.middleArrows.isHidden = false
             cell.optionsDotsImage.isHidden = false

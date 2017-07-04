@@ -74,6 +74,7 @@ class HLBarterScreenViewController: UIViewController {
         if firstLoad {
             firstLoad = false
             if let swappPageVC = self.parent as? HLSwappPageViewController{
+                myTradeIndex = min(myTradeIndex, swappPageVC.arrTrades.count - 1)
                 let ct = swappPageVC.arrTrades[myTradeIndex]
                 if (ct.object(forKey: "owner_id") as? String == HulaUser.sharedInstance.userId){
                     // I am the owner
