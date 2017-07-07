@@ -107,7 +107,7 @@ class HLEditFieldViewController: BaseViewController, UITextFieldDelegate, UIText
         field_new_val = newValueTextView.text!
         userData.setValue(field_new_val, forKey: field_key)
         userData.updateServerData()
-        self.navigationController?.popViewController(animated: true)
+        let _ = self.navigationController?.popViewController(animated: true)
     }
     /*
     // MARK: - Navigation
@@ -120,7 +120,7 @@ class HLEditFieldViewController: BaseViewController, UITextFieldDelegate, UIText
     */
     @IBAction func goBackAction(_ sender: Any) {
         //self.dismiss(animated: true, completion: nil)
-        self.navigationController?.popViewController(animated: true)
+        let _ = self.navigationController?.popViewController(animated: true)
     }
 
 }

@@ -11,6 +11,9 @@
 		111F79421EA56B5E00904EC5 /* test_UI.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 111F79411EA56B5E00904EC5 /* test_UI.storyboard */; };
 		116669151E98222F0094B157 /* HLHomeNotificationsTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 116669141E98222F0094B157 /* HLHomeNotificationsTableViewCell.swift */; };
 		116669191E9925C20094B157 /* HulaNotifications.swift in Sources */ = {isa = PBXBuildFile; fileRef = 116669181E9925C20094B157 /* HulaNotifications.swift */; };
+		271533421F07C15600E5F319 /* KDDragAndDropCollectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 271533401F07C15600E5F319 /* KDDragAndDropCollectionView.swift */; };
+		271533431F07C15600E5F319 /* KDDragAndDropManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 271533411F07C15600E5F319 /* KDDragAndDropManager.swift */; };
+		271533451F07C85200E5F319 /* HLProductCollectionViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 271533441F07C85200E5F319 /* HLProductCollectionViewCell.swift */; };
 		271F5C5A1EDAD90C00A7B1C1 /* HulaTrade.swift in Sources */ = {isa = PBXBuildFile; fileRef = 271F5C591EDAD90C00A7B1C1 /* HulaTrade.swift */; };
 		272720431EBA9BE90084CF3C /* HLWelcomeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 272720421EBA9BE90084CF3C /* HLWelcomeViewController.swift */; };
 		2728141D1EDCA6D000984562 /* HLTradesCollectionViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2728141C1EDCA6D000984562 /* HLTradesCollectionViewCell.swift */; };
@@ -19,6 +22,7 @@
 		272814231EF099BB00984562 /* HLSwappViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 272814221EF099BB00984562 /* HLSwappViewController.swift */; };
 		272814251EF52BDD00984562 /* HLDashboardNormalViewFlowLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = 272814241EF52BDD00984562 /* HLDashboardNormalViewFlowLayout.swift */; };
 		272814271EF530EE00984562 /* HLDashboardExpandedViewFlowLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = 272814261EF530EE00984562 /* HLDashboardExpandedViewFlowLayout.swift */; };
+		272814291F0314C100984562 /* HLDragableImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 272814281F0314C100984562 /* HLDragableImage.swift */; };
 		273A1EA21ECF9D37005D163E /* HulaPortraitNavigationController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 273A1EA11ECF9D37005D163E /* HulaPortraitNavigationController.swift */; };
 		273A1EA51ECF9F13005D163E /* HLDashboardViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 273A1EA41ECF9F13005D163E /* HLDashboardViewController.swift */; };
 		273A1EA71ED6440A005D163E /* HLSwappProductTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 273A1EA61ED6440A005D163E /* HLSwappProductTableViewCell.swift */; };
@@ -28,6 +32,7 @@
 		277C6C431EA2385B00530B0F /* HLRoundedButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 277C6C421EA2385B00530B0F /* HLRoundedButton.swift */; };
 		278988FB1ED7933600C0FBA9 /* HLCalculatorViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 278988FA1ED7933600C0FBA9 /* HLCalculatorViewController.swift */; };
 		279BAAD81E9D726D00091D24 /* HLNotificationsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 279BAAD71E9D726D00091D24 /* HLNotificationsViewController.swift */; };
+		27AA28FE1F09A0B100AB1895 /* HLPageControl.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27AA28FD1F09A0B100AB1895 /* HLPageControl.swift */; };
 		27B228B81EA89FF10079EED6 /* HLBouncingButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27B228B71EA89FF10079EED6 /* HLBouncingButton.swift */; };
 		27C733C51EA2BC7E003A6FD6 /* HLIdentificationViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27C733C41EA2BC7E003A6FD6 /* HLIdentificationViewController.swift */; };
 		27C733C71EA2D051003A6FD6 /* HLRoundedGradientButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27C733C61EA2D050003A6FD6 /* HLRoundedGradientButton.swift */; };
@@ -106,6 +111,9 @@
 		111F79411EA56B5E00904EC5 /* test_UI.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = test_UI.storyboard; sourceTree = "<group>"; };
 		116669141E98222F0094B157 /* HLHomeNotificationsTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HLHomeNotificationsTableViewCell.swift; sourceTree = "<group>"; };
 		116669181E9925C20094B157 /* HulaNotifications.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HulaNotifications.swift; sourceTree = "<group>"; };
+		271533401F07C15600E5F319 /* KDDragAndDropCollectionView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = KDDragAndDropCollectionView.swift; sourceTree = "<group>"; };
+		271533411F07C15600E5F319 /* KDDragAndDropManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = KDDragAndDropManager.swift; sourceTree = "<group>"; };
+		271533441F07C85200E5F319 /* HLProductCollectionViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HLProductCollectionViewCell.swift; sourceTree = "<group>"; };
 		271F5C591EDAD90C00A7B1C1 /* HulaTrade.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HulaTrade.swift; sourceTree = "<group>"; };
 		272720421EBA9BE90084CF3C /* HLWelcomeViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HLWelcomeViewController.swift; sourceTree = "<group>"; };
 		2728141C1EDCA6D000984562 /* HLTradesCollectionViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HLTradesCollectionViewCell.swift; sourceTree = "<group>"; };
@@ -114,6 +122,7 @@
 		272814221EF099BB00984562 /* HLSwappViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HLSwappViewController.swift; sourceTree = "<group>"; };
 		272814241EF52BDD00984562 /* HLDashboardNormalViewFlowLayout.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HLDashboardNormalViewFlowLayout.swift; sourceTree = "<group>"; };
 		272814261EF530EE00984562 /* HLDashboardExpandedViewFlowLayout.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HLDashboardExpandedViewFlowLayout.swift; sourceTree = "<group>"; };
+		272814281F0314C100984562 /* HLDragableImage.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HLDragableImage.swift; sourceTree = "<group>"; };
 		273A1EA11ECF9D37005D163E /* HulaPortraitNavigationController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HulaPortraitNavigationController.swift; sourceTree = "<group>"; };
 		273A1EA41ECF9F13005D163E /* HLDashboardViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HLDashboardViewController.swift; sourceTree = "<group>"; };
 		273A1EA61ED6440A005D163E /* HLSwappProductTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HLSwappProductTableViewCell.swift; sourceTree = "<group>"; };
@@ -123,6 +132,7 @@
 		277C6C421EA2385B00530B0F /* HLRoundedButton.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HLRoundedButton.swift; sourceTree = "<group>"; };
 		278988FA1ED7933600C0FBA9 /* HLCalculatorViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HLCalculatorViewController.swift; sourceTree = "<group>"; };
 		279BAAD71E9D726D00091D24 /* HLNotificationsViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HLNotificationsViewController.swift; sourceTree = "<group>"; };
+		27AA28FD1F09A0B100AB1895 /* HLPageControl.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HLPageControl.swift; sourceTree = "<group>"; };
 		27B228B71EA89FF10079EED6 /* HLBouncingButton.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HLBouncingButton.swift; sourceTree = "<group>"; };
 		27C733C41EA2BC7E003A6FD6 /* HLIdentificationViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HLIdentificationViewController.swift; sourceTree = "<group>"; };
 		27C733C61EA2D050003A6FD6 /* HLRoundedGradientButton.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HLRoundedGradientButton.swift; sourceTree = "<group>"; };
@@ -240,6 +250,7 @@
 				2728141E1EF08B8A00984562 /* HLBarterScreenViewController.swift */,
 				272814201EF08BD200984562 /* HLSwappPageViewController.swift */,
 				272814221EF099BB00984562 /* HLSwappViewController.swift */,
+				272814281F0314C100984562 /* HLDragableImage.swift */,
 			);
 			name = Swapp;
 			sourceTree = "<group>";
@@ -251,6 +262,9 @@
 				27C733C61EA2D050003A6FD6 /* HLRoundedGradientButton.swift */,
 				27C733C81EA2D1E0003A6FD6 /* HLRoundedNextButton.swift */,
 				27B228B71EA89FF10079EED6 /* HLBouncingButton.swift */,
+				271533401F07C15600E5F319 /* KDDragAndDropCollectionView.swift */,
+				271533411F07C15600E5F319 /* KDDragAndDropManager.swift */,
+				27AA28FD1F09A0B100AB1895 /* HLPageControl.swift */,
 			);
 			name = Utils;
 			sourceTree = "<group>";
@@ -427,6 +441,7 @@
 				2728141C1EDCA6D000984562 /* HLTradesCollectionViewCell.swift */,
 				272814241EF52BDD00984562 /* HLDashboardNormalViewFlowLayout.swift */,
 				272814261EF530EE00984562 /* HLDashboardExpandedViewFlowLayout.swift */,
+				271533441F07C85200E5F319 /* HLProductCollectionViewCell.swift */,
 			);
 			path = Cells;
 			sourceTree = "<group>";
@@ -851,6 +866,7 @@
 				116669191E9925C20094B157 /* HulaNotifications.swift in Sources */,
 				F890E4981E71011C008719B9 /* HLHomeViewController.swift in Sources */,
 				277C6C431EA2385B00530B0F /* HLRoundedButton.swift in Sources */,
+				272814291F0314C100984562 /* HLDragableImage.swift in Sources */,
 				F86698B51E703C34002129E1 /* HulaConstants.swift in Sources */,
 				F8B651F61E7AB643009D1DC6 /* HLCustomCameraViewController.swift in Sources */,
 				F86698C91E7044C0002129E1 /* HLSignUpViewController.swift in Sources */,
@@ -862,6 +878,7 @@
 				F86698AF1E703A80002129E1 /* AppDelegate.swift in Sources */,
 				F8BE7C331E71FF5400FAE07D /* HLSettingViewController.swift in Sources */,
 				F86698BF1E703E10002129E1 /* BaseTabBarViewController.swift in Sources */,
+				271533451F07C85200E5F319 /* HLProductCollectionViewCell.swift in Sources */,
 				272720431EBA9BE90084CF3C /* HLWelcomeViewController.swift in Sources */,
 				273A1EA71ED6440A005D163E /* HLSwappProductTableViewCell.swift in Sources */,
 				271F5C5A1EDAD90C00A7B1C1 /* HulaTrade.swift in Sources */,
@@ -877,6 +894,7 @@
 				F86698B71E703CB9002129E1 /* HLAPIClient.swift in Sources */,
 				F8BE7C4B1E724F3D00FAE07D /* HLProductDetailViewController.swift in Sources */,
 				273A1EA51ECF9F13005D163E /* HLDashboardViewController.swift in Sources */,
+				27AA28FE1F09A0B100AB1895 /* HLPageControl.swift in Sources */,
 				27C733C91EA2D1E0003A6FD6 /* HLRoundedNextButton.swift in Sources */,
 				2728141D1EDCA6D000984562 /* HLTradesCollectionViewCell.swift in Sources */,
 				F8BE7C371E72010D00FAE07D /* HLFeedbackHistoryTableViewCell.swift in Sources */,
@@ -885,6 +903,7 @@
 				F8B651F21E7A6A1E009D1DC6 /* HLPostProductViewController.swift in Sources */,
 				27401F861EC10F7300F0B95D /* HLPictureSelectViewController.swift in Sources */,
 				F890E49A1E710187008719B9 /* HLHomeCategoryTableViewCell.swift in Sources */,
+				271533431F07C15600E5F319 /* KDDragAndDropManager.swift in Sources */,
 				27C733C51EA2BC7E003A6FD6 /* HLIdentificationViewController.swift in Sources */,
 				F86698B11E703AB7002129E1 /* HulaUser.swift in Sources */,
 				F86698BB1E703DBE002129E1 /* BaseViewController.swift in Sources */,
@@ -894,6 +913,7 @@
 				F8BE7C471E72412200FAE07D /* HLProductTableViewCell.swift in Sources */,
 				F8B652031E7C77BF009D1DC6 /* HLSellerInfoViewController.swift in Sources */,
 				F8B651F41E7A82F6009D1DC6 /* HLCompleteProductProfileViewController.swift in Sources */,
+				271533421F07C15600E5F319 /* KDDragAndDropCollectionView.swift in Sources */,
 				116669151E98222F0094B157 /* HLHomeNotificationsTableViewCell.swift in Sources */,
 				272814251EF52BDD00984562 /* HLDashboardNormalViewFlowLayout.swift in Sources */,
 				F86698B91E703D02002129E1 /* CommonUtils.swift in Sources */,

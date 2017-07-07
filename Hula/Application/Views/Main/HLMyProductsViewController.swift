@@ -255,7 +255,7 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
     func updateProductDataString() -> String{
         print(HLDataManager.sharedInstance.newProduct.arrProductPhotoLink)
         print(self.arrayImagesURL)
-        let product_images_array = dataManager.newProduct.arrProductPhotoLink.componentsJoined(by: ",")
+        let product_images_array = dataManager.newProduct.arrProductPhotoLink.joined(separator: ",")
         var dataString:String = "title=" + dataManager.newProduct.productName.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)!
         dataString += "&description=" + dataManager.newProduct.productDescription.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)!
         dataString += "&condition=" + dataManager.newProduct.productCondition.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)!
@@ -282,9 +282,9 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
                                         if let filePath:String = dictionary["path"] as? String {
                                             print(filePath)
                                             if let pos = dictionary["position"] as? String {
-                                                print(pos)
+                                                //print(pos)
                                                 self.arrayImagesURL[Int(pos)!] = HulaConstants.staticServerURL + filePath
-                                                HLDataManager.sharedInstance.newProduct.arrProductPhotoLink = self.arrayImagesURL as! NSMutableArray
+                                                HLDataManager.sharedInstance.newProduct.arrProductPhotoLink = self.arrayImagesURL 
                                                 print(self.arrayImagesURL[Int(pos)!])
                                             }
                                         }

@@ -9,6 +9,7 @@
 import UIKit
 
 class HLTradesCollectionViewCell: UICollectionViewCell {
+    @IBOutlet weak var myImage: UIImageView!
     @IBOutlet weak var userImage: UIImageView!
     @IBOutlet weak var tradeNumber: UILabel!
     @IBOutlet weak var emptyRoomLabel: UILabel!
@@ -16,6 +17,8 @@ class HLTradesCollectionViewCell: UICollectionViewCell {
     @IBOutlet weak var optionsDotsImage: UIImageView!
     @IBOutlet weak var left_side: UIView!
     @IBOutlet weak var right_side: UIView!
+    @IBOutlet weak var myTurnView: UIView!
+    @IBOutlet weak var otherTurnView: UIView!
     
     override func apply(_ layoutAttributes: UICollectionViewLayoutAttributes?) {
         self.layoutIfNeeded()
@@ -25,6 +28,7 @@ class HLTradesCollectionViewCell: UICollectionViewCell {
         super.awakeFromNib()
         
         CommonUtils.sharedInstance.circleImageView(userImage)
+        CommonUtils.sharedInstance.circleImageView(myImage)
     }
     
 
