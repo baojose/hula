@@ -101,8 +101,8 @@ class HLSwappViewController: UIViewController {
         
         if let swappPageVC = self.childViewControllers.first as? HLSwappPageViewController {
             let nextPage = swappPageControl.currentPage + 1
-            print(nextPage)
-            print(swappPageVC.arrTrades.count)
+            //print(nextPage)
+            //print(swappPageVC.arrTrades.count)
             let thisTrade: NSDictionary = swappPageVC.arrTrades[nextPage - 1]
             swappPageVC.currentTrade = thisTrade
             swappPageVC.goTo(page: nextPage)
@@ -113,6 +113,33 @@ class HLSwappViewController: UIViewController {
     
     @IBAction func sendOfferAction(_ sender: Any) {
         
+        if let swappPageVC = self.childViewControllers.first as? HLSwappPageViewController {
+            let nextPage = swappPageControl.currentPage
+            let thisTrade: NSDictionary = swappPageVC.arrTrades[nextPage - 1]
+            let trade_id = thisTrade.object(forKey: "_id") as? String
+            let turn_id = thisTrade.object(forKey: "turn_user_id") as? String
+            //print(turn_id!)
+            if (turn_id != HulaUser.sharedInstance.userId){
+                print("This is not your turn!!!")
+            } else {
+                    let queryURL = HulaConstants.apiURL + "trades/" + trade_id!
+                    let owner_products = ""
+                    let other_products = ""
+                    let dataString:String = "status=offer_sent&owner_products=\(owner_products)&other_products=\(other_products)"
+                    //print(dataString)
+                    HLDataManager.sharedInstance.httpPost(urlstr: queryURL, postString: dataString, isPut: true, taskCallback: { (ok, json) in
+                        if (ok){
+                            print(json!)
+                            DispatchQueue.main.async {
+                                swappPageVC.goTo(page: 0)
+                            }
+                        } else {
+                            // connection error
+                            print("Connection error")
+                        }
+                    })
+            }
+        }
     }
     func controlSetupBottomBar(index:Int){
         if (index != 0){
@@ -135,6 +162,15 @@ class HLSwappViewController: UIViewController {
                 } else {
                     otherUserImage.loadImageFromURL(urlString: CommonUtils.sharedInstance.userImageURL(userId: thisTrade.object(forKey: "owner_id") as! String))
                 }
+                
+                if let current_user_turn = thisTrade.object(forKey: "turn_user_id") as? String{
+                    if current_user_turn != HulaUser.sharedInstance.userId {
+                        self.sendOfferBtn.alpha = 0
+                        self.mainCentralLabel.alpha=1;
+                        self.mainCentralLabel.text = "Waiting for response..."
+                    }
+                }
+                
                 otherUserNick.text = "User in room \(index)"
             }
             
@@ -148,6 +184,7 @@ class HLSwappViewController: UIViewController {
                 self.myUserView.frame.origin.x = -500
                 self.otherUserView.frame.origin.x = self.initialOtherUserX + 500
                 self.sendOfferBtn.alpha = 0
+                self.mainCentralLabel.text = "Available Table Rooms"
             }
         }
     }
