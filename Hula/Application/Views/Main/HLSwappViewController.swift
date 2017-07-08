@@ -9,7 +9,9 @@
 import UIKit
 
 class HLSwappViewController: UIViewController {
-
+    
+    weak var barterDelegate: HLBarterScreenDelegate?
+    
     @IBOutlet weak var portraitView: UIView!
     @IBOutlet weak var mainContainer: UIView!
     @IBOutlet weak var swappPageControl: HLPageControl!
@@ -113,6 +115,12 @@ class HLSwappViewController: UIViewController {
     
     @IBAction func sendOfferAction(_ sender: Any) {
         
+        if let tradeStatus = barterDelegate?.getCurrentTradeStatus() {
+            print(tradeStatus)
+            return
+        }
+    
+        
         if let swappPageVC = self.childViewControllers.first as? HLSwappPageViewController {
             let nextPage = swappPageControl.currentPage
             let thisTrade: NSDictionary = swappPageVC.arrTrades[nextPage - 1]
@@ -206,4 +214,8 @@ extension HLSwappViewController: SwappPageViewControllerDelegate {
     }
     
     
+}
+
+protocol HLBarterScreenDelegate: class {
+    func getCurrentTradeStatus() -> HulaTrade
 }

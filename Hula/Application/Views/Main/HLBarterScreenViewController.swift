@@ -9,7 +9,9 @@
 import UIKit
 
 class HLBarterScreenViewController: UIViewController {
-
+    
+    
+    
     @IBOutlet weak var otherProductsCollection: KDDragAndDropCollectionView!
     @IBOutlet weak var otherSelectedProductsCollection: KDDragAndDropCollectionView!
     @IBOutlet weak var myProductsCollection: KDDragAndDropCollectionView!
@@ -51,8 +53,16 @@ class HLBarterScreenViewController: UIViewController {
         self.dragAndDropManager1 = KDDragAndDropManager(canvas: self.view, collectionViews: [otherProductsCollection, otherSelectedProductsCollection ])
         self.dragAndDropManager2 = KDDragAndDropManager(canvas: self.view, collectionViews: [myProductsCollection, mySelectedProductsCollection ])
         
+        
     }
-
+    
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        if let thisHolderScreen = segue.destination as? HLSwappViewController {
+            thisHolderScreen.barterDelegate = self
+        } else {
+            print(segue.destination)
+        }
+    }
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
@@ -402,5 +412,14 @@ extension HLBarterScreenViewController: KDDragAndDropCollectionViewDataSource, U
     }
     
     
+}
+
+extension HLBarterScreenViewController: HLBarterScreenDelegate{
+    func getCurrentTradeStatus() -> HulaTrade{
+        let trade = HulaTrade();
+        trade.other_products = ["123123", "34534534"]
+        trade.owner_products = ["asdfasdf", "vxcvzxcv"]
+        return trade
+    }
 }
 
