@@ -66,32 +66,7 @@ class HulaTrade: NSObject {
             if (ok){
                 if let loaded_trade = json as? NSDictionary {
                     // populate object
-                    
-                    if (loaded_trade["product_id"] as? String) != nil {
-                        self.product_id = loaded_trade["product_id"] as? String
-                    }
-                    if (loaded_trade["owner_id"] as? String) != nil {
-                        self.owner_id = loaded_trade["owner_id"] as? String
-                    }
-                    if (loaded_trade["other_id"] as? String) != nil {
-                        self.other_id = loaded_trade["other_id"] as? String
-                    }
-                    if (loaded_trade["date"] as? String) != nil {
-                        let str_date = loaded_trade["date"] as? String
-                        self.date = (str_date?.dateFromISO8601)!
-                    }
-                    if (loaded_trade["owner_products"] as? [String]) != nil {
-                        self.owner_products = (loaded_trade["owner_products"] as? [String])!
-                    }
-                    if (loaded_trade["other_products"] as? [String]) != nil {
-                        self.owner_products = (loaded_trade["other_products"] as? [String])!
-                    }
-                    if (loaded_trade["next_bid"] as? String) != nil {
-                        self.next_bid = loaded_trade["next_bid"] as? String
-                    }
-                    if (loaded_trade["status"] as? String) != nil {
-                        self.status = loaded_trade["status"] as? String
-                    }
+                    self.loadFrom(dict: loaded_trade)
                 }
                 // if success we will return true
                 callback(true)
@@ -101,7 +76,34 @@ class HulaTrade: NSObject {
         })
         
     }
-    
+    func loadFrom(dict: NSDictionary){
+        if (dict["product_id"] as? String) != nil {
+            self.product_id = dict["product_id"] as? String
+        }
+        if (dict["owner_id"] as? String) != nil {
+            self.owner_id = dict["owner_id"] as? String
+        }
+        if (dict["other_id"] as? String) != nil {
+            self.other_id = dict["other_id"] as? String
+        }
+        if (dict["date"] as? String) != nil {
+            let str_date = dict["date"] as? String
+            self.date = (str_date?.dateFromISO8601)!
+        }
+        if (dict["owner_products"] as? [String]) != nil {
+            self.owner_products = (dict["owner_products"] as? [String])!
+        }
+        if (dict["other_products"] as? [String]) != nil {
+            self.owner_products = (dict["other_products"] as? [String])!
+        }
+        if (dict["next_bid"] as? String) != nil {
+            self.next_bid = dict["next_bid"] as? String
+        }
+        if (dict["status"] as? String) != nil {
+            self.status = dict["status"] as? String
+        }
+    }
+
     func updateServerData(){
         print("Updating trade...")
         if(tradeId.characters.count > 0){

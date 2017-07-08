@@ -111,16 +111,28 @@ extension HLSwappPageViewController: UIPageViewControllerDataSource, UIPageViewC
                                                       didUpdatePageIndex: index)
             self.currentIndex = index
             
+            if (index == 0){
+                if let dashboardVc = firstViewController as? HLDashboardViewController{
+                    dashboardVc.refreshCollectionViewData()
+                }
+            }
         }
     }
     
     public func goTo(page: Int){
         if (page < orderedViewControllers.count){
             let newVC = orderedViewControllers[page]
-            setViewControllers([newVC],
-                           direction: .forward,
-                           animated: true,
-                           completion: nil)
+            if (page != 0){
+                setViewControllers([newVC],
+                               direction: .forward,
+                               animated: true,
+                               completion: nil)
+            } else {
+                setViewControllers([newVC],
+                               direction: .reverse,
+                               animated: true,
+                               completion: nil)
+            }
             swappDelegate?.swappPageViewController(swappPageViewController: self,
                                                    didUpdatePageIndex: page)
         }
