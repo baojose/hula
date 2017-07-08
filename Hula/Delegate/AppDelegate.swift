@@ -98,11 +98,14 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     func application(_ application: UIApplication,
                      didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
         let tokenParts = deviceToken.map { data -> String in
-            return String(format: "%02.2hhx", data)
+            let dift = String(format: "%02.2hhx", data)
+            return dift
         }
         
         let token = tokenParts.joined()
         print("Device Token: \(token)")
+        HulaUser.sharedInstance.deviceId = token
+        HulaUser.sharedInstance.updateServerData()
     }
     
     func application(_ application: UIApplication,

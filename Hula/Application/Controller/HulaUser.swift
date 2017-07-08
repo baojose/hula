@@ -25,6 +25,7 @@ class HulaUser: NSObject {
     var fbToken: String!
     var twToken: String!
     var liToken: String!
+    var deviceId: String!
     var maxTrades: Int = 3
     var arrayProducts = [] as Array
     
@@ -49,6 +50,7 @@ class HulaUser: NSObject {
         self.fbToken = ""
         self.twToken = ""
         self.liToken = ""
+        self.deviceId = ""
         self.location = CLLocation(latitude: 0, longitude: 0)
         self.maxTrades = 3
         self.arrayProducts = []
@@ -88,6 +90,7 @@ class HulaUser: NSObject {
         self.twToken = ""
         self.liToken = ""
         self.maxTrades = 3
+        self.deviceId = ""
         self.location = CLLocation(latitude: 0, longitude: 0)
         self.arrayProducts = []
     }
@@ -138,7 +141,7 @@ class HulaUser: NSObject {
     }
     func getPostString() -> String {
         var str = "email=" + self.userEmail + "&name=" + self.userName + "&bio=" + self.userBio + "&nick=" + self.userNick + "&image=" + self.userPhotoURL + "&twtoken=" + self.twToken
-        str = str + "&litoken=" + self.liToken + "&fbtoken=" + self.fbToken
+        str = str + "&litoken=" + self.liToken + "&fbtoken=" + self.fbToken + "&push_device_id=" + self.deviceId
         
         if (self.location.coordinate.latitude != 0 && self.location.coordinate.longitude != 0){
            str = str + "&lat=\(self.location.coordinate.latitude)&lon=\(self.location.coordinate.longitude)&location_name=" + self.userLocationName
