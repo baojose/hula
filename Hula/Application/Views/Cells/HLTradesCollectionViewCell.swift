@@ -19,6 +19,9 @@ class HLTradesCollectionViewCell: UICollectionViewCell {
     @IBOutlet weak var right_side: UIView!
     @IBOutlet weak var myTurnView: UIView!
     @IBOutlet weak var otherTurnView: UIView!
+    @IBOutlet weak var boxView: UIView!
+    
+    var isEmptyRoom = true;
     
     override func apply(_ layoutAttributes: UICollectionViewLayoutAttributes?) {
         self.layoutIfNeeded()
@@ -29,6 +32,21 @@ class HLTradesCollectionViewCell: UICollectionViewCell {
         
         CommonUtils.sharedInstance.circleImageView(userImage)
         CommonUtils.sharedInstance.circleImageView(myImage)
+        
+        boxView.layer.borderWidth = 1
+        boxView.layer.cornerRadius = 4.0
+        boxView.layer.borderColor = UIColor(red:0.8, green:0.8, blue:0.8, alpha: 1.0).cgColor
+        
+        //boxView.clipsToBounds = true
+        if (!isEmptyRoom){
+            boxView.layer.shadowColor = UIColor.black.cgColor
+            boxView.layer.shadowOffset = CGSize(width: 0, height: 0)
+            boxView.layer.shadowOpacity = 0.2
+            boxView.layer.shadowRadius = 2
+            optionsDotsImage.alpha = 1.0
+        } else {
+            optionsDotsImage.alpha = 0.2
+        }
     }
     
 
