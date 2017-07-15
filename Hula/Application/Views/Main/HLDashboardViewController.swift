@@ -24,29 +24,7 @@ class HLDashboardViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        if let vc = self.parent as? HLSwappPageViewController {
-            swappPageVC = vc
-            if (HLDataManager.sharedInstance.arrTrades.count > 0){
-                swappPageVC?.arrTrades = HLDataManager.sharedInstance.arrTrades as [NSDictionary]
-            }
-            HLDataManager.sharedInstance.getTrades { (success) in
-                if (success){
-                    //print("Trades ok")
-                    DispatchQueue.main.async {
-                        if (self.swappPageVC?.arrTrades.count != HLDataManager.sharedInstance.arrTrades.count){
-                            self.swappPageVC?.arrTrades = HLDataManager.sharedInstance.arrTrades as [NSDictionary]
-                            self.mainCollectionView.reloadData()
-                        } else {
-                            self.swappPageVC?.arrTrades = HLDataManager.sharedInstance.arrTrades as [NSDictionary]
-                        }
-                    }
-                }
-            }
-            mainCollectionView.collectionViewLayout = HLDashboardNormalViewFlowLayout()
-            isExpandedFlowLayoutUsed = false
-        } else {
-            print("Error. Not detected parent parent vc")
-        }
+        refreshCollectionViewData()
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -73,6 +51,32 @@ class HLDashboardViewController: UIViewController {
             // After dismiss
         }
         
+    }
+    
+    func refreshCollectionViewData(){
+        if let vc = self.parent as? HLSwappPageViewController {
+            swappPageVC = vc
+            if (HLDataManager.sharedInstance.arrTrades.count > 0){
+                swappPageVC?.arrTrades = HLDataManager.sharedInstance.arrTrades as [NSDictionary]
+            }
+            HLDataManager.sharedInstance.getTrades { (success) in
+                if (success){
+                    //print("Trades ok")
+                    DispatchQueue.main.async {
+                        if (self.swappPageVC?.arrTrades.count != HLDataManager.sharedInstance.arrTrades.count){
+                            self.swappPageVC?.arrTrades = HLDataManager.sharedInstance.arrTrades as [NSDictionary]
+                            self.mainCollectionView.reloadData()
+                        } else {
+                            self.swappPageVC?.arrTrades = HLDataManager.sharedInstance.arrTrades as [NSDictionary]
+                        }
+                    }
+                }
+            }
+            mainCollectionView.collectionViewLayout = HLDashboardNormalViewFlowLayout()
+            isExpandedFlowLayoutUsed = false
+        } else {
+            print("Error. Not detected parent parent vc")
+        }
     }
 }
 
@@ -103,7 +107,7 @@ extension HLDashboardViewController: UICollectionViewDelegate, UICollectionViewD
                 otherUserId = thisTrade.object(forKey: "owner_id") as? String
             }
             if( otherUserId != nil){
-                cell.userImage.loadImageFromURL(urlString: HulaConstants.apiURL + "users/\(otherUserId!)/image")
+                cell.userImage.loadImageFromURL(urlString: CommonUtils.sharedInstance.userImageURL(userId: otherUserId!) )
                 
             }
             if let other_products_arr = thisTrade.object(forKey: "other_products") as? [String]{
@@ -115,12 +119,12 @@ extension HLDashboardViewController: UICollectionViewDelegate, UICollectionViewD
             //CommonUtils.sharedInstance.loadImageOnView(imageView:cell.myImage, withURL:HulaUser.sharedInstance.userPhotoURL)
             
             cell.myImage.loadImageFromURL(urlString: HulaUser.sharedInstance.userPhotoURL)
-            print(HulaUser.sharedInstance.userPhotoURL)
+            //print(HulaUser.sharedInstance.userPhotoURL)
             cell.myImage.isHidden = false
             cell.middleArrows.isHidden = false
             cell.tradeNumber.textColor = HulaConstants.appMainColor
             if let turnUser = thisTrade.object(forKey: "turn_user_id") as? String{
-                if turnUser == otherUserId {
+                if turnUser != HulaUser.sharedInstance.userId {
                     cell.myTurnView.isHidden = true
                     cell.otherTurnView.isHidden = false
                 } else {
@@ -151,7 +155,7 @@ extension HLDashboardViewController: UICollectionViewDelegate, UICollectionViewD
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         
         
-        print("Barter room clicked")
+        //print("Barter room clicked")
         //print(indexPath.row)
         
         if ((swappPageVC?.arrTrades.count)! > indexPath.row){
@@ -201,16 +205,18 @@ extension HLDashboardViewController: UICollectionViewDelegate, UICollectionViewD
             inCell.left_side.subviews.forEach({ $0.removeFromSuperview() })
         }
         for img in fromArr {
-            let newImg = UIImageView()
-            if (side=="right"){
-                newImg.frame = CGRect(x: ( CGFloat(counter) * (productImagesWidth * 10)) + 20, y: 70.0/2 - productImagesWidth/2, width: productImagesWidth, height: productImagesWidth)
-                inCell.right_side.addSubview(newImg)
-            } else {
-                newImg.frame = CGRect(x: inCell.left_side.frame.width - ( CGFloat(counter) * (productImagesWidth * 10)) - 20, y: 70.0/2 - productImagesWidth/2, width: productImagesWidth, height: productImagesWidth)
-                inCell.left_side.addSubview(newImg)
+            if (img != ""){
+                let newImg = UIImageView()
+                if (side=="right"){
+                    newImg.frame = CGRect(x: ( CGFloat(counter) * (productImagesWidth * 10)) + 20, y: 70.0/2 - productImagesWidth/2, width: productImagesWidth, height: productImagesWidth)
+                    inCell.right_side.addSubview(newImg)
+                } else {
+                    newImg.frame = CGRect(x: inCell.left_side.frame.width - ( CGFloat(counter) * (productImagesWidth * 10)) - 20, y: 70.0/2 - productImagesWidth/2, width: productImagesWidth, height: productImagesWidth)
+                    inCell.left_side.addSubview(newImg)
+                }
+                newImg.loadImageFromURL(urlString: HulaConstants.apiURL + "products/\(img)/image")
+                counter += 1
             }
-            newImg.loadImageFromURL(urlString: HulaConstants.apiURL + "products/\(img)/image")
-            counter += 1
         }
     }
     

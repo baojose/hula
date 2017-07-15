@@ -9,7 +9,9 @@
 import UIKit
 
 class HLBarterScreenViewController: UIViewController {
-
+    
+    
+    
     @IBOutlet weak var otherProductsCollection: KDDragAndDropCollectionView!
     @IBOutlet weak var otherSelectedProductsCollection: KDDragAndDropCollectionView!
     @IBOutlet weak var myProductsCollection: KDDragAndDropCollectionView!
@@ -32,6 +34,8 @@ class HLBarterScreenViewController: UIViewController {
     var myTradeIndex: Int = 1
     var firstLoad: Bool = true
     
+    var thisTrade: HulaTrade = HulaTrade()
+    
     let arrowImagesName = ["","added-arrow", "removed-arrow", "eliminated_trade_icon"]
     
     var otherUserId: String = ""
@@ -48,8 +52,17 @@ class HLBarterScreenViewController: UIViewController {
         
         self.dragAndDropManager1 = KDDragAndDropManager(canvas: self.view, collectionViews: [otherProductsCollection, otherSelectedProductsCollection ])
         self.dragAndDropManager2 = KDDragAndDropManager(canvas: self.view, collectionViews: [myProductsCollection, mySelectedProductsCollection ])
+        
+        
     }
-
+    
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        if let thisHolderScreen = segue.destination as? HLSwappViewController {
+            thisHolderScreen.barterDelegate = self
+        } else {
+            print(segue.destination)
+        }
+    }
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
@@ -74,28 +87,22 @@ class HLBarterScreenViewController: UIViewController {
         if firstLoad {
             firstLoad = false
             if let swappPageVC = self.parent as? HLSwappPageViewController{
+                myTradeIndex = min(myTradeIndex, swappPageVC.arrTrades.count - 1)
                 let ct = swappPageVC.arrTrades[myTradeIndex]
-                if (ct.object(forKey: "owner_id") as? String == HulaUser.sharedInstance.userId){
+                thisTrade.loadFrom(dict: ct)
+                if (thisTrade.owner_id == HulaUser.sharedInstance.userId){
                     // I am the owner
-                    if let mtp_temp = ct.object(forKey: "owner_products") as? [String]{
-                        mtp = mtp_temp
-                    }
-                    if let otp_temp = ct.object(forKey: "other_products") as? [String]{
-                        otp = otp_temp
-                    }
-                    myProductsDiff = (ct.object(forKey: "owner_products") as? [String])!
-                    otherProductsDiff = (ct.object(forKey: "other_products") as? [String])!
-                    otherUserId = (ct.object(forKey: "other_id") as? String)!
+                    mtp = thisTrade.owner_products
+                    otp = thisTrade.other_products
+                    //myProductsDiff = (ct.object(forKey: "owner_products") as? [String])!
+                    //otherProductsDiff = (ct.object(forKey: "other_products") as? [String])!
+                    otherUserId = thisTrade.other_id
                     
                 } else {
                     // I am the other
-                    if let mtp_temp = ct.object(forKey: "other_products") as? [String]{
-                        mtp = mtp_temp
-                    }
-                    if let otp_temp = ct.object(forKey: "owner_products") as? [String]{
-                        otp = otp_temp
-                    }
-                    otherUserId = (ct.object(forKey: "owner_id") as? String)!
+                    otp = thisTrade.owner_products
+                    mtp = thisTrade.other_products
+                    otherUserId = thisTrade.owner_id
                 }
                 
                 getUserProducts(user: otherUserId, taskCallback: {(result) in
@@ -114,7 +121,8 @@ class HLBarterScreenViewController: UIViewController {
                     self.myProductsCollection.reloadData()
                     self.mySelectedProductsCollection.reloadData()
                 })
- 
+                HulaTrade.sharedInstance.owner_products = thisTrade.owner_products
+                HulaTrade.sharedInstance.other_products = thisTrade.other_products
             }
         }
     }
@@ -151,37 +159,6 @@ class HLBarterScreenViewController: UIViewController {
     
     override func viewWillAppear(_ animated: Bool) {
         
-        /*
-        if let swappPageVC = self.parent as? HLSwappPageViewController{
-            //print("viewWillAppear" )
-            if let ct = swappPageVC.currentTrade {
-                if (ct.object(forKey: "owner_id") as? String == HulaUser.sharedInstance.userId){
-                    // I am the owner
-                    myTradedProducts = (ct.object(forKey: "owner_products") as? [String])!
-                    otherTradedProducts = (ct.object(forKey: "other_products") as? [String])!
-                    otherUserId = (ct.object(forKey: "other_id") as? String)!
-                    
-                } else {
-                    // I am the other
-                    myTradedProducts = (ct.object(forKey: "other_products") as? [String])!
-                    otherTradedProducts = (ct.object(forKey: "owner_products") as? [String])!
-                    otherUserId = (ct.object(forKey: "owner_id") as? String)!
-                }
-                
-                getUserProducts(user: otherUserId, taskCallback: {(result) in
-                    self.otherProducts = result
-                    print (self.otherProducts)
-                    self.otherProductsCollection.reloadData()
-                    
-                })
-                getUserProducts(user: HulaUser.sharedInstance.userId, taskCallback: {(result) in
-                    self.myProducts = result
-                    //print (self.myProducts)
-                    self.myProductsTable.reloadData()
-                })
-            }
-        }
- */
     }
 
     /*
@@ -434,5 +411,15 @@ extension HLBarterScreenViewController: KDDragAndDropCollectionViewDataSource, U
         return size
     }
     
+    
+}
+
+extension HLBarterScreenViewController: HLBarterScreenDelegate{
+    func getCurrentTradeStatus() -> HulaTrade{
+        let trade = HulaTrade();
+        trade.other_products = ["123123", "34534534"]
+        trade.owner_products = ["asdfasdf", "vxcvzxcv"]
+        return trade
+    }
 }
 
