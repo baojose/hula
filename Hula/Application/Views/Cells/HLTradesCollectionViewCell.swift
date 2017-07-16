@@ -47,6 +47,8 @@ class HLTradesCollectionViewCell: UICollectionViewCell {
         } else {
             optionsDotsImage.alpha = 0.2
         }
+        
+        // test for commit
     }
     
 
