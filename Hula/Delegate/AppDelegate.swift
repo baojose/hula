@@ -16,6 +16,8 @@ import FacebookLogin
 import FacebookShare
 import Fabric
 import TwitterKit
+import Crashlytics
+
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
@@ -27,8 +29,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // Override point for customization after application launch.
 
         
-        Fabric.with([Twitter.self])
-        
+        Fabric.with([Twitter.self, Crashlytics.self])
+
         registerForPushNotifications()
         
         return FBSDKApplicationDelegate.sharedInstance().application(application, didFinishLaunchingWithOptions: launchOptions)
