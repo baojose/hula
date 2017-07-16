@@ -19,7 +19,7 @@ class HLDashboardViewController: UIViewController {
     var swappPageVC : HLSwappPageViewController?
     
     
-    let sectionInsets = UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 0)
+    let sectionInsets = UIEdgeInsets(top: 4, left: 0, bottom: 30, right: 0)
     
     
     override func viewDidLoad() {
@@ -98,6 +98,7 @@ extension HLDashboardViewController: UICollectionViewDelegate, UICollectionViewD
         // Configure the cell
         if ((swappPageVC?.arrTrades.count)! > indexPath.row){
             //print("Drawing row \(indexPath.row)")
+            cell.isEmptyRoom = false
             let thisTrade : NSDictionary = (swappPageVC?.arrTrades[indexPath.row])!
             cell.emptyRoomLabel.text = ""
             //print(thisTrade)
@@ -121,7 +122,6 @@ extension HLDashboardViewController: UICollectionViewDelegate, UICollectionViewD
             //print(HulaUser.sharedInstance.userPhotoURL)
             cell.myImage.isHidden = false
             cell.middleArrows.isHidden = false
-            cell.optionsDotsImage.isHidden = false
             cell.tradeNumber.textColor = HulaConstants.appMainColor
             if let turnUser = thisTrade.object(forKey: "turn_user_id") as? String{
                 if turnUser != HulaUser.sharedInstance.userId {
@@ -135,11 +135,12 @@ extension HLDashboardViewController: UICollectionViewDelegate, UICollectionViewD
                 cell.myTurnView.isHidden = false
                 cell.otherTurnView.isHidden = true
             }
+            cell.awakeFromNib()
         } else {
             //print("Empty row \(indexPath.row)")
+            cell.isEmptyRoom = true
             cell.emptyRoomLabel.text = "Empty Trade Room"
             cell.myImage.isHidden = true
-            cell.optionsDotsImage.isHidden = true
             cell.userImage.image = nil
             cell.middleArrows.isHidden = true
             cell.left_side.subviews.forEach({ $0.removeFromSuperview() })
@@ -148,7 +149,6 @@ extension HLDashboardViewController: UICollectionViewDelegate, UICollectionViewD
             cell.myTurnView.isHidden = true
             cell.otherTurnView.isHidden = true
         }
-        
         
         return cell
     }
