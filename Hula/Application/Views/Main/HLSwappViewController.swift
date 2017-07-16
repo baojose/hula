@@ -14,10 +14,10 @@ class HLSwappViewController: UIViewController {
     
     @IBOutlet weak var portraitView: UIView!
     @IBOutlet weak var mainContainer: UIView!
-    @IBOutlet weak var swappPageControl: HLPageControl!
-    @IBOutlet weak var nextTradeBtn: UIButton!
-    @IBOutlet weak var extraRoomBtn: UIButton!
-    @IBOutlet weak var extraRoomImage: UIImageView!
+    //@IBOutlet weak var swappPageControl: HLPageControl!
+    //@IBOutlet weak var nextTradeBtn: UIButton!
+    //@IBOutlet weak var extraRoomBtn: UIButton!
+    //@IBOutlet weak var extraRoomImage: UIImageView!
     @IBOutlet weak var mainCentralLabel: UILabel!
     @IBOutlet weak var otherUserNick: UILabel!
     @IBOutlet weak var otherUserImage: UIImageView!
@@ -98,6 +98,7 @@ class HLSwappViewController: UIViewController {
     @IBAction func extraRoomAction(_ sender: Any) {
     }
     
+    /*
     @IBAction func nextTradeAction(_ sender: Any) {
         //print(self.childViewControllers)
         
@@ -112,7 +113,7 @@ class HLSwappViewController: UIViewController {
         }
         
     }
-    
+    */
     @IBAction func sendOfferAction(_ sender: Any) {
         
         if let tradeStatus = barterDelegate?.getCurrentTradeStatus() {
@@ -122,7 +123,10 @@ class HLSwappViewController: UIViewController {
     
         
         if let swappPageVC = self.childViewControllers.first as? HLSwappPageViewController {
-            let nextPage = swappPageControl.currentPage
+            // temporary fix
+            let nextPage = 1
+            
+            
             let thisTrade: NSDictionary = swappPageVC.arrTrades[nextPage - 1]
             let trade_id = thisTrade.object(forKey: "_id") as? String
             let turn_id = thisTrade.object(forKey: "turn_user_id") as? String
@@ -152,9 +156,11 @@ class HLSwappViewController: UIViewController {
     func controlSetupBottomBar(index:Int){
         if (index != 0){
             UIView.animate(withDuration: 0.3) {
+                /*
                 self.extraRoomBtn.alpha = 0
                 self.extraRoomImage.alpha = 0
                 self.nextTradeBtn.alpha = 0
+ */
                 self.mainCentralLabel.alpha=0;
                 self.myUserView.frame.origin.x = 0
                 self.otherUserView.frame.origin.x = self.initialOtherUserX
@@ -162,7 +168,10 @@ class HLSwappViewController: UIViewController {
             }
             
             if let swappPageVC = self.childViewControllers.first as? HLSwappPageViewController {
-                let thisTrade: NSDictionary = swappPageVC.arrTrades[min(max(0, swappPageControl.currentPage - 1), swappPageVC.arrTrades.count - 1) ]
+                // temporary fix
+                let thisTrade: NSDictionary = swappPageVC.arrTrades[1]
+                
+                
                 print(thisTrade)
                 if (HulaUser.sharedInstance.userId == thisTrade.object(forKey: "owner_id") as! String){
                     // I am the owner
@@ -185,9 +194,11 @@ class HLSwappViewController: UIViewController {
             
         } else {
             UIView.animate(withDuration: 0.3) {
+                /*
                 self.extraRoomBtn.alpha = 1
                 self.extraRoomImage.alpha = 1
                 self.nextTradeBtn.alpha = 1
+ */
                 self.mainCentralLabel.alpha=1;
                 self.myUserView.frame.origin.x = -500
                 self.otherUserView.frame.origin.x = self.initialOtherUserX + 500
@@ -203,12 +214,12 @@ extension HLSwappViewController: SwappPageViewControllerDelegate {
     
     func swappPageViewController(swappPageViewController: HLSwappPageViewController,
                                     didUpdatePageCount count: Int) {
-        swappPageControl.numberOfPages = count
+        //swappPageControl.numberOfPages = count
     }
     
     func swappPageViewController(swappPageViewController: HLSwappPageViewController,
                                     didUpdatePageIndex index: Int) {
-        swappPageControl.currentPage = index
+        //swappPageControl.currentPage = index
         
         controlSetupBottomBar(index: index)
     }

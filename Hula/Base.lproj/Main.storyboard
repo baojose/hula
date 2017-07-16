@@ -1,11 +1,11 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="12118" systemVersion="16A323" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" colorMatched="YES" initialViewController="omL-QY-oVG">
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="11762" systemVersion="15G1010" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" colorMatched="YES" initialViewController="omL-QY-oVG">
     <device id="retina4_7" orientation="portrait">
         <adaptation id="fullscreen"/>
     </device>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="12086"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="11757"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <scenes>
@@ -1666,11 +1666,11 @@ Log In</string>
                                                             <nil key="highlightedColor"/>
                                                         </label>
                                                         <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" image="icon_forward" translatesAutoresizingMaskIntoConstraints="NO" id="7n8-km-83N">
-                                                            <rect key="frame" x="349" y="45" width="8" height="12"/>
+                                                            <rect key="frame" x="348" y="44" width="8" height="13"/>
                                                             <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
                                                         </imageView>
                                                         <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" image="s_05" translatesAutoresizingMaskIntoConstraints="NO" id="qUv-mB-hOF">
-                                                            <rect key="frame" x="18" y="35" width="41" height="41"/>
+                                                            <rect key="frame" x="17" y="35" width="42" height="41"/>
                                                             <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                                         </imageView>
                                                     </subviews>
@@ -2255,23 +2255,6 @@ Log In</string>
                                     <segue destination="r4u-j2-xqo" kind="embed" id="eXf-ei-SwE"/>
                                 </connections>
                             </containerView>
-                            <view contentMode="scaleToFill" misplaced="YES" id="wpP-F6-fbx">
-                                <rect key="frame" x="247" y="297" width="173" height="41"/>
-                                <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                <subviews>
-                                    <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" image="nav_bar_container" id="91t-9y-bna">
-                                        <rect key="frame" x="0.0" y="0.0" width="173" height="41"/>
-                                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                    </imageView>
-                                    <pageControl opaque="NO" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" numberOfPages="3" id="7K9-Gb-lpJ" customClass="HLPageControl" customModule="Hula" customModuleProvider="target">
-                                        <rect key="frame" x="67" y="-4" width="39" height="37"/>
-                                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                        <color key="pageIndicatorTintColor" red="0.92541211843490601" green="0.92554181814193726" blue="0.92537122964859009" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-                                        <color key="currentPageIndicatorTintColor" red="0.18516862392425537" green="0.67163127660751343" blue="0.60030430555343628" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-                                    </pageControl>
-                                </subviews>
-                                <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
-                            </view>
                             <view contentMode="scaleToFill" misplaced="YES" id="8Qd-eS-47d">
                                 <rect key="frame" x="0.0" y="0.0" width="667" height="377"/>
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -2303,36 +2286,6 @@ Log In</string>
                                 <rect key="frame" x="0.0" y="323" width="669" height="52"/>
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
                             </imageView>
-                            <imageView userInteractionEnabled="NO" contentMode="center" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" image="forward_trade" id="7l3-fE-uZa">
-                                <rect key="frame" x="646" y="345" width="8" height="12"/>
-                                <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMinY="YES"/>
-                            </imageView>
-                            <button opaque="NO" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" id="4G4-V5-YVy">
-                                <rect key="frame" x="586" y="336" width="68" height="30"/>
-                                <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMinY="YES"/>
-                                <fontDescription key="fontDescription" name="HelveticaNeue-Light" family="Helvetica Neue" pointSize="16"/>
-                                <state key="normal" title="Next">
-                                    <color key="titleColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
-                                </state>
-                                <connections>
-                                    <action selector="nextTradeAction:" destination="YHt-Pc-Ojx" eventType="touchUpInside" id="nhS-M9-9Bf"/>
-                                </connections>
-                            </button>
-                            <imageView opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" misplaced="YES" image="add-btn" id="ZSf-Me-ckT">
-                                <rect key="frame" x="11" y="336" width="31" height="31"/>
-                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                            </imageView>
-                            <button opaque="NO" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" id="6Gn-89-JBh">
-                                <rect key="frame" x="11" y="336" width="158" height="31"/>
-                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                <fontDescription key="fontDescription" name="HelveticaNeue-Light" family="Helvetica Neue" pointSize="16"/>
-                                <state key="normal" title="Extra Room">
-                                    <color key="titleColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
-                                </state>
-                                <connections>
-                                    <action selector="extraRoomAction:" destination="YHt-Pc-Ojx" eventType="touchUpInside" id="3id-cD-9DN"/>
-                                </connections>
-                            </button>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" text="Available Trade Rooms" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="A7C-1J-WdA">
                                 <rect key="frame" x="213" y="339" width="241" height="21"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES"/>
@@ -2392,20 +2345,16 @@ Log In</string>
                     <size key="freeformSize" width="667" height="375"/>
                     <connections>
                         <outlet property="bottomBarView" destination="7ru-Zz-6rA" id="O7r-db-COh"/>
-                        <outlet property="extraRoomBtn" destination="6Gn-89-JBh" id="rgQ-AX-hjy"/>
-                        <outlet property="extraRoomImage" destination="ZSf-Me-ckT" id="epD-pg-37s"/>
                         <outlet property="mainCentralLabel" destination="A7C-1J-WdA" id="Rmq-Iv-hIq"/>
                         <outlet property="mainContainer" destination="MN8-Pi-VFB" id="niE-yO-Q0O"/>
                         <outlet property="myUserImage" destination="iXD-jj-EIv" id="pbD-Uj-h8L"/>
                         <outlet property="myUserNick" destination="ILl-3s-Q5z" id="zKK-2F-x3f"/>
                         <outlet property="myUserView" destination="KoC-IE-SVR" id="a6n-ur-Y7A"/>
-                        <outlet property="nextTradeBtn" destination="4G4-V5-YVy" id="Sv8-fe-R1P"/>
                         <outlet property="otherUserImage" destination="Ht0-c0-f1i" id="8aT-Kl-uzP"/>
                         <outlet property="otherUserNick" destination="aLx-VA-4WH" id="9HV-nN-XXy"/>
                         <outlet property="otherUserView" destination="mpW-pj-Piw" id="Bgm-3L-abD"/>
                         <outlet property="portraitView" destination="8Qd-eS-47d" id="P2v-zm-pga"/>
                         <outlet property="sendOfferBtn" destination="MyB-ee-C6Y" id="2WY-7I-M0F"/>
-                        <outlet property="swappPageControl" destination="7K9-Gb-lpJ" id="Qwy-wh-3vP"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="Co1-j5-fgC" userLabel="First Responder" sceneMemberID="firstResponder"/>
@@ -5774,7 +5723,6 @@ Log In</string>
         </scene>
     </scenes>
     <resources>
-        <image name="add-btn" width="31" height="31"/>
         <image name="added_left_trade_icon" width="17" height="17"/>
         <image name="alert_top_right" width="44" height="84"/>
         <image name="barter_icon_trade" width="14" height="16"/>
@@ -5787,7 +5735,6 @@ Log In</string>
         <image name="close_alert_button" width="32" height="32"/>
         <image name="drag-rect" width="152" height="266"/>
         <image name="facebook_button_icon" width="10" height="21"/>
-        <image name="forward_trade" width="8" height="12"/>
         <image name="header_lines" width="375" height="50"/>
         <image name="icon_about" width="29" height="29"/>
         <image name="icon_album" width="41" height="38"/>
@@ -5848,7 +5795,6 @@ Log In</string>
         <image name="img_tabbar_bg" width="666" height="61"/>
         <image name="mid_bar_trade_screen" width="7" height="375"/>
         <image name="more_options_trade" width="5" height="19"/>
-        <image name="nav_bar_container" width="173" height="41"/>
         <image name="next_trade_screen" width="8" height="12"/>
         <image name="opacity_background_button" width="49" height="50"/>
         <image name="opacity_background_button_S" width="39" height="39"/>
