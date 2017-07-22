@@ -133,7 +133,9 @@ class HLSwappViewController: UIViewController {
                         if (ok){
                             print(json!)
                             DispatchQueue.main.async {
-                                //swappPageVC.goTo(page: 0)
+                                if let swappPageVC = self.childViewControllers.first as? HLSwappPageViewController {
+                                    swappPageVC.goTo(page: 0)
+                                }
                             }
                         } else {
                             // connection error

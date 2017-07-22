@@ -35,8 +35,10 @@ class HLDashboardViewController: UIViewController {
         self.mainCollectionView.setCollectionViewLayout(HLDashboardNormalViewFlowLayout(), animated: false)
         self.mainCollectionView.scrollToItem(at: IndexPath(row: 0, section: 0) , at: .top, animated: false)
         isExpandedFlowLayoutUsed = false
+        self.mainCollectionView.collectionViewLayout.invalidateLayout()
     }
     override func viewDidAppear(_ animated: Bool) {
+        refreshCollectionViewData()
         self.mainCollectionView.collectionViewLayout.invalidateLayout()
     }
 
@@ -113,11 +115,21 @@ extension HLDashboardViewController: UICollectionViewDelegate, UICollectionViewD
             }
             
             // Todo: switch sides if i am not the owner!
-            if let other_products_arr = thisTrade.object(forKey: "other_products") as? [String]{
-                drawProducts(inCell: cell, fromArr: other_products_arr, side: "right")
-            }
-            if let owner_products_arr = thisTrade.object(forKey: "owner_products") as? [String]{
-                drawProducts(inCell: cell, fromArr: owner_products_arr, side: "left")
+            if (HulaUser.sharedInstance.userId == otherUserId){
+                if let other_products_arr = thisTrade.object(forKey: "other_products") as? [String]{
+                    drawProducts(inCell: cell, fromArr: other_products_arr, side: "left")
+                }
+                if let owner_products_arr = thisTrade.object(forKey: "owner_products") as? [String]{
+                    drawProducts(inCell: cell, fromArr: owner_products_arr, side: "right")
+                }
+                
+            } else {
+                if let other_products_arr = thisTrade.object(forKey: "other_products") as? [String]{
+                    drawProducts(inCell: cell, fromArr: other_products_arr, side: "right")
+                }
+                if let owner_products_arr = thisTrade.object(forKey: "owner_products") as? [String]{
+                    drawProducts(inCell: cell, fromArr: owner_products_arr, side: "left")
+                }
             }
             //CommonUtils.sharedInstance.loadImageOnView(imageView:cell.myImage, withURL:HulaUser.sharedInstance.userPhotoURL)
             
@@ -169,10 +181,10 @@ extension HLDashboardViewController: UICollectionViewDelegate, UICollectionViewD
             cell.layer.zPosition = 100;
             
             isExpandedFlowLayoutUsed = !isExpandedFlowLayoutUsed
-            
+            /*
             UIView.animate(withDuration: 0.6, animations: { () -> Void in
-                self.mainCollectionView.collectionViewLayout.invalidateLayout()
-                UIScreen.main.snapshotView(afterScreenUpdates: true)
+                //self.mainCollectionView.collectionViewLayout.invalidateLayout()
+                //UIScreen.main.snapshotView(afterScreenUpdates: true)
                 if(self.isExpandedFlowLayoutUsed){
                     self.mainCollectionView.setCollectionViewLayout(HLDashboardExpandedViewFlowLayout(), animated: false)
                 } else {
@@ -181,6 +193,7 @@ extension HLDashboardViewController: UICollectionViewDelegate, UICollectionViewD
                 collectionView.frame = CGRect(origin: collectionView.frame.origin, size: CGSize(width:1000.0 * 5, height:collectionView.frame.height) )
                 self.mainCollectionView.scrollToItem(at: indexPath, at: .left , animated: false)
             })
+             */
             let when = DispatchTime.now() + 0.3
             DispatchQueue.main.asyncAfter(deadline: when) {
                 if let swappPageVC = self.parent as? HLSwappPageViewController{
@@ -202,9 +215,8 @@ extension HLDashboardViewController: UICollectionViewDelegate, UICollectionViewD
     }
     
     override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
-        mainCollectionView.collectionViewLayout.invalidateLayout()
+        //mainCollectionView.collectionViewLayout.invalidateLayout()
     }
-    
     
     func drawProducts(inCell:HLTradesCollectionViewCell, fromArr: [String], side: String){
         var counter:Int = 0;

@@ -126,6 +126,28 @@ class HLBarterScreenViewController: UIViewController {
             for pr in reference_list{
                 if pr.productId == pr_id{
                     final_arr.append(pr)
+                    
+                }
+            }
+            
+            if (self.otherProducts.count > 0){
+                for i in 0 ... (self.otherProducts.count - 1) {
+                    if (self.otherProducts[i].productId == pr_id){
+                        self.otherProducts.remove( at: i)
+                    }
+                    if (i >= self.otherProducts.count - 1){
+                        break
+                    }
+                }
+            }
+            if (self.myProducts.count > 0){
+                for i in 0 ... (self.myProducts.count - 1) {
+                    if (self.myProducts[i].productId == pr_id){
+                        self.myProducts.remove( at: i)
+                    }
+                    if (i >= self.myProducts.count - 1){
+                        break
+                    }
                 }
             }
         }
@@ -205,7 +227,7 @@ class HLBarterScreenViewController: UIViewController {
         for prod in from {
             final_arr.append(prod.productId)
         }
-        print(final_arr)
+        //print(final_arr)
         return final_arr
     }
     
@@ -417,7 +439,7 @@ extension HLBarterScreenViewController: KDDragAndDropCollectionViewDataSource, U
 extension HLBarterScreenViewController: HLBarterScreenDelegate{
     func getCurrentTradeStatus() -> HulaTrade{
         let trade = HulaTrade();
-        print(myTradedProducts)
+        //print(myTradedProducts)
         if thisTrade.owner_id == HulaUser.sharedInstance.userId {
             // my trade
             trade.other_products = generateProductArray(from: otherTradedProducts)
