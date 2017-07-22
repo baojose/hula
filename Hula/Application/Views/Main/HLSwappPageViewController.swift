@@ -19,10 +19,6 @@ class HLSwappPageViewController: UIPageViewController {
         return [UIStoryboard(name: "Main", bundle: nil) .
             instantiateViewController(withIdentifier: "dashboard"),
                 UIStoryboard(name: "Main", bundle: nil) .
-                    instantiateViewController(withIdentifier: "barterRoom"),
-                UIStoryboard(name: "Main", bundle: nil) .
-                    instantiateViewController(withIdentifier: "barterRoom"),
-                UIStoryboard(name: "Main", bundle: nil) .
                     instantiateViewController(withIdentifier: "barterRoom")]
         //HulaUser.sharedInstance.maxTrades
     }()
@@ -109,7 +105,10 @@ extension HLSwappPageViewController: UIPageViewControllerDataSource, UIPageViewC
             let index = orderedViewControllers.index(of: firstViewController) {
             swappDelegate?.swappPageViewController(swappPageViewController: self,
                                                       didUpdatePageIndex: index)
-            self.currentIndex = index
+            
+            
+            // removed. Now index is controled by selection, not by pagination
+            //self.currentIndex = index
             
             if (index == 0){
                 if let dashboardVc = firstViewController as? HLDashboardViewController{

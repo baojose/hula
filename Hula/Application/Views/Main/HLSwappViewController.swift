@@ -168,11 +168,9 @@ class HLSwappViewController: UIViewController {
             }
             
             if let swappPageVC = self.childViewControllers.first as? HLSwappPageViewController {
-                // temporary fix
-                let thisTrade: NSDictionary = swappPageVC.arrTrades[0]
+                let thisTrade: NSDictionary = swappPageVC.arrTrades[swappPageVC.currentIndex]
                 
                 
-                print(thisTrade)
                 if (HulaUser.sharedInstance.userId == thisTrade.object(forKey: "owner_id") as! String){
                     // I am the owner
                     otherUserImage.loadImageFromURL(urlString: CommonUtils.sharedInstance.userImageURL(userId: thisTrade.object(forKey: "other_id") as! String))

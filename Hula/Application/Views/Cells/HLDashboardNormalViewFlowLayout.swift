@@ -48,4 +48,6 @@ class HLDashboardNormalViewFlowLayout: UICollectionViewFlowLayout {
         return collectionView!.contentOffset
     }
     
+
+    
 }

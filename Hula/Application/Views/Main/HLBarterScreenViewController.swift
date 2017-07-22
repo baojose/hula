@@ -32,7 +32,6 @@ class HLBarterScreenViewController: UIViewController {
     var myProductsDiff : [String] = []
     var otherProductsDiff : [String] = []
     var myTradeIndex: Int = 1
-    var firstLoad: Bool = true
     
     var thisTrade: HulaTrade = HulaTrade()
     
@@ -70,60 +69,47 @@ class HLBarterScreenViewController: UIViewController {
     
     func loadProductsArrays(){
         myTradeIndex = 0
-        if let swappPageVC = self.parent as? HLSwappPageViewController{
-            //print(swappPageVC.orderedViewControllers )
-            if let firstViewController = swappPageVC.viewControllers?.first,
-                let index = swappPageVC.orderedViewControllers.index(of: firstViewController) {
-                //print(firstViewController )
-                //print("Current Index: \(index)" )
-                myTradeIndex = index - 1
-                
-            }
-        }
-        myTradeIndex = max(0, myTradeIndex);
-        //myProducts
         var mtp:[String] = []
         var otp:[String] = []
-        if firstLoad {
-            firstLoad = false
-            if let swappPageVC = self.parent as? HLSwappPageViewController{
-                myTradeIndex = min(myTradeIndex, swappPageVC.arrTrades.count - 1)
-                let ct = swappPageVC.arrTrades[myTradeIndex]
-                thisTrade.loadFrom(dict: ct)
-                if (thisTrade.owner_id == HulaUser.sharedInstance.userId){
-                    // I am the owner
-                    mtp = thisTrade.owner_products
-                    otp = thisTrade.other_products
-                    //myProductsDiff = (ct.object(forKey: "owner_products") as? [String])!
-                    //otherProductsDiff = (ct.object(forKey: "other_products") as? [String])!
-                    otherUserId = thisTrade.other_id
-                    
-                } else {
-                    // I am the other
-                    otp = thisTrade.owner_products
-                    mtp = thisTrade.other_products
-                    otherUserId = thisTrade.owner_id
-                }
+        if let swappPageVC = self.parent as? HLSwappPageViewController{
+            myTradeIndex = max(0, myTradeIndex);
+            myTradeIndex = min(myTradeIndex, swappPageVC.currentIndex)
+            let ct = swappPageVC.arrTrades[swappPageVC.currentIndex]
+            print("ct \(ct)")
+            thisTrade.loadFrom(dict: ct)
+            if (thisTrade.owner_id == HulaUser.sharedInstance.userId){
+                // I am the owner
+                mtp = thisTrade.owner_products
+                otp = thisTrade.other_products
+                //myProductsDiff = (ct.object(forKey: "owner_products") as? [String])!
+                //otherProductsDiff = (ct.object(forKey: "other_products") as? [String])!
+                otherUserId = thisTrade.other_id
                 
-                getUserProducts(user: otherUserId, taskCallback: {(result) in
-                    //print (self.otherProducts)
-                    self.otherProducts = result
-                    self.populateTradedProducts(list:otp, type:"other")
-                    self.otherProductsCollection.reloadData()
-                    self.otherSelectedProductsCollection.reloadData()
-                    
-                })
-                
-                getUserProducts(user: HulaUser.sharedInstance.userId, taskCallback: {(result) in
-                    //print (self.myProducts)
-                    self.myProducts = result
-                    self.populateTradedProducts(list:mtp, type:"owner")
-                    self.myProductsCollection.reloadData()
-                    self.mySelectedProductsCollection.reloadData()
-                })
-                HulaTrade.sharedInstance.owner_products = thisTrade.owner_products
-                HulaTrade.sharedInstance.other_products = thisTrade.other_products
+            } else {
+                // I am the other
+                otp = thisTrade.owner_products
+                mtp = thisTrade.other_products
+                otherUserId = thisTrade.owner_id
             }
+            
+            getUserProducts(user: otherUserId, taskCallback: {(result) in
+                //print (self.otherProducts)
+                self.otherProducts = result
+                self.populateTradedProducts(list:otp, type:"other")
+                self.otherProductsCollection.reloadData()
+                self.otherSelectedProductsCollection.reloadData()
+                
+            })
+            
+            getUserProducts(user: HulaUser.sharedInstance.userId, taskCallback: {(result) in
+                //print (self.myProducts)
+                self.myProducts = result
+                self.populateTradedProducts(list:mtp, type:"owner")
+                self.myProductsCollection.reloadData()
+                self.mySelectedProductsCollection.reloadData()
+            })
+            HulaTrade.sharedInstance.owner_products = thisTrade.owner_products
+            HulaTrade.sharedInstance.other_products = thisTrade.other_products
         }
     }
     
@@ -154,11 +140,11 @@ class HLBarterScreenViewController: UIViewController {
     
     override func viewDidAppear(_ animated: Bool) {
         
-        loadProductsArrays();
     }
     
     override func viewWillAppear(_ animated: Bool) {
         
+        loadProductsArrays();
     }
 
     /*

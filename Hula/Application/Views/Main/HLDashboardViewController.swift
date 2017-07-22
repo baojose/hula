@@ -159,7 +159,11 @@ extension HLDashboardViewController: UICollectionViewDelegate, UICollectionViewD
         //print(indexPath.row)
         
         if ((swappPageVC?.arrTrades.count)! > indexPath.row){
-        
+
+            
+            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "tradeCell",
+                                                          for: indexPath) as! HLTradesCollectionViewCell
+            cell.layer.zPosition = 100;
             
             isExpandedFlowLayoutUsed = !isExpandedFlowLayoutUsed
             
@@ -180,8 +184,11 @@ extension HLDashboardViewController: UICollectionViewDelegate, UICollectionViewD
                     self.selectedBarter = indexPath.row
                     let thisTrade: NSDictionary = swappPageVC.arrTrades[indexPath.row]
                     self.swappPageVC?.currentTrade = thisTrade
+                    self.swappPageVC?.currentIndex = indexPath.row
                     //print(swappPageVC.currentTrade!)
-                    self.swappPageVC?.goTo(page: self.selectedBarter + 1)
+                    
+                    //always number 1
+                    self.swappPageVC?.goTo(page: 1)
                 }
                 //print(self.parent!)
             }
