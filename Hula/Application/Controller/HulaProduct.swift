@@ -49,4 +49,7 @@ class HulaProduct: NSObject {
         self.arrProductPhotoLink = []
         self.tradeStatus = 0
     }
+    override var description : String {
+        return "(Product - id: \(self.productId!) and name:   \(self.productName!))\n"
+    }
 }

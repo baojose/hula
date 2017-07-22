@@ -56,7 +56,7 @@ class HLDragableImage: UIImageView {
         
         
         if  abs( self.center.x - initialPoint!.x ) > 15 {
-            print("lejos")
+            //print("lejos")
             UIView.animate(withDuration: 0.2) {
                 self.center = self.initialPoint!
                 self.alpha = 0

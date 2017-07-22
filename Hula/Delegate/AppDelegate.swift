@@ -75,7 +75,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         if #available(iOS 10.0, *) {
             UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge]) {
                 (granted, error) in
-                print("Permission granted: \(granted)")
+                //print("Permission granted: \(granted)")
                 
                 
                 guard granted else { return }
@@ -88,7 +88,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     func getNotificationSettings() {
         if #available(iOS 10.0, *) {
             UNUserNotificationCenter.current().getNotificationSettings { (settings) in
-                print("Notification settings: \(settings)")
+                //print("Notification settings: \(settings)")
                 guard settings.authorizationStatus == .authorized else { return }
                 UIApplication.shared.registerForRemoteNotifications()
             }
@@ -105,14 +105,14 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         }
         
         let token = tokenParts.joined()
-        print("Device Token: \(token)")
+        //print("Device Token: \(token)")
         HulaUser.sharedInstance.deviceId = token
         HulaUser.sharedInstance.updateServerData()
     }
     
     func application(_ application: UIApplication,
                      didFailToRegisterForRemoteNotificationsWithError error: Error) {
-        print("Failed to register: \(error)")
+        //print("Failed to register: \(error)")
     }
 }
 

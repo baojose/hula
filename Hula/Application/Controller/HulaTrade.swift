@@ -18,6 +18,7 @@ class HulaTrade: NSObject {
     var other_products = [] as [String]
     var next_bid: String!
     var status: String!
+    var turn_user_id: String!
     
     class var sharedInstance: HulaTrade {
         struct Static {
@@ -37,6 +38,7 @@ class HulaTrade: NSObject {
         self.owner_products = []
         self.other_products = []
         self.next_bid = ""
+        self.turn_user_id = ""
         self.status = "pending"
     }
     
@@ -47,7 +49,7 @@ class HulaTrade: NSObject {
             if (ok){
                 //print(json!)
                 if let dictionary = json as? NSDictionary {
-                    print(dictionary)
+                    //print(dictionary)
                     if ((dictionary["id"] as? String) != nil){
                         self.tradeId = dictionary["id"] as! String
                     }
@@ -57,7 +59,7 @@ class HulaTrade: NSObject {
     }
     
     func get_post_string() -> String {
-        return "product_id=" + self.product_id + "&owner_id=" + self.owner_id + "&other_id=" + self.other_id + "&date=" + self.date.iso8601 + "&owner_products=" + self.owner_products.joined() + "&other_products=" + self.other_products.joined() + "&next_bid=" + self.next_bid + "&status=" + self.status
+        return "product_id=" + self.product_id + "&owner_id=" + self.owner_id + "&other_id=" + self.other_id + "&date=" + self.date.iso8601 + "&owner_products=" + self.owner_products.joined() + "&other_products=" + self.other_products.joined() + "&next_bid=" + self.next_bid + "&status=" + self.status + "&turn_user_id=" + self.turn_user_id
     }
     
     func loadTrade(tradeId:String, callback: @escaping (Bool) -> ()){
@@ -77,6 +79,9 @@ class HulaTrade: NSObject {
         
     }
     func loadFrom(dict: NSDictionary){
+        if (dict["_id"] as? String) != nil {
+            self.tradeId = dict["_id"] as? String
+        }
         if (dict["product_id"] as? String) != nil {
             self.product_id = dict["product_id"] as? String
         }
@@ -94,7 +99,7 @@ class HulaTrade: NSObject {
             self.owner_products = (dict["owner_products"] as? [String])!
         }
         if (dict["other_products"] as? [String]) != nil {
-            self.owner_products = (dict["other_products"] as? [String])!
+            self.other_products = (dict["other_products"] as? [String])!
         }
         if (dict["next_bid"] as? String) != nil {
             self.next_bid = dict["next_bid"] as? String
@@ -102,23 +107,29 @@ class HulaTrade: NSObject {
         if (dict["status"] as? String) != nil {
             self.status = dict["status"] as? String
         }
+        if (dict["turn_user_id"] as? String) != nil {
+            self.turn_user_id = dict["turn_user_id"] as? String
+        }
     }
 
     func updateServerData(){
-        print("Updating trade...")
+        //print("Updating trade...")
         if(tradeId.characters.count > 0){
             let queryURL = HulaConstants.apiURL + "trades/" + self.tradeId
             let post_string = get_post_string();
             HLDataManager.sharedInstance.httpPost(urlstr: queryURL, postString: post_string, isPut: true, taskCallback: { (ok, json) in
                 if (ok){
                     //print(json!)
-                    if let dictionary = json as? [String: Any] {
-                        print(dictionary)
+                    if (json as? [String: Any]) != nil {
+                        //print(dictionary)
                     }
                     
                     //NotificationCenter.default.post(name: self.signupRecieved, object: signupSuccess)
                 }
             })
         }
+    }
+    override var description : String {
+        return "**** Hula Trade - owner: \(self.owner_id) and other:   \(self.other_id)****\n"
     }
 }

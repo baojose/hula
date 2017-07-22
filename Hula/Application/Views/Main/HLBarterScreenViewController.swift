@@ -55,25 +55,23 @@ class HLBarterScreenViewController: UIViewController {
         
     }
     
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        if let thisHolderScreen = segue.destination as? HLSwappViewController {
-            thisHolderScreen.barterDelegate = self
-        } else {
-            print(segue.destination)
-        }
-    }
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
     }
     
     func loadProductsArrays(){
-        myTradeIndex = 0
         var mtp:[String] = []
         var otp:[String] = []
         if let swappPageVC = self.parent as? HLSwappPageViewController{
-            myTradeIndex = max(0, myTradeIndex);
-            myTradeIndex = min(myTradeIndex, swappPageVC.currentIndex)
+            
+            //print(swappPageVC.parent)
+            if let thisHolderScreen = swappPageVC.parent as? HLSwappViewController {
+                thisHolderScreen.barterDelegate = self
+            }
+            
+            
+            
             let ct = swappPageVC.arrTrades[swappPageVC.currentIndex]
             print("ct \(ct)")
             thisTrade.loadFrom(dict: ct)
@@ -81,8 +79,6 @@ class HLBarterScreenViewController: UIViewController {
                 // I am the owner
                 mtp = thisTrade.owner_products
                 otp = thisTrade.other_products
-                //myProductsDiff = (ct.object(forKey: "owner_products") as? [String])!
-                //otherProductsDiff = (ct.object(forKey: "other_products") as? [String])!
                 otherUserId = thisTrade.other_id
                 
             } else {
@@ -92,6 +88,8 @@ class HLBarterScreenViewController: UIViewController {
                 otherUserId = thisTrade.owner_id
             }
             
+            print(otp)
+            print(mtp)
             getUserProducts(user: otherUserId, taskCallback: {(result) in
                 //print (self.otherProducts)
                 self.otherProducts = result
@@ -122,6 +120,8 @@ class HLBarterScreenViewController: UIViewController {
         default:
             reference_list = self.myProducts
         }
+        
+        
         for pr_id in list{
             for pr in reference_list{
                 if pr.productId == pr_id{
@@ -129,6 +129,8 @@ class HLBarterScreenViewController: UIViewController {
                 }
             }
         }
+        
+        
         switch type {
         case "other":
             otherTradedProducts = final_arr
@@ -145,6 +147,8 @@ class HLBarterScreenViewController: UIViewController {
     override func viewWillAppear(_ animated: Bool) {
         
         loadProductsArrays();
+        
+        
     }
 
     /*
@@ -193,6 +197,16 @@ class HLBarterScreenViewController: UIViewController {
                 }
             })
         }
+    }
+    
+    func generateProductArray(from:[HulaProduct]) -> [String]{
+        var final_arr = [String]();
+        
+        for prod in from {
+            final_arr.append(prod.productId)
+        }
+        print(final_arr)
+        return final_arr
     }
     
 }
@@ -403,8 +417,20 @@ extension HLBarterScreenViewController: KDDragAndDropCollectionViewDataSource, U
 extension HLBarterScreenViewController: HLBarterScreenDelegate{
     func getCurrentTradeStatus() -> HulaTrade{
         let trade = HulaTrade();
-        trade.other_products = ["123123", "34534534"]
-        trade.owner_products = ["asdfasdf", "vxcvzxcv"]
+        print(myTradedProducts)
+        if thisTrade.owner_id == HulaUser.sharedInstance.userId {
+            // my trade
+            trade.other_products = generateProductArray(from: otherTradedProducts)
+            trade.owner_products = generateProductArray(from: myTradedProducts)
+            
+        } else {
+            // other user trade
+            trade.other_products = generateProductArray(from: myTradedProducts)
+            trade.owner_products = generateProductArray(from: otherTradedProducts)
+        }
+        
+        trade.turn_user_id = thisTrade.turn_user_id
+        trade.tradeId = thisTrade.tradeId
         return trade
     }
 }

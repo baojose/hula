@@ -15,6 +15,7 @@ class HLDashboardViewController: UIViewController {
     @IBOutlet weak var mainCollectionView: UICollectionView!
     var selectedBarter: Int = 0
     let productImagesWidth: CGFloat = 27.0
+    let productImagesMargin: CGFloat = 10.0
     var isExpandedFlowLayoutUsed:Bool = false
     var swappPageVC : HLSwappPageViewController?
     
@@ -110,6 +111,8 @@ extension HLDashboardViewController: UICollectionViewDelegate, UICollectionViewD
                 cell.userImage.loadImageFromURL(urlString: CommonUtils.sharedInstance.userImageURL(userId: otherUserId!) )
                 
             }
+            
+            // Todo: switch sides if i am not the owner!
             if let other_products_arr = thisTrade.object(forKey: "other_products") as? [String]{
                 drawProducts(inCell: cell, fromArr: other_products_arr, side: "right")
             }
@@ -205,23 +208,41 @@ extension HLDashboardViewController: UICollectionViewDelegate, UICollectionViewD
     
     func drawProducts(inCell:HLTradesCollectionViewCell, fromArr: [String], side: String){
         var counter:Int = 0;
-        
         if (side=="right"){
             inCell.right_side.subviews.forEach({ $0.removeFromSuperview() })
         } else {
             inCell.left_side.subviews.forEach({ $0.removeFromSuperview() })
         }
+        let verticalCenter:CGFloat = (70.0/2) - productImagesWidth/2;
         for img in fromArr {
             if (img != ""){
                 let newImg = UIImageView()
                 if (side=="right"){
-                    newImg.frame = CGRect(x: ( CGFloat(counter) * (productImagesWidth * 10)) + 20, y: 70.0/2 - productImagesWidth/2, width: productImagesWidth, height: productImagesWidth)
+                    newImg.frame = CGRect(x: ( CGFloat(counter) * (productImagesWidth + productImagesMargin)) + productImagesMargin,
+                                          y: verticalCenter,
+                                          width: productImagesWidth,
+                                          height: productImagesWidth)
                     inCell.right_side.addSubview(newImg)
                 } else {
-                    newImg.frame = CGRect(x: inCell.left_side.frame.width - ( CGFloat(counter) * (productImagesWidth * 10)) - 20, y: 70.0/2 - productImagesWidth/2, width: productImagesWidth, height: productImagesWidth)
+                    newImg.frame = CGRect(x: inCell.left_side.frame.width - ( CGFloat(counter) * (productImagesWidth + productImagesMargin)) - (productImagesMargin) - productImagesWidth,
+                                          y: verticalCenter,
+                                          width: productImagesWidth,
+                                          height: productImagesWidth)
                     inCell.left_side.addSubview(newImg)
+                    
+                    
+                    /*
+                    
+                    let horizontalConstraint = NSLayoutConstraint(item: newImg, attribute: NSLayoutAttribute.centerX, relatedBy: NSLayoutRelation.equal, toItem: inCell.left_side, attribute: NSLayoutAttribute.right, multiplier: 1, constant:  -( ( CGFloat(counter) * (productImagesWidth + productImagesMargin)) - (productImagesMargin) - productImagesWidth))
+                    
+                    NSLayoutConstraint.activate([horizontalConstraint])
+                    */
                 }
                 newImg.loadImageFromURL(urlString: HulaConstants.apiURL + "products/\(img)/image")
+                
+
+                
+                
                 counter += 1
             }
         }

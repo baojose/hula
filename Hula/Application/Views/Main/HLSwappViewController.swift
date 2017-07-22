@@ -117,33 +117,23 @@ class HLSwappViewController: UIViewController {
     @IBAction func sendOfferAction(_ sender: Any) {
         
         if let tradeStatus = barterDelegate?.getCurrentTradeStatus() {
-            print(tradeStatus)
-            return
-        }
-    
-        
-        if let swappPageVC = self.childViewControllers.first as? HLSwappPageViewController {
-            // temporary fix
-            let nextPage = 1
-            
-            
-            let thisTrade: NSDictionary = swappPageVC.arrTrades[nextPage - 1]
-            let trade_id = thisTrade.object(forKey: "_id") as? String
-            let turn_id = thisTrade.object(forKey: "turn_user_id") as? String
-            //print(turn_id!)
+            //print("tradeStatus: \(tradeStatus)")
+            let trade_id = tradeStatus.tradeId
+            let turn_id = tradeStatus.turn_user_id
+            print(tradeStatus.owner_products)
             if (turn_id != HulaUser.sharedInstance.userId){
                 print("This is not your turn!!!")
             } else {
-                    let queryURL = HulaConstants.apiURL + "trades/" + trade_id!
-                    let owner_products = ""
-                    let other_products = ""
+                    let queryURL = HulaConstants.apiURL + "trades/\(trade_id!)"
+                    let owner_products = tradeStatus.owner_products.joined(separator: ",")
+                    let other_products = tradeStatus.other_products.joined(separator: ",")
                     let dataString:String = "status=offer_sent&owner_products=\(owner_products)&other_products=\(other_products)"
-                    //print(dataString)
+                    print(dataString)
                     HLDataManager.sharedInstance.httpPost(urlstr: queryURL, postString: dataString, isPut: true, taskCallback: { (ok, json) in
                         if (ok){
                             print(json!)
                             DispatchQueue.main.async {
-                                swappPageVC.goTo(page: 0)
+                                //swappPageVC.goTo(page: 0)
                             }
                         } else {
                             // connection error
@@ -151,6 +141,8 @@ class HLSwappViewController: UIViewController {
                         }
                     })
             }
+        } else {
+            print("No trade/barter delegato vc found!")
         }
     }
     func controlSetupBottomBar(index:Int){

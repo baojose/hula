@@ -104,7 +104,7 @@ class HulaUser: NSObject {
     }
     
     func updateServerData(){
-        print("Updating user...")
+        //print("Updating user...")
         if(isUserLoggedIn()){
             let queryURL = HulaConstants.apiURL + "users/" + self.userId
             HLDataManager.sharedInstance.httpPost(urlstr: queryURL, postString: getPostString(), isPut: true, taskCallback: { (ok, json) in
@@ -113,8 +113,8 @@ class HulaUser: NSObject {
                 //print(ok)
                 if (ok){
                     //print(json!)
-                    if let dictionary = json as? [String: Any] {
-                        print(dictionary)
+                    if (json as? [String: Any]) != nil {
+                        //print(dictionary)
                     }
                     
                     //NotificationCenter.default.post(name: self.signupRecieved, object: signupSuccess)
@@ -124,14 +124,14 @@ class HulaUser: NSObject {
     }
     
     func resendValidationMail(){
-        print("Sending validation mail...")
+        //print("Sending validation mail...")
         if(isUserLoggedIn()){
             let queryURL = HulaConstants.apiURL + "users/resend/" + self.userId
             HLDataManager.sharedInstance.httpPost(urlstr: queryURL, postString: getPostString(), isPut: true, taskCallback: { (ok, json) in
-                print("Message sent!")
+                //print("Message sent!")
                 if (ok){
-                    if let dictionary = json as? [String: Any] {
-                        print(dictionary)
+                    if (json as? [String: Any]) != nil {
+                        //print(dictionary)
                     }
                     
                     //NotificationCenter.default.post(name: self.signupRecieved, object: signupSuccess)

@@ -2447,18 +2447,20 @@ Log In</string>
                                                         <view contentMode="scaleToFill" misplaced="YES" id="4c5-z6-5Bl">
                                                             <rect key="frame" x="8" y="7" width="628" height="59"/>
                                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                                            <subviews>
+                                                                <view contentMode="scaleToFill" misplaced="YES" id="Ejm-j2-xzG">
+                                                                    <rect key="frame" x="0.0" y="-4" width="318" height="67"/>
+                                                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxX="YES" heightSizable="YES"/>
+                                                                </view>
+                                                                <view contentMode="scaleToFill" misplaced="YES" id="itt-Zv-E7i">
+                                                                    <rect key="frame" x="334" y="-4" width="294" height="67"/>
+                                                                    <autoresizingMask key="autoresizingMask" flexibleMinX="YES" widthSizable="YES" heightSizable="YES"/>
+                                                                </view>
+                                                            </subviews>
                                                             <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                                         </view>
-                                                        <view contentMode="scaleToFill" misplaced="YES" id="Ejm-j2-xzG">
-                                                            <rect key="frame" x="0.0" y="2" width="338" height="67"/>
-                                                            <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxX="YES" heightSizable="YES"/>
-                                                        </view>
-                                                        <view contentMode="scaleToFill" misplaced="YES" id="itt-Zv-E7i">
-                                                            <rect key="frame" x="333" y="2" width="334" height="67"/>
-                                                            <autoresizingMask key="autoresizingMask" flexibleMinX="YES" widthSizable="YES" heightSizable="YES"/>
-                                                        </view>
                                                         <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" image="barter_icon_trade" id="JM8-6Q-JCz">
-                                                            <rect key="frame" x="326" y="27" width="14" height="16"/>
+                                                            <rect key="frame" x="324" y="29" width="14" height="16"/>
                                                             <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                                         </imageView>
                                                         <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" image="s_05" id="m3F-rO-tgR">
