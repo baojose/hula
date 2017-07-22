@@ -73,7 +73,7 @@ class HLBarterScreenViewController: UIViewController {
             
             
             let ct = swappPageVC.arrTrades[swappPageVC.currentIndex]
-            print("ct \(ct)")
+            //print("ct \(ct)")
             thisTrade.loadFrom(dict: ct)
             if (thisTrade.owner_id == HulaUser.sharedInstance.userId){
                 // I am the owner
@@ -88,8 +88,8 @@ class HLBarterScreenViewController: UIViewController {
                 otherUserId = thisTrade.owner_id
             }
             
-            print(otp)
-            print(mtp)
+            //print(otp)
+            //print(mtp)
             getUserProducts(user: otherUserId, taskCallback: {(result) in
                 //print (self.otherProducts)
                 self.otherProducts = result
