@@ -169,7 +169,7 @@ class HLSwappViewController: UIViewController {
             
             if let swappPageVC = self.childViewControllers.first as? HLSwappPageViewController {
                 // temporary fix
-                let thisTrade: NSDictionary = swappPageVC.arrTrades[1]
+                let thisTrade: NSDictionary = swappPageVC.arrTrades[0]
                 
                 
                 print(thisTrade)

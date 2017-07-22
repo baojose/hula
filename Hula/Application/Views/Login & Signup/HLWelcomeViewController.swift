@@ -44,7 +44,7 @@ class HLWelcomeViewController: UserBaseViewController, CLLocationManagerDelegate
             case .notDetermined, .restricted:
                 print("Pending...")
                 locationManager.requestWhenInUseAuthorization()
-                self.closeIdentification()
+                //self.closeIdentification()
             case .denied:
                 print("Not authorized")
                 let alert = UIAlertController(title: "Location unavailable", message: "Sorry but we do not have access to your current location and we will not be able to have the location of your products. Please change the permissions on the Settings app", preferredStyle: UIAlertControllerStyle.alert)
@@ -52,7 +52,6 @@ class HLWelcomeViewController: UserBaseViewController, CLLocationManagerDelegate
                 self.present(alert, animated: true, completion: {
                     self.closeIdentification()
                 })
-                
             case .authorizedAlways, .authorizedWhenInUse:
                 print("Authorized")
                 self.closeIdentification()
@@ -60,20 +59,15 @@ class HLWelcomeViewController: UserBaseViewController, CLLocationManagerDelegate
             }
         } else {
             print("Location services are not enabled")
-            
             self.closeIdentification()
         }
-        
-        
-        
-        
     }
     
     func locationManager(_ manager: CLLocationManager, didChangeAuthorization status: CLAuthorizationStatus) {
-        print("changedAuth")
-        print(status)
+        //print("changedAuth")
+        //print(status)
         if status == .authorizedWhenInUse {
-            //self.closeIdentification()
+            self.closeIdentification()
         }
     }
 }

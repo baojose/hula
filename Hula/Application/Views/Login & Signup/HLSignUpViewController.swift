@@ -15,6 +15,7 @@ class HLSignUpViewController: UserBaseViewController, UITextFieldDelegate  {
     @IBOutlet weak var greenBackgroundImage: UIImageView!
     @IBOutlet weak var signupErrorView: UIView!
     @IBOutlet weak var nextButton: HLRoundedNextButton!
+    @IBOutlet weak var inputFieldsView: UIView!
     
     let descriptions = ["What is your name?", "What is your email address?", "Set a password for your account"]
     let hints = ["This is your public identification", "We wont bother you with nonsense emails", "Use a non-obvious password with more than 5 characters"]
@@ -145,12 +146,12 @@ class HLSignUpViewController: UserBaseViewController, UITextFieldDelegate  {
     
     func moveUpView(){
         UIView.animate(withDuration: 0.5, animations: {
-            self.view.frame.origin.y = -140
+            self.inputFieldsView.frame.origin.y = -140
         })
     }
     func moveDownView(){
         UIView.animate(withDuration: 0.5, animations: {
-            self.view.frame.origin.y = 0
+            self.inputFieldsView.frame.origin.y = 0
         })
     }
     func dismissKeyboard(){
