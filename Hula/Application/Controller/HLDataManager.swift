@@ -205,7 +205,7 @@ class HLDataManager: NSObject {
     }
     
     
-    func getUserProfile(userId:String, taskCallback: @escaping (HulaUser) -> ()) {
+    func getUserProfile(userId:String, taskCallback: @escaping (HulaUser, NSArray) -> ()) {
         
         //print("Getting user info...")
         let queryURL = HulaConstants.apiURL + "users/" + userId
@@ -215,7 +215,7 @@ class HLDataManager: NSObject {
                 DispatchQueue.main.async {
                     if let dictionary = json as? [String: Any] {
                         let userReturned = HulaUser()
-                        
+                        //print(dictionary)
                         if let user = dictionary["user"] as? [String: Any] {
                             if (user["name"] as? String) != nil {
                                 userReturned.userName = user["name"] as? String
@@ -264,8 +264,11 @@ class HLDataManager: NSObject {
                                 }
                             }
                         }
-                        
-                        taskCallback(userReturned)
+                        var arrProducts = NSArray()
+                        if let dpr = dictionary["products"] as? NSArray {
+                            arrProducts = dpr
+                        }
+                        taskCallback(userReturned, arrProducts)
                     }
                 }
             } else {

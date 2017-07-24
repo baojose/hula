@@ -39,6 +39,7 @@ class HLProductDetailViewController: BaseViewController, UIScrollViewDelegate, U
     
     var productData: NSDictionary!
     var currentProduct: HulaProduct!
+    var sellerProducts: NSArray! = []
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -105,10 +106,12 @@ class HLProductDetailViewController: BaseViewController, UIScrollViewDelegate, U
         // start bartering item button
         commonUtils.setRoundedRectBorderButton(addToTradeBtn, 1.0, UIColor.white, addToTradeBtn.frame.size.height / 2.0)
         
-        HLDataManager.sharedInstance.getUserProfile(userId: currentProduct.productOwner, taskCallback: {(user) in
-            print(user.userNick)
+        HLDataManager.sharedInstance.getUserProfile(userId: currentProduct.productOwner, taskCallback: {(user, prods) in
+            print(prods)
             self.sellerNameLabel.text = user.userNick;
             self.sellerFeedbackLabel.text = user.userLocationName;
+            self.sellerProducts = prods
+            self.productTableView.reloadData()
         })
         
         // button visible only on other users
@@ -125,13 +128,21 @@ class HLProductDetailViewController: BaseViewController, UIScrollViewDelegate, U
     //#MARK: - TableViewDelegate
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return 10
+        return sellerProducts.count
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         
         let cell = tableView.dequeueReusableCell(withIdentifier: "homeProductCell") as! HLProductTableViewCell
         
+        if let pr = sellerProducts[indexPath.row] as? [String:Any] as NSDictionary?{
+        
+            cell.productName.text = pr.object(forKey: "title") as? String
+            
+            if let im_ur = pr.object(forKey: "image_url") as? String {
+                cell.productImage.loadImageFromURL(urlString:im_ur)
+            }
+        }
         return cell
     }
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath){
