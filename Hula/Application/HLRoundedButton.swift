@@ -21,6 +21,9 @@ class HLRoundedButton: UIButton {
         self.setTitleColor(UIColor.white, for: .normal)
         self.setTitleColor(UIColor.lightGray, for: .highlighted)
         
+        self.layer.borderWidth = 1
+        self.layer.borderColor = UIColor(red:0.9, green:0.9, blue:0.9, alpha: 0.5).cgColor
+        
     }
     
 }

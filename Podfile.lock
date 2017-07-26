@@ -5,6 +5,8 @@ PODS:
   - Bolts/AppLinks (1.8.4):
     - Bolts/Tasks
   - Bolts/Tasks (1.8.4)
+  - Crashlytics (3.8.4):
+    - Fabric (~> 1.6.3)
   - Fabric (1.6.11)
   - FacebookCore (0.2.0):
     - Bolts (~> 1.8)
@@ -31,6 +33,7 @@ PODS:
     - TwitterCore (>= 2.8)
 
 DEPENDENCIES:
+  - Crashlytics
   - Fabric
   - FacebookCore
   - FacebookLogin
@@ -39,6 +42,7 @@ DEPENDENCIES:
 
 SPEC CHECKSUMS:
   Bolts: 8a7995239dbe724f9cba2248b766d48b7ebdd322
+  Crashlytics: 79e236942ca1e7fc641df1feb9a275360a78ab6a
   Fabric: 5911403591946b8228ab1c51d98f1d7137e863c6
   FacebookCore: 2cb3f0fbff218e9d3119cec84bae983b232412de
   FacebookLogin: c9d606504735780a9e3002465a615512e0a691a5
@@ -49,6 +53,6 @@ SPEC CHECKSUMS:
   TwitterCore: e959987be23c767004d29eb7fab8d85d8585a2e5
   TwitterKit: 3b6044a7320340326a4098f3e37aa1dbaeb94942
 
-PODFILE CHECKSUM: 32c74edc2b160c54a36f8fdd9fa15b637c23e0e0
+PODFILE CHECKSUM: 6ce13d330b444f1fd95478038e8113febc76e9dc
 
 COCOAPODS: 1.2.1

@@ -15,11 +15,12 @@ class HLDashboardViewController: UIViewController {
     @IBOutlet weak var mainCollectionView: UICollectionView!
     var selectedBarter: Int = 0
     let productImagesWidth: CGFloat = 27.0
+    let productImagesMargin: CGFloat = 10.0
     var isExpandedFlowLayoutUsed:Bool = false
     var swappPageVC : HLSwappPageViewController?
     
     
-    let sectionInsets = UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 0)
+    let sectionInsets = UIEdgeInsets(top: 4, left: 0, bottom: 30, right: 0)
     
     
     override func viewDidLoad() {
@@ -34,8 +35,10 @@ class HLDashboardViewController: UIViewController {
         self.mainCollectionView.setCollectionViewLayout(HLDashboardNormalViewFlowLayout(), animated: false)
         self.mainCollectionView.scrollToItem(at: IndexPath(row: 0, section: 0) , at: .top, animated: false)
         isExpandedFlowLayoutUsed = false
+        self.mainCollectionView.collectionViewLayout.invalidateLayout()
     }
     override func viewDidAppear(_ animated: Bool) {
+        refreshCollectionViewData()
         self.mainCollectionView.collectionViewLayout.invalidateLayout()
     }
 
@@ -98,6 +101,7 @@ extension HLDashboardViewController: UICollectionViewDelegate, UICollectionViewD
         // Configure the cell
         if ((swappPageVC?.arrTrades.count)! > indexPath.row){
             //print("Drawing row \(indexPath.row)")
+            cell.isEmptyRoom = false
             let thisTrade : NSDictionary = (swappPageVC?.arrTrades[indexPath.row])!
             cell.emptyRoomLabel.text = ""
             //print(thisTrade)
@@ -109,11 +113,23 @@ extension HLDashboardViewController: UICollectionViewDelegate, UICollectionViewD
                 cell.userImage.loadImageFromURL(urlString: CommonUtils.sharedInstance.userImageURL(userId: otherUserId!) )
                 
             }
-            if let other_products_arr = thisTrade.object(forKey: "other_products") as? [String]{
-                drawProducts(inCell: cell, fromArr: other_products_arr, side: "right")
-            }
-            if let owner_products_arr = thisTrade.object(forKey: "owner_products") as? [String]{
-                drawProducts(inCell: cell, fromArr: owner_products_arr, side: "left")
+            
+            // Todo: switch sides if i am not the owner!
+            if (HulaUser.sharedInstance.userId == otherUserId){
+                if let other_products_arr = thisTrade.object(forKey: "other_products") as? [String]{
+                    drawProducts(inCell: cell, fromArr: other_products_arr, side: "left")
+                }
+                if let owner_products_arr = thisTrade.object(forKey: "owner_products") as? [String]{
+                    drawProducts(inCell: cell, fromArr: owner_products_arr, side: "right")
+                }
+                
+            } else {
+                if let other_products_arr = thisTrade.object(forKey: "other_products") as? [String]{
+                    drawProducts(inCell: cell, fromArr: other_products_arr, side: "right")
+                }
+                if let owner_products_arr = thisTrade.object(forKey: "owner_products") as? [String]{
+                    drawProducts(inCell: cell, fromArr: owner_products_arr, side: "left")
+                }
             }
             //CommonUtils.sharedInstance.loadImageOnView(imageView:cell.myImage, withURL:HulaUser.sharedInstance.userPhotoURL)
             
@@ -121,7 +137,6 @@ extension HLDashboardViewController: UICollectionViewDelegate, UICollectionViewD
             //print(HulaUser.sharedInstance.userPhotoURL)
             cell.myImage.isHidden = false
             cell.middleArrows.isHidden = false
-            cell.optionsDotsImage.isHidden = false
             cell.tradeNumber.textColor = HulaConstants.appMainColor
             if let turnUser = thisTrade.object(forKey: "turn_user_id") as? String{
                 if turnUser != HulaUser.sharedInstance.userId {
@@ -135,11 +150,12 @@ extension HLDashboardViewController: UICollectionViewDelegate, UICollectionViewD
                 cell.myTurnView.isHidden = false
                 cell.otherTurnView.isHidden = true
             }
+            cell.awakeFromNib()
         } else {
             //print("Empty row \(indexPath.row)")
+            cell.isEmptyRoom = true
             cell.emptyRoomLabel.text = "Empty Trade Room"
             cell.myImage.isHidden = true
-            cell.optionsDotsImage.isHidden = true
             cell.userImage.image = nil
             cell.middleArrows.isHidden = true
             cell.left_side.subviews.forEach({ $0.removeFromSuperview() })
@@ -148,7 +164,6 @@ extension HLDashboardViewController: UICollectionViewDelegate, UICollectionViewD
             cell.myTurnView.isHidden = true
             cell.otherTurnView.isHidden = true
         }
-        
         
         return cell
     }
@@ -159,13 +174,17 @@ extension HLDashboardViewController: UICollectionViewDelegate, UICollectionViewD
         //print(indexPath.row)
         
         if ((swappPageVC?.arrTrades.count)! > indexPath.row){
-        
+
+            
+            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "tradeCell",
+                                                          for: indexPath) as! HLTradesCollectionViewCell
+            cell.layer.zPosition = 100;
             
             isExpandedFlowLayoutUsed = !isExpandedFlowLayoutUsed
-            
+            /*
             UIView.animate(withDuration: 0.6, animations: { () -> Void in
-                self.mainCollectionView.collectionViewLayout.invalidateLayout()
-                UIScreen.main.snapshotView(afterScreenUpdates: true)
+                //self.mainCollectionView.collectionViewLayout.invalidateLayout()
+                //UIScreen.main.snapshotView(afterScreenUpdates: true)
                 if(self.isExpandedFlowLayoutUsed){
                     self.mainCollectionView.setCollectionViewLayout(HLDashboardExpandedViewFlowLayout(), animated: false)
                 } else {
@@ -174,14 +193,18 @@ extension HLDashboardViewController: UICollectionViewDelegate, UICollectionViewD
                 collectionView.frame = CGRect(origin: collectionView.frame.origin, size: CGSize(width:1000.0 * 5, height:collectionView.frame.height) )
                 self.mainCollectionView.scrollToItem(at: indexPath, at: .left , animated: false)
             })
+             */
             let when = DispatchTime.now() + 0.3
             DispatchQueue.main.asyncAfter(deadline: when) {
                 if let swappPageVC = self.parent as? HLSwappPageViewController{
                     self.selectedBarter = indexPath.row
                     let thisTrade: NSDictionary = swappPageVC.arrTrades[indexPath.row]
                     self.swappPageVC?.currentTrade = thisTrade
+                    self.swappPageVC?.currentIndex = indexPath.row
                     //print(swappPageVC.currentTrade!)
-                    self.swappPageVC?.goTo(page: self.selectedBarter + 1)
+                    
+                    //always number 1
+                    self.swappPageVC?.goTo(page: 1)
                 }
                 //print(self.parent!)
             }
@@ -192,29 +215,46 @@ extension HLDashboardViewController: UICollectionViewDelegate, UICollectionViewD
     }
     
     override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
-        mainCollectionView.collectionViewLayout.invalidateLayout()
+        //mainCollectionView.collectionViewLayout.invalidateLayout()
     }
-    
     
     func drawProducts(inCell:HLTradesCollectionViewCell, fromArr: [String], side: String){
         var counter:Int = 0;
-        
         if (side=="right"){
             inCell.right_side.subviews.forEach({ $0.removeFromSuperview() })
         } else {
             inCell.left_side.subviews.forEach({ $0.removeFromSuperview() })
         }
+        let verticalCenter:CGFloat = (70.0/2) - productImagesWidth/2;
         for img in fromArr {
             if (img != ""){
                 let newImg = UIImageView()
                 if (side=="right"){
-                    newImg.frame = CGRect(x: ( CGFloat(counter) * (productImagesWidth * 10)) + 20, y: 70.0/2 - productImagesWidth/2, width: productImagesWidth, height: productImagesWidth)
+                    newImg.frame = CGRect(x: ( CGFloat(counter) * (productImagesWidth + productImagesMargin)) + productImagesMargin,
+                                          y: verticalCenter,
+                                          width: productImagesWidth,
+                                          height: productImagesWidth)
                     inCell.right_side.addSubview(newImg)
                 } else {
-                    newImg.frame = CGRect(x: inCell.left_side.frame.width - ( CGFloat(counter) * (productImagesWidth * 10)) - 20, y: 70.0/2 - productImagesWidth/2, width: productImagesWidth, height: productImagesWidth)
+                    newImg.frame = CGRect(x: inCell.left_side.frame.width - ( CGFloat(counter) * (productImagesWidth + productImagesMargin)) - (productImagesMargin) - productImagesWidth,
+                                          y: verticalCenter,
+                                          width: productImagesWidth,
+                                          height: productImagesWidth)
                     inCell.left_side.addSubview(newImg)
+                    
+                    
+                    /*
+                    
+                    let horizontalConstraint = NSLayoutConstraint(item: newImg, attribute: NSLayoutAttribute.centerX, relatedBy: NSLayoutRelation.equal, toItem: inCell.left_side, attribute: NSLayoutAttribute.right, multiplier: 1, constant:  -( ( CGFloat(counter) * (productImagesWidth + productImagesMargin)) - (productImagesMargin) - productImagesWidth))
+                    
+                    NSLayoutConstraint.activate([horizontalConstraint])
+                    */
                 }
                 newImg.loadImageFromURL(urlString: HulaConstants.apiURL + "products/\(img)/image")
+                
+
+                
+                
                 counter += 1
             }
         }

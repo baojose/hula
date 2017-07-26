@@ -47,4 +47,17 @@ class HLDashboardExpandedViewFlowLayout: UICollectionViewFlowLayout {
     override func targetContentOffset(forProposedContentOffset proposedContentOffset: CGPoint) -> CGPoint {
         return collectionView!.contentOffset
     }
+    /*
+    override func layoutAttributesForElements(in rect: CGRect) -> [UICollectionViewLayoutAttributes]? {
+        let layoutAttributes = super.layoutAttributesForElements(in: rect)
+        var newLayoutAttributes = [UICollectionViewLayoutAttributes]()
+        // Loop through the cache and look for items in the rect
+        for attributes  in layoutAttributes! {
+            attributes.zIndex = -attributes.indexPath.item;
+            newLayoutAttributes.append(attributes)
+        }
+        return newLayoutAttributes
+    }
+ */
+
 }

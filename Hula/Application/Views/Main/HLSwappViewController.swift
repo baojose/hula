@@ -9,13 +9,15 @@
 import UIKit
 
 class HLSwappViewController: UIViewController {
-
+    
+    weak var barterDelegate: HLBarterScreenDelegate?
+    
     @IBOutlet weak var portraitView: UIView!
     @IBOutlet weak var mainContainer: UIView!
-    @IBOutlet weak var swappPageControl: HLPageControl!
-    @IBOutlet weak var nextTradeBtn: UIButton!
-    @IBOutlet weak var extraRoomBtn: UIButton!
-    @IBOutlet weak var extraRoomImage: UIImageView!
+    //@IBOutlet weak var swappPageControl: HLPageControl!
+    //@IBOutlet weak var nextTradeBtn: UIButton!
+    //@IBOutlet weak var extraRoomBtn: UIButton!
+    //@IBOutlet weak var extraRoomImage: UIImageView!
     @IBOutlet weak var mainCentralLabel: UILabel!
     @IBOutlet weak var otherUserNick: UILabel!
     @IBOutlet weak var otherUserImage: UIImageView!
@@ -96,6 +98,7 @@ class HLSwappViewController: UIViewController {
     @IBAction func extraRoomAction(_ sender: Any) {
     }
     
+    /*
     @IBAction func nextTradeAction(_ sender: Any) {
         //print(self.childViewControllers)
         
@@ -110,28 +113,29 @@ class HLSwappViewController: UIViewController {
         }
         
     }
-    
+    */
     @IBAction func sendOfferAction(_ sender: Any) {
         
-        if let swappPageVC = self.childViewControllers.first as? HLSwappPageViewController {
-            let nextPage = swappPageControl.currentPage
-            let thisTrade: NSDictionary = swappPageVC.arrTrades[nextPage - 1]
-            let trade_id = thisTrade.object(forKey: "_id") as? String
-            let turn_id = thisTrade.object(forKey: "turn_user_id") as? String
-            //print(turn_id!)
+        if let tradeStatus = barterDelegate?.getCurrentTradeStatus() {
+            //print("tradeStatus: \(tradeStatus)")
+            let trade_id = tradeStatus.tradeId
+            let turn_id = tradeStatus.turn_user_id
+            print(tradeStatus.owner_products)
             if (turn_id != HulaUser.sharedInstance.userId){
                 print("This is not your turn!!!")
             } else {
-                    let queryURL = HulaConstants.apiURL + "trades/" + trade_id!
-                    let owner_products = ""
-                    let other_products = ""
+                    let queryURL = HulaConstants.apiURL + "trades/\(trade_id!)"
+                    let owner_products = tradeStatus.owner_products.joined(separator: ",")
+                    let other_products = tradeStatus.other_products.joined(separator: ",")
                     let dataString:String = "status=offer_sent&owner_products=\(owner_products)&other_products=\(other_products)"
-                    //print(dataString)
+                    print(dataString)
                     HLDataManager.sharedInstance.httpPost(urlstr: queryURL, postString: dataString, isPut: true, taskCallback: { (ok, json) in
                         if (ok){
                             print(json!)
                             DispatchQueue.main.async {
-                                swappPageVC.goTo(page: 0)
+                                if let swappPageVC = self.childViewControllers.first as? HLSwappPageViewController {
+                                    swappPageVC.goTo(page: 0)
+                                }
                             }
                         } else {
                             // connection error
@@ -139,14 +143,18 @@ class HLSwappViewController: UIViewController {
                         }
                     })
             }
+        } else {
+            print("No trade/barter delegato vc found!")
         }
     }
     func controlSetupBottomBar(index:Int){
         if (index != 0){
             UIView.animate(withDuration: 0.3) {
+                /*
                 self.extraRoomBtn.alpha = 0
                 self.extraRoomImage.alpha = 0
                 self.nextTradeBtn.alpha = 0
+ */
                 self.mainCentralLabel.alpha=0;
                 self.myUserView.frame.origin.x = 0
                 self.otherUserView.frame.origin.x = self.initialOtherUserX
@@ -154,8 +162,9 @@ class HLSwappViewController: UIViewController {
             }
             
             if let swappPageVC = self.childViewControllers.first as? HLSwappPageViewController {
-                let thisTrade: NSDictionary = swappPageVC.arrTrades[min(max(0, swappPageControl.currentPage - 1), swappPageVC.arrTrades.count - 1) ]
-                print(thisTrade)
+                let thisTrade: NSDictionary = swappPageVC.arrTrades[swappPageVC.currentIndex]
+                
+                
                 if (HulaUser.sharedInstance.userId == thisTrade.object(forKey: "owner_id") as! String){
                     // I am the owner
                     otherUserImage.loadImageFromURL(urlString: CommonUtils.sharedInstance.userImageURL(userId: thisTrade.object(forKey: "other_id") as! String))
@@ -177,9 +186,11 @@ class HLSwappViewController: UIViewController {
             
         } else {
             UIView.animate(withDuration: 0.3) {
+                /*
                 self.extraRoomBtn.alpha = 1
                 self.extraRoomImage.alpha = 1
                 self.nextTradeBtn.alpha = 1
+ */
                 self.mainCentralLabel.alpha=1;
                 self.myUserView.frame.origin.x = -500
                 self.otherUserView.frame.origin.x = self.initialOtherUserX + 500
@@ -195,15 +206,19 @@ extension HLSwappViewController: SwappPageViewControllerDelegate {
     
     func swappPageViewController(swappPageViewController: HLSwappPageViewController,
                                     didUpdatePageCount count: Int) {
-        swappPageControl.numberOfPages = count
+        //swappPageControl.numberOfPages = count
     }
     
     func swappPageViewController(swappPageViewController: HLSwappPageViewController,
                                     didUpdatePageIndex index: Int) {
-        swappPageControl.currentPage = index
+        //swappPageControl.currentPage = index
         
         controlSetupBottomBar(index: index)
     }
     
     
+}
+
+protocol HLBarterScreenDelegate: class {
+    func getCurrentTradeStatus() -> HulaTrade
 }

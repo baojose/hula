@@ -14,6 +14,7 @@ class HLLogInViewController: UserBaseViewController, UITextFieldDelegate {
     @IBOutlet weak var passwordField: UITextField!
     @IBOutlet weak var greenBackgroundImage: UIImageView!
     @IBOutlet weak var loginErrorView: UIView!
+    @IBOutlet weak var inputElements: UIView!
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -59,12 +60,12 @@ class HLLogInViewController: UserBaseViewController, UITextFieldDelegate {
     
     func moveUpView(){
         UIView.animate(withDuration: 0.5, animations: {
-            self.view.frame.origin.y = -140
+            self.inputElements.frame.origin.y = -140
         })
     }
     func moveDownView(){
         UIView.animate(withDuration: 0.5, animations: {
-            self.view.frame.origin.y = 0
+            self.inputElements.frame.origin.y = 0
         })
     }
     

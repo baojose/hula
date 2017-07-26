@@ -13,6 +13,7 @@ target 'Hula' do
   pod 'FacebookShare'
   pod 'Fabric'
   pod 'TwitterKit'
+  pod 'Crashlytics'
   
   
   target 'HulaTests' do

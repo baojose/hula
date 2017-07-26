@@ -16,6 +16,8 @@ import FacebookLogin
 import FacebookShare
 import Fabric
 import TwitterKit
+import Crashlytics
+
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
@@ -27,8 +29,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // Override point for customization after application launch.
 
         
-        Fabric.with([Twitter.self])
-        
+        Fabric.with([Twitter.self, Crashlytics.self])
+
         registerForPushNotifications()
         
         return FBSDKApplicationDelegate.sharedInstance().application(application, didFinishLaunchingWithOptions: launchOptions)
@@ -73,7 +75,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         if #available(iOS 10.0, *) {
             UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge]) {
                 (granted, error) in
-                print("Permission granted: \(granted)")
+                //print("Permission granted: \(granted)")
                 
                 
                 guard granted else { return }
@@ -86,7 +88,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     func getNotificationSettings() {
         if #available(iOS 10.0, *) {
             UNUserNotificationCenter.current().getNotificationSettings { (settings) in
-                print("Notification settings: \(settings)")
+                //print("Notification settings: \(settings)")
                 guard settings.authorizationStatus == .authorized else { return }
                 UIApplication.shared.registerForRemoteNotifications()
             }
@@ -98,16 +100,19 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     func application(_ application: UIApplication,
                      didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
         let tokenParts = deviceToken.map { data -> String in
-            return String(format: "%02.2hhx", data)
+            let dift = String(format: "%02.2hhx", data)
+            return dift
         }
         
         let token = tokenParts.joined()
-        print("Device Token: \(token)")
+        //print("Device Token: \(token)")
+        HulaUser.sharedInstance.deviceId = token
+        HulaUser.sharedInstance.updateServerData()
     }
     
     func application(_ application: UIApplication,
                      didFailToRegisterForRemoteNotificationsWithError error: Error) {
-        print("Failed to register: \(error)")
+        //print("Failed to register: \(error)")
     }
 }
 
