@@ -9,6 +9,9 @@
 import UIKit
 
 class HLFeedbackHistoryTableViewCell: UITableViewCell {
+    @IBOutlet weak var feedbackIcon: UIImageView!
+    @IBOutlet weak var feedbackCommentLabel: UILabel!
+    @IBOutlet weak var feedbackPercentage: UILabel!
 
     override func awakeFromNib() {
         super.awakeFromNib()

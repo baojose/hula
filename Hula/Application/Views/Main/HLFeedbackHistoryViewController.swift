@@ -9,6 +9,8 @@
 import UIKit
 
 class HLFeedbackHistoryViewController: BaseViewController, UITableViewDelegate, UITableViewDataSource {
+    
+    var feedbackList: NSArray!
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -22,12 +24,23 @@ class HLFeedbackHistoryViewController: BaseViewController, UITableViewDelegate, 
     //#MARK: - TableViewDelegate
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return 10
+        return feedbackList.count
         
     }
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         
         let cell = tableView.dequeueReusableCell(withIdentifier: "feedbackHistoryCell") as! HLFeedbackHistoryTableViewCell
+        
+        if let this_fb = feedbackList[indexPath.row] as? NSDictionary{
+            if let tmp = this_fb["val"] as? CGFloat {
+                let perc = round(tmp*20)
+                cell.feedbackPercentage.text = "\(perc)%"
+            }
+            if let tmp = this_fb["comments"] as? String {
+                cell.feedbackCommentLabel.text = "\(tmp)"
+            }
+        }
+        cell.feedbackIcon = nil
         
         return cell
     }
