@@ -35,6 +35,9 @@ class HLProfileViewController: BaseViewController {
     @IBOutlet weak var viewFeedbackBtn: UIButton!
     @IBOutlet weak var fullsizeViewReference: UIView!
     
+    
+    var arrFeedback: NSArray!
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         self.initData()
@@ -65,7 +68,17 @@ class HLProfileViewController: BaseViewController {
         super.didReceiveMemoryWarning()
     }
     
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        print("Preparing for segue...")
+        if let destinationVC = segue.destination as? HLFeedbackHistoryViewController{
+            destinationVC.feedbackList = arrFeedback
+            print("Total feedback: \(destinationVC.feedbackList.count)")
+        }
+    }
+    
+    
     func initData() {
+        arrFeedback = []
     }
     func initView() {
         commonUtils.circleImageView(profileImageView)
@@ -175,7 +188,7 @@ class HLProfileViewController: BaseViewController {
     func emailValidate(){
         
         HulaUser.sharedInstance.resendValidationMail()
-        let alert = UIAlertController(title: "Logged In", message: "We have just sent you an email to \(HulaUser.sharedInstance.userEmail!). Please follow the instructions provided on that message.",
+        let alert = UIAlertController(title: "Email validation", message: "We have just sent you an email to \(HulaUser.sharedInstance.userEmail!). Please follow the instructions provided on that message.",
             preferredStyle: UIAlertControllerStyle.alert
         )
         alert.addAction(UIAlertAction(title: "OK", style: UIAlertActionStyle.default, handler: nil))
@@ -194,7 +207,7 @@ class HLProfileViewController: BaseViewController {
             if (ok){
                 DispatchQueue.main.async {
                     if let dictionary = json as? [String: Any] {
-                        
+                        //print(dictionary)
                         if let user = dictionary["user"] as? [String: Any] {
                             if (user["name"] as? String) != nil {
                                 HulaUser.sharedInstance.userName = user["name"] as? String
@@ -265,6 +278,10 @@ class HLProfileViewController: BaseViewController {
                                     self.userFeedbackLabel.text = "-"
                                 }
                             }
+                        }
+                        if let feedback = dictionary["feedback"] as? NSArray {
+                            self.arrFeedback = feedback
+                            //print(self.arrFeedback)
                         }
                     }
                     self.userFullNameLabel.text = HulaUser.sharedInstance.userName

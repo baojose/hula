@@ -100,20 +100,28 @@ class CommonUtils: NSObject {
     
     func getDistanceFrom(lat:CGFloat, lon:CGFloat) -> String{
         let coordinate₀ = CLLocation(latitude: CLLocationDegrees(lat), longitude: CLLocationDegrees(lon))
-        let coordinate₁ = CLLocation(latitude: 5.0, longitude: 3.0)
         
-        let distanceInMeters = coordinate₀.distance(from: coordinate₁) // result is in meters
+        return getDistanceFrom(loc:coordinate₀)
+    }
+    func getDistanceFrom(loc:CLLocation) -> String{
+        let coordinate₀ = loc
         
-        var distance = round( distanceInMeters / 1609 )
-        if (distance<1){
-            distance = round( distanceInMeters / 161 ) / 10
-        } else {
-            if (distance>100){
-                distance = 999
-                return "Too far"
+        if let userLocation = HulaUser.sharedInstance.location {
+            let distanceInMeters = coordinate₀.distance(from: userLocation) // result is in meters
+            
+            var distance = round( distanceInMeters / 1609 )
+            if (distance<1){
+                distance = round( distanceInMeters / 161 ) / 10
+            } else {
+                if (distance>100){
+                    distance = 999
+                    return "Too far"
+                }
             }
+            return "\(distance) miles"
+        } else {
+            return "-"
         }
-        return "\(distance) miles"
     }
     
     

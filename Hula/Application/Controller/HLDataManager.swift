@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import MapKit
 
 extension NSMutableData {
     func appendString(_ string: String) {
@@ -202,6 +203,81 @@ class HLDataManager: NSObject {
             }
         })
     }
+    
+    
+    func getUserProfile(userId:String, taskCallback: @escaping (HulaUser, NSArray) -> ()) {
+        
+        //print("Getting user info...")
+        let queryURL = HulaConstants.apiURL + "users/" + userId
+        //print(queryURL)
+        HLDataManager.sharedInstance.httpGet(urlstr: queryURL, taskCallback: { (ok, json) in
+            if (ok){
+                DispatchQueue.main.async {
+                    if let dictionary = json as? [String: Any] {
+                        let userReturned = HulaUser()
+                        //print(dictionary)
+                        if let user = dictionary["user"] as? [String: Any] {
+                            if (user["name"] as? String) != nil {
+                                userReturned.userName = user["name"] as? String
+                            }
+                            if (user["nick"] as? String) != nil {
+                                userReturned.userNick = user["nick"] as? String
+                            }
+                            if (user["bio"] as? String) != nil {
+                                userReturned.userBio = user["bio"] as? String
+                            }
+                            if (user["email"] as? String) != nil {
+                                userReturned.userEmail = user["email"] as? String
+                            }
+                            if (user["image"] as? String) != nil {
+                                userReturned.userPhotoURL = user["image"] as? String
+                            }
+                            
+                            if (user["location_name"] as? String) != nil {
+                                userReturned.userLocationName = user["location_name"] as? String
+                            }
+                            
+                            if let loc = user["location"] as? [CGFloat] {
+                                let lat = loc[0]
+                                let lon = loc[1]
+                                userReturned.location = CLLocation(latitude:CLLocationDegrees(lat), longitude:CLLocationDegrees(lon));
+                            }
+                            
+                            if let fbt = (user["fb_token"] as? String) {
+                                if (fbt != ""){
+                                    userReturned.fbToken = fbt
+                                }
+                            }
+                            if let lit = (user["li_token"] as? String) {
+                                if (lit != ""){
+                                    userReturned.liToken = user["li_token"] as? String
+                                }
+                            }
+                            if let twt = (user["tw_token"] as? String){
+                                if (twt != ""){
+                                    userReturned.twToken = user["tw_token"] as? String
+                                }
+                            }
+                            if let uStatus = (user["status"] as? String) {
+                                if (uStatus == "verified"){
+                                    userReturned.status = user["status"] as? String
+                                }
+                            }
+                        }
+                        var arrProducts = NSArray()
+                        if let dpr = dictionary["products"] as? NSArray {
+                            arrProducts = dpr
+                        }
+                        taskCallback(userReturned, arrProducts)
+                    }
+                }
+            } else {
+                // connection error
+            }
+        })
+    }
+    
+    
     
     func httpGet(urlstr:String, taskCallback: @escaping (Bool, Any?) -> ()) {
         let url = URL(string: urlstr)

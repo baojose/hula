@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import MapKit
 
 class HLProductDetailViewController: BaseViewController, UIScrollViewDelegate, UITableViewDelegate, UITableViewDataSource {
     
@@ -37,6 +38,8 @@ class HLProductDetailViewController: BaseViewController, UIScrollViewDelegate, U
     @IBOutlet var userInventoryLabel: UILabel!
     
     var productData: NSDictionary!
+    var currentProduct: HulaProduct!
+    var sellerProducts: NSArray! = []
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -55,34 +58,64 @@ class HLProductDetailViewController: BaseViewController, UIScrollViewDelegate, U
 
     func initData() {
         //print(productData);
+        //print(productData);
+        currentProduct = HulaProduct(
+            id: productData["_id"] as! String,
+            name: productData["title"] as! String,
+            image: productData["image_url"] as! String)
+        
+        currentProduct.productDescription = productData["description"] as! String
+        currentProduct.productOwner = productData["owner_id"] as! String
+        currentProduct.productCategory = productData["category_name"] as! String
+        currentProduct.productCategoryId = productData["category_id"] as! String
+        currentProduct.productCondition = productData["condition"] as! String
+        let loc_tmp = productData["location"] as! [Double]
+        currentProduct.productLocation = CLLocation(latitude: loc_tmp[0], longitude: loc_tmp[1])
     }
     func initView() {
         var newFrame: CGRect! = productTableView.frame
         newFrame.size.height = 10 * 129;
         productTableView.frame = newFrame
-        insertIfAvailable(label:productNameLabel, maybeText: productData["title"] as Any)
-        insertIfAvailable(label:productDescriptionLabel, maybeText: productData["description"] as Any)
-        let h = commonUtils.heightString(width: productDescriptionLabel.frame.width, font: productDescriptionLabel.font! , string: productDescriptionLabel.text!) 
-        productDescriptionLabel.frame.size = CGSize(width: productDescriptionLabel.frame.size.width, height: h)
         
+        // product details
+        productNameLabel.text = currentProduct.productName
+        productDescriptionLabel.text = currentProduct.productDescription
+        productCategory.text = currentProduct.productCategory
+        productCondition.text = currentProduct.productCondition
+        productDistance.text = commonUtils.getDistanceFrom(loc: currentProduct.productLocation)
+        
+        // item height and position reset
+        let h = commonUtils.heightString(width: productDescriptionLabel.frame.width, font: productDescriptionLabel.font! , string: productDescriptionLabel.text!) + 30
+        productDescriptionLabel.frame.size = CGSize(width: productDescriptionLabel.frame.size.width, height: h)
         sellerView.frame.origin.y = productDescriptionLabel.frame.origin.y + productDescriptionLabel.frame.size.height
-        self.setUpProductImagesScrollView()
-        commonUtils.setRoundedRectBorderButton(addToTradeBtn, 1.0, UIColor.white, addToTradeBtn.frame.size.height / 2.0)
-        commonUtils.circleImageView(sellerImageView)
         mainScrollView.contentSize = CGSize(width: 0, height: sellerView.frame.origin.y + productTableView.frame.size.height + 300)
         
+        // seta product images
+        self.setUpProductImagesScrollView()
+        
+        // product owner image
         sellerLabel.attributedText = commonUtils.attributedStringWithTextSpacing("SELLER", 2.33)
+        commonUtils.circleImageView(sellerImageView)
+        sellerImageView.loadImageFromURL(urlString: HulaConstants.apiURL + "users/" + currentProduct.productOwner + "/image")
+        
+        
+        // user inventory
         userInventoryLabel.attributedText = commonUtils.attributedStringWithTextSpacing("USER'S INVENTORY", 2.33)
-        insertIfAvailable(label:productCategory, maybeText: productData["category_name"] as Any)
-        insertIfAvailable(label:productCondition, maybeText: productData["condition"] as Any)
-        if let location = productData["location"] as? [CGFloat] {
-            let lt = location[0] as CGFloat
-            let ln = location[1] as CGFloat
-            productDistance.text = commonUtils.getDistanceFrom(lat: lt, lon: ln)
-        } else {
-            productDistance.text = "-"
-        }
-        if (productData["owner_id"] as! String == HulaUser.sharedInstance.userId){
+        
+        
+        // start bartering item button
+        commonUtils.setRoundedRectBorderButton(addToTradeBtn, 1.0, UIColor.white, addToTradeBtn.frame.size.height / 2.0)
+        
+        HLDataManager.sharedInstance.getUserProfile(userId: currentProduct.productOwner, taskCallback: {(user, prods) in
+            print(prods)
+            self.sellerNameLabel.text = user.userNick;
+            self.sellerFeedbackLabel.text = user.userLocationName;
+            self.sellerProducts = prods
+            self.productTableView.reloadData()
+        })
+        
+        // button visible only on other users
+        if (currentProduct.productOwner == HulaUser.sharedInstance.userId){
             // this is my own product, so i cannot swapp it with me
             addToTradeBtn.isHidden = true
             addToTradeBg.isHidden = true
@@ -95,13 +128,21 @@ class HLProductDetailViewController: BaseViewController, UIScrollViewDelegate, U
     //#MARK: - TableViewDelegate
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return 10
+        return sellerProducts.count
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         
         let cell = tableView.dequeueReusableCell(withIdentifier: "homeProductCell") as! HLProductTableViewCell
         
+        if let pr = sellerProducts[indexPath.row] as? [String:Any] as NSDictionary?{
+        
+            cell.productName.text = pr.object(forKey: "title") as? String
+            
+            if let im_ur = pr.object(forKey: "image_url") as? String {
+                cell.productImage.loadImageFromURL(urlString:im_ur)
+            }
+        }
         return cell
     }
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath){
@@ -151,6 +192,8 @@ class HLProductDetailViewController: BaseViewController, UIScrollViewDelegate, U
             label.text = tx
         }
     }
+    
+    
     @IBAction func addToTradeAction(_ sender: Any) {
         if let productId = productData["_id"] as? String{
             print(productId)

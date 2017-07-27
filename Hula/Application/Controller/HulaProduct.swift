@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import MapKit
 
 class HulaProduct: NSObject {
     
@@ -19,6 +20,9 @@ class HulaProduct: NSObject {
     var productDescription: String!
     var productImage: String!
     var tradeStatus: Int = 0
+    var productOwner: String!
+    var productCategoryId: String!
+    var productLocation: CLLocation!
     
     class var sharedInstance: HulaProduct {
         struct Static {
@@ -33,10 +37,13 @@ class HulaProduct: NSObject {
         self.productDescription = ""
         self.productCondition = ""
         self.productCategory = ""
+        self.productCategoryId = ""
         self.productImage = ""
         self.arrProductPhotos = NSMutableArray.init()
         self.arrProductPhotoLink = []
         self.tradeStatus = 0
+        self.productOwner = ""
+        self.productLocation = CLLocation(latitude: 0.0, longitude: 0.0)
     }
     init(id : String, name : String, image: String) {
         self.productId = id
@@ -44,12 +51,15 @@ class HulaProduct: NSObject {
         self.productDescription = ""
         self.productCondition = ""
         self.productCategory = ""
+        self.productCategoryId = ""
         self.productImage = image
         self.arrProductPhotos = NSMutableArray.init()
         self.arrProductPhotoLink = []
         self.tradeStatus = 0
+        self.productOwner = ""
+        self.productLocation = CLLocation(latitude: 0.0, longitude: 0.0)
     }
     override var description : String {
-        return "(Product - id: \(self.productId!) and name:   \(self.productName!))\n"
+        return "(Product id: \(self.productId!); name:   \(self.productName!))\n"
     }
 }
