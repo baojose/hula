@@ -1673,11 +1673,11 @@ Log In</string>
                                                             <nil key="highlightedColor"/>
                                                         </label>
                                                         <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" image="icon_forward" translatesAutoresizingMaskIntoConstraints="NO" id="7n8-km-83N">
-                                                            <rect key="frame" x="348" y="44" width="8" height="13"/>
+                                                            <rect key="frame" x="348" y="43" width="8" height="13"/>
                                                             <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
                                                         </imageView>
                                                         <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" image="s_05" translatesAutoresizingMaskIntoConstraints="NO" id="qUv-mB-hOF">
-                                                            <rect key="frame" x="17" y="35" width="42" height="41"/>
+                                                            <rect key="frame" x="17" y="35" width="41" height="41"/>
                                                             <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                                         </imageView>
                                                     </subviews>
@@ -3517,6 +3517,14 @@ Log In</string>
                                         <state key="normal" backgroundImage="icon_album"/>
                                         <connections>
                                             <action selector="selectFromAlbumAction:" destination="i2T-mF-AZ9" eventType="touchUpInside" id="fbP-M5-VGa"/>
+                                        </connections>
+                                    </button>
+                                    <button opaque="NO" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" id="Sr6-HW-jhq">
+                                        <rect key="frame" x="305" y="37" width="32" height="30"/>
+                                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMinY="YES"/>
+                                        <state key="normal" title="Cam"/>
+                                        <connections>
+                                            <action selector="switchCamAction:" destination="i2T-mF-AZ9" eventType="touchUpInside" id="6Ld-fd-ql1"/>
                                         </connections>
                                     </button>
                                 </subviews>

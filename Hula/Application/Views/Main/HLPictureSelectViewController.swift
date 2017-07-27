@@ -25,6 +25,7 @@ class HLPictureSelectViewController: BaseViewController, UIImagePickerController
     var previewLayer : AVCaptureVideoPreviewLayer?
     var captureDevice : AVCaptureDevice?
     var resultingImage: String = ""
+    var backCam:Bool = true
     
     // vars related with Photo Albums
     var arrAlbumPhotos: NSMutableArray!
@@ -60,8 +61,14 @@ class HLPictureSelectViewController: BaseViewController, UIImagePickerController
                 // Make sure this particular device supports video
                 if (device.hasMediaType(AVMediaTypeVideo)) {
                     // Finally check the position and confirm we've got the back camera
-                    if(device.position == AVCaptureDevicePosition.back) {
-                        captureDevice = device
+                    if (backCam){
+                        if(device.position == AVCaptureDevicePosition.back) {
+                            captureDevice = device
+                        }
+                    } else {
+                        if(device.position == AVCaptureDevicePosition.front) {
+                            captureDevice = device
+                        }
                     }
                 }
             }
@@ -113,6 +120,17 @@ class HLPictureSelectViewController: BaseViewController, UIImagePickerController
         self.view.addSubview(imgOverlay)
         self.view.addSubview(controlView)
     }
+    func stopSession() {
+        
+        captureSession.stopRunning()
+        
+        
+        for i : AVCaptureDeviceInput in (self.captureSession.inputs as! [AVCaptureDeviceInput]){
+            self.captureSession.removeInput(i)
+        }
+        
+        
+    }
     
 
     override func didReceiveMemoryWarning() {
@@ -127,6 +145,12 @@ class HLPictureSelectViewController: BaseViewController, UIImagePickerController
         openImagePicker()
     }
 
+    @IBAction func switchCamAction(_ sender: Any) {
+        backCam = !backCam
+        stopSession()
+        initCamera()
+        beginSession()
+    }
     @IBAction func takePhotoAction(_ sender: Any) {
         saveToCamera(sender)
         //dismissToPreviousPage(sender)
@@ -147,6 +171,7 @@ class HLPictureSelectViewController: BaseViewController, UIImagePickerController
                     
                     if let cameraImage = UIImage(data: imageData) {
                         
+                        self.stopSession()
                         // save this image
                         self.uploadImage(cameraImage)
                     }
