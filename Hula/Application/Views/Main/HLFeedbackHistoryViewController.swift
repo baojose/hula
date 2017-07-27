@@ -10,7 +10,7 @@ import UIKit
 
 class HLFeedbackHistoryViewController: BaseViewController, UITableViewDelegate, UITableViewDataSource {
     
-    var feedbackList: NSArray!
+    var feedbackList: NSArray = []
 
     override func viewDidLoad() {
         super.viewDidLoad()

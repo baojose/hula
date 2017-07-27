@@ -40,6 +40,8 @@ class HLProductDetailViewController: BaseViewController, UIScrollViewDelegate, U
     var productData: NSDictionary!
     var currentProduct: HulaProduct!
     var sellerProducts: NSArray! = []
+    var sellerFeedback: NSArray! = []
+    var sellerUser: HulaUser!
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -64,6 +66,8 @@ class HLProductDetailViewController: BaseViewController, UIScrollViewDelegate, U
             name: productData["title"] as! String,
             image: productData["image_url"] as! String)
         
+        sellerUser = HulaUser()
+        
         currentProduct.productDescription = productData["description"] as! String
         currentProduct.productOwner = productData["owner_id"] as! String
         currentProduct.productCategory = productData["category_name"] as! String
@@ -74,7 +78,7 @@ class HLProductDetailViewController: BaseViewController, UIScrollViewDelegate, U
     }
     func initView() {
         var newFrame: CGRect! = productTableView.frame
-        newFrame.size.height = 10 * 129;
+        newFrame.size.height = CGFloat(sellerProducts.count) * 129.0;
         productTableView.frame = newFrame
         
         // product details
@@ -107,10 +111,15 @@ class HLProductDetailViewController: BaseViewController, UIScrollViewDelegate, U
         commonUtils.setRoundedRectBorderButton(addToTradeBtn, 1.0, UIColor.white, addToTradeBtn.frame.size.height / 2.0)
         
         HLDataManager.sharedInstance.getUserProfile(userId: currentProduct.productOwner, taskCallback: {(user, prods) in
-            print(prods)
+            self.sellerUser = user
             self.sellerNameLabel.text = user.userNick;
             self.sellerFeedbackLabel.text = user.userLocationName;
             self.sellerProducts = prods
+            var newFrame: CGRect! = self.productTableView.frame
+            newFrame.size.height = (CGFloat(self.sellerProducts.count) * 129.0);
+            print(newFrame.size.height)
+            self.productTableView.frame = newFrame
+            self.mainScrollView.contentSize = CGSize(width: 0, height: self.sellerView.frame.origin.y + self.productTableView.frame.size.height + 300)
             self.productTableView.reloadData()
         })
         
@@ -145,10 +154,19 @@ class HLProductDetailViewController: BaseViewController, UIScrollViewDelegate, U
         }
         return cell
     }
+    
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath){
+        print("selected")
+        print(indexPath.row)
         let viewController = self.storyboard?.instantiateViewController(withIdentifier: "productDetailPage") as! HLProductDetailViewController
+        
+        let product = sellerProducts[indexPath.row] as! NSDictionary
+        viewController.productData = product
+        
         self.navigationController?.pushViewController(viewController, animated: true)
     }
+    
+    
     //MARK: - UIScrollViewDelegate
     func scrollViewDidScroll(_ scrollView: UIScrollView){
         if (scrollView == productsScrollView) {
@@ -193,6 +211,14 @@ class HLProductDetailViewController: BaseViewController, UIScrollViewDelegate, U
         }
     }
     
+    @IBAction func gotoUserPage(_ sender: Any) {
+        let viewController = self.storyboard?.instantiateViewController(withIdentifier: "sellerInfoPage") as! HLSellerInfoViewController
+        
+        viewController.user = self.sellerUser
+        viewController.userProducts = self.sellerProducts
+        viewController.userFeedback = self.sellerFeedback
+        self.navigationController?.pushViewController(viewController, animated: true)
+    }
     
     @IBAction func addToTradeAction(_ sender: Any) {
         if let productId = productData["_id"] as? String{
