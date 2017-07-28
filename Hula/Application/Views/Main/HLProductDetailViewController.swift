@@ -70,11 +70,16 @@ class HLProductDetailViewController: BaseViewController, UIScrollViewDelegate, U
         
         currentProduct.productDescription = productData["description"] as! String
         currentProduct.productOwner = productData["owner_id"] as! String
-        currentProduct.productCategory = productData["category_name"] as! String
-        currentProduct.productCategoryId = productData["category_id"] as! String
+        if let catName = productData["category_name"] as? String{
+            currentProduct.productCategory = catName
+        }
+        if let catId = productData["category_id"] as? String {
+            currentProduct.productCategoryId = catId
+        }
         currentProduct.productCondition = productData["condition"] as! String
-        let loc_tmp = productData["location"] as! [Double]
-        currentProduct.productLocation = CLLocation(latitude: loc_tmp[0], longitude: loc_tmp[1])
+        if let loc_tmp = productData["location"] as? [Double] {
+            currentProduct.productLocation = CLLocation(latitude: loc_tmp[0], longitude: loc_tmp[1])
+        }
     }
     func initView() {
         var newFrame: CGRect! = productTableView.frame

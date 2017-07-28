@@ -14,6 +14,7 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
     @IBOutlet weak var noProductsView: UIView!
     var arrayProducts = [] as Array
     var arrayImagesURL = ["","","",""] as Array
+    var spinner: HLSpinnerUIView!
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -34,6 +35,12 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
     override func viewDidAppear(_ animated: Bool) {
         
         super.viewDidAppear(animated)
+        
+        
+        
+        spinner = HLSpinnerUIView()
+        self.view.addSubview(spinner)
+        spinner.show(inView: self.view)
         /*
         let user = HulaUser.sharedInstance
         if (user.token.characters.count < 10){
@@ -188,6 +195,7 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
                         if let dictionary = json as? [Any] {
                             //print(dictionary)
                             self.arrayProducts = dictionary
+                            self.spinner.hide()
                             HulaUser.sharedInstance.arrayProducts = dictionary
                             if (self.arrayProducts.count != 0){
                                 self.noProductsView.isHidden = true

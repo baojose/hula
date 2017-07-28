@@ -37,6 +37,7 @@ class HLProfileViewController: BaseViewController {
     
     
     var arrFeedback: NSArray!
+    var spinner: HLSpinnerUIView!
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -87,6 +88,12 @@ class HLProfileViewController: BaseViewController {
         
         settingsAlertBadge.alpha = 0
         completeProfileTooltip.alpha = 0
+        
+        
+        
+        spinner = HLSpinnerUIView()
+        self.view.addSubview(spinner)
+        spinner.show(inView: self.view)
     }
     
     // IB Actions
@@ -207,6 +214,7 @@ class HLProfileViewController: BaseViewController {
             if (ok){
                 DispatchQueue.main.async {
                     if let dictionary = json as? [String: Any] {
+                        self.spinner.hide()
                         //print(dictionary)
                         if let user = dictionary["user"] as? [String: Any] {
                             if (user["name"] as? String) != nil {

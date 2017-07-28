@@ -150,6 +150,9 @@ class HLSettingViewController: BaseViewController {
         
     }
     
+    @IBAction func helpOptionAction(_ sender: Any) {
+        UIApplication.shared.openURL(URL(string: "https://hula.trading/")!)
+    }
     // Custom functions for ViewController
     func addAlertIcon(toView: UIView){
         let imageName = "icon_alert_thumbnails"

@@ -1330,14 +1330,14 @@ Log In</string>
                                         <rect key="frame" x="118" y="22" width="140" height="140"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES"/>
                                     </imageView>
-                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" text="Loading data..." textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="Rs9-Eu-Op6">
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" text="" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="Rs9-Eu-Op6">
                                         <rect key="frame" x="72" y="170" width="233" height="26"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                         <fontDescription key="fontDescription" name="HelveticaNeue-Light" family="Helvetica Neue" pointSize="22"/>
                                         <nil key="textColor"/>
                                         <nil key="highlightedColor"/>
                                     </label>
-                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" text="-" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="Mbk-mK-oB1">
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" text="" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="Mbk-mK-oB1">
                                         <rect key="frame" x="150" y="199" width="77" height="21"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                         <fontDescription key="fontDescription" name="HelveticaNeue-Light" family="Helvetica Neue" pointSize="16"/>
@@ -1642,12 +1642,12 @@ Log In</string>
                                 </subviews>
                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                             </view>
-                            <view contentMode="scaleToFill" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="1Cg-Qs-fvb">
-                                <rect key="frame" x="0.0" y="107" width="375" height="526"/>
+                            <view contentMode="scaleToFill" fixedFrame="YES" misplaced="YES" translatesAutoresizingMaskIntoConstraints="NO" id="1Cg-Qs-fvb">
+                                <rect key="frame" x="0.0" y="107" width="375" height="487"/>
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                 <subviews>
                                     <tableView clipsSubviews="YES" contentMode="scaleToFill" fixedFrame="YES" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="128" sectionHeaderHeight="48" sectionFooterHeight="1" translatesAutoresizingMaskIntoConstraints="NO" id="ewc-x8-rZd">
-                                        <rect key="frame" x="0.0" y="-31" width="375" height="593"/>
+                                        <rect key="frame" x="0.0" y="-31" width="375" height="554"/>
                                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                         <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                         <prototypes>
@@ -3252,7 +3252,7 @@ Log In</string>
                                                         <rect key="frame" x="8" y="8" width="359" height="44"/>
                                                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                         <connections>
-                                                            <action selector="editItemAction:" destination="oKo-re-riK" eventType="touchUpInside" id="aIV-H7-cM2"/>
+                                                            <action selector="helpOptionAction:" destination="oKo-re-riK" eventType="touchUpInside" id="6bz-a8-Mrd"/>
                                                         </connections>
                                                     </button>
                                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="DA1-qP-ZtV">
@@ -3519,10 +3519,12 @@ Log In</string>
                                             <action selector="selectFromAlbumAction:" destination="i2T-mF-AZ9" eventType="touchUpInside" id="fbP-M5-VGa"/>
                                         </connections>
                                     </button>
-                                    <button opaque="NO" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" id="Sr6-HW-jhq">
-                                        <rect key="frame" x="305" y="37" width="32" height="30"/>
+                                    <button opaque="NO" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" id="Sr6-HW-jhq">
+                                        <rect key="frame" x="294" y="36" width="51" height="34"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMinY="YES"/>
-                                        <state key="normal" title="Cam"/>
+                                        <state key="normal" image="flip_camera_icon">
+                                            <color key="titleColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                        </state>
                                         <connections>
                                             <action selector="switchCamAction:" destination="i2T-mF-AZ9" eventType="touchUpInside" id="6Ld-fd-ql1"/>
                                         </connections>
@@ -5765,6 +5767,7 @@ Log In</string>
         <image name="close_alert_button" width="32" height="32"/>
         <image name="drag-rect" width="152" height="266"/>
         <image name="facebook_button_icon" width="10" height="21"/>
+        <image name="flip_camera_icon" width="43" height="34"/>
         <image name="header_lines" width="375" height="50"/>
         <image name="icon_about" width="29" height="29"/>
         <image name="icon_album" width="41" height="38"/>
@@ -5848,7 +5851,7 @@ Log In</string>
         <simulatedScreenMetrics key="destination" type="retina4_7.fullscreen"/>
     </simulatedMetricsContainer>
     <inferredMetricsTieBreakers>
-        <segue reference="8X8-bg-W6f"/>
+        <segue reference="UoL-AY-aB4"/>
         <segue reference="wT5-4p-lNl"/>
         <segue reference="gzn-56-WQj"/>
     </inferredMetricsTieBreakers>

@@ -21,10 +21,15 @@ class HLSearchResultViewController: BaseViewController, UITableViewDataSource, U
     var productsResults: NSMutableDictionary = [:]
     var productsList: NSArray = []
     var usersList: NSDictionary = [:]
-    
+    var spinner: HLSpinnerUIView!
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        spinner = HLSpinnerUIView()
+        self.view.addSubview(spinner)
+        spinner.show(inView: self.view)
+        
     }
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
@@ -83,7 +88,7 @@ class HLSearchResultViewController: BaseViewController, UITableViewDataSource, U
             //print(user_id)
             //print(self.usersList)
             if let user = self.usersList.object(forKey: user_id) as? NSDictionary{
-                print(user)
+                //print(user)
                 cell.productOwnerName.text = user.object(forKey: "nick") as? String
                 //commonUtils.loadImageOnView(imageView:cell.productOwnerImage, withURL:(user.object(forKey: "image") as? String)!)
                 cell.productOwnerImage.loadImageFromURL(urlString: (user.object(forKey: "image") as? String)!)
@@ -135,6 +140,7 @@ class HLSearchResultViewController: BaseViewController, UITableViewDataSource, U
             if (ok){
                 DispatchQueue.main.async {
                     if let dictionary = json as? [String: Any] {
+                        self.spinner.hide()
                         //print(dictionary)
                         if let products = dictionary["products"] as? NSArray {
                             //print(products)

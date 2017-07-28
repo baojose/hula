@@ -49,7 +49,7 @@ class HLNotificationsViewController: BaseViewController, UITableViewDelegate, UI
         let cell = tableView.dequeueReusableCell(withIdentifier: "NotificationsCategoryCell") as! HLHomeNotificationsTableViewCell
         let notification : NSDictionary = dataManager.arrNotifications.object(at: indexPath.row) as! NSDictionary
         
-        //print(notification)
+        print(notification)
         cell.NotificationsText.text = notification.object(forKey: "text") as? String
         
         commonUtils.circleImageView(cell.NotificationImageView)
@@ -57,8 +57,9 @@ class HLNotificationsViewController: BaseViewController, UITableViewDelegate, UI
         let date = commonUtils.isoDateToNSDate(date: (notification.object(forKey: "date") as? String)!)
         let relativeDate = commonUtils.timeAgoSinceDate(date: date, numericDates: false)
         cell.NotificationsDate.text = relativeDate
-        
-        
+        if let usr = notification.object(forKey: "from_id") as? String{
+            cell.NotificationImageView.loadImageFromURL(urlString: HulaConstants.apiURL + "users/\(usr)/image")
+        }
         return cell
     }
     
