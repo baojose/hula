@@ -185,11 +185,12 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
     }
     
     func getUserProducts() {
-        //print("Getting user info...")
+        print("Getting user info...")
         if (HulaUser.sharedInstance.userId.characters.count>0){
             let queryURL = HulaConstants.apiURL + "products/user/" + HulaUser.sharedInstance.userId
             //print(queryURL)
             HLDataManager.sharedInstance.httpGet(urlstr: queryURL, taskCallback: { (ok, json) in
+                //print(json)
                 if (ok){
                     DispatchQueue.main.async {
                         if let dictionary = json as? [Any] {
@@ -202,6 +203,13 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
                             } else {
                                 self.noProductsView.isHidden = false
                             }
+                        } else {
+                            let alert = UIAlertController(title: "User token expired", message: "Your Hula session is expired. Please log in again.", preferredStyle: UIAlertControllerStyle.alert)
+                            alert.addAction(UIAlertAction(title: "Ok", style: UIAlertActionStyle.default, handler: nil))
+                            self.present(alert, animated: true, completion: {
+                                //print("going to login page")
+                                self.openUserIdentification()
+                            })
                         }
                         self.productTableView.reloadData()
                     }

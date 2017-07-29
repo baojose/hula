@@ -55,6 +55,7 @@ class HLWelcomeViewController: UserBaseViewController, CLLocationManagerDelegate
             case .authorizedAlways, .authorizedWhenInUse:
                 print("Authorized")
                 self.closeIdentification()
+                self.dismiss(animated: true)
                 
             }
         } else {
@@ -68,6 +69,7 @@ class HLWelcomeViewController: UserBaseViewController, CLLocationManagerDelegate
         //print(status)
         if status == .authorizedWhenInUse {
             self.closeIdentification()
+            self.dismiss(animated: true)
         }
     }
 }
