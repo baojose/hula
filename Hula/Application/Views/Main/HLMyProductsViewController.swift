@@ -26,11 +26,11 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
         spinner = HLSpinnerUIView()
         self.view.addSubview(spinner)
         spinner.show(inView: self.view)
-        self.getUserProducts()
         
     }
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
+        self.getUserProducts()
     }
     
     override func didReceiveMemoryWarning() {
@@ -40,18 +40,6 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
     override func viewDidAppear(_ animated: Bool) {
         
         super.viewDidAppear(animated)
-        
-        
-        
-        /*
-        let user = HulaUser.sharedInstance
-        if (user.token.characters.count < 10){
-            // user not logged in
-            openUserIdentification()
-        } else {
-            //self.getUserProducts()
-        }
- */
     }
     func initData(){
         

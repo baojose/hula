@@ -20,6 +20,9 @@ class HLEditProductMainViewController: BaseViewController {
     @IBOutlet weak var categoryNameLabel: UILabel!
     @IBOutlet weak var productConditionLabel: UILabel!
     @IBOutlet weak var productDescriptionLabel: UILabel!
+    
+    
+    var spinner: HLSpinnerUIView!
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -49,6 +52,32 @@ class HLEditProductMainViewController: BaseViewController {
         productDescriptionLabel.text = productToDisplay.object(forKey: "description") as? String
     }
     @IBAction func deleteProductAction(_ sender: Any) {
+        let alert = UIAlertController(title: "Delete product", message: "Are you sure you want to delete this product?", preferredStyle: UIAlertControllerStyle.alert)
+        alert.addAction(UIAlertAction(title: "Cancel", style: UIAlertActionStyle.default, handler: nil))
+        alert.addAction(UIAlertAction(title: "Delete", style: UIAlertActionStyle.destructive, handler: {UIAlertAction in
+            //print("Deleting product")
+            if let prodId = self.productToDisplay.object(forKey: "_id") as? String{
+                self.spinner = HLSpinnerUIView()
+                self.view.addSubview(self.spinner)
+                self.spinner.show(inView: self.view)
+                
+                
+                let queryURL = HulaConstants.apiURL + "products/" + prodId + "/delete"
+                //print(queryURL)
+                HLDataManager.sharedInstance.httpGet(urlstr: queryURL, taskCallback: { (ok, json) in
+                    //print(json)
+                    if (ok){
+                        self.spinner.hide()
+                        DispatchQueue.main.async {
+                            _ = self.navigationController?.popViewController(animated: true)
+                        }
+                    }
+                })
+            }
+            
+        }))
+        self.present(alert, animated: true, completion: {})
+        
     }
     @IBAction func editItemAction(_ sender: Any) {
         //let userData = HulaUser.sharedInstance
@@ -92,11 +121,11 @@ class HLEditProductMainViewController: BaseViewController {
             break
         }
         if ((sender as! UIButton).tag != 0 ){
-            let editViewController = self.storyboard?.instantiateViewController(withIdentifier: "fieldEditor") as! HLEditFieldViewController
-            editViewController.field_label = label
-            editViewController.field_title = title
-            editViewController.field_previous_val = previous
-            editViewController.field_key = item_toUpdate
+            let editViewController = self.storyboard?.instantiateViewController(withIdentifier: "productTextEditor") as! HLProductEditTextViewController
+            editViewController.originalText = previous
+            editViewController.label = label
+            editViewController.item = item_toUpdate
+            editViewController.pageTitle = title
             self.navigationController?.pushViewController(editViewController, animated: true)
         }
     }
