@@ -21,6 +21,11 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
         
         self.initData()
         self.initView()
+        
+        
+        spinner = HLSpinnerUIView()
+        self.view.addSubview(spinner)
+        spinner.show(inView: self.view)
         self.getUserProducts()
         
     }
@@ -38,9 +43,6 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
         
         
         
-        spinner = HLSpinnerUIView()
-        self.view.addSubview(spinner)
-        spinner.show(inView: self.view)
         /*
         let user = HulaUser.sharedInstance
         if (user.token.characters.count < 10){
