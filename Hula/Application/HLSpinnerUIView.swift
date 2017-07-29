@@ -11,17 +11,19 @@ import UIKit
 class HLSpinnerUIView: UIView {
     
     var spinning: Bool = false
-    
+    var spinner:UIView!
     
     
     func show(inView: UIView) {
-        let spinner = UIView();
-        spinner.frame = CGRect(x: 0, y: 0, width: 40.0, height: 40.0)
+        spinner = UIView();
+        spinner.frame = CGRect(x: 0, y: 0, width: 75.0, height: 75.0)
         spinner.center = inView.center
         
-        let img = UIImage(named: "added-arrow")
+        let img = UIImage(named: "spinner_arrows")
         let image = UIImageView(image: img)
         
+        let image_h = UIImageView(image:UIImage(named: "spinner_H"))
+        spinner.addSubview(image_h)
         spinner.addSubview(image)
         
         self.addSubview(spinner)
@@ -31,15 +33,20 @@ class HLSpinnerUIView: UIView {
     }
     
     func hide(){
-        for subUIView in self.subviews as [UIView] {
-            subUIView.removeFromSuperview()
-        }
-        spinning = false
+        UIView.animate(withDuration: 0.1, animations: {
+            self.spinner.transform = CGAffineTransform(scaleX: 0.1, y: 0.1)
+        }, completion: { success in
+        
+            for subUIView in self.subviews as [UIView] {
+                subUIView.removeFromSuperview()
+            }
+            self.spinning = false
+        })
     }
     
     private func rotate(targetView: UIView, duration: Double = 1.0) {
         UIView.animate(withDuration: duration, delay: 0.0, options: .curveLinear, animations: {
-            targetView.transform = targetView.transform.rotated(by: CGFloat(M_PI))
+            targetView.transform = targetView.transform.rotated(by: CGFloat( Double.pi + 0.001 ))
         }) { finished in
             self.rotate(targetView: targetView, duration: duration)
         }
