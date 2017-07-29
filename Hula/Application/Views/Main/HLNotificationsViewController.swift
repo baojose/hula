@@ -31,6 +31,7 @@ class HLNotificationsViewController: BaseViewController, UITableViewDelegate, UI
             notificationsView.isHidden = false
             noNotificatiosnFoundView.isHidden = true
         }
+        UIApplication.shared.applicationIconBadgeNumber = 0
     }
     
     override func didReceiveMemoryWarning() {
