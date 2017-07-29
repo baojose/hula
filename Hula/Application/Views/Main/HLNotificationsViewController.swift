@@ -49,7 +49,7 @@ class HLNotificationsViewController: BaseViewController, UITableViewDelegate, UI
         let cell = tableView.dequeueReusableCell(withIdentifier: "NotificationsCategoryCell") as! HLHomeNotificationsTableViewCell
         let notification : NSDictionary = dataManager.arrNotifications.object(at: indexPath.row) as! NSDictionary
         
-        print(notification)
+        //print(notification)
         cell.NotificationsText.text = notification.object(forKey: "text") as? String
         
         commonUtils.circleImageView(cell.NotificationImageView)
