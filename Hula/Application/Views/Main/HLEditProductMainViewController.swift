@@ -11,6 +11,7 @@ import UIKit
 class HLEditProductMainViewController: BaseViewController {
     
     var productToDisplay:NSDictionary = [:]
+    var product = HulaProduct()
     @IBOutlet var mainScrollVIew: UIScrollView!
     @IBOutlet var contentView: UIView!
     @IBOutlet weak var productImage: UIImageView!
@@ -27,53 +28,50 @@ class HLEditProductMainViewController: BaseViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         self.initData()
-        self.initView()
     }
 
+    override func viewWillAppear(_ animated: Bool) {
+        self.initView()
+    }
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
     }
     
     func initData() {
-        
+        product.populate(with: productToDisplay)
     }
     func initView() {
         mainScrollVIew.contentSize = contentView.frame.size
-        print(productToDisplay);
-        if let mainProductImage = productToDisplay.object(forKey: "image_url") as? String {
-            //commonUtils.loadImageOnView(imageView: productImage, withURL: (mainProductImage))
-            
-            productImage.loadImageFromURL(urlString: mainProductImage)
-        }
-        productTitle.text = productToDisplay.object(forKey: "title") as? String
-        productTitleLabel.text = productToDisplay.object(forKey: "title") as? String
-        numPicturesLabel.text = "1"
-        productConditionLabel.text = productToDisplay.object(forKey: "condition") as? String
-        productDescriptionLabel.text = productToDisplay.object(forKey: "description") as? String
+        //print(productToDisplay);
+        productImage.loadImageFromURL(urlString: product.productImage)
+        productTitle.text = product.productName
+        productTitleLabel.text = product.productName
+        categoryNameLabel.text = product.productCategory
+        numPicturesLabel.text = "\(product.arrProductPhotoLink.count)"
+        productConditionLabel.text = product.productCondition
+        productDescriptionLabel.text = product.productDescription
     }
     @IBAction func deleteProductAction(_ sender: Any) {
         let alert = UIAlertController(title: "Delete product", message: "Are you sure you want to delete this product?", preferredStyle: UIAlertControllerStyle.alert)
         alert.addAction(UIAlertAction(title: "Cancel", style: UIAlertActionStyle.default, handler: nil))
         alert.addAction(UIAlertAction(title: "Delete", style: UIAlertActionStyle.destructive, handler: {UIAlertAction in
             //print("Deleting product")
-            if let prodId = self.productToDisplay.object(forKey: "_id") as? String{
-                self.spinner = HLSpinnerUIView()
-                self.view.addSubview(self.spinner)
-                self.spinner.show(inView: self.view)
-                
-                
-                let queryURL = HulaConstants.apiURL + "products/" + prodId + "/delete"
-                //print(queryURL)
-                HLDataManager.sharedInstance.httpGet(urlstr: queryURL, taskCallback: { (ok, json) in
-                    //print(json)
-                    if (ok){
-                        self.spinner.hide()
-                        DispatchQueue.main.async {
-                            _ = self.navigationController?.popViewController(animated: true)
-                        }
+            self.spinner = HLSpinnerUIView()
+            self.view.addSubview(self.spinner)
+            self.spinner.show(inView: self.view)
+            
+            
+            let queryURL = HulaConstants.apiURL + "products/" + self.product.productId + "/delete"
+            //print(queryURL)
+            HLDataManager.sharedInstance.httpGet(urlstr: queryURL, taskCallback: { (ok, json) in
+                //print(json)
+                if (ok){
+                    self.spinner.hide()
+                    DispatchQueue.main.async {
+                        _ = self.navigationController?.popViewController(animated: true)
                     }
-                })
-            }
+                }
+            })
             
         }))
         self.present(alert, animated: true, completion: {})
@@ -95,7 +93,7 @@ class HLEditProductMainViewController: BaseViewController {
         case 10:
             // Title
             title = "Choose a title for your product"
-            previous = productTitle.text!
+            previous = product.productName
             label = "Title"
             item_toUpdate = "title"
         case 20:
@@ -113,7 +111,7 @@ class HLEditProductMainViewController: BaseViewController {
         case 40:
             // Description
             title = "Change description"
-            previous = productDescriptionLabel.text!
+            previous = product.productDescription
             label = "Description"
             item_toUpdate = "description"
         default:
@@ -126,6 +124,7 @@ class HLEditProductMainViewController: BaseViewController {
             editViewController.label = label
             editViewController.item = item_toUpdate
             editViewController.pageTitle = title
+            editViewController.product = self.product
             self.navigationController?.pushViewController(editViewController, animated: true)
         }
     }

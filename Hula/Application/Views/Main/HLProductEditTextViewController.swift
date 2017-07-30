@@ -14,8 +14,12 @@ class HLProductEditTextViewController: BaseViewController, UITextViewDelegate {
     @IBOutlet weak var editableTextView: UITextView!
     @IBOutlet weak var editPageTitleLabel: UILabel!
     @IBOutlet weak var lineSeparator: UILabel!
-    @IBOutlet weak var saveButton: HLBouncingButton!
     
+    @IBOutlet weak var categoryTableView: UITableView!
+    
+    
+    @IBOutlet weak var saveButton: HLBouncingButton!
+    var product:HulaProduct = HulaProduct()
     var originalText: String = ""
     var label: String = ""
     var item: String = ""
@@ -23,8 +27,17 @@ class HLProductEditTextViewController: BaseViewController, UITextViewDelegate {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-
+        
         // Do any additional setup after loading the view.
+        
+        switch(item){
+        case "title":
+            categoryTableView.isHidden = true
+        case "description":
+            categoryTableView.isHidden = true
+        default:
+            break
+        }
     }
     override func viewWillAppear(_ animated: Bool) {
         editPageTitleLabel.text = pageTitle
@@ -46,6 +59,15 @@ class HLProductEditTextViewController: BaseViewController, UITextViewDelegate {
     }
 
     @IBAction func saveAction(_ sender: Any) {
+        switch(item){
+        case "title":
+            product.productName = editableTextView.text
+        case "description":
+            product.productDescription = editableTextView.text
+        default:
+            break
+        }
+        product.updateServerData()
         let _ = self.navigationController?.popViewController(animated: true)
     }
     
@@ -71,4 +93,38 @@ class HLProductEditTextViewController: BaseViewController, UITextViewDelegate {
     }
     */
 
+}
+
+extension HLProductEditTextViewController: UITableViewDelegate, UITableViewDataSource{
+    func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat{
+        return 0
+    }
+    func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView?{
+        
+        let view = UIView(frame: CGRect(x: 0, y: 0, width: tableView.frame.size.width, height: 0))
+        return view
+    }
+    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat{
+        return 60.0
+    }
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        return dataManager.arrCategories.count
+    }
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        
+        let cell = tableView.dequeueReusableCell(withIdentifier: "completeProductProfileCategoryCell") as! HLHomeCategoryTableViewCell
+        let category : NSDictionary = dataManager.arrCategories.object(at: indexPath.row) as! NSDictionary
+        
+        cell.categoryName.attributedText = commonUtils.attributedStringWithTextSpacing(category.object(forKey: "name") as! String, CGFloat(2.33))
+        cell.categoryImage.image = UIImage.init(named: category.object(forKey: "icon") as! String)
+        
+        return cell
+    }
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath){
+        let category : NSDictionary = dataManager.arrCategories.object(at: indexPath.row) as! NSDictionary
+        product.productCategory = category.object(forKey: "name") as! String
+        product.productCategoryId = category.object(forKey: "_id") as! String
+        product.updateServerData()
+        let _ = self.navigationController?.popViewController(animated: true)
+    }
 }
