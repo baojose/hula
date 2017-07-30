@@ -8,7 +8,7 @@
 
 import UIKit
 
-class HLEditProductMainViewController: BaseViewController {
+class HLEditProductMainViewController: BaseViewController, ProductPictureDelegate {
     
     var productToDisplay:NSDictionary = [:]
     var product = HulaProduct()
@@ -22,6 +22,10 @@ class HLEditProductMainViewController: BaseViewController {
     @IBOutlet weak var productConditionLabel: UILabel!
     @IBOutlet weak var productDescriptionLabel: UILabel!
     
+    @IBOutlet weak var prodImg1: UIImageView!
+    @IBOutlet weak var prodImg2: UIImageView!
+    @IBOutlet weak var prodImg3: UIImageView!
+    @IBOutlet weak var prodImg4: UIImageView!
     
     var spinner: HLSpinnerUIView!
 
@@ -50,6 +54,23 @@ class HLEditProductMainViewController: BaseViewController {
         numPicturesLabel.text = "\(product.arrProductPhotoLink.count)"
         productConditionLabel.text = product.productCondition
         productDescriptionLabel.text = product.productDescription
+        prodImg1.image = nil
+        prodImg2.image = nil
+        prodImg3.image = nil
+        prodImg4.image = nil
+        
+        if product.arrProductPhotoLink.count > 0 && product.arrProductPhotoLink[0].characters.count > 0 {
+            prodImg1.loadImageFromURL(urlString: product.arrProductPhotoLink[0])
+        }
+        if product.arrProductPhotoLink.count > 1 && product.arrProductPhotoLink[1].characters.count > 0 {
+            prodImg2.loadImageFromURL(urlString: product.arrProductPhotoLink[1])
+        }
+        if product.arrProductPhotoLink.count > 2 && product.arrProductPhotoLink[2].characters.count > 0 {
+            prodImg3.loadImageFromURL(urlString: product.arrProductPhotoLink[2])
+        }
+        if product.arrProductPhotoLink.count > 3 && product.arrProductPhotoLink[3].characters.count > 0 {
+            prodImg4.loadImageFromURL(urlString: product.arrProductPhotoLink[3])
+        }
     }
     @IBAction func deleteProductAction(_ sender: Any) {
         let alert = UIAlertController(title: "Delete product", message: "Are you sure you want to delete this product?", preferredStyle: UIAlertControllerStyle.alert)
@@ -77,6 +98,15 @@ class HLEditProductMainViewController: BaseViewController {
         self.present(alert, animated: true, completion: {})
         
     }
+    
+    @IBAction func changeImageAction(_ sender: Any) {
+        
+        let cameraViewController = self.storyboard?.instantiateViewController(withIdentifier: "productPictureEdit") as! HLProductPictureEditViewController
+        cameraViewController.positionToReplace = (sender as! UIButton).tag
+        cameraViewController.prodDelegate = self
+        self.present(cameraViewController, animated: true)
+    }
+    
     @IBAction func editItemAction(_ sender: Any) {
         //let userData = HulaUser.sharedInstance
         print((sender as! UIButton).tag)
@@ -87,8 +117,7 @@ class HLEditProductMainViewController: BaseViewController {
         switch (sender as! UIButton).tag {
         case 0:
             // image update
-            let cameraViewController = self.storyboard?.instantiateViewController(withIdentifier: "selectPictureGeneral") as! HLPictureSelectViewController
-            self.present(cameraViewController, animated: true)
+            break
             
         case 10:
             // Title
@@ -127,5 +156,15 @@ class HLEditProductMainViewController: BaseViewController {
             editViewController.product = self.product
             self.navigationController?.pushViewController(editViewController, animated: true)
         }
+    }
+    
+    
+    func imageUploaded(path: String, pos: Int){
+        if (product.arrProductPhotoLink.count < pos ){
+            product.arrProductPhotoLink.append(path)
+        } else {
+            product.arrProductPhotoLink[ pos - 1 ] = path
+        }
+        product.updateServerData()
     }
 }

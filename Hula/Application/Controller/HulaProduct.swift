@@ -94,7 +94,7 @@ class HulaProduct: NSObject {
                 //print("done")
                 //print(ok)
                 if (ok){
-                    print(json!)
+                    //print(json!)
                     if (json as? [String: Any]) != nil {
                         //print(dictionary)
                     }

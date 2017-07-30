@@ -1,8 +1,8 @@
 //
-//  HLPictureSelectViewController.swift
+//  HLProductPictureEditViewController.swift
 //  Hula
 //
-//  Created by Juan Searle on 08/05/2017.
+//  Created by Juan Searle on 30/07/2017.
 //  Copyright © 2017 star. All rights reserved.
 //
 
@@ -10,15 +10,14 @@ import UIKit
 import AVFoundation
 import Photos
 
-class HLPictureSelectViewController: BaseViewController, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
-    
+class HLProductPictureEditViewController: BaseViewController, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
     
     @IBOutlet weak var titleLabel: UILabel!
     @IBOutlet weak var viewCamera: UIView!
     @IBOutlet weak var navView: UIView!
     @IBOutlet weak var imgOverlay: UIImageView!
     @IBOutlet weak var controlView: UIView!
-
+    
     // vars related with Camera
     let captureSession = AVCaptureSession()
     let stillImageOutput = AVCaptureStillImageOutput()
@@ -26,6 +25,8 @@ class HLPictureSelectViewController: BaseViewController, UIImagePickerController
     var captureDevice : AVCaptureDevice?
     var resultingImage: String = ""
     var backCam:Bool = true
+    var positionToReplace:Int = 0
+    var prodDelegate: ProductPictureDelegate?
     
     // vars related with Photo Albums
     var arrAlbumPhotos: NSMutableArray!
@@ -33,25 +34,22 @@ class HLPictureSelectViewController: BaseViewController, UIImagePickerController
     fileprivate let imageManager = PHCachingImageManager()
     
     let picker = UIImagePickerController()
-    
-    
-    override var prefersStatusBarHidden: Bool {
-        return true
-    }
-    
+
     override func viewDidLoad() {
         super.viewDidLoad()
 
         // Do any additional setup after loading the view.
-        picker.delegate = self
-        
-        
         self.initView()
         self.initCamera()
         self.beginSession()
-        
-        
     }
+
+    override func didReceiveMemoryWarning() {
+        super.didReceiveMemoryWarning()
+        // Dispose of any resources that can be recreated.
+    }
+    
+
     func initView(){
         titleLabel.attributedText = commonUtils.attributedStringWithTextSpacing(titleLabel.text!, 2.33)
     }
@@ -123,22 +121,12 @@ class HLPictureSelectViewController: BaseViewController, UIImagePickerController
         self.view.addSubview(controlView)
     }
     func stopSession() {
-        
         captureSession.stopRunning()
-        
-        
         for i : AVCaptureDeviceInput in (self.captureSession.inputs as! [AVCaptureDeviceInput]){
             self.captureSession.removeInput(i)
         }
-        
-        
     }
     
-
-    override func didReceiveMemoryWarning() {
-        super.didReceiveMemoryWarning()
-        // Dispose of any resources that can be recreated.
-    }
     
     @IBAction func closeCameraTapped(_ sender: Any) {
         self.dismissToPreviousPage(sender)
@@ -146,17 +134,12 @@ class HLPictureSelectViewController: BaseViewController, UIImagePickerController
     @IBAction func selectFromAlbumAction(_ sender: Any) {
         openImagePicker()
     }
-
-    @IBAction func switchCamAction(_ sender: Any) {
-        backCam = !backCam
-        stopSession()
-        initCamera()
-        beginSession()
-    }
     @IBAction func takePhotoAction(_ sender: Any) {
         saveToCamera(sender)
         //dismissToPreviousPage(sender)
     }
+    
+    
     func openImagePicker(){
         picker.allowsEditing = false
         picker.sourceType = .photoLibrary
@@ -186,7 +169,7 @@ class HLPictureSelectViewController: BaseViewController, UIImagePickerController
     func uploadImage(_ image:UIImage) {
         //print("Getting user info...")
         print("Uploading images...")
-        dataManager.uploadImage(image, itemPosition:10, taskCallback: { (ok, json) in
+        dataManager.uploadImage(image, itemPosition: positionToReplace, taskCallback: { (ok, json) in
             if (ok){
                 print("Uploaded!")
                 DispatchQueue.main.async {
@@ -197,9 +180,14 @@ class HLPictureSelectViewController: BaseViewController, UIImagePickerController
                             if let pos = dictionary["position"] as? String {
                                 print(pos)
                                 self.resultingImage = HulaConstants.staticServerURL + filePath
-                                HulaUser.sharedInstance.userPhotoURL = self.resultingImage
-                                HulaUser.sharedInstance.updateServerData()
+                                print(self.resultingImage)
+                                
+                                
+                                self.prodDelegate?.imageUploaded(path:self.resultingImage, pos: Int(pos)! )
+                                
+                                print("sent to delegate")
                                 self.dismissToPreviousPage(self.resultingImage)
+                                print("dismiss")
                             }
                         }
                     }
@@ -210,5 +198,8 @@ class HLPictureSelectViewController: BaseViewController, UIImagePickerController
             }
         });
     }
+}
 
+protocol ProductPictureDelegate {
+    func imageUploaded(path: String, pos: Int)
 }

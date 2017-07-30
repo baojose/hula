@@ -14,7 +14,10 @@ class HLProductEditTextViewController: BaseViewController, UITextViewDelegate {
     @IBOutlet weak var editableTextView: UITextView!
     @IBOutlet weak var editPageTitleLabel: UILabel!
     @IBOutlet weak var lineSeparator: UILabel!
+    @IBOutlet weak var conditionNewBtn: UIButton!
+    @IBOutlet weak var conditionUsedBtn: UIButton!
     
+    @IBOutlet weak var conditionSelectorView: UIView!
     @IBOutlet weak var categoryTableView: UITableView!
     
     
@@ -33,7 +36,13 @@ class HLProductEditTextViewController: BaseViewController, UITextViewDelegate {
         switch(item){
         case "title":
             categoryTableView.isHidden = true
+            conditionSelectorView.isHidden = true
         case "description":
+            categoryTableView.isHidden = true
+            conditionSelectorView.isHidden = true
+        case "category":
+            conditionSelectorView.isHidden = true
+        case "condition":
             categoryTableView.isHidden = true
         default:
             break
@@ -43,6 +52,14 @@ class HLProductEditTextViewController: BaseViewController, UITextViewDelegate {
         editPageTitleLabel.text = pageTitle
         currentTextLabel.text = "CURRENT: \(originalText)"
         editableTextView.text = originalText
+        
+        if (self.product.productCondition == "new"){
+            setBtnStatus(button:conditionNewBtn, selected:true)
+            setBtnStatus(button:conditionUsedBtn, selected:false)
+        } else {
+            setBtnStatus(button:conditionNewBtn, selected:false)
+            setBtnStatus(button:conditionUsedBtn, selected:true)
+        }
     }
     override func viewDidAppear(_ animated: Bool) {
         editableTextView.becomeFirstResponder()
@@ -71,6 +88,12 @@ class HLProductEditTextViewController: BaseViewController, UITextViewDelegate {
         let _ = self.navigationController?.popViewController(animated: true)
     }
     
+    @IBAction func conditionUsedAction(_ sender: Any) {
+        changeConditionState("used")
+    }
+    @IBAction func conditionNewAction(_ sender: Any) {
+        changeConditionState("new")
+    }
     
     func textViewDidChange(_: UITextView){
         let w = self.view.frame.size.width-30
@@ -83,16 +106,34 @@ class HLProductEditTextViewController: BaseViewController, UITextViewDelegate {
         }, completion: nil)
         
     }
-    /*
-    // MARK: - Navigation
-
-    // In a storyboard-based application, you will often want to do a little preparation before navigation
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        // Get the new view controller using segue.destinationViewController.
-        // Pass the selected object to the new view controller.
+    
+    
+    func changeConditionState(_ mode: String){
+        if mode == "new" {
+            self.product.productCondition = "new"
+            setBtnStatus(button:conditionNewBtn, selected:true)
+            setBtnStatus(button:conditionUsedBtn, selected:false)
+        } else if mode == "used" {
+            self.product.productCondition = "used"
+            setBtnStatus(button:conditionNewBtn, selected:false)
+            setBtnStatus(button:conditionUsedBtn, selected:true)
+        }
+        product.updateServerData()
+        let _ = self.navigationController?.popViewController(animated: true)
     }
-    */
-
+    
+    
+    func setBtnStatus(button:UIButton, selected:Bool){
+        if selected{
+            button.backgroundColor = HulaConstants.appMainColor
+            button.setTitleColor(UIColor.white, for: UIControlState.normal)
+            commonUtils.setRoundedRectBorderButton(button, 0.0, UIColor.clear, button.frame.size.height / 2.0)
+        } else {
+            button.backgroundColor = UIColor.white
+            button.setTitleColor(HulaConstants.appMainColor, for: UIControlState.normal)
+            commonUtils.setRoundedRectBorderButton(button, 1.0, HulaConstants.appMainColor, button.frame.size.height / 2.0)
+        }
+    }
 }
 
 extension HLProductEditTextViewController: UITableViewDelegate, UITableViewDataSource{
