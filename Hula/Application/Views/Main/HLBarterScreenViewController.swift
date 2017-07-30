@@ -420,7 +420,7 @@ extension HLBarterScreenViewController: KDDragAndDropCollectionViewDataSource, U
         let size: CGSize
         switch collectionView.tag {
         case 1:
-            size = CGSize(width: collectionView.frame.size.width, height: 118)
+            size = CGSize(width: collectionView.frame.size.width, height: 122)
         case 2:
             size = CGSize(width: collectionView.frame.size.width/3, height: collectionView.frame.size.width/3)
         case 3:
