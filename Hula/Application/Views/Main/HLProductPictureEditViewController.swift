@@ -168,26 +168,26 @@ class HLProductPictureEditViewController: BaseViewController, UIImagePickerContr
     
     func uploadImage(_ image:UIImage) {
         //print("Getting user info...")
-        print("Uploading images...")
+        //print("Uploading images...")
         dataManager.uploadImage(image, itemPosition: positionToReplace, taskCallback: { (ok, json) in
             if (ok){
-                print("Uploaded!")
+                //print("Uploaded!")
                 DispatchQueue.main.async {
                     if let dictionary = json as? [String: Any] {
-                        print(dictionary)
+                        //print(dictionary)
                         if let filePath:String = dictionary["path"] as? String {
                             print(filePath)
                             if let pos = dictionary["position"] as? String {
-                                print(pos)
+                                //print(pos)
                                 self.resultingImage = HulaConstants.staticServerURL + filePath
-                                print(self.resultingImage)
+                                //print(self.resultingImage)
                                 
                                 
                                 self.prodDelegate?.imageUploaded(path:self.resultingImage, pos: Int(pos)! )
                                 
-                                print("sent to delegate")
+                                //print("sent to delegate")
                                 self.dismissToPreviousPage(self.resultingImage)
-                                print("dismiss")
+                                //print("dismiss")
                             }
                         }
                     }

@@ -54,23 +54,7 @@ class HLEditProductMainViewController: BaseViewController, ProductPictureDelegat
         numPicturesLabel.text = "\(product.arrProductPhotoLink.count)"
         productConditionLabel.text = product.productCondition
         productDescriptionLabel.text = product.productDescription
-        prodImg1.image = nil
-        prodImg2.image = nil
-        prodImg3.image = nil
-        prodImg4.image = nil
-        
-        if product.arrProductPhotoLink.count > 0 && product.arrProductPhotoLink[0].characters.count > 0 {
-            prodImg1.loadImageFromURL(urlString: product.arrProductPhotoLink[0])
-        }
-        if product.arrProductPhotoLink.count > 1 && product.arrProductPhotoLink[1].characters.count > 0 {
-            prodImg2.loadImageFromURL(urlString: product.arrProductPhotoLink[1])
-        }
-        if product.arrProductPhotoLink.count > 2 && product.arrProductPhotoLink[2].characters.count > 0 {
-            prodImg3.loadImageFromURL(urlString: product.arrProductPhotoLink[2])
-        }
-        if product.arrProductPhotoLink.count > 3 && product.arrProductPhotoLink[3].characters.count > 0 {
-            prodImg4.loadImageFromURL(urlString: product.arrProductPhotoLink[3])
-        }
+        redrawProductImages()
     }
     @IBAction func deleteProductAction(_ sender: Any) {
         let alert = UIAlertController(title: "Delete product", message: "Are you sure you want to delete this product?", preferredStyle: UIAlertControllerStyle.alert)
@@ -158,6 +142,28 @@ class HLEditProductMainViewController: BaseViewController, ProductPictureDelegat
         }
     }
     
+    func redrawProductImages(){
+        
+        prodImg1.image = nil
+        prodImg2.image = nil
+        prodImg3.image = nil
+        prodImg4.image = UIImage(named: "icon_camera_small")
+        prodImg4.contentMode = .center
+        
+        if product.arrProductPhotoLink.count > 0 && product.arrProductPhotoLink[0].characters.count > 0 {
+            prodImg1.loadImageFromURL(urlString: product.arrProductPhotoLink[0])
+        }
+        if product.arrProductPhotoLink.count > 1 && product.arrProductPhotoLink[1].characters.count > 0 {
+            prodImg2.loadImageFromURL(urlString: product.arrProductPhotoLink[1])
+        }
+        if product.arrProductPhotoLink.count > 2 && product.arrProductPhotoLink[2].characters.count > 0 {
+            prodImg3.loadImageFromURL(urlString: product.arrProductPhotoLink[2])
+        }
+        if product.arrProductPhotoLink.count > 3 && product.arrProductPhotoLink[3].characters.count > 0 {
+            prodImg4.loadImageFromURL(urlString: product.arrProductPhotoLink[3])
+            prodImg4.contentMode = .scaleAspectFill
+        }
+    }
     
     func imageUploaded(path: String, pos: Int){
         if (product.arrProductPhotoLink.count < pos ){
@@ -165,6 +171,11 @@ class HLEditProductMainViewController: BaseViewController, ProductPictureDelegat
         } else {
             product.arrProductPhotoLink[ pos - 1 ] = path
         }
+        if (pos == 1){
+            product.productImage = path
+            self.productImage.loadImageFromURL(urlString: path)
+        }
+        redrawProductImages()
         product.updateServerData()
     }
 }
