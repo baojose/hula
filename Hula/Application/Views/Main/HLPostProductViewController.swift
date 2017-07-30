@@ -107,7 +107,7 @@ class HLPostProductViewController: BaseViewController, UITextFieldDelegate {
     }
     
     func selectedImageTapped(_ sender: UITapGestureRecognizer){
-        print("Touches began")
+        //print("Touches began")
         for i in 0 ..< 4{
             let imgView: UIView! = arrImageFrameViews.object(at: i) as! UIView
             UIView.animate(withDuration: 0.2, animations: {

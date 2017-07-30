@@ -37,6 +37,7 @@ class HLProfileViewController: BaseViewController {
     
     
     var arrFeedback: NSArray!
+    var spinner: HLSpinnerUIView!
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -87,6 +88,12 @@ class HLProfileViewController: BaseViewController {
         
         settingsAlertBadge.alpha = 0
         completeProfileTooltip.alpha = 0
+        
+        
+        
+        spinner = HLSpinnerUIView()
+        self.view.addSubview(spinner)
+        spinner.show(inView: self.view)
     }
     
     // IB Actions
@@ -201,14 +208,15 @@ class HLProfileViewController: BaseViewController {
     func getUserProfile() {
         
         //print("Getting user info...")
-        let queryURL = HulaConstants.apiURL + "users/" + HulaUser.sharedInstance.userId
+        let queryURL = HulaConstants.apiURL + "me"
         //print(queryURL)
         HLDataManager.sharedInstance.httpGet(urlstr: queryURL, taskCallback: { (ok, json) in
             if (ok){
                 DispatchQueue.main.async {
                     if let dictionary = json as? [String: Any] {
-                        //print(dictionary)
+                        
                         if let user = dictionary["user"] as? [String: Any] {
+                            self.spinner.hide()
                             if (user["name"] as? String) != nil {
                                 HulaUser.sharedInstance.userName = user["name"] as? String
                             }
@@ -278,21 +286,31 @@ class HLProfileViewController: BaseViewController {
                                     self.userFeedbackLabel.text = "-"
                                 }
                             }
+                            self.userFullNameLabel.text = HulaUser.sharedInstance.userName
+                            self.userNickLabel.text = HulaUser.sharedInstance.userNick
+                            self.userBioLabel.text = HulaUser.sharedInstance.userBio
+                            if (HulaUser.sharedInstance.isIncompleteProfile()){
+                                // badges to inform the user
+                                UIView.animate(withDuration: 0.4, animations: {
+                                    self.completeProfileTooltip.alpha = 1
+                                    self.settingsAlertBadge.alpha = 1
+                                })
+                            }
+                            
+                            if let feedback = dictionary["feedback"] as? NSArray {
+                                self.arrFeedback = feedback
+                                //print(self.arrFeedback)
+                            }
+
+                        } else {
+                            let alert = UIAlertController(title: "User token expired", message: "Your Hula session is expired. Please log in again.", preferredStyle: UIAlertControllerStyle.alert)
+                            alert.addAction(UIAlertAction(title: "Ok", style: UIAlertActionStyle.default, handler: nil))
+                            self.present(alert, animated: true, completion: {
+                                //print("going to login page")
+                                self.openUserIdentification()
+                            })
                         }
-                        if let feedback = dictionary["feedback"] as? NSArray {
-                            self.arrFeedback = feedback
-                            //print(self.arrFeedback)
-                        }
-                    }
-                    self.userFullNameLabel.text = HulaUser.sharedInstance.userName
-                    self.userNickLabel.text = HulaUser.sharedInstance.userNick
-                    self.userBioLabel.text = HulaUser.sharedInstance.userBio
-                    if (HulaUser.sharedInstance.isIncompleteProfile()){
-                        // badges to inform the user
-                        UIView.animate(withDuration: 0.4, animations: {
-                            self.completeProfileTooltip.alpha = 1
-                            self.settingsAlertBadge.alpha = 1
-                        })
+                        
                     }
                 }
             } else {

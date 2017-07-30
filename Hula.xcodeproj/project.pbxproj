@@ -37,6 +37,9 @@
 		27C733C51EA2BC7E003A6FD6 /* HLIdentificationViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27C733C41EA2BC7E003A6FD6 /* HLIdentificationViewController.swift */; };
 		27C733C71EA2D051003A6FD6 /* HLRoundedGradientButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27C733C61EA2D050003A6FD6 /* HLRoundedGradientButton.swift */; };
 		27C733C91EA2D1E0003A6FD6 /* HLRoundedNextButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27C733C81EA2D1E0003A6FD6 /* HLRoundedNextButton.swift */; };
+		27C969B71F2BF05F00D4B433 /* HLSpinnerUIView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27C969B61F2BF05F00D4B433 /* HLSpinnerUIView.swift */; };
+		27D589841F2D4CA900240A36 /* HLProductEditTextViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27D589831F2D4CA900240A36 /* HLProductEditTextViewController.swift */; };
+		27D589861F2DEECF00240A36 /* HLProductPictureEditViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27D589851F2DEECF00240A36 /* HLProductPictureEditViewController.swift */; };
 		99F54F96A90A0DEF39B4F77F /* Pods_HulaTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BB38D039DCF53784B1101219 /* Pods_HulaTests.framework */; };
 		D4C767CE36A44207F314461B /* Pods_HulaUITests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AA99A61775E451E94755B6FC /* Pods_HulaUITests.framework */; };
 		F8274D4F1E712FCB002A3164 /* HLProfileViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F8274D4E1E712FCB002A3164 /* HLProfileViewController.swift */; };
@@ -137,7 +140,10 @@
 		27C733C41EA2BC7E003A6FD6 /* HLIdentificationViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HLIdentificationViewController.swift; sourceTree = "<group>"; };
 		27C733C61EA2D050003A6FD6 /* HLRoundedGradientButton.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HLRoundedGradientButton.swift; sourceTree = "<group>"; };
 		27C733C81EA2D1E0003A6FD6 /* HLRoundedNextButton.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HLRoundedNextButton.swift; sourceTree = "<group>"; };
+		27C969B61F2BF05F00D4B433 /* HLSpinnerUIView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HLSpinnerUIView.swift; sourceTree = "<group>"; };
 		27D437E11F10FC73006E645B /* Hula.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Hula.entitlements; sourceTree = "<group>"; };
+		27D589831F2D4CA900240A36 /* HLProductEditTextViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HLProductEditTextViewController.swift; sourceTree = "<group>"; };
+		27D589851F2DEECF00240A36 /* HLProductPictureEditViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HLProductPictureEditViewController.swift; sourceTree = "<group>"; };
 		2949F49E550423C849CC8C66 /* Pods_Hula.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Hula.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		366F1CB838330F3A7BA3CF6B /* Pods-HulaUITests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-HulaUITests.debug.xcconfig"; path = "Pods/Target Support Files/Pods-HulaUITests/Pods-HulaUITests.debug.xcconfig"; sourceTree = "<group>"; };
 		3684442621355F3BD05B8FCD /* Pods-HulaUITests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-HulaUITests.release.xcconfig"; path = "Pods/Target Support Files/Pods-HulaUITests/Pods-HulaUITests.release.xcconfig"; sourceTree = "<group>"; };
@@ -266,6 +272,7 @@
 				271533401F07C15600E5F319 /* KDDragAndDropCollectionView.swift */,
 				271533411F07C15600E5F319 /* KDDragAndDropManager.swift */,
 				27AA28FD1F09A0B100AB1895 /* HLPageControl.swift */,
+				27C969B61F2BF05F00D4B433 /* HLSpinnerUIView.swift */,
 			);
 			name = Utils;
 			sourceTree = "<group>";
@@ -521,6 +528,8 @@
 				F8B651F11E7A6A1E009D1DC6 /* HLPostProductViewController.swift */,
 				F8B651F31E7A82F6009D1DC6 /* HLCompleteProductProfileViewController.swift */,
 				F8B651F51E7AB643009D1DC6 /* HLCustomCameraViewController.swift */,
+				27D589831F2D4CA900240A36 /* HLProductEditTextViewController.swift */,
+				27D589851F2DEECF00240A36 /* HLProductPictureEditViewController.swift */,
 			);
 			name = "My Products";
 			sourceTree = "<group>";
@@ -894,11 +903,13 @@
 				F86698C71E7044A6002129E1 /* HLMainViewController.swift in Sources */,
 				F8BE7C4D1E72575300FAE07D /* HLFilterViewController.swift in Sources */,
 				F8BE7C491E7241C500FAE07D /* HLSearchResultViewController.swift in Sources */,
+				27D589861F2DEECF00240A36 /* HLProductPictureEditViewController.swift in Sources */,
 				F8274D4F1E712FCB002A3164 /* HLProfileViewController.swift in Sources */,
 				27401F841EBBB87B00F0B95D /* HLEditFieldViewController.swift in Sources */,
 				279BAAD81E9D726D00091D24 /* HLNotificationsViewController.swift in Sources */,
 				F86698C41E703EA6002129E1 /* HLDataManager.swift in Sources */,
 				F86698B71E703CB9002129E1 /* HLAPIClient.swift in Sources */,
+				27C969B71F2BF05F00D4B433 /* HLSpinnerUIView.swift in Sources */,
 				F8BE7C4B1E724F3D00FAE07D /* HLProductDetailViewController.swift in Sources */,
 				273A1EA51ECF9F13005D163E /* HLDashboardViewController.swift in Sources */,
 				27AA28FE1F09A0B100AB1895 /* HLPageControl.swift in Sources */,
@@ -917,6 +928,7 @@
 				F8BE7C311E71FF4200FAE07D /* HLFeedbackHistoryViewController.swift in Sources */,
 				F8B651FF1E7B677A009D1DC6 /* HLMyProductTableViewCell.swift in Sources */,
 				F8B652011E7B7D6B009D1DC6 /* HLPhotoAlbumCollectionViewCell.swift in Sources */,
+				27D589841F2D4CA900240A36 /* HLProductEditTextViewController.swift in Sources */,
 				F8BE7C471E72412200FAE07D /* HLProductTableViewCell.swift in Sources */,
 				F8B652031E7C77BF009D1DC6 /* HLSellerInfoViewController.swift in Sources */,
 				F8B651F41E7A82F6009D1DC6 /* HLCompleteProductProfileViewController.swift in Sources */,

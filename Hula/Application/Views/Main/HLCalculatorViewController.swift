@@ -39,6 +39,9 @@ class HLCalculatorViewController: UIViewController {
         self.dismiss(animated: true, completion: nil)
     }
 
+    @IBAction func okAction(_ sender: Any) {
+        self.dismiss(animated: true, completion: nil)
+    }
     @IBAction func numberPressAction(_ sender: Any) {
         var number:Int = (sender as AnyObject).tag
         
@@ -83,7 +86,8 @@ class HLCalculatorViewController: UIViewController {
     func updatePrice(){
         //print(amount)
         let float_amount = CGFloat(amount)/100
-        priceLabel.text = "$\(float_amount)"
+        let twoDecimalPlaces = String(format: "%.2f", float_amount)
+        priceLabel.text = "$\(twoDecimalPlaces)"
         //print(float_amount)
     }
 }

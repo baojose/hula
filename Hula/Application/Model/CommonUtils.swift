@@ -251,8 +251,13 @@ extension UIImageView {
                 return
             }
             DispatchQueue.main.async(execute: { () -> Void in
+                self.transform = CGAffineTransform(scaleX: 0.1, y: 0.1)
                 let image = UIImage(data: data!)
                 self.image = image
+                
+                UIView.animate(withDuration: 0.1, animations: {
+                    self.transform = CGAffineTransform(scaleX: 1, y: 1)
+                })
                 if self.image != nil {
                     imageCache.setObject(image!, forKey: urlString as AnyObject)
                 }

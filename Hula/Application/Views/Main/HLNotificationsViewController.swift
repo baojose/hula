@@ -31,6 +31,7 @@ class HLNotificationsViewController: BaseViewController, UITableViewDelegate, UI
             notificationsView.isHidden = false
             noNotificatiosnFoundView.isHidden = true
         }
+        UIApplication.shared.applicationIconBadgeNumber = 0
     }
     
     override func didReceiveMemoryWarning() {
@@ -57,8 +58,9 @@ class HLNotificationsViewController: BaseViewController, UITableViewDelegate, UI
         let date = commonUtils.isoDateToNSDate(date: (notification.object(forKey: "date") as? String)!)
         let relativeDate = commonUtils.timeAgoSinceDate(date: date, numericDates: false)
         cell.NotificationsDate.text = relativeDate
-        
-        
+        if let usr = notification.object(forKey: "from_id") as? String{
+            cell.NotificationImageView.loadImageFromURL(urlString: HulaConstants.apiURL + "users/\(usr)/image")
+        }
         return cell
     }
     

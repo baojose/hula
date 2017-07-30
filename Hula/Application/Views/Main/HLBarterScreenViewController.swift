@@ -12,6 +12,7 @@ class HLBarterScreenViewController: UIViewController {
     
     
     
+    @IBOutlet weak var sectionCover: UIButton!
     @IBOutlet weak var otherProductsCollection: KDDragAndDropCollectionView!
     @IBOutlet weak var otherSelectedProductsCollection: KDDragAndDropCollectionView!
     @IBOutlet weak var myProductsCollection: KDDragAndDropCollectionView!
@@ -35,7 +36,7 @@ class HLBarterScreenViewController: UIViewController {
     
     var thisTrade: HulaTrade = HulaTrade()
     
-    let arrowImagesName = ["","added-arrow", "removed-arrow", "eliminated_trade_icon"]
+    let arrowImagesName = ["","icon-product-added", "icon-product-removed", "icon-product-multipledeals"]
     
     var otherUserId: String = ""
     
@@ -88,6 +89,15 @@ class HLBarterScreenViewController: UIViewController {
                 otherUserId = thisTrade.owner_id
             }
             
+            if self.thisTrade.turn_user_id == HulaUser.sharedInstance.userId{
+                // my turn
+                self.sectionCover.isHidden = true
+                self.view.isUserInteractionEnabled = true
+            } else {
+                self.sectionCover.isHidden = false
+                self.view.isUserInteractionEnabled = false
+                
+            }
             //print(otp)
             //print(mtp)
             getUserProducts(user: otherUserId, taskCallback: {(result) in
@@ -121,12 +131,12 @@ class HLBarterScreenViewController: UIViewController {
             reference_list = self.myProducts
         }
         
-        
+        //print(thisTrade.last_bid_diff)
         for pr_id in list{
             for pr in reference_list{
                 if pr.productId == pr_id{
-                    final_arr.append(pr)
                     
+                    final_arr.append(pr)
                 }
             }
             
@@ -194,6 +204,9 @@ class HLBarterScreenViewController: UIViewController {
                         if let dictionary = json as? [Any] {
                             //print(dictionary)
                             var productList: [HulaProduct] = []
+                            
+                            //print(self.thisTrade.last_bid_diff)
+                            
                             for item in dictionary{
                                 //print("item")
                                 //print(item)
@@ -205,6 +218,18 @@ class HLBarterScreenViewController: UIViewController {
                                         image = "https://api.hula.trading/v1/products/0/image"
                                     }
                                     let newProd = HulaProduct(id : id, name : name, image: image!)
+                                    
+                                    for difprod in self.thisTrade.last_bid_diff {
+                                        if (difprod == newProd.productId!){
+                                            // recently added
+                                            newProd.tradeStatus = 1
+                                        }
+                                        if (difprod == "-\(newProd.productId!)"){
+                                            // recently removed
+                                            newProd.tradeStatus = 2
+                                        }
+                                    }
+                                    
                                     productList.append(newProd)
                                 }
                             }
@@ -279,6 +304,7 @@ extension HLBarterScreenViewController: KDDragAndDropCollectionViewDataSource, U
         cell.label.text = product.productName
         //print(product.productImage)
         cell.image.loadImageFromURL(urlString: product.productImage)
+        //print(product.tradeStatus)
         if (product.tradeStatus != 0){
             cell.statusImage.image = UIImage.init(named: arrowImagesName[product.tradeStatus])
         } else {
@@ -420,7 +446,7 @@ extension HLBarterScreenViewController: KDDragAndDropCollectionViewDataSource, U
         let size: CGSize
         switch collectionView.tag {
         case 1:
-            size = CGSize(width: collectionView.frame.size.width, height: 118)
+            size = CGSize(width: collectionView.frame.size.width, height: 122)
         case 2:
             size = CGSize(width: collectionView.frame.size.width/3, height: collectionView.frame.size.width/3)
         case 3:
