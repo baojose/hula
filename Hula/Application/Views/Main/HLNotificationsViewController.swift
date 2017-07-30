@@ -15,6 +15,7 @@ class HLNotificationsViewController: BaseViewController, UITableViewDelegate, UI
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        UIApplication.shared.applicationIconBadgeNumber = 0
         
     }
     override func viewDidAppear(_ animated: Bool) {
