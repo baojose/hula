@@ -19,6 +19,8 @@ class HulaTrade: NSObject {
     var next_bid: String!
     var status: String!
     var turn_user_id: String!
+    var last_bid_diff:[String] = []
+    
     
     class var sharedInstance: HulaTrade {
         struct Static {
@@ -40,6 +42,7 @@ class HulaTrade: NSObject {
         self.next_bid = ""
         self.turn_user_id = ""
         self.status = "pending"
+        self.last_bid_diff = []
     }
     
     func saveNewTrade(){
@@ -110,6 +113,24 @@ class HulaTrade: NSObject {
         if (dict["turn_user_id"] as? String) != nil {
             self.turn_user_id = dict["turn_user_id"] as? String
         }
+        //print(dict)
+        self.last_bid_diff = []
+        if let bids = dict["bids"] as? [Any] {
+            if let last_bid = bids[ (bids.count - 1) ] as? [String:Any]{
+                //print(last_bid)
+                if let lb_owner = last_bid["owner_diff"] as? [String]{
+                    for item in lb_owner {
+                        self.last_bid_diff.append(item)
+                    }
+                }
+                if let lb_other = last_bid["other_diff"] as? [String]{
+                    for item in lb_other {
+                        self.last_bid_diff.append(item)
+                    }
+                }
+            }
+        }
+        //print(self.last_bid_diff)
     }
 
     func updateServerData(){
