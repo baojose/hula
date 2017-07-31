@@ -218,6 +218,7 @@ class HLBarterScreenViewController: UIViewController {
                                         image = "https://api.hula.trading/v1/products/0/image"
                                     }
                                     let newProd = HulaProduct(id : id, name : name, image: image!)
+                                    newProd.populate(with: product_data as NSDictionary)
                                     
                                     for difprod in self.thisTrade.last_bid_diff {
                                         if (difprod == newProd.productId!){
@@ -275,6 +276,31 @@ extension HLBarterScreenViewController: KDDragAndDropCollectionViewDataSource, U
         }
     }
     
+    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        print("Collection: \(collectionView.tag) item \(indexPath.item)")
+        let product:HulaProduct
+        switch collectionView.tag {
+        case 1:
+            product = myProducts[indexPath.item]
+        case 2:
+            product = myTradedProducts[indexPath.item]
+        case 3:
+            product = otherTradedProducts[indexPath.item]
+        case 4:
+            product = otherProducts[indexPath.item]
+        default:
+            product = HulaProduct(id : "nada", name : "Test product", image: "https://api.hula.trading/v1/products/59400e5ce8825609f281bc68/image")
+        }
+        print(product)
+        let viewController = self.storyboard?.instantiateViewController(withIdentifier: "ProductModal") as! HLProductModalViewController
+        
+        viewController.product = product
+        viewController.modalPresentationStyle = .overCurrentContext
+        
+        self.present(viewController, animated: true)
+        print("presented vc")
+        
+    }
     
     // The cell that is returned must be retrieved from a call to -dequeueReusableCellWithReuseIdentifier:forIndexPath:
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
