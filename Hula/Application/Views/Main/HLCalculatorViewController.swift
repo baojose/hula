@@ -14,6 +14,9 @@ class HLCalculatorViewController: UIViewController {
     
     
     var amount:Int = 0
+    var side:String = "owner"
+    
+    var calculatorDelegate: CalculatorDelegate?
     override func viewDidLoad() {
         super.viewDidLoad()
 
@@ -40,6 +43,8 @@ class HLCalculatorViewController: UIViewController {
     }
 
     @IBAction func okAction(_ sender: Any) {
+        
+        self.calculatorDelegate?.amountSelected(amount: Float(amount)/100, side: self.side )
         self.dismiss(animated: true, completion: nil)
     }
     @IBAction func numberPressAction(_ sender: Any) {
@@ -90,4 +95,8 @@ class HLCalculatorViewController: UIViewController {
         priceLabel.text = "$\(twoDecimalPlaces)"
         //print(float_amount)
     }
+}
+
+protocol CalculatorDelegate {
+    func amountSelected(amount:Float, side:String)
 }

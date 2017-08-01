@@ -2553,7 +2553,7 @@ Log In</string>
         <!--Calculator View Controller-->
         <scene sceneID="p5g-TC-r3r">
             <objects>
-                <viewController id="UdN-LB-3En" customClass="HLCalculatorViewController" customModule="Hula" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="calculatorView" id="UdN-LB-3En" customClass="HLCalculatorViewController" customModule="Hula" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="rQ9-M2-kKT">
                         <rect key="frame" x="0.0" y="0.0" width="667" height="357"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -5908,6 +5908,11 @@ Log In</string>
                                         <color key="textColor" white="0.25" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
                                         <nil key="highlightedColor"/>
                                     </label>
+                                    <button opaque="NO" alpha="0.29999999999999999" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" id="Mqd-eF-bkK">
+                                        <rect key="frame" x="0.0" y="0.0" width="668" height="375"/>
+                                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                        <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                    </button>
                                     <collectionView clipsSubviews="YES" multipleTouchEnabled="YES" tag="4" contentMode="scaleToFill" misplaced="YES" dataMode="prototypes" id="Lbs-rv-jzA" customClass="KDDragAndDropCollectionView" customModule="Hula" customModuleProvider="target">
                                         <rect key="frame" x="539" y="0.0" width="128" height="375"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMinX="YES" heightSizable="YES"/>
@@ -5979,10 +5984,10 @@ Log In</string>
                                                     <rect key="frame" x="0.0" y="0.0" width="64" height="64"/>
                                                     <autoresizingMask key="autoresizingMask"/>
                                                     <subviews>
-                                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" text="Name of the product a bit large" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="Zo9-No-Lkw">
-                                                            <rect key="frame" x="8" y="36" width="49" height="19"/>
+                                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" text="Name of the product a bit large" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="Zo9-No-Lkw">
+                                                            <rect key="frame" x="5" y="24" width="49" height="19"/>
                                                             <autoresizingMask key="autoresizingMask" flexibleMaxY="YES"/>
-                                                            <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="11"/>
+                                                            <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="14"/>
                                                             <color key="textColor" red="0.22352941179999999" green="0.66666666669999997" blue="0.64313725489999995" alpha="1" colorSpace="calibratedRGB"/>
                                                             <nil key="highlightedColor"/>
                                                         </label>
@@ -6080,10 +6085,10 @@ Log In</string>
                                                     <rect key="frame" x="0.0" y="0.0" width="64" height="64"/>
                                                     <autoresizingMask key="autoresizingMask"/>
                                                     <subviews>
-                                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" text="Name of the product a bit large" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="SQl-X9-FzW">
-                                                            <rect key="frame" x="6" y="37" width="52" height="19"/>
+                                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" text="Name of the product a bit large" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="SQl-X9-FzW">
+                                                            <rect key="frame" x="4" y="25" width="52" height="19"/>
                                                             <autoresizingMask key="autoresizingMask" flexibleMaxY="YES"/>
-                                                            <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="11"/>
+                                                            <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="14"/>
                                                             <color key="textColor" red="0.22352941179999999" green="0.66666666669999997" blue="0.64313725489999995" alpha="1" colorSpace="calibratedRGB"/>
                                                             <nil key="highlightedColor"/>
                                                         </label>
@@ -6115,7 +6120,7 @@ Log In</string>
                                         <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMinY="YES"/>
                                         <state key="normal" backgroundImage="cash_button_trade_interface"/>
                                         <connections>
-                                            <segue destination="UdN-LB-3En" kind="modal" id="gzn-56-WQj"/>
+                                            <action selector="addMoneyToOther:" destination="owL-xI-leu" eventType="touchUpInside" id="Q2j-fY-RUn"/>
                                         </connections>
                                     </button>
                                     <button opaque="NO" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" id="QNs-eY-NEZ">
@@ -6123,18 +6128,13 @@ Log In</string>
                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                         <state key="normal" backgroundImage="cash_button_trade_interface"/>
                                         <connections>
-                                            <segue destination="UdN-LB-3En" kind="modal" id="XXg-jN-Ckd"/>
+                                            <action selector="addMonewToOwner:" destination="owL-xI-leu" eventType="touchUpInside" id="5KI-vd-UfS"/>
                                         </connections>
                                     </button>
                                     <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="mid_bar_trade_screen" id="2iR-0g-9gg">
                                         <rect key="frame" x="331" y="0.0" width="7" height="375"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" heightSizable="YES"/>
                                     </imageView>
-                                    <button opaque="NO" alpha="0.29999999999999999" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" id="Mqd-eF-bkK">
-                                        <rect key="frame" x="0.0" y="0.0" width="668" height="375"/>
-                                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                        <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
-                                    </button>
                                 </subviews>
                                 <color key="backgroundColor" white="0.97011718749999998" alpha="1" colorSpace="calibratedWhite"/>
                             </view>
@@ -6389,6 +6389,5 @@ Log In</string>
     <inferredMetricsTieBreakers>
         <segue reference="8X8-bg-W6f"/>
         <segue reference="wT5-4p-lNl"/>
-        <segue reference="gzn-56-WQj"/>
     </inferredMetricsTieBreakers>
 </document>
