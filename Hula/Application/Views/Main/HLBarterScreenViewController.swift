@@ -165,8 +165,19 @@ class HLBarterScreenViewController: UIViewController {
         
         switch type {
         case "other":
+            if thisTrade.other_money > 0 {
+                let moneyProd = HulaProduct(id: "xmoney", name: "+$\(Int(round(thisTrade.other_money)))", image: "")
+                final_arr.append(moneyProd)
+            }
+            
+            
             otherTradedProducts = final_arr
         default:
+            
+            if thisTrade.owner_money > 0 {
+                let moneyProd = HulaProduct(id: "xmoney", name: "+$\( Int(round(thisTrade.owner_money)) )", image: "")
+                final_arr.append(moneyProd)
+            }
             myTradedProducts = final_arr
         }
         
@@ -251,12 +262,30 @@ class HLBarterScreenViewController: UIViewController {
         var final_arr = [String]();
         
         for prod in from {
-            final_arr.append(prod.productId)
+            if (prod.productId != "xmoney"){
+                final_arr.append(prod.productId)
+            }
         }
         //print(final_arr)
         return final_arr
     }
     
+    @IBAction func addMoneyToOther(_ sender: Any) {
+        let viewController = self.storyboard?.instantiateViewController(withIdentifier: "calculatorView") as! HLCalculatorViewController
+        
+        viewController.calculatorDelegate = self
+        viewController.side = "other"
+        
+        self.present(viewController, animated: true)
+    }
+    
+    @IBAction func addMonewToOwner(_ sender: Any) {
+        let viewController = self.storyboard?.instantiateViewController(withIdentifier: "calculatorView") as! HLCalculatorViewController
+        
+        viewController.calculatorDelegate = self
+        viewController.side = "owner"
+        self.present(viewController, animated: true)
+    }
 }
 
 extension HLBarterScreenViewController: KDDragAndDropCollectionViewDataSource, UICollectionViewDelegateFlowLayout {
@@ -291,7 +320,7 @@ extension HLBarterScreenViewController: KDDragAndDropCollectionViewDataSource, U
         default:
             product = HulaProduct(id : "nada", name : "Test product", image: "https://api.hula.trading/v1/products/59400e5ce8825609f281bc68/image")
         }
-        print(product)
+        //print(product)
         let viewController = self.storyboard?.instantiateViewController(withIdentifier: "ProductModal") as! HLProductModalViewController
         
         viewController.product = product
@@ -505,7 +534,22 @@ extension HLBarterScreenViewController: HLBarterScreenDelegate{
         
         trade.turn_user_id = thisTrade.turn_user_id
         trade.tradeId = thisTrade.tradeId
+        trade.owner_money = thisTrade.owner_money
+        trade.other_money = thisTrade.other_money
         return trade
     }
 }
 
+extension HLBarterScreenViewController: CalculatorDelegate{
+    
+    func amountSelected(amount:Float, side:String){
+        if (amount > 0.0){
+            
+            if (side == "owner"){
+                thisTrade.owner_money = amount
+            } else {
+                thisTrade.other_money = amount
+            }
+        }
+    }
+}

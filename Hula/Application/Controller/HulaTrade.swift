@@ -16,6 +16,8 @@ class HulaTrade: NSObject {
     var date: Date = Date()
     var owner_products = [] as [String]
     var other_products = [] as [String]
+    var owner_money : Float = 0.0
+    var other_money : Float = 0.0
     var next_bid: String!
     var status: String!
     var turn_user_id: String!
@@ -39,6 +41,8 @@ class HulaTrade: NSObject {
         self.date = Date()
         self.owner_products = []
         self.other_products = []
+        self.owner_money = 0.0
+        self.other_money = 0.0
         self.next_bid = ""
         self.turn_user_id = ""
         self.status = "pending"
@@ -62,7 +66,7 @@ class HulaTrade: NSObject {
     }
     
     func get_post_string() -> String {
-        return "product_id=" + self.product_id + "&owner_id=" + self.owner_id + "&other_id=" + self.other_id + "&date=" + self.date.iso8601 + "&owner_products=" + self.owner_products.joined() + "&other_products=" + self.other_products.joined() + "&next_bid=" + self.next_bid + "&status=" + self.status + "&turn_user_id=" + self.turn_user_id
+        return "product_id=\(self.product_id)&owner_id=\(self.owner_id)&other_id=\(self.other_id)&date=\(self.date.iso8601)&owner_products=\(self.owner_products.joined())&other_products=\(self.other_products.joined())&next_bid=\(self.next_bid)&status=\(self.status)&turn_user_id=\(self.turn_user_id)&owner_money=\(self.owner_money)&other_money=\(self.other_money)"
     }
     
     func loadTrade(tradeId:String, callback: @escaping (Bool) -> ()){
@@ -103,6 +107,12 @@ class HulaTrade: NSObject {
         }
         if (dict["other_products"] as? [String]) != nil {
             self.other_products = (dict["other_products"] as? [String])!
+        }
+        if (dict["owner_money"] as? Float) != nil {
+            self.owner_money = (dict["owner_money"] as? Float)!
+        }
+        if (dict["other_money"] as? Float) != nil {
+            self.other_money = (dict["other_money"] as? Float)!
         }
         if (dict["next_bid"] as? String) != nil {
             self.next_bid = dict["next_bid"] as? String
