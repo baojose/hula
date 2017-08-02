@@ -81,10 +81,10 @@
                                     <segue destination="Ys6-tw-uwL" kind="push" id="E8M-XX-yCt"/>
                                 </connections>
                             </button>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" id="5rF-8m-4eu">
-                                <rect key="frame" x="24" y="87" width="14" height="24"/>
+                            <button opaque="NO" contentMode="center" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" id="5rF-8m-4eu">
+                                <rect key="frame" x="18" y="77" width="40" height="40"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                <state key="normal" backgroundImage="icon_back_L"/>
+                                <state key="normal" image="icon_back_L"/>
                                 <connections>
                                     <action selector="closeIdentificationVC:" destination="pEV-TJ-xPS" eventType="touchUpInside" id="aDA-nT-emN"/>
                                 </connections>
@@ -139,6 +139,13 @@
                                 </attributedString>
                                 <nil key="highlightedColor"/>
                             </label>
+                            <button opaque="NO" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" reversesTitleShadowWhenHighlighted="YES" lineBreakMode="middleTruncation" id="EHG-7V-LcL">
+                                <rect key="frame" x="26" y="582" width="323" height="59"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                <connections>
+                                    <action selector="gotoTermsConditionsAction:" destination="pEV-TJ-xPS" eventType="touchUpInside" id="tds-Td-cP8"/>
+                                </connections>
+                            </button>
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                     </view>
@@ -187,10 +194,10 @@
                                             <outlet property="delegate" destination="4Z7-C3-lzO" id="udp-bb-fmy"/>
                                         </connections>
                                     </textField>
-                                    <button opaque="NO" contentMode="center" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" id="jNb-Du-NcO">
-                                        <rect key="frame" x="24" y="83" width="14" height="24"/>
+                                    <button opaque="NO" contentMode="center" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" id="jNb-Du-NcO">
+                                        <rect key="frame" x="18" y="77" width="40" height="40"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                        <state key="normal" backgroundImage="icon_back_L"/>
+                                        <state key="normal" image="icon_back_L"/>
                                         <connections>
                                             <action selector="closeIdentificationVC:" destination="4Z7-C3-lzO" eventType="touchUpInside" id="xhs-4E-GFD"/>
                                         </connections>
@@ -302,6 +309,7 @@ Log In</string>
                     <navigationItem key="navigationItem" id="8Rk-ps-yTO"/>
                     <connections>
                         <outlet property="emailField" destination="euj-cn-G6L" id="JpZ-vM-cb5"/>
+                        <outlet property="errorMessageLabel" destination="Wco-SF-ZeB" id="sqt-HA-kKl"/>
                         <outlet property="greenBackgroundImage" destination="aeR-BW-0j4" id="uBK-gb-3yZ"/>
                         <outlet property="inputElements" destination="3xK-Ol-bDy" id="llW-cC-kR0"/>
                         <outlet property="loginErrorView" destination="GTM-GM-OwE" id="xeW-S5-yFo"/>
@@ -697,10 +705,10 @@ Log In</string>
                                 </attributedString>
                                 <nil key="highlightedColor"/>
                             </label>
-                            <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="FU0-cr-TiW">
-                                <rect key="frame" x="24" y="87" width="14" height="24"/>
+                            <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="FU0-cr-TiW">
+                                <rect key="frame" x="18" y="77" width="40" height="40"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                <state key="normal" backgroundImage="icon_back_L"/>
+                                <state key="normal" image="icon_back_L"/>
                             </button>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" usesAttributedText="YES" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="U40-jr-4LS">
                                 <rect key="frame" x="43" y="257" width="312" height="47"/>
@@ -2083,10 +2091,10 @@ Log In</string>
                                 <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                 <subviews>
-                                    <button opaque="NO" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" id="xLU-on-cmX">
-                                        <rect key="frame" x="25" y="87" width="14" height="24"/>
+                                    <button opaque="NO" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" id="xLU-on-cmX">
+                                        <rect key="frame" x="18" y="77" width="40" height="40"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                        <state key="normal" backgroundImage="icon_back_L"/>
+                                        <state key="normal" image="icon_back_L"/>
                                         <connections>
                                             <action selector="closeIdentificationVC:" destination="Ys6-tw-uwL" eventType="touchUpInside" id="cok-Q5-QVY"/>
                                         </connections>
@@ -2284,10 +2292,10 @@ Log In</string>
                                         <color key="textColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                         <nil key="highlightedColor"/>
                                     </label>
-                                    <button opaque="NO" contentMode="center" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" id="XyC-Sw-SgH">
-                                        <rect key="frame" x="46" y="47" width="14" height="24"/>
+                                    <button opaque="NO" contentMode="center" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" id="XyC-Sw-SgH">
+                                        <rect key="frame" x="33" y="34" width="40" height="40"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                        <state key="normal" backgroundImage="icon_back_L"/>
+                                        <state key="normal" image="icon_back_L"/>
                                         <connections>
                                             <action selector="backButtonAction:" destination="Qkq-8f-mCV" eventType="touchUpInside" id="etF-9p-Uq5"/>
                                             <action selector="closeIdentificationVC:" destination="4Z7-C3-lzO" eventType="touchUpInside" id="5VM-za-3NI"/>

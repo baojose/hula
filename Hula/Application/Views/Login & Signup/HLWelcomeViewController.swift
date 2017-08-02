@@ -18,6 +18,8 @@ class HLWelcomeViewController: UserBaseViewController, CLLocationManagerDelegate
         // Do any additional setup after loading the view.
         locationManager = CLLocationManager()
         locationManager.delegate = self
+        let app = UIApplication.shared.delegate as! AppDelegate
+        app.registerForPushNotifications()
     }
 
     override func didReceiveMemoryWarning() {

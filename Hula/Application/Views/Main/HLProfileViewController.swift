@@ -211,6 +211,8 @@ class HLProfileViewController: BaseViewController {
         let queryURL = HulaConstants.apiURL + "me"
         //print(queryURL)
         HLDataManager.sharedInstance.httpGet(urlstr: queryURL, taskCallback: { (ok, json) in
+            
+            
             if (ok){
                 DispatchQueue.main.async {
                     if let dictionary = json as? [String: Any] {
@@ -301,7 +303,9 @@ class HLProfileViewController: BaseViewController {
                                 self.arrFeedback = feedback
                                 //print(self.arrFeedback)
                             }
-
+                            
+                            let app = UIApplication.shared.delegate as! AppDelegate
+                            app.registerForPushNotifications()
                         } else {
                             let alert = UIAlertController(title: "User token expired", message: "Your Hula session is expired. Please log in again.", preferredStyle: UIAlertControllerStyle.alert)
                             alert.addAction(UIAlertAction(title: "Ok", style: UIAlertActionStyle.default, handler: nil))

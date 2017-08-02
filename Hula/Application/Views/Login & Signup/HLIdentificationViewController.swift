@@ -71,4 +71,8 @@ class HLIdentificationViewController: UserBaseViewController {
         //_ = self.navigationController?.popViewController(animated: true)
     }
     
+    @IBAction func gotoTermsConditionsAction(_ sender: Any) {
+        UIApplication.shared.openURL(URL(string: "https://hula.trading/legal.html")!)
+    }
+    
 }
