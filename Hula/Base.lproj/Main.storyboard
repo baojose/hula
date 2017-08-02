@@ -798,16 +798,17 @@ Log In</string>
                                         <rect key="frame" x="16" y="53" width="343" height="35"/>
                                         <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES" heightSizable="YES"/>
                                         <subviews>
-                                            <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" image="img_search_bg" translatesAutoresizingMaskIntoConstraints="NO" id="eNx-Y5-zeL">
+                                            <view clipsSubviews="YES" contentMode="scaleToFill" misplaced="YES" id="cI8-ir-IUX">
                                                 <rect key="frame" x="0.0" y="0.0" width="343" height="35"/>
                                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                                            </imageView>
+                                                <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                            </view>
                                             <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" image="icon_search" translatesAutoresizingMaskIntoConstraints="NO" id="uaY-nX-EwG">
                                                 <rect key="frame" x="21" y="9" width="17" height="17"/>
                                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                             </imageView>
-                                            <textField opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="left" contentVerticalAlignment="center" placeholder="Search in Hula" textAlignment="natural" minimumFontSize="17" clearButtonMode="whileEditing" translatesAutoresizingMaskIntoConstraints="NO" id="3kb-gi-i78">
-                                                <rect key="frame" x="50" y="2" width="280" height="30"/>
+                                            <textField opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" fixedFrame="YES" misplaced="YES" contentHorizontalAlignment="left" contentVerticalAlignment="center" placeholder="Search in Hula" textAlignment="natural" minimumFontSize="17" clearButtonMode="whileEditing" translatesAutoresizingMaskIntoConstraints="NO" id="3kb-gi-i78">
+                                                <rect key="frame" x="50" y="2" width="224" height="30"/>
                                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                 <color key="tintColor" red="0.27450980390000002" green="0.27450980390000002" blue="0.27450980390000002" alpha="1" colorSpace="calibratedRGB"/>
                                                 <nil key="textColor"/>
@@ -822,6 +823,17 @@ Log In</string>
                                                     <outlet property="delegate" destination="UjI-s8-fEy" id="eFf-U0-caN"/>
                                                 </connections>
                                             </textField>
+                                            <button opaque="NO" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" id="KfS-5J-T0n">
+                                                <rect key="frame" x="286" y="2" width="63" height="30"/>
+                                                <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxY="YES"/>
+                                                <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="16"/>
+                                                <state key="normal" title="Cancel">
+                                                    <color key="titleColor" red="0.22352941176470587" green="0.66666666666666663" blue="0.64313725490196072" alpha="1" colorSpace="calibratedRGB"/>
+                                                </state>
+                                                <connections>
+                                                    <action selector="cancelSearchAction:" destination="UjI-s8-fEy" eventType="touchUpInside" id="3L0-Dp-E6O"/>
+                                                </connections>
+                                            </button>
                                         </subviews>
                                         <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                     </view>
@@ -981,6 +993,8 @@ Log In</string>
                     </view>
                     <navigationItem key="navigationItem" id="As9-cM-6aK"/>
                     <connections>
+                        <outlet property="boxRoundedView" destination="cI8-ir-IUX" id="A0n-b1-9zm"/>
+                        <outlet property="cancelButton" destination="KfS-5J-T0n" id="hgI-Cg-EmF"/>
                         <outlet property="noResultView" destination="uhn-v7-O28" id="YXx-T5-9D3"/>
                         <outlet property="productTableView" destination="E0s-E9-MX3" id="njX-uE-kdF"/>
                         <outlet property="profileCompleteAlertView" destination="XwW-Me-XKJ" id="Wmk-qg-7GN"/>
@@ -6368,7 +6382,6 @@ Log In</string>
         <image name="img_photo_select_bg" width="82" height="38"/>
         <image name="img_profile_seperate_bg" width="375" height="38"/>
         <image name="img_publish_btn_bg_enabled" width="137" height="39"/>
-        <image name="img_search_bg" width="339" height="35"/>
         <image name="img_tabbar_bg" width="666" height="61"/>
         <image name="mid_bar_trade_screen" width="7" height="375"/>
         <image name="more_options_trade" width="5" height="19"/>
