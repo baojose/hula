@@ -44,7 +44,21 @@ class HLSwappViewController: UIViewController {
         CommonUtils.sharedInstance.circleImageView(myUserImage)
         self.myUserView.isHidden = true;
         self.otherUserView.isHidden = true;
-        rotated()
+        self.sendOfferBtn.isHidden = true;
+    }
+    override func viewWillAppear(_ animated: Bool) {
+        
+        // rotation effect
+        self.portraitView.frame.origin.y = 0
+        self.portraitView.transform = CGAffineTransform(rotationAngle: 0)
+        if !UIDeviceOrientationIsPortrait(UIDevice.current.orientation) {
+            DispatchQueue.main.async {
+                UIView.animate(withDuration: 0.6) {
+                    self.portraitView.frame.origin.y = 1000
+                    self.portraitView.transform = CGAffineTransform(rotationAngle: 0.8)
+                }
+            }
+        }
     }
     override func viewDidAppear(_ animated: Bool) {
         initialOtherUserX = otherUserView.frame.origin.x
@@ -53,6 +67,7 @@ class HLSwappViewController: UIViewController {
         self.myUserView.isHidden = false;
         self.otherUserView.isHidden = false;
         controlSetupBottomBar(index: 0)
+        
     }
 
     override func didReceiveMemoryWarning() {
@@ -87,10 +102,12 @@ class HLSwappViewController: UIViewController {
                 // After dismiss
             }
         } else {
-            //portraitView.isHidden = true
-            UIView.animate(withDuration: 0.9) {
-                self.portraitView.frame.origin.y = 1000
-                self.portraitView.transform = CGAffineTransform(rotationAngle: 0.8)
+            DispatchQueue.main.async {
+                //portraitView.isHidden = true
+                UIView.animate(withDuration: 0.6) {
+                    self.portraitView.frame.origin.y = 1000
+                    self.portraitView.transform = CGAffineTransform(rotationAngle: 0.8)
+                }
             }
         }
     }

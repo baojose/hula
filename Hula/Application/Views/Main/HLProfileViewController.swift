@@ -56,14 +56,11 @@ class HLProfileViewController: BaseViewController {
         }
     }
     override func viewDidAppear(_ animated: Bool) {
-        /*
-        let user = HulaUser.sharedInstance
-        if (user.token.characters.count < 10){
-            // user not logged in
-            openUserIdentification()
-        } else {
+        
+        if !HulaUser.sharedInstance.isUserLoggedIn() {
+            
+            self.tabBarController?.selectedIndex = 0
         }
-         */
     }
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
