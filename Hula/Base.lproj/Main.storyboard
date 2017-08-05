@@ -1677,7 +1677,7 @@ Log In</string>
                                                 <rect key="frame" x="0.0" y="48" width="375" height="113"/>
                                                 <autoresizingMask key="autoresizingMask"/>
                                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="dr5-35-SRZ" id="lPp-Fl-qqy">
-                                                    <rect key="frame" x="0.0" y="0.0" width="375" height="113"/>
+                                                    <rect key="frame" x="0.0" y="0.0" width="375" height="112.5"/>
                                                     <autoresizingMask key="autoresizingMask"/>
                                                     <subviews>
                                                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="5 hours ago" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="ODt-f7-Y70">
@@ -3465,6 +3465,13 @@ Log In</string>
                                     <outlet property="delegate" destination="U0A-8H-Ru1" id="LCg-SO-g9w"/>
                                 </connections>
                             </textView>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" text="300 characters remaining" textAlignment="right" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="0M1-Yi-uAO">
+                                <rect key="frame" x="200" y="121" width="159" height="21"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxY="YES"/>
+                                <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="12"/>
+                                <color key="textColor" white="0.6143500539991591" alpha="1" colorSpace="calibratedWhite"/>
+                                <nil key="highlightedColor"/>
+                            </label>
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                     </view>
@@ -3472,13 +3479,14 @@ Log In</string>
                         <outlet property="currentValueLabel" destination="250-yY-CFY" id="dcF-L0-DOa"/>
                         <outlet property="lineSeparator" destination="PJp-a4-1VE" id="xdA-VH-FpH"/>
                         <outlet property="newValueTextView" destination="x9H-2h-vL4" id="d2Q-EN-JV3"/>
+                        <outlet property="remainigLabel" destination="0M1-Yi-uAO" id="84U-Sy-C7v"/>
                         <outlet property="saveButton" destination="uot-rn-BB4" id="DYu-7U-IfP"/>
                         <outlet property="titleLabel" destination="G7M-TO-eOZ" id="IvD-LO-jFU"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="gvP-Le-bxx" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="2996" y="2894"/>
+            <point key="canvasLocation" x="2995.5" y="2893.5"/>
         </scene>
         <!--Picture Select View Controller-->
         <scene sceneID="8Nf-5J-tmV">
@@ -5274,7 +5282,7 @@ Log In</string>
                                                 </subviews>
                                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                             </view>
-                                            <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" misplaced="YES" enabled="NO" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="y6V-HN-KNH" customClass="HLRoundedNextButton" customModule="Hula" customModuleProvider="target">
+                                            <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" misplaced="YES" enabled="NO" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="y6V-HN-KNH" customClass="HLRoundedGradientNextButton" customModule="Hula" customModuleProvider="target">
                                                 <rect key="frame" x="214" y="398" width="137" height="39"/>
                                                 <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxY="YES"/>
                                                 <state key="normal" title="Publish   ">
@@ -5487,10 +5495,10 @@ Log In</string>
                                                         <rect key="frame" x="0.0" y="0.0" width="375" height="543"/>
                                                         <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxY="YES"/>
                                                         <subviews>
-                                                            <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="VHF-da-m8f" customClass="HLRoundedNextButton" customModule="Hula" customModuleProvider="target">
+                                                            <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="VHF-da-m8f" customClass="HLRoundedGradientButton" customModule="Hula" customModuleProvider="target">
                                                                 <rect key="frame" x="227" y="342" width="130" height="41"/>
                                                                 <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxY="YES"/>
-                                                                <state key="normal" title="Done   ">
+                                                                <state key="normal" title="Done">
                                                                     <color key="titleColor" red="0.71454722643517021" green="0.71357300736895457" blue="0.73059018782383411" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                                                 </state>
                                                                 <connections>
@@ -5536,6 +5544,13 @@ Log In</string>
                                                                         <color key="backgroundColor" red="0.92549019610000005" green="0.92549019610000005" blue="0.92549019610000005" alpha="1" colorSpace="calibratedRGB"/>
                                                                         <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                                                         <nil key="textColor"/>
+                                                                        <nil key="highlightedColor"/>
+                                                                    </label>
+                                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" text="300 characters remaining" textAlignment="right" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="tfk-c4-2TO">
+                                                                        <rect key="frame" x="199" y="61" width="159" height="21"/>
+                                                                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxY="YES"/>
+                                                                        <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="12"/>
+                                                                        <color key="textColor" white="0.61435005399999998" alpha="1" colorSpace="calibratedWhite"/>
                                                                         <nil key="highlightedColor"/>
                                                                     </label>
                                                                 </subviews>
@@ -5613,11 +5628,12 @@ Log In</string>
                         <outlet property="categoryMarkLabel" destination="ght-Ab-m1n" id="Q7v-YN-n7M"/>
                         <outlet property="categoryMarkLineLabel" destination="6Fg-kZ-Md9" id="nPg-6D-Sx4"/>
                         <outlet property="categoryTableView" destination="pPd-G0-ZHy" id="Q3s-3f-6wy"/>
+                        <outlet property="charactersRemainingLabel" destination="tfk-c4-2TO" id="ifr-XC-Pr3"/>
                         <outlet property="conditionNewBtn" destination="Hdo-1P-jEB" id="HKs-Dm-ioo"/>
                         <outlet property="conditionUsedBtn" destination="zBf-n9-D91" id="RZv-rX-EqY"/>
                         <outlet property="contentView" destination="7qi-Fv-0aY" id="ROi-dv-CpZ"/>
                         <outlet property="desciptionTxtField" destination="1pq-AS-C8E" id="6MB-1d-8Rp"/>
-                        <outlet property="doneBtn" destination="VHF-da-m8f" id="why-Fy-sJw"/>
+                        <outlet property="doneBtn" destination="VHF-da-m8f" id="hAT-IK-emE"/>
                         <outlet property="mainScrollView" destination="deh-6q-ePc" id="xy8-QF-MtH"/>
                         <outlet property="pageTitleLabel" destination="DQd-Kg-HXZ" id="xi6-tr-GIk"/>
                         <outlet property="perkContainView" destination="ZQx-tH-80n" id="V61-EZ-Umj"/>

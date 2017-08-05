@@ -106,6 +106,7 @@ class HLSettingViewController: BaseViewController {
         var previous = "";
         var label = ""
         var item_toUpdate = "";
+        var remChar = 300
         switch (sender as! UIButton).tag {
         case 0:
             // image update
@@ -118,30 +119,35 @@ class HLSettingViewController: BaseViewController {
             previous = userData.userNick
             label = "Nickname"
             item_toUpdate = "userNick"
+            remChar = 40
         case 2:
             // Full name
             title = "Change your full name"
             previous = userData.userName
             label = "Full name"
             item_toUpdate = "userName"
+            remChar = 120
         case 3:
             // Bio
             title = "Change your bio"
             previous = userData.userBio
             label = "Bio"
             item_toUpdate = "userBio"
+            remChar = 300
         case 4:
             // Location
             title = "Change location"
             previous = userData.userLocationName
             label = "Location"
             item_toUpdate = "userLocationName"
+            remChar = 80
         case 5:
             // Password
             title = "Change your password"
             previous = ""
             label = "Password"
             item_toUpdate = "userPassword"
+            remChar = 40
         default:
             // nada
             break
@@ -152,6 +158,7 @@ class HLSettingViewController: BaseViewController {
             editViewController.field_title = title
             editViewController.field_previous_val = previous
             editViewController.field_key = item_toUpdate
+            editViewController.remainingChars = remChar
             self.navigationController?.pushViewController(editViewController, animated: true)
         }
         

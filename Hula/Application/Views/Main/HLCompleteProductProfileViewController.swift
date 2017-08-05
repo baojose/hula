@@ -15,10 +15,10 @@ class HLCompleteProductProfileViewController: BaseViewController, UIScrollViewDe
     @IBOutlet var categoryTableView: UITableView!
     @IBOutlet var perkContainView: UIView!
     @IBOutlet var perkScrollView: UIScrollView!
-    @IBOutlet weak var doneBtn: HLRoundedNextButton!
     @IBOutlet var desciptionTxtField: UITextField!
     @IBOutlet var conditionNewBtn: UIButton!
     @IBOutlet var conditionUsedBtn: UIButton!
+    @IBOutlet weak var doneBtn: HLRoundedGradientButton!
     
     @IBOutlet var categoryMarkLabel: UILabel!
     @IBOutlet var categoryMarkLineLabel: UILabel!
@@ -26,6 +26,7 @@ class HLCompleteProductProfileViewController: BaseViewController, UIScrollViewDe
     @IBOutlet var perkMarkLabel: UILabel!
     @IBOutlet var perkMarkLineLabel: UILabel!
     @IBOutlet var perkMarkImage: UIImageView!
+    @IBOutlet weak var charactersRemainingLabel: UILabel!
     
     var productCondition:String = "new"
     
@@ -52,7 +53,7 @@ class HLCompleteProductProfileViewController: BaseViewController, UIScrollViewDe
         self.changeMarkState(0)
         self.changeConditionState(conditionNewBtn.tag)
         
-        doneBtn.setup()
+        //doneBtn.setup()
         desciptionTxtField.addTarget(self, action: #selector(textchange(_:)), for: UIControlEvents.editingChanged)
         let tapGesture: UITapGestureRecognizer! = UITapGestureRecognizer.init(target: self, action: #selector(onTapScreen))
         perkContainView.addGestureRecognizer(tapGesture)
@@ -153,14 +154,26 @@ class HLCompleteProductProfileViewController: BaseViewController, UIScrollViewDe
         return textField.resignFirstResponder()
     }
     func changeDoneBtnState(_ string: String){
+        let charCount = string.characters.count
         if string.characters.count != 0  {
             doneBtn.isEnabled = true
-            doneBtn.startAnimation()
+            doneBtn.alpha = 1
+            //doneBtn.startAnimation()
             //print("Is enabled")
         }else{
             doneBtn.isEnabled = false
-            doneBtn.stopAnimation()
+            doneBtn.alpha = 0.5
+            //doneBtn.stopAnimation()
         }
+        
+        var theRemainingChars = 300 - charCount
+        if (theRemainingChars < 1){
+            let str = self.desciptionTxtField.text!
+            let index = str.index(str.startIndex, offsetBy: 300)
+            desciptionTxtField.text = str.substring(to: index)
+            theRemainingChars = 0
+        }
+        charactersRemainingLabel.text = "\(theRemainingChars) characters remaining"
     }
     
     @IBAction func doneBtnPRessed(_ sender: Any) {
