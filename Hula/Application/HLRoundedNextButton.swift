@@ -48,7 +48,9 @@ class HLRoundedNextButton: UIButton {
         gradient.cornerRadius = rect.height/2
         
         
-        self.layer.insertSublayer(gradient, at: 0)
+        //self.layer.insertSublayer(gradient, at: 0)
+        self.layer.backgroundColor = UIColor(red: 1.0, green: 1.0, blue: 1.0, alpha: 0.3).cgColor
+        self.layer.cornerRadius = rect.height/2
         self.setTitleColor(UIColor.white, for: .normal)
         self.setTitleColor(UIColor.lightGray, for: .highlighted)
         
@@ -86,7 +88,7 @@ class HLRoundedNextButton: UIButton {
         }
     }
     public func stopAnimation(){
-        print("Stopping animation")
+        //print("Stopping animation")
         self.alpha = 0.5
         if (animated){
             self.layer.removeAnimation(forKey: "position")

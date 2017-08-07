@@ -51,7 +51,7 @@ class HLSettingViewController: BaseViewController {
         mainScrollView.contentSize = CGSize(width: 0, height: contentView.frame.size.height)
         
         if (userData.userPhotoURL.characters.count>1){
-            //commonUtils.loadImageOnView(imageView:self.smallProfileImage, withURL:HulaUser.sharedInstance.userPhotoURL)
+            self.removeAlertIcon(fromView: self.pictureView)
             self.smallProfileImage.loadImageFromURL(urlString: HulaUser.sharedInstance.userPhotoURL)
         } else {
             self.addAlertIcon(toView: self.pictureView)
@@ -60,7 +60,9 @@ class HLSettingViewController: BaseViewController {
         
         if (userData.userNick.characters.count>1){
             userNameLabel.text = userData.userNick
+            self.removeAlertIcon(fromView: self.nameView)
         } else {
+            userNameLabel.text = "Name"
             self.addAlertIcon(toView: self.nameView)
         }
         
@@ -70,21 +72,26 @@ class HLSettingViewController: BaseViewController {
         
         if (userData.userName.characters.count>1){
             userFullNameLabel.text = userData.userName
+            self.removeAlertIcon(fromView: self.fullNameView)
         } else {
+            userFullNameLabel.text = "Full name"
             self.addAlertIcon(toView: self.fullNameView)
         }
         if (userData.userBio.characters.count>1){
             userBioLabel.text = userData.userBio
+            self.removeAlertIcon(fromView: self.bioView)
         } else {
+            userBioLabel.text = "About you"
             self.addAlertIcon(toView: self.bioView)
         }
         
         if (userData.userLocationName.characters.count>1){
             locationLabel.text = userData.userLocationName
+            self.removeAlertIcon(fromView: self.locationView)
         } else {
+            locationLabel.text = "Location"
             self.addAlertIcon(toView: self.locationView)
         }
-        
     }
     
     
@@ -158,7 +165,15 @@ class HLSettingViewController: BaseViewController {
         let imageName = "icon_alert_thumbnails"
         let image = UIImage(named: imageName)
         let imageView = UIImageView(image: image!)
+        imageView.tag = 220;
         imageView.frame = CGRect(x: toView.frame.width/2 + 20, y: toView.frame.height/2 - 8, width: 16, height: 16)
         toView.addSubview(imageView)
+    }
+    func removeAlertIcon(fromView: UIView){
+        for view in fromView.subviews{
+            if view.tag == 220{
+                view.removeFromSuperview()
+            }
+        }
     }
 }

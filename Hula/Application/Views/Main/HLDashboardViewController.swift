@@ -181,19 +181,6 @@ extension HLDashboardViewController: UICollectionViewDelegate, UICollectionViewD
             cell.layer.zPosition = 100;
             
             isExpandedFlowLayoutUsed = !isExpandedFlowLayoutUsed
-            /*
-            UIView.animate(withDuration: 0.6, animations: { () -> Void in
-                //self.mainCollectionView.collectionViewLayout.invalidateLayout()
-                //UIScreen.main.snapshotView(afterScreenUpdates: true)
-                if(self.isExpandedFlowLayoutUsed){
-                    self.mainCollectionView.setCollectionViewLayout(HLDashboardExpandedViewFlowLayout(), animated: false)
-                } else {
-                    self.mainCollectionView.setCollectionViewLayout(HLDashboardNormalViewFlowLayout(), animated: false)
-                }
-                collectionView.frame = CGRect(origin: collectionView.frame.origin, size: CGSize(width:1000.0 * 5, height:collectionView.frame.height) )
-                self.mainCollectionView.scrollToItem(at: indexPath, at: .left , animated: false)
-            })
-             */
             let when = DispatchTime.now() + 0.3
             DispatchQueue.main.asyncAfter(deadline: when) {
                 if let swappPageVC = self.parent as? HLSwappPageViewController{
