@@ -173,7 +173,8 @@ class HLPictureSelectViewController: BaseViewController, UIImagePickerController
     func openImagePicker(){
         picker.allowsEditing = false
         picker.sourceType = .photoLibrary
-        picker.mediaTypes = UIImagePickerController.availableMediaTypes(for: .photoLibrary)!
+        //picker.mediaTypes = [kUTTypeImage as String]
+        //print(picker.mediaTypes)
         present(picker, animated: true, completion: nil)
     }
     

@@ -166,10 +166,10 @@ class HLCompleteProductProfileViewController: BaseViewController, UIScrollViewDe
             //doneBtn.stopAnimation()
         }
         
-        var theRemainingChars = 300 - charCount
+        var theRemainingChars = 200 - charCount
         if (theRemainingChars < 1){
             let str = self.desciptionTxtField.text!
-            let index = str.index(str.startIndex, offsetBy: 300)
+            let index = str.index(str.startIndex, offsetBy: 200)
             desciptionTxtField.text = str.substring(to: index)
             theRemainingChars = 0
         }

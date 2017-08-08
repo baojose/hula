@@ -25,7 +25,7 @@ class HLEditFieldViewController: BaseViewController, UITextFieldDelegate, UIText
     @IBOutlet weak var lineSeparator: UILabel!
     @IBOutlet weak var saveButton: HLBouncingButton!
     @IBOutlet weak var remainigLabel: UILabel!
-    var remainingChars: Int = 300
+    var remainingChars: Int = 200
     
     override func viewDidLoad() {
         super.viewDidLoad()

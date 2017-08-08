@@ -112,7 +112,7 @@ class HLCustomCameraViewController: BaseViewController, UIImagePickerControllerD
     func openImagePicker(){
         picker.allowsEditing = false
         picker.sourceType = .photoLibrary
-        picker.mediaTypes = UIImagePickerController.availableMediaTypes(for: .photoLibrary)!
+        //picker.mediaTypes = UIImagePickerController.availableMediaTypes(for: .photoLibrary)!
         present(picker, animated: true, completion: nil)
     }
     

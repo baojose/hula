@@ -106,7 +106,7 @@ class HLSettingViewController: BaseViewController {
         var previous = "";
         var label = ""
         var item_toUpdate = "";
-        var remChar = 300
+        var remChar = 200
         switch (sender as! UIButton).tag {
         case 0:
             // image update
@@ -133,7 +133,7 @@ class HLSettingViewController: BaseViewController {
             previous = userData.userBio
             label = "Bio"
             item_toUpdate = "userBio"
-            remChar = 300
+            remChar = 200
         case 4:
             // Location
             title = "Change location"
