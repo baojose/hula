@@ -335,21 +335,30 @@ extension HLBarterScreenViewController: KDDragAndDropCollectionViewDataSource, U
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         
         let cell: HLProductCollectionViewCell
-        
+    
         let product:HulaProduct
         switch collectionView.tag {
         case 1:
             product = myProducts[indexPath.item]
             cell = collectionView.dequeueReusableCell(withReuseIdentifier: "productcell1", for: indexPath) as! HLProductCollectionViewCell
+            cell.side = "left"
+            cell.type = "user"
         case 2:
             product = myTradedProducts[indexPath.item]
             cell = collectionView.dequeueReusableCell(withReuseIdentifier: "productcell2", for: indexPath) as! HLProductCollectionViewCell
+            cell.side = "left"
+            cell.type = "select"
         case 3:
             product = otherTradedProducts[indexPath.item]
             cell = collectionView.dequeueReusableCell(withReuseIdentifier: "productcell3", for: indexPath) as! HLProductCollectionViewCell
+            cell.side = "right"
+            cell.type = "select"
         case 4:
+            
             product = otherProducts[indexPath.item]
             cell = collectionView.dequeueReusableCell(withReuseIdentifier: "productcell4", for: indexPath) as! HLProductCollectionViewCell
+            cell.side = "rught"
+            cell.type = "user"
         default:
             print("Error: no product found")
             product = HulaProduct(id : "nada", name : "Test product", image: "https://api.hula.trading/v1/products/59400e5ce8825609f281bc68/image")
@@ -362,6 +371,11 @@ extension HLBarterScreenViewController: KDDragAndDropCollectionViewDataSource, U
         //print(product.tradeStatus)
         if (product.tradeStatus != 0){
             cell.statusImage.image = UIImage.init(named: arrowImagesName[product.tradeStatus])
+            if (product.tradeStatus == 1){
+                cell.is_added()
+            } else {
+                cell.is_removed()
+            }
         } else {
             cell.statusImage.image = nil
         }
