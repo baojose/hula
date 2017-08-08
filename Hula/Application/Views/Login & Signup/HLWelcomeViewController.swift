@@ -59,6 +59,7 @@ class HLWelcomeViewController: UserBaseViewController, CLLocationManagerDelegate
                 self.closeIdentification()
                 self.dismiss(animated: true)
                 
+                
             }
         } else {
             print("Location services are not enabled")

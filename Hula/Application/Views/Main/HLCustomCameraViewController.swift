@@ -51,6 +51,16 @@ class HLCustomCameraViewController: BaseViewController, UIImagePickerControllerD
         self.initCamera()
         self.beginSession()
         
+        
+        let value = UIInterfaceOrientation.portrait.rawValue
+        UIDevice.current.setValue(value, forKey: "orientation")
+    }
+    
+    private func supportedInterfaceOrientations() -> UIInterfaceOrientationMask {
+        return UIInterfaceOrientationMask.portrait
+    }
+    private func shouldAutorotate() -> Bool {
+        return false
     }
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
@@ -129,6 +139,19 @@ class HLCustomCameraViewController: BaseViewController, UIImagePickerControllerD
     }
     
     @IBAction func actionCameraCapture(_ sender: AnyObject) {
+        let flashView = UIView()
+        flashView.frame = self.view.frame
+        flashView.backgroundColor = UIColor.white
+        flashView.alpha = 1.0
+        self.view.addSubview(flashView)
+        UIView.animate(withDuration: 0.3, animations: {
+            flashView.alpha = 0.0
+        }) { (success) in
+            flashView.removeFromSuperview()
+        }
+
+        
+        
         saveToCamera()
     }
     

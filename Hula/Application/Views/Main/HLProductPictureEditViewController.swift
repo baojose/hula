@@ -135,6 +135,7 @@ class HLProductPictureEditViewController: BaseViewController, UIImagePickerContr
         openImagePicker()
     }
     @IBAction func takePhotoAction(_ sender: Any) {
+        //let flashView = UIView();
         saveToCamera(sender)
         //dismissToPreviousPage(sender)
     }

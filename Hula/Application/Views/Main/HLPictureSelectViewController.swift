@@ -154,6 +154,19 @@ class HLPictureSelectViewController: BaseViewController, UIImagePickerController
         beginSession()
     }
     @IBAction func takePhotoAction(_ sender: Any) {
+        
+        let flashView = UIView()
+        flashView.frame = self.view.frame
+        flashView.backgroundColor = UIColor.white
+        flashView.alpha = 1.0
+        self.view.addSubview(flashView)
+        UIView.animate(withDuration: 0.3, animations: {
+            flashView.alpha = 0.0
+        }) { (success) in
+            flashView.removeFromSuperview()
+        }
+        
+        
         saveToCamera(sender)
         //dismissToPreviousPage(sender)
     }
