@@ -1,11 +1,11 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="12118" systemVersion="16A323" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" colorMatched="YES" initialViewController="omL-QY-oVG">
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="11762" systemVersion="15G1010" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" colorMatched="YES" initialViewController="omL-QY-oVG">
     <device id="retina4_7" orientation="portrait">
         <adaptation id="fullscreen"/>
     </device>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="12086"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="11757"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <scenes>
@@ -81,14 +81,6 @@
                                     <segue destination="Ys6-tw-uwL" kind="push" id="E8M-XX-yCt"/>
                                 </connections>
                             </button>
-                            <button opaque="NO" contentMode="center" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" id="5rF-8m-4eu">
-                                <rect key="frame" x="18" y="77" width="40" height="40"/>
-                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                <state key="normal" image="icon_back_L"/>
-                                <connections>
-                                    <action selector="closeIdentificationVC:" destination="pEV-TJ-xPS" eventType="touchUpInside" id="aDA-nT-emN"/>
-                                </connections>
-                            </button>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Please register to start using our services" textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="a4p-Oa-dZJ">
                                 <rect key="frame" x="32" y="152" width="200" height="172"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
@@ -146,6 +138,14 @@
                                     <action selector="gotoTermsConditionsAction:" destination="pEV-TJ-xPS" eventType="touchUpInside" id="tds-Td-cP8"/>
                                 </connections>
                             </button>
+                            <button opaque="NO" contentMode="center" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" reversesTitleShadowWhenHighlighted="YES" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" id="5rF-8m-4eu">
+                                <rect key="frame" x="18" y="77" width="40" height="40"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <state key="normal" image="icon_back_L"/>
+                                <connections>
+                                    <action selector="closeIdentificationVC:" destination="pEV-TJ-xPS" eventType="touchUpInside" id="aDA-nT-emN"/>
+                                </connections>
+                            </button>
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                     </view>
@@ -194,14 +194,6 @@
                                             <outlet property="delegate" destination="4Z7-C3-lzO" id="udp-bb-fmy"/>
                                         </connections>
                                     </textField>
-                                    <button opaque="NO" contentMode="center" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" id="jNb-Du-NcO">
-                                        <rect key="frame" x="18" y="77" width="40" height="40"/>
-                                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                        <state key="normal" image="icon_back_L"/>
-                                        <connections>
-                                            <action selector="closeIdentificationVC:" destination="4Z7-C3-lzO" eventType="touchUpInside" id="xhs-4E-GFD"/>
-                                        </connections>
-                                    </button>
                                     <textField opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="left" contentVerticalAlignment="center" placeholder="Password" textAlignment="natural" minimumFontSize="17" background="type_line_login" clearButtonMode="whileEditing" id="r10-XX-Feb">
                                         <rect key="frame" x="24" y="385" width="327" height="33"/>
                                         <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
@@ -270,7 +262,7 @@ Log In</string>
                                             <segue destination="Ys6-tw-uwL" kind="push" id="wT5-4p-lNl"/>
                                         </connections>
                                     </button>
-                                    <button opaque="NO" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" id="2Uw-un-Mh5" customClass="HLRoundedNextButton" customModule="Hula" customModuleProvider="target">
+                                    <button opaque="NO" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" id="2Uw-un-Mh5" customClass="HLRoundedNextButton" customModule="Hula" customModuleProvider="target">
                                         <rect key="frame" x="234" y="444" width="117" height="39"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxY="YES"/>
                                         <state key="normal" title="Log in">
@@ -278,6 +270,14 @@ Log In</string>
                                         </state>
                                         <connections>
                                             <action selector="gotoNextStep:" destination="4Z7-C3-lzO" eventType="touchUpInside" id="Qzh-fg-Fs1"/>
+                                        </connections>
+                                    </button>
+                                    <button opaque="NO" contentMode="center" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" reversesTitleShadowWhenHighlighted="YES" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" id="jNb-Du-NcO">
+                                        <rect key="frame" x="18" y="77" width="40" height="40"/>
+                                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                        <state key="normal" image="icon_back_L"/>
+                                        <connections>
+                                            <action selector="closeIdentificationVC:" destination="4Z7-C3-lzO" eventType="touchUpInside" id="xhs-4E-GFD"/>
                                         </connections>
                                     </button>
                                 </subviews>
@@ -671,7 +671,7 @@ Log In</string>
                                 <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                             </imageView>
-                            <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="pKY-gE-ShD">
+                            <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="pKY-gE-ShD">
                                 <rect key="frame" x="231" y="455" width="117" height="39"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="16"/>
@@ -1374,7 +1374,7 @@ Log In</string>
                                         <nil key="textColor"/>
                                         <nil key="highlightedColor"/>
                                     </label>
-                                    <button opaque="NO" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" id="5Jm-8d-xud" customClass="HLBouncingButton" customModule="Hula" customModuleProvider="target">
+                                    <button opaque="NO" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" id="5Jm-8d-xud" customClass="HLBouncingButton" customModule="Hula" customModuleProvider="target">
                                         <rect key="frame" x="224" y="249" width="125" height="31"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxY="YES"/>
                                         <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="16"/>
@@ -1927,7 +1927,7 @@ Log In</string>
                                                 <rect key="frame" x="0.0" y="0.0" width="375" height="60"/>
                                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
                                             </imageView>
-                                            <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" adjustsImageWhenHighlighted="NO" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="DLS-at-ZKl" customClass="HLBouncingButton" customModule="Hula" customModuleProvider="target">
+                                            <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" showsTouchWhenHighlighted="YES" adjustsImageWhenHighlighted="NO" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="DLS-at-ZKl" customClass="HLBouncingButton" customModule="Hula" customModuleProvider="target">
                                                 <rect key="frame" x="76" y="11" width="222" height="38"/>
                                                 <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
                                                 <fontDescription key="fontDescription" name="HelveticaNeue-Light" family="Helvetica Neue" pointSize="16"/>
@@ -2105,14 +2105,6 @@ Log In</string>
                                 <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                 <subviews>
-                                    <button opaque="NO" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" id="xLU-on-cmX">
-                                        <rect key="frame" x="18" y="77" width="40" height="40"/>
-                                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                        <state key="normal" image="icon_back_L"/>
-                                        <connections>
-                                            <action selector="closeIdentificationVC:" destination="Ys6-tw-uwL" eventType="touchUpInside" id="cok-Q5-QVY"/>
-                                        </connections>
-                                    </button>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" text="What is your nickname?" lineBreakMode="tailTruncation" numberOfLines="3" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="ct9-He-rm6">
                                         <rect key="frame" x="25" y="203" width="252" height="89"/>
                                         <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxY="YES"/>
@@ -2152,7 +2144,7 @@ Log In</string>
                                         </attributedString>
                                         <nil key="highlightedColor"/>
                                     </label>
-                                    <button opaque="NO" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" id="kMo-8S-4HI" customClass="HLRoundedNextButton" customModule="Hula" customModuleProvider="target">
+                                    <button opaque="NO" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" id="kMo-8S-4HI" customClass="HLRoundedNextButton" customModule="Hula" customModuleProvider="target">
                                         <rect key="frame" x="232" y="445" width="117" height="39"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxY="YES"/>
                                         <state key="normal" title="Next">
@@ -2161,6 +2153,14 @@ Log In</string>
                                         <connections>
                                             <action selector="gotoNextStep:" destination="4Z7-C3-lzO" eventType="touchUpInside" id="jYs-CR-pY9"/>
                                             <action selector="nextStepPressed:" destination="Ys6-tw-uwL" eventType="touchUpInside" id="eE5-LL-y3a"/>
+                                        </connections>
+                                    </button>
+                                    <button opaque="NO" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" reversesTitleShadowWhenHighlighted="YES" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" id="xLU-on-cmX">
+                                        <rect key="frame" x="18" y="77" width="40" height="40"/>
+                                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                        <state key="normal" image="icon_back_L"/>
+                                        <connections>
+                                            <action selector="closeIdentificationVC:" destination="Ys6-tw-uwL" eventType="touchUpInside" id="cok-Q5-QVY"/>
                                         </connections>
                                     </button>
                                 </subviews>
@@ -2346,7 +2346,7 @@ Log In</string>
                                     </label>
                                 </subviews>
                             </view>
-                            <button opaque="NO" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" id="MyB-ee-C6Y" customClass="HLRoundedButton" customModule="Hula" customModuleProvider="target">
+                            <button opaque="NO" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" id="MyB-ee-C6Y" customClass="HLRoundedButton" customModule="Hula" customModuleProvider="target">
                                 <rect key="frame" x="241" y="335" width="185" height="30"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES"/>
                                 <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="17"/>
@@ -3443,7 +3443,7 @@ Log In</string>
                                 <nil key="textColor"/>
                                 <nil key="highlightedColor"/>
                             </label>
-                            <button opaque="NO" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" id="uot-rn-BB4" customClass="HLBouncingButton" customModule="Hula" customModuleProvider="target">
+                            <button opaque="NO" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" id="uot-rn-BB4" customClass="HLBouncingButton" customModule="Hula" customModuleProvider="target">
                                 <rect key="frame" x="222" y="248" width="137" height="41"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxY="YES"/>
                                 <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="16"/>
@@ -3862,7 +3862,7 @@ Log In</string>
                                         <rect key="frame" x="0.0" y="0.0" width="375" height="60"/>
                                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                     </imageView>
-                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" id="rhF-WE-8jz">
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" id="rhF-WE-8jz">
                                         <rect key="frame" x="76" y="11" width="222" height="38"/>
                                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                         <fontDescription key="fontDescription" name="HelveticaNeue-Light" family="Helvetica Neue" pointSize="16"/>
@@ -5021,7 +5021,7 @@ Log In</string>
                                                     <action selector="showAlbum:" destination="nK1-j0-3vr" eventType="touchUpInside" id="EQI-DG-UBj"/>
                                                 </connections>
                                             </button>
-                                            <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" adjustsImageWhenHighlighted="NO" adjustsImageWhenDisabled="NO" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="FuM-iF-Uvu" customClass="HLBouncingButton" customModule="Hula" customModuleProvider="target">
+                                            <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" showsTouchWhenHighlighted="YES" adjustsImageWhenHighlighted="NO" adjustsImageWhenDisabled="NO" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="FuM-iF-Uvu" customClass="HLBouncingButton" customModule="Hula" customModuleProvider="target">
                                                 <rect key="frame" x="270" y="18" width="82" height="38"/>
                                                 <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
                                                 <fontDescription key="fontDescription" name="HelveticaNeue-Light" family="Helvetica Neue" pointSize="16"/>
@@ -6415,7 +6415,7 @@ Log In</string>
         <simulatedScreenMetrics key="destination" type="retina4_7.fullscreen"/>
     </simulatedMetricsContainer>
     <inferredMetricsTieBreakers>
-        <segue reference="8X8-bg-W6f"/>
         <segue reference="wT5-4p-lNl"/>
+        <segue reference="UoL-AY-aB4"/>
     </inferredMetricsTieBreakers>
 </document>
