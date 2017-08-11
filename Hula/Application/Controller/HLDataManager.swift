@@ -111,7 +111,7 @@ class HLDataManager: NSObject {
         
         //print("Login in progress...")
         let queryURL = HulaConstants.apiURL + "authenticate"
-        var loginSuccess = false;
+        var loginSuccess = "";
         httpPost(urlstr: queryURL, postString: "email="+email+"&pass="+pass, isPut: false, taskCallback: { (ok, json) in
             
             //print("done")
@@ -127,11 +127,15 @@ class HLDataManager: NSObject {
                         //user.token = token
                         //user.userId = dictionary["userId"] as? String
                         //print(token)
-                        loginSuccess = true;
+                        loginSuccess = "ok";
                         self.writeUserData()
+                    }
+                    if let resp = dictionary["message"] as? String {
+                        loginSuccess = resp;
                     }
                 } else {
                     user.token = ""
+                    loginSuccess = "Incorrect login. Please try again.";
                 }
                 
                 NotificationCenter.default.post(name: self.loginRecieved, object: loginSuccess)

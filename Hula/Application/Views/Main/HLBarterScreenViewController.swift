@@ -165,8 +165,19 @@ class HLBarterScreenViewController: UIViewController {
         
         switch type {
         case "other":
+            if thisTrade.other_money > 0 {
+                let moneyProd = HulaProduct(id: "xmoney", name: "+$\(Int(round(thisTrade.other_money)))", image: "")
+                final_arr.append(moneyProd)
+            }
+            
+            
             otherTradedProducts = final_arr
         default:
+            
+            if thisTrade.owner_money > 0 {
+                let moneyProd = HulaProduct(id: "xmoney", name: "+$\( Int(round(thisTrade.owner_money)) )", image: "")
+                final_arr.append(moneyProd)
+            }
             myTradedProducts = final_arr
         }
         
@@ -218,6 +229,7 @@ class HLBarterScreenViewController: UIViewController {
                                         image = "https://api.hula.trading/v1/products/0/image"
                                     }
                                     let newProd = HulaProduct(id : id, name : name, image: image!)
+                                    newProd.populate(with: product_data as NSDictionary)
                                     
                                     for difprod in self.thisTrade.last_bid_diff {
                                         if (difprod == newProd.productId!){
@@ -250,12 +262,30 @@ class HLBarterScreenViewController: UIViewController {
         var final_arr = [String]();
         
         for prod in from {
-            final_arr.append(prod.productId)
+            if (prod.productId != "xmoney"){
+                final_arr.append(prod.productId)
+            }
         }
         //print(final_arr)
         return final_arr
     }
     
+    @IBAction func addMoneyToOther(_ sender: Any) {
+        let viewController = self.storyboard?.instantiateViewController(withIdentifier: "calculatorView") as! HLCalculatorViewController
+        
+        viewController.calculatorDelegate = self
+        viewController.side = "other"
+        
+        self.present(viewController, animated: true)
+    }
+    
+    @IBAction func addMonewToOwner(_ sender: Any) {
+        let viewController = self.storyboard?.instantiateViewController(withIdentifier: "calculatorView") as! HLCalculatorViewController
+        
+        viewController.calculatorDelegate = self
+        viewController.side = "owner"
+        self.present(viewController, animated: true)
+    }
 }
 
 extension HLBarterScreenViewController: KDDragAndDropCollectionViewDataSource, UICollectionViewDelegateFlowLayout {
@@ -275,26 +305,60 @@ extension HLBarterScreenViewController: KDDragAndDropCollectionViewDataSource, U
         }
     }
     
+    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        print("Collection: \(collectionView.tag) item \(indexPath.item)")
+        let product:HulaProduct
+        switch collectionView.tag {
+        case 1:
+            product = myProducts[indexPath.item]
+        case 2:
+            product = myTradedProducts[indexPath.item]
+        case 3:
+            product = otherTradedProducts[indexPath.item]
+        case 4:
+            product = otherProducts[indexPath.item]
+        default:
+            product = HulaProduct(id : "nada", name : "Test product", image: "https://api.hula.trading/v1/products/59400e5ce8825609f281bc68/image")
+        }
+        //print(product)
+        let viewController = self.storyboard?.instantiateViewController(withIdentifier: "ProductModal") as! HLProductModalViewController
+        
+        viewController.product = product
+        viewController.modalPresentationStyle = .overCurrentContext
+        
+        self.present(viewController, animated: true)
+        print("presented vc")
+        
+    }
     
     // The cell that is returned must be retrieved from a call to -dequeueReusableCellWithReuseIdentifier:forIndexPath:
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         
         let cell: HLProductCollectionViewCell
-        
+    
         let product:HulaProduct
         switch collectionView.tag {
         case 1:
             product = myProducts[indexPath.item]
             cell = collectionView.dequeueReusableCell(withReuseIdentifier: "productcell1", for: indexPath) as! HLProductCollectionViewCell
+            cell.side = "left"
+            cell.type = "user"
         case 2:
             product = myTradedProducts[indexPath.item]
             cell = collectionView.dequeueReusableCell(withReuseIdentifier: "productcell2", for: indexPath) as! HLProductCollectionViewCell
+            cell.side = "left"
+            cell.type = "select"
         case 3:
             product = otherTradedProducts[indexPath.item]
             cell = collectionView.dequeueReusableCell(withReuseIdentifier: "productcell3", for: indexPath) as! HLProductCollectionViewCell
+            cell.side = "right"
+            cell.type = "select"
         case 4:
+            
             product = otherProducts[indexPath.item]
             cell = collectionView.dequeueReusableCell(withReuseIdentifier: "productcell4", for: indexPath) as! HLProductCollectionViewCell
+            cell.side = "rught"
+            cell.type = "user"
         default:
             print("Error: no product found")
             product = HulaProduct(id : "nada", name : "Test product", image: "https://api.hula.trading/v1/products/59400e5ce8825609f281bc68/image")
@@ -307,6 +371,11 @@ extension HLBarterScreenViewController: KDDragAndDropCollectionViewDataSource, U
         //print(product.tradeStatus)
         if (product.tradeStatus != 0){
             cell.statusImage.image = UIImage.init(named: arrowImagesName[product.tradeStatus])
+            if (product.tradeStatus == 1){
+                cell.is_added()
+            } else {
+                cell.is_removed()
+            }
         } else {
             cell.statusImage.image = nil
         }
@@ -479,7 +548,22 @@ extension HLBarterScreenViewController: HLBarterScreenDelegate{
         
         trade.turn_user_id = thisTrade.turn_user_id
         trade.tradeId = thisTrade.tradeId
+        trade.owner_money = thisTrade.owner_money
+        trade.other_money = thisTrade.other_money
         return trade
     }
 }
 
+extension HLBarterScreenViewController: CalculatorDelegate{
+    
+    func amountSelected(amount:Float, side:String){
+        if (amount > 0.0){
+            
+            if (side == "owner"){
+                thisTrade.owner_money = amount
+            } else {
+                thisTrade.other_money = amount
+            }
+        }
+    }
+}

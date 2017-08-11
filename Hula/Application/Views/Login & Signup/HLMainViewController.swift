@@ -17,8 +17,8 @@ class HLMainViewController: UserBaseViewController {
     }
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        self.playVideo()
         HLDataManager.sharedInstance.loadUserData()
+        self.playVideo()
     }
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
@@ -42,21 +42,28 @@ class HLMainViewController: UserBaseViewController {
     */
     
     private func playVideo(){
-        guard let path = Bundle.main.path(forResource: "splash_intro", ofType:"mp4") else {
-            debugPrint("splash_intro.mp4 file not found")
-            return
-        }
-        let player = AVPlayer(url: URL(fileURLWithPath: path))
-        let playerLayer = AVPlayerLayer(player: player)
-        playerLayer.frame = self.view.bounds
-        self.view.layer.addSublayer(playerLayer)
-        NotificationCenter.default.addObserver(self, selector: #selector(HLMainViewController.playerEnded(notification:)), name:NSNotification.Name.AVPlayerItemDidPlayToEndTime, object: player.currentItem)
-        player.play()
         
+        let token = HulaUser.sharedInstance.token!
+        print(token)
+        if (token.characters.count>10){
+            // we will jump to mainView only if user is not logged in
+            self.navToMainView()
+        } else {
+            guard let path = Bundle.main.path(forResource: "splash_intro", ofType:"mp4") else {
+                debugPrint("splash_intro.mp4 file not found")
+                return
+            }
+            let player = AVPlayer(url: URL(fileURLWithPath: path))
+            let playerLayer = AVPlayerLayer(player: player)
+            playerLayer.frame = self.view.bounds
+            self.view.layer.addSublayer(playerLayer)
+            NotificationCenter.default.addObserver(self, selector: #selector(HLMainViewController.playerEnded(notification:)), name:NSNotification.Name.AVPlayerItemDidPlayToEndTime, object: player.currentItem)
+            player.play()
+        }
     }
     
     func playerEnded (notification:NSNotification) {
-        print("finished")
+        //print("finished")
         let token = HulaUser.sharedInstance.token!
         //print(token)
         if (token.characters.count>10){

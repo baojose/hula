@@ -1,16 +1,15 @@
 //
-//  HLRoundedNextButton.swift
+//  HLRoundedGradientNextButton.swift
 //  Hula
 //
-//  Created by Juan Searle on 16/04/2017.
+//  Created by Juan Searle on 05/08/2017.
 //  Copyright © 2017 star. All rights reserved.
 //
 
-
 import UIKit
 
-class HLRoundedNextButton: UIButton {
-    
+class HLRoundedGradientNextButton: UIButton {
+
     let arrowLayer:CALayer = CALayer()
     let positionAnimation = CABasicAnimation(keyPath: "position")
     let arrow_width:CGFloat = 10
@@ -25,7 +24,7 @@ class HLRoundedNextButton: UIButton {
     
     //override func draw(_ rect: CGRect) {
     //        // Drawing code
-
+    
     //}
     
     
@@ -48,8 +47,8 @@ class HLRoundedNextButton: UIButton {
         gradient.cornerRadius = rect.height/2
         
         
-        //self.layer.insertSublayer(gradient, at: 0)
-        self.layer.backgroundColor = UIColor(red: 1.0, green: 1.0, blue: 1.0, alpha: 0.3).cgColor
+        self.layer.insertSublayer(gradient, at: 0)
+        //self.layer.backgroundColor = UIColor(red: 1.0, green: 1.0, blue: 1.0, alpha: 0.3).cgColor
         self.layer.cornerRadius = rect.height/2
         self.setTitleColor(UIColor.white, for: .normal)
         self.setTitleColor(UIColor.lightGray, for: .highlighted)

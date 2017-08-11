@@ -18,6 +18,8 @@ class HLWelcomeViewController: UserBaseViewController, CLLocationManagerDelegate
         // Do any additional setup after loading the view.
         locationManager = CLLocationManager()
         locationManager.delegate = self
+        let app = UIApplication.shared.delegate as! AppDelegate
+        app.registerForPushNotifications()
     }
 
     override func didReceiveMemoryWarning() {
@@ -56,6 +58,7 @@ class HLWelcomeViewController: UserBaseViewController, CLLocationManagerDelegate
                 print("Authorized")
                 self.closeIdentification()
                 self.dismiss(animated: true)
+                
                 
             }
         } else {

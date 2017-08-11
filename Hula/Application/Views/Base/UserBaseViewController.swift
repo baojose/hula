@@ -40,8 +40,8 @@ class UserBaseViewController: UIViewController {
             for aViewController:UIViewController in viewControllers {
                 if aViewController.isKind(of: BaseTabBarViewController.self) {
                     if let tb = aViewController as? BaseTabBarViewController {
-                        print("BaseTabBarViewController index:")
-                        print(tb.selectedIndex)
+                        //print("BaseTabBarViewController index:")
+                        //print(tb.selectedIndex)
                         tb.tabBarController?.selectedIndex = 0
                         tb.selectedIndex = 0
                     }

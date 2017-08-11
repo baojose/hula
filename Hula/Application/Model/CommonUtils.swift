@@ -246,7 +246,9 @@ let imageCache = NSCache<AnyObject, AnyObject>()
 extension UIImageView {
     func loadImageFromURL(urlString: String) {
         self.image = nil
-        
+        if (urlString == ""){
+            return
+        }
         // check for cache
         if let cachedImage = imageCache.object(forKey: urlString as AnyObject) as? UIImage {
             self.image = cachedImage

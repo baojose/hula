@@ -16,6 +16,8 @@ class HLLogInViewController: UserBaseViewController, UITextFieldDelegate {
     @IBOutlet weak var loginErrorView: UIView!
     @IBOutlet weak var inputElements: UIView!
 
+    @IBOutlet weak var errorMessageLabel: UILabel!
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -96,11 +98,12 @@ class HLLogInViewController: UserBaseViewController, UITextFieldDelegate {
     }
     
     func loginDataRecieved(notification: NSNotification) {
-        print("Login received. Going to welcome vc")
-        let loginOk = notification.object as! Bool
-        print(loginOk)
-        if (loginOk){
+        //print("Login received. Going to welcome vc")
+        let loginOk = notification.object as! String
+        //print(loginOk)
+        if (loginOk == "ok"){
             DispatchQueue.main.async {
+                self.errorMessageLabel.text = "User logged in"
                 let storyBoard : UIStoryboard = UIStoryboard(name: "Main", bundle:nil)
                 let nextViewController = storyBoard.instantiateViewController(withIdentifier: "welcome") as! HLWelcomeViewController
                 //self.present(nextViewController, animated:true, completion:nil)
@@ -109,6 +112,8 @@ class HLLogInViewController: UserBaseViewController, UITextFieldDelegate {
             
         } else {
             DispatchQueue.main.async {
+                self.errorMessageLabel.text = loginOk;
+                //print(loginOk);
                 UIView.animate(withDuration: 0.5, animations: {
                     self.loginErrorView.frame.origin.y = self.view.frame.height - self.loginErrorView.frame.height
                     self.greenBackgroundImage.alpha = 0

@@ -55,5 +55,20 @@ class HLTradesCollectionViewCell: UICollectionViewCell {
         // test for commit
     }
     
-
+    
+    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
+        UIView.animate(withDuration: 0.1, animations: {
+            self.transform = CGAffineTransform(scaleX: 1.1,y: 1.1);
+            
+        })
+        UIView.animate(withDuration: 0.1, animations: {
+            self.transform = CGAffineTransform(scaleX: 1.1,y: 1.1);
+            
+        }, completion: { (ok) in
+            UIView.animate(withDuration: 0.4, animations: {
+                self.transform = CGAffineTransform(scaleX: 1,y: 1);
+            })
+        })
+        super.touchesBegan(touches, with: event)
+    }
 }

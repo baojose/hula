@@ -16,17 +16,27 @@ class HLHomeViewController: BaseViewController, UIScrollViewDelegate, UITextFiel
     @IBOutlet var profileCompleteAlertView: UIView!
     @IBOutlet var noResultView: UIView!
     @IBOutlet var tableContainView: UIView!
+    @IBOutlet weak var boxRoundedView: UIView!
+    @IBOutlet weak var cancelButton: UIButton!
 
     var isSearching: Bool = false
     var productArray: NSMutableArray!
     var filteredKeywordsArray: NSMutableArray!
+    var boxRoundedOriginalSize: CGSize!
 
     override func viewDidLoad() {
         super.viewDidLoad()
         self.initData()
+        
+        boxRoundedView.layer.cornerRadius = CGFloat(17)
+        boxRoundedView.layer.borderWidth = CGFloat(1.0)
+        boxRoundedView.layer.borderColor = UIColor(red: 0.0, green: 0.0, blue: 0.0, alpha: 0.3).cgColor
+        boxRoundedOriginalSize = boxRoundedView.frame.size
+        cancelButton.alpha = 0
     }
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
+        boxRoundedOriginalSize = boxRoundedView.frame.size
     }
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
@@ -133,6 +143,12 @@ class HLHomeViewController: BaseViewController, UIScrollViewDelegate, UITextFiel
     func textFieldShouldBeginEditing(_ textField: UITextField) -> Bool{
         isSearching = true
         self.searchProduct(textField.text!)
+        UIView.animate(withDuration: 0.3, animations: {
+            let newSize = CGSize(width: self.boxRoundedOriginalSize.width - 60, height: self.boxRoundedOriginalSize.height)
+            self.cancelButton.alpha = 1
+            self.boxRoundedView.frame.size = newSize
+        })
+        
         return true
     }
     func textFieldShouldReturn(_ textField: UITextField) -> Bool{
@@ -142,8 +158,27 @@ class HLHomeViewController: BaseViewController, UIScrollViewDelegate, UITextFiel
         }else{
             isSearching = true
             self.searchProduct(textField.text!)
+            
+            if (textField.text != ""){
+            
+                let searchResultViewController = self.storyboard?.instantiateViewController(withIdentifier: "searchResultPage") as! HLSearchResultViewController
+                searchResultViewController.searchByCategory = false
+                let category : NSDictionary = [:]
+                searchResultViewController.categoryToSearch = category
+                searchResultViewController.keywordToSearch = textField.text!
+                self.navigationController?.pushViewController(searchResultViewController, animated: true)
+            }
         }
+        UIView.animate(withDuration: 0.3, animations: {
+            self.cancelButton.alpha = 0
+            self.boxRoundedView.frame.size = self.boxRoundedOriginalSize
+        })
         return textField.resignFirstResponder()
+    }
+    
+    @IBAction func cancelSearchAction(_ sender: Any) {
+        searchTxtField.text = ""
+        _ = textFieldShouldReturn(searchTxtField)
     }
     //#MARK: - ScrollViewDelegate
     func scrollViewDidScroll(_ scrollView: UIScrollView){
