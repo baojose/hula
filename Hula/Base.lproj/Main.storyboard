@@ -1695,11 +1695,11 @@ Log In</string>
                                                             <nil key="highlightedColor"/>
                                                         </label>
                                                         <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" image="icon_forward" translatesAutoresizingMaskIntoConstraints="NO" id="7n8-km-83N">
-                                                            <rect key="frame" x="348" y="42" width="8" height="13"/>
+                                                            <rect key="frame" x="347" y="42" width="8" height="12"/>
                                                             <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
                                                         </imageView>
                                                         <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" image="s_05" translatesAutoresizingMaskIntoConstraints="NO" id="qUv-mB-hOF">
-                                                            <rect key="frame" x="17" y="35" width="41" height="41"/>
+                                                            <rect key="frame" x="15" y="35" width="42" height="41"/>
                                                             <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                                         </imageView>
                                                     </subviews>
@@ -5489,7 +5489,7 @@ Log In</string>
                                                             <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="VHF-da-m8f" customClass="HLRoundedGradientButton" customModule="Hula" customModuleProvider="target">
                                                                 <rect key="frame" x="227" y="342" width="130" height="41"/>
                                                                 <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxY="YES"/>
-                                                                <state key="normal" title="Done">
+                                                                <state key="normal" title="Finish">
                                                                     <color key="titleColor" red="0.71454722643517021" green="0.71357300736895457" blue="0.73059018782383411" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                                                 </state>
                                                                 <connections>

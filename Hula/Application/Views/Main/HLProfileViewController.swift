@@ -304,6 +304,7 @@ class HLProfileViewController: BaseViewController {
                 }
             } else {
                 // connection error
+                self.expiredTokenAlert()
             }
         })
     }

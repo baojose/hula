@@ -28,9 +28,14 @@ class HLDashboardViewController: UIViewController {
         refreshCollectionViewData()
     }
     
+    override func viewDidLayoutSubviews() {
+        print("refreshing")
+        self.mainCollectionView.reloadData()
+        //refreshCollectionViewData()
+    }
+    
     override func viewWillAppear(_ animated: Bool) {
         mainCollectionView.frame = self.view.frame
-        self.mainCollectionView.reloadData()
         self.mainCollectionView.collectionViewLayout.invalidateLayout()
         
         self.mainCollectionView.setCollectionViewLayout(HLDashboardNormalViewFlowLayout(), animated: false)
@@ -40,8 +45,11 @@ class HLDashboardViewController: UIViewController {
     override func viewDidAppear(_ animated: Bool) {
         
         self.mainCollectionView.setCollectionViewLayout(HLDashboardNormalViewFlowLayout(), animated: false)
-        refreshCollectionViewData()
         self.mainCollectionView.collectionViewLayout.invalidateLayout()
+        refreshCollectionViewData()
+        
+        self.mainCollectionView.reloadData()
+        
     }
 
     override func didReceiveMemoryWarning() {
@@ -70,19 +78,20 @@ class HLDashboardViewController: UIViewController {
                     DispatchQueue.main.async {
                         if (self.swappPageVC?.arrTrades.count != HLDataManager.sharedInstance.arrTrades.count){
                             self.swappPageVC?.arrTrades = HLDataManager.sharedInstance.arrTrades as [NSDictionary]
-                            self.mainCollectionView.reloadData()
                         } else {
                             self.swappPageVC?.arrTrades = HLDataManager.sharedInstance.arrTrades as [NSDictionary]
                         }
+                        self.mainCollectionView.reloadData()
                     }
                 }
             }
-            //mainCollectionView.collectionViewLayout = HLDashboardNormalViewFlowLayout()
+            mainCollectionView.collectionViewLayout = HLDashboardNormalViewFlowLayout()
             isExpandedFlowLayoutUsed = false
         } else {
             print("Error. Not detected parent parent vc")
         }
     }
+    
 }
 
 
@@ -202,6 +211,7 @@ extension HLDashboardViewController: UICollectionViewDelegate, UICollectionViewD
         }
  
     }
+
     
     override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
         //mainCollectionView.collectionViewLayout.invalidateLayout()

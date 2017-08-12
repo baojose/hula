@@ -32,7 +32,7 @@ class HLDashboardNormalViewFlowLayout: UICollectionViewFlowLayout {
     
     /// here we define the width of each cell, creating a 2 column layout. In case you would create 3 columns, change the number 2 to 3
     func itemWidth() -> CGFloat {
-        return collectionView!.frame.width - 1
+        return collectionView!.frame.width
     }
     
     override var itemSize: CGSize {
@@ -43,11 +43,17 @@ class HLDashboardNormalViewFlowLayout: UICollectionViewFlowLayout {
             return CGSize(width: itemWidth(), height: itemHeight)
         }
     }
-    
+    /*
     override func targetContentOffset(forProposedContentOffset proposedContentOffset: CGPoint) -> CGPoint {
         return collectionView!.contentOffset
     }
+ */
     
-
+    override func shouldInvalidateLayout(forBoundsChange newBounds: CGRect) -> Bool {
+        return true
+    }
+    override func shouldInvalidateLayout(forPreferredLayoutAttributes preferredAttributes: UICollectionViewLayoutAttributes, withOriginalAttributes originalAttributes: UICollectionViewLayoutAttributes) -> Bool {
+        return true
+    }
     
 }
