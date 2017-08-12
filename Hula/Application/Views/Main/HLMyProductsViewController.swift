@@ -175,7 +175,7 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
     }
     
     func getUserProducts() {
-        print("Getting user info...")
+        //print("Getting user info...")
         if (HulaUser.sharedInstance.userId.characters.count>0){
             let queryURL = HulaConstants.apiURL + "products/user/" + HulaUser.sharedInstance.userId
             //print(queryURL)

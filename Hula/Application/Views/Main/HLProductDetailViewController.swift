@@ -106,7 +106,7 @@ class HLProductDetailViewController: BaseViewController, UIScrollViewDelegate, U
             self.sellerProducts = prods
             var newFrame: CGRect! = self.productTableView.frame
             newFrame.size.height = (CGFloat(self.sellerProducts.count) * 129.0);
-            print(newFrame.size.height)
+            //print(newFrame.size.height)
             self.productTableView.frame = newFrame
             self.mainScrollView.contentSize = CGSize(width: 0, height: self.sellerView.frame.origin.y + self.productTableView.frame.size.height + 300)
             self.productTableView.reloadData()
@@ -145,8 +145,8 @@ class HLProductDetailViewController: BaseViewController, UIScrollViewDelegate, U
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath){
-        print("selected")
-        print(indexPath.row)
+        //print("selected")
+        //print(indexPath.row)
         let viewController = self.storyboard?.instantiateViewController(withIdentifier: "productDetailPage") as! HLProductDetailViewController
         
         let product = sellerProducts[indexPath.row] as! NSDictionary

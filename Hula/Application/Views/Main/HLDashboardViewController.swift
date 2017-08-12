@@ -32,12 +32,14 @@ class HLDashboardViewController: UIViewController {
         mainCollectionView.frame = self.view.frame
         self.mainCollectionView.reloadData()
         self.mainCollectionView.collectionViewLayout.invalidateLayout()
+        
         self.mainCollectionView.setCollectionViewLayout(HLDashboardNormalViewFlowLayout(), animated: false)
-        self.mainCollectionView.scrollToItem(at: IndexPath(row: 0, section: 0) , at: .top, animated: false)
+        //self.mainCollectionView.scrollToItem(at: IndexPath(row: 0, section: 0) , at: .top, animated: false)
         isExpandedFlowLayoutUsed = false
-        self.mainCollectionView.collectionViewLayout.invalidateLayout()
     }
     override func viewDidAppear(_ animated: Bool) {
+        
+        self.mainCollectionView.setCollectionViewLayout(HLDashboardNormalViewFlowLayout(), animated: false)
         refreshCollectionViewData()
         self.mainCollectionView.collectionViewLayout.invalidateLayout()
     }
@@ -75,7 +77,7 @@ class HLDashboardViewController: UIViewController {
                     }
                 }
             }
-            mainCollectionView.collectionViewLayout = HLDashboardNormalViewFlowLayout()
+            //mainCollectionView.collectionViewLayout = HLDashboardNormalViewFlowLayout()
             isExpandedFlowLayoutUsed = false
         } else {
             print("Error. Not detected parent parent vc")

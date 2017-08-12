@@ -132,7 +132,7 @@ class HLSearchResultViewController: BaseViewController, UITableViewDataSource, U
             let encodedKw = keywordToSearch.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)
             queryURL = HulaConstants.apiURL + "products/search/" + encodedKw!
         }
-        print(queryURL)
+        //print(queryURL)
         HLDataManager.sharedInstance.httpGet(urlstr: queryURL, taskCallback: { (ok, json) in
             if (ok){
                 DispatchQueue.main.async {

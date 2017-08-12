@@ -72,7 +72,7 @@ class HLProfileViewController: BaseViewController {
         //print("Preparing for segue...")
         if let destinationVC = segue.destination as? HLFeedbackHistoryViewController{
             destinationVC.feedbackList = arrFeedback
-            print("Total feedback: \(destinationVC.feedbackList.count)")
+            //print("Total feedback: \(destinationVC.feedbackList.count)")
         }
     }
     
@@ -155,9 +155,9 @@ class HLProfileViewController: BaseViewController {
             case .cancelled:
                 print("User cancelled login.")
             case .success(let grantedPermissions, let declinedPermissions, let accessToken):
-                print("Logged in!")
-                print(grantedPermissions)
-                print(declinedPermissions)
+                //print("Logged in!")
+                //print(grantedPermissions)
+                //print(declinedPermissions)
                 HulaUser.sharedInstance.fbToken = accessToken.authenticationToken as String
                 self.verFacebookIcon.image = UIImage(named: "icon_facebook_on")
                 self.verFacebookIcon.bouncer()
@@ -171,7 +171,7 @@ class HLProfileViewController: BaseViewController {
         
         Twitter.sharedInstance().logIn(completion: { (session, error) in
             if let unwrappedSession = session {
-                print(unwrappedSession);
+                //print(unwrappedSession);
                 self.verTwitterIcon.image = UIImage(named: "icon_twitter_on")
                 self.verTwitterIcon.bouncer()
                 HulaUser.sharedInstance.twToken = unwrappedSession.authToken as String
@@ -235,7 +235,7 @@ class HLProfileViewController: BaseViewController {
                                 let lat = loc[0]
                                 let lon = loc[1]
                                 HulaUser.sharedInstance.location = CLLocation(latitude:CLLocationDegrees(lat), longitude:CLLocationDegrees(lon));
-                                print(HulaUser.sharedInstance.location)
+                                //print(HulaUser.sharedInstance.location)
                             }
                             
                             if let fbt = (user["fb_token"] as? String) {
@@ -310,7 +310,7 @@ class HLProfileViewController: BaseViewController {
     func expiredTokenAlert(){
         
         let alert = UIAlertController(title: "User token expired", message: "Your Hula session is expired. Please log in again.", preferredStyle: UIAlertControllerStyle.alert)
-        print()
+        
         
         alert.addAction(UIAlertAction(title: "OK", style: UIAlertActionStyle.default, handler: { (e) in
             
