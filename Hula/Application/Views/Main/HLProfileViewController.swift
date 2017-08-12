@@ -43,8 +43,10 @@ class HLProfileViewController: BaseViewController {
         super.viewDidLoad()
         self.initData()
         self.initView()
+        
         self.getUserProfile()
         
+        //self.expiredTokenAlert()
         
         
     }
@@ -67,7 +69,7 @@ class HLProfileViewController: BaseViewController {
     }
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        print("Preparing for segue...")
+        //print("Preparing for segue...")
         if let destinationVC = segue.destination as? HLFeedbackHistoryViewController{
             destinationVC.feedbackList = arrFeedback
             print("Total feedback: \(destinationVC.feedbackList.count)")
@@ -170,14 +172,6 @@ class HLProfileViewController: BaseViewController {
         Twitter.sharedInstance().logIn(completion: { (session, error) in
             if let unwrappedSession = session {
                 print(unwrappedSession);
-                /*
-                let alert = UIAlertController(title: "Logged In", message: "User \(unwrappedSession.userName) has logged in",
-                    preferredStyle: UIAlertControllerStyle.alert
-                )
-                alert.addAction(UIAlertAction(title: "OK", style: UIAlertActionStyle.default, handler: nil))
-                 self.present(alert, animated: true, completion: nil)
-                 */
-                
                 self.verTwitterIcon.image = UIImage(named: "icon_twitter_on")
                 self.verTwitterIcon.bouncer()
                 HulaUser.sharedInstance.twToken = unwrappedSession.authToken as String
@@ -214,7 +208,7 @@ class HLProfileViewController: BaseViewController {
                 DispatchQueue.main.async {
                     if let dictionary = json as? [String: Any] {
                         
-                        if let user = dictionary["user"] as? [String: Any] {
+                        if let user = dictionary["user"] as? [String: Any]  {
                             self.spinner.hide()
                             if (user["name"] as? String) != nil {
                                 HulaUser.sharedInstance.userName = user["name"] as? String
@@ -230,7 +224,6 @@ class HLProfileViewController: BaseViewController {
                             }
                             if (user["image"] as? String) != nil {
                                 HulaUser.sharedInstance.userPhotoURL = user["image"] as? String
-                                //self.commonUtils.loadImageOnView(imageView:self.profileImageView, withURL:HulaUser.sharedInstance.userPhotoURL)
                                 self.profileImageView.loadImageFromURL(urlString: HulaUser.sharedInstance.userPhotoURL)
                             }
                             
@@ -304,12 +297,7 @@ class HLProfileViewController: BaseViewController {
                             let app = UIApplication.shared.delegate as! AppDelegate
                             app.registerForPushNotifications()
                         } else {
-                            let alert = UIAlertController(title: "User token expired", message: "Your Hula session is expired. Please log in again.", preferredStyle: UIAlertControllerStyle.alert)
-                            alert.addAction(UIAlertAction(title: "Ok", style: UIAlertActionStyle.default, handler: nil))
-                            self.present(alert, animated: true, completion: {
-                                //print("going to login page")
-                                self.openUserIdentification()
-                            })
+                            self.expiredTokenAlert()
                         }
                         
                     }
@@ -318,5 +306,21 @@ class HLProfileViewController: BaseViewController {
                 // connection error
             }
         })
+    }
+    func expiredTokenAlert(){
+        
+        let alert = UIAlertController(title: "User token expired", message: "Your Hula session is expired. Please log in again.", preferredStyle: UIAlertControllerStyle.alert)
+        print()
+        
+        alert.addAction(UIAlertAction(title: "OK", style: UIAlertActionStyle.default, handler: { (e) in
+            
+            DispatchQueue.main.async {
+                let viewController = self.storyboard?.instantiateViewController(withIdentifier: "identification") as! HLIdentificationViewController
+                self.navigationController?.navigationController?.pushViewController(viewController, animated: true)
+            }
+        }))
+        self.present(alert, animated: true, completion:{} )
+
+        
     }
 }

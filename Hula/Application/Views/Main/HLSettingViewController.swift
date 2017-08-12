@@ -36,7 +36,7 @@ class HLSettingViewController: BaseViewController {
         self.initData()
     }
     
-    override func viewDidAppear(_ animated: Bool) {
+    override func viewWillAppear(_ animated: Bool) {
         initView()
     }
 
