@@ -51,7 +51,7 @@ class KDDragAndDropManager: NSObject, UIGestureRecognizerDelegate {
         self.canvas = canvas
         
         self.longPressGestureRecogniser.delegate = self
-        self.longPressGestureRecogniser.minimumPressDuration = 0.3
+        self.longPressGestureRecogniser.minimumPressDuration = 0.1
         self.longPressGestureRecogniser.addTarget(self, action: #selector(KDDragAndDropManager.updateForLongPress(_:)))
         
         self.canvas.addGestureRecognizer(self.longPressGestureRecogniser)
@@ -76,7 +76,7 @@ class KDDragAndDropManager: NSObject, UIGestureRecognizerDelegate {
             
             representation.frame = self.canvas.convert(representation.frame, from: view)
             
-            representation.alpha = 0.7
+            representation.alpha = 0.8
             
             let pointOnCanvas = touch.location(in: self.canvas)
             

@@ -5915,235 +5915,249 @@ Log In</string>
                                 <rect key="frame" x="0.0" y="0.0" width="668" height="375"/>
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                 <subviews>
-                                    <imageView opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" misplaced="YES" image="drag-rect" id="RNt-5Z-xam">
-                                        <rect key="frame" x="353" y="49" width="152" height="266"/>
-                                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" widthSizable="YES" flexibleMaxX="YES" flexibleMinY="YES" heightSizable="YES" flexibleMaxY="YES"/>
-                                    </imageView>
-                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" text="Drag here what you want" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="6" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="0Oz-kA-vb9">
-                                        <rect key="frame" x="375" y="64" width="115" height="236"/>
-                                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
-                                        <fontDescription key="fontDescription" name="HelveticaNeue-Light" family="Helvetica Neue" pointSize="17"/>
-                                        <color key="textColor" white="0.25" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
-                                        <nil key="highlightedColor"/>
-                                    </label>
-                                    <imageView opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" misplaced="YES" image="drag-rect" id="kJx-gG-UNP">
-                                        <rect key="frame" x="163" y="49" width="152" height="266"/>
-                                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" widthSizable="YES" flexibleMaxX="YES" flexibleMinY="YES" heightSizable="YES" flexibleMaxY="YES"/>
-                                    </imageView>
-                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" text="Drag here what you offer" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="6" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="1lO-hZ-tUF">
-                                        <rect key="frame" x="177" y="64" width="118" height="236"/>
-                                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
-                                        <fontDescription key="fontDescription" name="HelveticaNeue-Light" family="Helvetica Neue" pointSize="17"/>
-                                        <color key="textColor" white="0.25" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
-                                        <nil key="highlightedColor"/>
-                                    </label>
                                     <button opaque="NO" alpha="0.29999999999999999" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" id="Mqd-eF-bkK">
                                         <rect key="frame" x="0.0" y="0.0" width="668" height="375"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                         <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                     </button>
-                                    <collectionView clipsSubviews="YES" multipleTouchEnabled="YES" tag="4" contentMode="scaleToFill" misplaced="YES" dataMode="prototypes" id="Lbs-rv-jzA" customClass="KDDragAndDropCollectionView" customModule="Hula" customModuleProvider="target">
-                                        <rect key="frame" x="539" y="0.0" width="128" height="375"/>
-                                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" heightSizable="YES"/>
-                                        <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
-                                        <collectionViewFlowLayout key="collectionViewLayout" minimumLineSpacing="10" minimumInteritemSpacing="10" id="ayc-6S-DNE">
-                                            <size key="itemSize" width="128" height="128"/>
-                                            <size key="headerReferenceSize" width="0.0" height="0.0"/>
-                                            <size key="footerReferenceSize" width="0.0" height="0.0"/>
-                                            <inset key="sectionInset" minX="0.0" minY="0.0" maxX="0.0" maxY="0.0"/>
-                                        </collectionViewFlowLayout>
-                                        <cells>
-                                            <collectionViewCell opaque="NO" multipleTouchEnabled="YES" contentMode="center" misplaced="YES" reuseIdentifier="productcell4" id="iIV-CL-rZQ" customClass="HLProductCollectionViewCell" customModule="Hula" customModuleProvider="target">
-                                                <rect key="frame" x="0.0" y="0.0" width="128" height="128"/>
-                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                                <view key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center">
-                                                    <rect key="frame" x="0.0" y="0.0" width="128" height="128"/>
-                                                    <autoresizingMask key="autoresizingMask"/>
-                                                    <subviews>
-                                                        <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" image="temp_product" id="Clo-MI-92f">
-                                                            <rect key="frame" x="8" y="8" width="112" height="83"/>
-                                                            <autoresizingMask key="autoresizingMask" flexibleMaxY="YES"/>
-                                                        </imageView>
-                                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" text="Name of the product a bit large" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="hm9-cn-ZRR">
-                                                            <rect key="frame" x="8" y="89" width="112" height="35"/>
-                                                            <autoresizingMask key="autoresizingMask" flexibleMaxY="YES"/>
-                                                            <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="13"/>
-                                                            <color key="textColor" red="0.22352941179999999" green="0.66666666669999997" blue="0.64313725489999995" alpha="1" colorSpace="calibratedRGB"/>
-                                                            <nil key="highlightedColor"/>
-                                                        </label>
-                                                        <imageView opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" misplaced="YES" image="added_left_trade_icon" id="dV1-3A-A0m">
-                                                            <rect key="frame" x="11" y="13" width="17" height="17"/>
-                                                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                                        </imageView>
-                                                        <view contentMode="scaleToFill" misplaced="YES" id="IsL-m9-Mbw">
-                                                            <rect key="frame" x="0.0" y="126" width="128" height="1"/>
-                                                            <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxY="YES"/>
-                                                            <color key="backgroundColor" white="0.91565290180000003" alpha="1" colorSpace="calibratedWhite"/>
-                                                        </view>
-                                                    </subviews>
-                                                </view>
-                                                <connections>
-                                                    <outlet property="image" destination="Clo-MI-92f" id="uVF-2S-8Rc"/>
-                                                    <outlet property="label" destination="hm9-cn-ZRR" id="oV5-Gt-QhA"/>
-                                                    <outlet property="statusImage" destination="dV1-3A-A0m" id="zfl-6a-cGY"/>
-                                                </connections>
-                                            </collectionViewCell>
-                                        </cells>
-                                        <connections>
-                                            <outlet property="dataSource" destination="owL-xI-leu" id="YWe-AJ-hPj"/>
-                                            <outlet property="delegate" destination="owL-xI-leu" id="Ozs-sk-eHa"/>
-                                        </connections>
-                                    </collectionView>
-                                    <collectionView clipsSubviews="YES" multipleTouchEnabled="YES" tag="3" contentMode="scaleToFill" misplaced="YES" dataMode="prototypes" id="n4h-ml-8YQ" customClass="KDDragAndDropCollectionView" customModule="Hula" customModuleProvider="target">
-                                        <rect key="frame" x="346" y="0.0" width="192" height="375"/>
+                                    <view contentMode="scaleToFill" misplaced="YES" id="CTa-Lt-qCU">
+                                        <rect key="frame" x="334" y="0.0" width="334" height="375"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMinX="YES" widthSizable="YES" heightSizable="YES"/>
-                                        <color key="backgroundColor" white="0.97011718749999998" alpha="1" colorSpace="calibratedWhite"/>
-                                        <edgeInsets key="layoutMargins" top="0.0" left="0.0" bottom="0.0" right="0.0"/>
-                                        <collectionViewFlowLayout key="collectionViewLayout" minimumLineSpacing="0.0" minimumInteritemSpacing="0.0" id="1xK-6t-bDD">
-                                            <size key="itemSize" width="64" height="64"/>
-                                            <size key="headerReferenceSize" width="0.0" height="0.0"/>
-                                            <size key="footerReferenceSize" width="0.0" height="0.0"/>
-                                            <inset key="sectionInset" minX="0.0" minY="0.0" maxX="0.0" maxY="0.0"/>
-                                        </collectionViewFlowLayout>
-                                        <cells>
-                                            <collectionViewCell opaque="NO" multipleTouchEnabled="YES" contentMode="center" misplaced="YES" reuseIdentifier="productcell3" id="kOI-GZ-plb" customClass="HLProductCollectionViewCell" customModule="Hula" customModuleProvider="target">
-                                                <rect key="frame" x="0.0" y="0.0" width="64" height="64"/>
-                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                                <view key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center">
-                                                    <rect key="frame" x="0.0" y="0.0" width="64" height="64"/>
-                                                    <autoresizingMask key="autoresizingMask"/>
-                                                    <subviews>
-                                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" text="Name of the product a bit large" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="Zo9-No-Lkw">
-                                                            <rect key="frame" x="5" y="24" width="49" height="19"/>
-                                                            <autoresizingMask key="autoresizingMask" flexibleMaxY="YES"/>
-                                                            <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="14"/>
-                                                            <color key="textColor" red="0.22352941179999999" green="0.66666666669999997" blue="0.64313725489999995" alpha="1" colorSpace="calibratedRGB"/>
-                                                            <nil key="highlightedColor"/>
-                                                        </label>
-                                                        <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" image="temp_product" id="mPh-jH-Afq">
-                                                            <rect key="frame" x="6" y="6" width="52" height="52"/>
+                                        <subviews>
+                                            <imageView opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" misplaced="YES" image="drag-rect" id="RNt-5Z-xam">
+                                                <rect key="frame" x="16" y="54" width="152" height="266"/>
+                                                <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxX="YES" flexibleMinY="YES" heightSizable="YES" flexibleMaxY="YES"/>
+                                            </imageView>
+                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" text="Drag here items you are interested in" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="6" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="0Oz-kA-vb9">
+                                                <rect key="frame" x="30" y="69" width="124" height="236"/>
+                                                <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxX="YES" flexibleMinY="YES" heightSizable="YES" flexibleMaxY="YES"/>
+                                                <fontDescription key="fontDescription" name="HelveticaNeue-Light" family="Helvetica Neue" pointSize="17"/>
+                                                <color key="textColor" white="0.25" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
+                                                <nil key="highlightedColor"/>
+                                            </label>
+                                            <collectionView clipsSubviews="YES" multipleTouchEnabled="YES" tag="3" contentMode="scaleToFill" misplaced="YES" dataMode="prototypes" id="n4h-ml-8YQ" customClass="KDDragAndDropCollectionView" customModule="Hula" customModuleProvider="target">
+                                                <rect key="frame" x="5" y="0.0" width="192" height="375"/>
+                                                <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                                <color key="backgroundColor" white="0.97011718749999998" alpha="1" colorSpace="calibratedWhite"/>
+                                                <edgeInsets key="layoutMargins" top="0.0" left="0.0" bottom="0.0" right="0.0"/>
+                                                <collectionViewFlowLayout key="collectionViewLayout" minimumLineSpacing="0.0" minimumInteritemSpacing="0.0" id="1xK-6t-bDD">
+                                                    <size key="itemSize" width="64" height="64"/>
+                                                    <size key="headerReferenceSize" width="0.0" height="0.0"/>
+                                                    <size key="footerReferenceSize" width="0.0" height="0.0"/>
+                                                    <inset key="sectionInset" minX="0.0" minY="0.0" maxX="0.0" maxY="0.0"/>
+                                                </collectionViewFlowLayout>
+                                                <cells>
+                                                    <collectionViewCell opaque="NO" multipleTouchEnabled="YES" contentMode="center" reuseIdentifier="productcell3" id="kOI-GZ-plb" customClass="HLProductCollectionViewCell" customModule="Hula" customModuleProvider="target">
+                                                        <rect key="frame" x="0.0" y="0.0" width="64" height="64"/>
+                                                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                                        <view key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center">
+                                                            <rect key="frame" x="0.0" y="0.0" width="64" height="64"/>
                                                             <autoresizingMask key="autoresizingMask"/>
-                                                        </imageView>
-                                                        <imageView opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" misplaced="YES" image="added_left_trade_icon" id="h7s-6g-WGP">
-                                                            <rect key="frame" x="8" y="8" width="17" height="17"/>
-                                                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                                        </imageView>
-                                                    </subviews>
-                                                </view>
-                                                <size key="customSize" width="64" height="64"/>
-                                                <connections>
-                                                    <outlet property="image" destination="mPh-jH-Afq" id="TO9-gt-g4O"/>
-                                                    <outlet property="label" destination="Zo9-No-Lkw" id="r5I-TI-jLf"/>
-                                                    <outlet property="statusImage" destination="h7s-6g-WGP" id="xNq-Vq-joB"/>
-                                                </connections>
-                                            </collectionViewCell>
-                                        </cells>
-                                        <connections>
-                                            <outlet property="dataSource" destination="owL-xI-leu" id="BFM-lR-M3T"/>
-                                            <outlet property="delegate" destination="owL-xI-leu" id="b7d-8q-1Zw"/>
-                                        </connections>
-                                    </collectionView>
-                                    <collectionView clipsSubviews="YES" multipleTouchEnabled="YES" tag="1" contentMode="scaleToFill" misplaced="YES" dataMode="prototypes" id="dRd-A1-3Ps" customClass="KDDragAndDropCollectionView" customModule="Hula" customModuleProvider="target">
-                                        <rect key="frame" x="0.0" y="0.0" width="128" height="375"/>
-                                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" heightSizable="YES"/>
-                                        <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
-                                        <collectionViewFlowLayout key="collectionViewLayout" minimumLineSpacing="0.0" minimumInteritemSpacing="10" id="Vvr-IQ-98g">
-                                            <size key="itemSize" width="128" height="128"/>
-                                            <size key="headerReferenceSize" width="0.0" height="0.0"/>
-                                            <size key="footerReferenceSize" width="0.0" height="0.0"/>
-                                            <inset key="sectionInset" minX="0.0" minY="0.0" maxX="0.0" maxY="0.0"/>
-                                        </collectionViewFlowLayout>
-                                        <cells>
-                                            <collectionViewCell opaque="NO" multipleTouchEnabled="YES" contentMode="center" misplaced="YES" reuseIdentifier="productcell1" id="m6i-rZ-m9U" customClass="HLProductCollectionViewCell" customModule="Hula" customModuleProvider="target">
-                                                <rect key="frame" x="0.0" y="0.0" width="128" height="128"/>
-                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                                <view key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center">
-                                                    <rect key="frame" x="0.0" y="0.0" width="128" height="128"/>
-                                                    <autoresizingMask key="autoresizingMask"/>
-                                                    <subviews>
-                                                        <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" image="temp_product" id="AI2-HO-pZQ">
-                                                            <rect key="frame" x="8" y="8" width="112" height="83"/>
-                                                            <autoresizingMask key="autoresizingMask" flexibleMaxY="YES"/>
-                                                        </imageView>
-                                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" text="Simple first product" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="Mpr-PV-Lrh">
-                                                            <rect key="frame" x="8" y="89" width="112" height="35"/>
-                                                            <autoresizingMask key="autoresizingMask" flexibleMaxY="YES"/>
-                                                            <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="13"/>
-                                                            <color key="textColor" red="0.22352941179999999" green="0.66666666669999997" blue="0.64313725489999995" alpha="1" colorSpace="calibratedRGB"/>
-                                                            <nil key="highlightedColor"/>
-                                                        </label>
-                                                        <imageView opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" misplaced="YES" image="added_left_trade_icon" id="jfy-iy-bXH">
-                                                            <rect key="frame" x="12" y="12" width="17" height="17"/>
-                                                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                                        </imageView>
-                                                        <view contentMode="scaleToFill" misplaced="YES" id="k1v-fq-OCp">
-                                                            <rect key="frame" x="0.0" y="127" width="128" height="1"/>
-                                                            <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxY="YES"/>
-                                                            <color key="backgroundColor" white="0.91565290180000003" alpha="1" colorSpace="calibratedWhite"/>
+                                                            <subviews>
+                                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Name of the product a bit large" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="Zo9-No-Lkw">
+                                                                    <rect key="frame" x="5" y="24" width="49" height="19"/>
+                                                                    <autoresizingMask key="autoresizingMask" flexibleMaxY="YES"/>
+                                                                    <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="14"/>
+                                                                    <color key="textColor" red="0.22352941179999999" green="0.66666666669999997" blue="0.64313725489999995" alpha="1" colorSpace="calibratedRGB"/>
+                                                                    <nil key="highlightedColor"/>
+                                                                </label>
+                                                                <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="temp_product" id="mPh-jH-Afq">
+                                                                    <rect key="frame" x="6" y="6" width="52" height="52"/>
+                                                                    <autoresizingMask key="autoresizingMask"/>
+                                                                </imageView>
+                                                                <imageView opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" image="added_left_trade_icon" id="h7s-6g-WGP">
+                                                                    <rect key="frame" x="8" y="8" width="17" height="17"/>
+                                                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                                                </imageView>
+                                                            </subviews>
                                                         </view>
-                                                    </subviews>
-                                                </view>
+                                                        <size key="customSize" width="64" height="64"/>
+                                                        <connections>
+                                                            <outlet property="image" destination="mPh-jH-Afq" id="TO9-gt-g4O"/>
+                                                            <outlet property="label" destination="Zo9-No-Lkw" id="r5I-TI-jLf"/>
+                                                            <outlet property="statusImage" destination="h7s-6g-WGP" id="xNq-Vq-joB"/>
+                                                        </connections>
+                                                    </collectionViewCell>
+                                                </cells>
                                                 <connections>
-                                                    <outlet property="image" destination="AI2-HO-pZQ" id="Qf1-WP-QjT"/>
-                                                    <outlet property="label" destination="Mpr-PV-Lrh" id="enL-Gf-1Ak"/>
-                                                    <outlet property="statusImage" destination="jfy-iy-bXH" id="V6x-uD-4Hf"/>
+                                                    <outlet property="dataSource" destination="owL-xI-leu" id="BFM-lR-M3T"/>
+                                                    <outlet property="delegate" destination="owL-xI-leu" id="b7d-8q-1Zw"/>
                                                 </connections>
-                                            </collectionViewCell>
-                                        </cells>
-                                        <connections>
-                                            <outlet property="dataSource" destination="owL-xI-leu" id="gnk-EA-2vy"/>
-                                            <outlet property="delegate" destination="owL-xI-leu" id="1zb-oS-fpl"/>
-                                        </connections>
-                                    </collectionView>
-                                    <collectionView clipsSubviews="YES" multipleTouchEnabled="YES" tag="2" contentMode="scaleToFill" misplaced="YES" dataMode="prototypes" id="bfI-4N-h7M" customClass="KDDragAndDropCollectionView" customModule="Hula" customModuleProvider="target">
-                                        <rect key="frame" x="130" y="0.0" width="193" height="375"/>
-                                        <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxX="YES" heightSizable="YES"/>
-                                        <color key="backgroundColor" white="0.97011718749999998" alpha="1" colorSpace="calibratedWhite"/>
-                                        <edgeInsets key="layoutMargins" top="0.0" left="0.0" bottom="0.0" right="0.0"/>
-                                        <collectionViewFlowLayout key="collectionViewLayout" minimumLineSpacing="0.0" minimumInteritemSpacing="0.0" id="aWZ-wv-FSs">
-                                            <size key="itemSize" width="64" height="64"/>
-                                            <size key="headerReferenceSize" width="0.0" height="0.0"/>
-                                            <size key="footerReferenceSize" width="0.0" height="0.0"/>
-                                            <inset key="sectionInset" minX="0.0" minY="0.0" maxX="0.0" maxY="0.0"/>
-                                        </collectionViewFlowLayout>
-                                        <cells>
-                                            <collectionViewCell opaque="NO" multipleTouchEnabled="YES" contentMode="center" misplaced="YES" reuseIdentifier="productcell2" id="ugO-Cj-BjM" customClass="HLProductCollectionViewCell" customModule="Hula" customModuleProvider="target">
-                                                <rect key="frame" x="0.0" y="0.0" width="64" height="64"/>
-                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                                <view key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center">
-                                                    <rect key="frame" x="0.0" y="0.0" width="64" height="64"/>
-                                                    <autoresizingMask key="autoresizingMask"/>
-                                                    <subviews>
-                                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" text="Name of the product a bit large" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="SQl-X9-FzW">
-                                                            <rect key="frame" x="4" y="25" width="52" height="19"/>
-                                                            <autoresizingMask key="autoresizingMask" flexibleMaxY="YES"/>
-                                                            <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="14"/>
-                                                            <color key="textColor" red="0.22352941179999999" green="0.66666666669999997" blue="0.64313725489999995" alpha="1" colorSpace="calibratedRGB"/>
-                                                            <nil key="highlightedColor"/>
-                                                        </label>
-                                                        <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" image="temp_product" id="GBU-wD-Y5S">
-                                                            <rect key="frame" x="6" y="6" width="52" height="52"/>
+                                            </collectionView>
+                                            <collectionView clipsSubviews="YES" multipleTouchEnabled="YES" tag="4" contentMode="scaleToFill" misplaced="YES" dataMode="prototypes" id="Lbs-rv-jzA" customClass="KDDragAndDropCollectionView" customModule="Hula" customModuleProvider="target">
+                                                <rect key="frame" x="206" y="0.0" width="128" height="375"/>
+                                                <autoresizingMask key="autoresizingMask" flexibleMinX="YES" heightSizable="YES"/>
+                                                <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                                <collectionViewFlowLayout key="collectionViewLayout" minimumLineSpacing="10" minimumInteritemSpacing="10" id="ayc-6S-DNE">
+                                                    <size key="itemSize" width="128" height="128"/>
+                                                    <size key="headerReferenceSize" width="0.0" height="0.0"/>
+                                                    <size key="footerReferenceSize" width="0.0" height="0.0"/>
+                                                    <inset key="sectionInset" minX="0.0" minY="0.0" maxX="0.0" maxY="0.0"/>
+                                                </collectionViewFlowLayout>
+                                                <cells>
+                                                    <collectionViewCell opaque="NO" multipleTouchEnabled="YES" contentMode="center" reuseIdentifier="productcell4" id="iIV-CL-rZQ" customClass="HLProductCollectionViewCell" customModule="Hula" customModuleProvider="target">
+                                                        <rect key="frame" x="0.0" y="0.0" width="128" height="128"/>
+                                                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                                        <view key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center">
+                                                            <rect key="frame" x="0.0" y="0.0" width="128" height="128"/>
                                                             <autoresizingMask key="autoresizingMask"/>
-                                                        </imageView>
-                                                        <imageView opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" misplaced="YES" image="added_left_trade_icon" id="ZYb-CU-QXG">
-                                                            <rect key="frame" x="9" y="8" width="17" height="17"/>
-                                                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                                        </imageView>
-                                                    </subviews>
-                                                </view>
-                                                <size key="customSize" width="64" height="64"/>
+                                                            <subviews>
+                                                                <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="temp_product" id="Clo-MI-92f">
+                                                                    <rect key="frame" x="8" y="8" width="112" height="83"/>
+                                                                    <autoresizingMask key="autoresizingMask" flexibleMaxY="YES"/>
+                                                                </imageView>
+                                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Name of the product a bit large" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="hm9-cn-ZRR">
+                                                                    <rect key="frame" x="8" y="89" width="112" height="35"/>
+                                                                    <autoresizingMask key="autoresizingMask" flexibleMaxY="YES"/>
+                                                                    <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="13"/>
+                                                                    <color key="textColor" red="0.22352941179999999" green="0.66666666669999997" blue="0.64313725489999995" alpha="1" colorSpace="calibratedRGB"/>
+                                                                    <nil key="highlightedColor"/>
+                                                                </label>
+                                                                <imageView opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" image="added_left_trade_icon" id="dV1-3A-A0m">
+                                                                    <rect key="frame" x="11" y="13" width="17" height="17"/>
+                                                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                                                </imageView>
+                                                                <view contentMode="scaleToFill" id="IsL-m9-Mbw">
+                                                                    <rect key="frame" x="0.0" y="126" width="128" height="1"/>
+                                                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxY="YES"/>
+                                                                    <color key="backgroundColor" white="0.91565290180000003" alpha="1" colorSpace="calibratedWhite"/>
+                                                                </view>
+                                                            </subviews>
+                                                        </view>
+                                                        <connections>
+                                                            <outlet property="image" destination="Clo-MI-92f" id="uVF-2S-8Rc"/>
+                                                            <outlet property="label" destination="hm9-cn-ZRR" id="oV5-Gt-QhA"/>
+                                                            <outlet property="statusImage" destination="dV1-3A-A0m" id="zfl-6a-cGY"/>
+                                                        </connections>
+                                                    </collectionViewCell>
+                                                </cells>
                                                 <connections>
-                                                    <outlet property="image" destination="GBU-wD-Y5S" id="G39-Te-QcV"/>
-                                                    <outlet property="label" destination="SQl-X9-FzW" id="Kej-MY-5sK"/>
-                                                    <outlet property="statusImage" destination="ZYb-CU-QXG" id="9px-Uw-hCv"/>
+                                                    <outlet property="dataSource" destination="owL-xI-leu" id="YWe-AJ-hPj"/>
+                                                    <outlet property="delegate" destination="owL-xI-leu" id="Ozs-sk-eHa"/>
                                                 </connections>
-                                            </collectionViewCell>
-                                        </cells>
-                                        <connections>
-                                            <outlet property="dataSource" destination="owL-xI-leu" id="cd7-zm-0ZY"/>
-                                            <outlet property="delegate" destination="owL-xI-leu" id="hDd-si-98z"/>
-                                        </connections>
-                                    </collectionView>
+                                            </collectionView>
+                                        </subviews>
+                                        <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                    </view>
+                                    <view contentMode="scaleToFill" misplaced="YES" id="4WV-0w-VgU">
+                                        <rect key="frame" x="0.0" y="0.0" width="335" height="375"/>
+                                        <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxX="YES" heightSizable="YES"/>
+                                        <subviews>
+                                            <imageView opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" misplaced="YES" image="drag-rect" id="kJx-gG-UNP">
+                                                <rect key="frame" x="163" y="54" width="152" height="266"/>
+                                                <autoresizingMask key="autoresizingMask" flexibleMinX="YES" widthSizable="YES" flexibleMinY="YES" heightSizable="YES" flexibleMaxY="YES"/>
+                                            </imageView>
+                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" text="Drag here what you offer" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="6" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="1lO-hZ-tUF">
+                                                <rect key="frame" x="183" y="69" width="113" height="236"/>
+                                                <autoresizingMask key="autoresizingMask" flexibleMinX="YES" widthSizable="YES" flexibleMinY="YES" heightSizable="YES" flexibleMaxY="YES"/>
+                                                <fontDescription key="fontDescription" name="HelveticaNeue-Light" family="Helvetica Neue" pointSize="17"/>
+                                                <color key="textColor" white="0.25" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
+                                                <nil key="highlightedColor"/>
+                                            </label>
+                                            <collectionView clipsSubviews="YES" multipleTouchEnabled="YES" tag="2" contentMode="scaleToFill" misplaced="YES" dataMode="prototypes" id="bfI-4N-h7M" customClass="KDDragAndDropCollectionView" customModule="Hula" customModuleProvider="target">
+                                                <rect key="frame" x="127" y="0.0" width="200" height="375"/>
+                                                <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                                <color key="backgroundColor" red="0.93586847396812056" green="0.93586847396812056" blue="0.93586847396812056" alpha="1" colorSpace="calibratedRGB"/>
+                                                <edgeInsets key="layoutMargins" top="0.0" left="0.0" bottom="0.0" right="0.0"/>
+                                                <collectionViewFlowLayout key="collectionViewLayout" minimumLineSpacing="0.0" minimumInteritemSpacing="0.0" id="aWZ-wv-FSs">
+                                                    <size key="itemSize" width="64" height="64"/>
+                                                    <size key="headerReferenceSize" width="0.0" height="0.0"/>
+                                                    <size key="footerReferenceSize" width="0.0" height="0.0"/>
+                                                    <inset key="sectionInset" minX="0.0" minY="0.0" maxX="0.0" maxY="0.0"/>
+                                                </collectionViewFlowLayout>
+                                                <cells>
+                                                    <collectionViewCell opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" reuseIdentifier="productcell2" id="ugO-Cj-BjM" customClass="HLProductCollectionViewCell" customModule="Hula" customModuleProvider="target">
+                                                        <rect key="frame" x="0.0" y="0.0" width="64" height="64"/>
+                                                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                                        <view key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center">
+                                                            <rect key="frame" x="0.0" y="0.0" width="64" height="64"/>
+                                                            <autoresizingMask key="autoresizingMask"/>
+                                                            <subviews>
+                                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" text="Name of the product a bit large" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="SQl-X9-FzW">
+                                                                    <rect key="frame" x="6" y="25" width="52" height="19"/>
+                                                                    <autoresizingMask key="autoresizingMask" flexibleMaxY="YES"/>
+                                                                    <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="14"/>
+                                                                    <color key="textColor" red="0.22352941179999999" green="0.66666666669999997" blue="0.64313725489999995" alpha="1" colorSpace="calibratedRGB"/>
+                                                                    <nil key="highlightedColor"/>
+                                                                </label>
+                                                                <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="temp_product" id="GBU-wD-Y5S">
+                                                                    <rect key="frame" x="6" y="6" width="52" height="52"/>
+                                                                    <autoresizingMask key="autoresizingMask"/>
+                                                                </imageView>
+                                                                <imageView opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" image="added_left_trade_icon" id="ZYb-CU-QXG">
+                                                                    <rect key="frame" x="9" y="8" width="17" height="17"/>
+                                                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                                                </imageView>
+                                                            </subviews>
+                                                        </view>
+                                                        <size key="customSize" width="64" height="64"/>
+                                                        <connections>
+                                                            <outlet property="image" destination="GBU-wD-Y5S" id="G39-Te-QcV"/>
+                                                            <outlet property="label" destination="SQl-X9-FzW" id="Kej-MY-5sK"/>
+                                                            <outlet property="statusImage" destination="ZYb-CU-QXG" id="9px-Uw-hCv"/>
+                                                        </connections>
+                                                    </collectionViewCell>
+                                                </cells>
+                                                <connections>
+                                                    <outlet property="dataSource" destination="owL-xI-leu" id="cd7-zm-0ZY"/>
+                                                    <outlet property="delegate" destination="owL-xI-leu" id="hDd-si-98z"/>
+                                                </connections>
+                                            </collectionView>
+                                            <collectionView clipsSubviews="YES" multipleTouchEnabled="YES" tag="1" contentMode="scaleToFill" misplaced="YES" dataMode="prototypes" id="dRd-A1-3Ps" customClass="KDDragAndDropCollectionView" customModule="Hula" customModuleProvider="target">
+                                                <rect key="frame" x="0.0" y="0.0" width="128" height="375"/>
+                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" heightSizable="YES"/>
+                                                <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                                <collectionViewFlowLayout key="collectionViewLayout" minimumLineSpacing="0.0" minimumInteritemSpacing="10" id="Vvr-IQ-98g">
+                                                    <size key="itemSize" width="128" height="128"/>
+                                                    <size key="headerReferenceSize" width="0.0" height="0.0"/>
+                                                    <size key="footerReferenceSize" width="0.0" height="0.0"/>
+                                                    <inset key="sectionInset" minX="0.0" minY="0.0" maxX="0.0" maxY="0.0"/>
+                                                </collectionViewFlowLayout>
+                                                <cells>
+                                                    <collectionViewCell opaque="NO" multipleTouchEnabled="YES" contentMode="center" reuseIdentifier="productcell1" id="m6i-rZ-m9U" customClass="HLProductCollectionViewCell" customModule="Hula" customModuleProvider="target">
+                                                        <rect key="frame" x="0.0" y="0.0" width="128" height="128"/>
+                                                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                                        <view key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center">
+                                                            <rect key="frame" x="0.0" y="0.0" width="128" height="128"/>
+                                                            <autoresizingMask key="autoresizingMask"/>
+                                                            <subviews>
+                                                                <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="temp_product" id="AI2-HO-pZQ">
+                                                                    <rect key="frame" x="8" y="8" width="112" height="83"/>
+                                                                    <autoresizingMask key="autoresizingMask" flexibleMaxY="YES"/>
+                                                                </imageView>
+                                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Simple first product" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="Mpr-PV-Lrh">
+                                                                    <rect key="frame" x="8" y="89" width="112" height="35"/>
+                                                                    <autoresizingMask key="autoresizingMask" flexibleMaxY="YES"/>
+                                                                    <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="13"/>
+                                                                    <color key="textColor" red="0.22352941179999999" green="0.66666666669999997" blue="0.64313725489999995" alpha="1" colorSpace="calibratedRGB"/>
+                                                                    <nil key="highlightedColor"/>
+                                                                </label>
+                                                                <imageView opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" image="added_left_trade_icon" id="jfy-iy-bXH">
+                                                                    <rect key="frame" x="12" y="12" width="17" height="17"/>
+                                                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                                                </imageView>
+                                                                <view contentMode="scaleToFill" id="k1v-fq-OCp">
+                                                                    <rect key="frame" x="0.0" y="127" width="128" height="1"/>
+                                                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxY="YES"/>
+                                                                    <color key="backgroundColor" white="0.91565290180000003" alpha="1" colorSpace="calibratedWhite"/>
+                                                                </view>
+                                                            </subviews>
+                                                        </view>
+                                                        <connections>
+                                                            <outlet property="image" destination="AI2-HO-pZQ" id="Qf1-WP-QjT"/>
+                                                            <outlet property="label" destination="Mpr-PV-Lrh" id="enL-Gf-1Ak"/>
+                                                            <outlet property="statusImage" destination="jfy-iy-bXH" id="V6x-uD-4Hf"/>
+                                                        </connections>
+                                                    </collectionViewCell>
+                                                </cells>
+                                                <connections>
+                                                    <outlet property="dataSource" destination="owL-xI-leu" id="gnk-EA-2vy"/>
+                                                    <outlet property="delegate" destination="owL-xI-leu" id="1zb-oS-fpl"/>
+                                                </connections>
+                                            </collectionView>
+                                        </subviews>
+                                        <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                    </view>
                                     <button opaque="NO" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" id="xXH-sC-plA">
                                         <rect key="frame" x="510" y="346" width="23" height="23"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMinY="YES"/>
@@ -6174,6 +6188,7 @@ Log In</string>
                     <freeformSimulatedSizeMetrics key="simulatedDestinationMetrics"/>
                     <size key="freeformSize" width="667" height="375"/>
                     <connections>
+                        <outlet property="leftBackground" destination="4WV-0w-VgU" id="7hu-mL-aZv"/>
                         <outlet property="myProductsCollection" destination="dRd-A1-3Ps" id="bjD-w6-0sW"/>
                         <outlet property="myProductsDragView" destination="kJx-gG-UNP" id="QGK-vi-85j"/>
                         <outlet property="myProductsLabel" destination="1lO-hZ-tUF" id="c1F-IX-w6b"/>
@@ -6182,6 +6197,7 @@ Log In</string>
                         <outlet property="otherProductsDragView" destination="RNt-5Z-xam" id="38c-JT-iI8"/>
                         <outlet property="otherProductsLabel" destination="0Oz-kA-vb9" id="SI3-cQ-NFa"/>
                         <outlet property="otherSelectedProductsCollection" destination="n4h-ml-8YQ" id="bwY-Fi-QgK"/>
+                        <outlet property="rightBackground" destination="CTa-Lt-qCU" id="4wQ-4y-eOJ"/>
                         <outlet property="sectionCover" destination="Mqd-eF-bkK" id="cS1-zy-dZx"/>
                     </connections>
                 </viewController>

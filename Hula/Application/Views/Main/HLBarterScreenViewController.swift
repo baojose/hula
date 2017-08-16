@@ -19,6 +19,8 @@ class HLBarterScreenViewController: UIViewController {
     @IBOutlet weak var mySelectedProductsCollection: KDDragAndDropCollectionView!
     
     
+    @IBOutlet weak var rightBackground: UIView!
+    @IBOutlet weak var leftBackground: UIView!
     @IBOutlet weak var otherProductsDragView: UIImageView!
     @IBOutlet weak var myProductsDragView: UIImageView!
     
@@ -357,7 +359,7 @@ extension HLBarterScreenViewController: KDDragAndDropCollectionViewDataSource, U
             
             product = otherProducts[indexPath.item]
             cell = collectionView.dequeueReusableCell(withReuseIdentifier: "productcell4", for: indexPath) as! HLProductCollectionViewCell
-            cell.side = "rught"
+            cell.side = "right"
             cell.type = "user"
         default:
             print("Error: no product found")

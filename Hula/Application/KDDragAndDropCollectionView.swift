@@ -44,10 +44,19 @@ class KDDragAndDropCollectionView: UICollectionView, KDDraggable, KDDroppable {
     
     override func reloadData() {
         super.reloadData()
-        if self.numberOfItems(inSection: 0) == 0 {
-            self.alpha = 0.4
-        } else {
-            self.alpha = 1
+        print("draganddrop parent")
+        print()
+        if let barterScreen = self.delegate as? HLBarterScreenViewController {
+            if self.numberOfItems(inSection: 0) == 0 {
+                //self.alpha = 0.4
+                // show dragging areas
+                barterScreen.myProductsDragView.alpha = 1;
+                barterScreen.otherProductsDragView.alpha = 1;
+            } else {
+                //self.alpha = 1
+                barterScreen.myProductsDragView.alpha = 0;
+                barterScreen.otherProductsDragView.alpha = 0;
+            }
         }
         
     }
