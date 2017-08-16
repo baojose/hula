@@ -16,7 +16,7 @@ class HLDashboardViewController: UIViewController {
     var selectedBarter: Int = 0
     let productImagesWidth: CGFloat = 27.0
     let productImagesMargin: CGFloat = 10.0
-    var isExpandedFlowLayoutUsed:Bool = false
+    //var isExpandedFlowLayoutUsed:Bool = false
     var swappPageVC : HLSwappPageViewController?
     
     
@@ -30,27 +30,34 @@ class HLDashboardViewController: UIViewController {
     
     override func viewDidLayoutSubviews() {
         print("refreshing")
-        self.mainCollectionView.reloadData()
+        //self.mainCollectionView.reloadData()
         //refreshCollectionViewData()
     }
     
     override func viewWillAppear(_ animated: Bool) {
         mainCollectionView.frame = self.view.frame
-        self.mainCollectionView.collectionViewLayout.invalidateLayout()
+        //self.mainCollectionView.collectionViewLayout.invalidateLayout()
         
-        self.mainCollectionView.setCollectionViewLayout(HLDashboardNormalViewFlowLayout(), animated: false)
-        //self.mainCollectionView.scrollToItem(at: IndexPath(row: 0, section: 0) , at: .top, animated: false)
-        isExpandedFlowLayoutUsed = false
+        //self.mainCollectionView.setCollectionViewLayout(HLDashboardNormalViewFlowLayout(), animated: false)
+        //
+        //isExpandedFlowLayoutUsed = false
+        refreshCollectionViewData()
+        
+        self.mainCollectionView.reloadData()
     }
+    
     override func viewDidAppear(_ animated: Bool) {
+        self.mainCollectionView.scrollToItem(at: IndexPath(row: 0, section: 0) , at: .top, animated: true)
         
+        /*
         self.mainCollectionView.setCollectionViewLayout(HLDashboardNormalViewFlowLayout(), animated: false)
         self.mainCollectionView.collectionViewLayout.invalidateLayout()
         refreshCollectionViewData()
         
         self.mainCollectionView.reloadData()
-        
+        */
     }
+ 
 
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
@@ -86,7 +93,7 @@ class HLDashboardViewController: UIViewController {
                 }
             }
             mainCollectionView.collectionViewLayout = HLDashboardNormalViewFlowLayout()
-            isExpandedFlowLayoutUsed = false
+            //isExpandedFlowLayoutUsed = false
         } else {
             print("Error. Not detected parent parent vc")
         }
@@ -109,6 +116,7 @@ extension HLDashboardViewController: UICollectionViewDelegate, UICollectionViewD
                                                       for: indexPath) as! HLTradesCollectionViewCell
         cell.tradeNumber.text = "\(indexPath.row+1)"
         
+        //print(cell.frame)
         // Configure the cell
         if ((swappPageVC?.arrTrades.count)! > indexPath.row){
             //print("Drawing row \(indexPath.row)")
@@ -125,7 +133,7 @@ extension HLDashboardViewController: UICollectionViewDelegate, UICollectionViewD
                 
             }
             
-            // Todo: switch sides if i am not the owner!
+            
             if (HulaUser.sharedInstance.userId == otherUserId){
                 if let other_products_arr = thisTrade.object(forKey: "other_products") as? [String]{
                     drawProducts(inCell: cell, fromArr: other_products_arr, side: "left")
@@ -133,7 +141,6 @@ extension HLDashboardViewController: UICollectionViewDelegate, UICollectionViewD
                 if let owner_products_arr = thisTrade.object(forKey: "owner_products") as? [String]{
                     drawProducts(inCell: cell, fromArr: owner_products_arr, side: "right")
                 }
-                
             } else {
                 if let other_products_arr = thisTrade.object(forKey: "other_products") as? [String]{
                     drawProducts(inCell: cell, fromArr: other_products_arr, side: "right")
@@ -142,10 +149,8 @@ extension HLDashboardViewController: UICollectionViewDelegate, UICollectionViewD
                     drawProducts(inCell: cell, fromArr: owner_products_arr, side: "left")
                 }
             }
-            //CommonUtils.sharedInstance.loadImageOnView(imageView:cell.myImage, withURL:HulaUser.sharedInstance.userPhotoURL)
             
             cell.myImage.loadImageFromURL(urlString: HulaUser.sharedInstance.userPhotoURL)
-            //print(HulaUser.sharedInstance.userPhotoURL)
             cell.myImage.isHidden = false
             cell.middleArrows.isHidden = false
             cell.tradeNumber.textColor = HulaConstants.appMainColor
@@ -191,7 +196,7 @@ extension HLDashboardViewController: UICollectionViewDelegate, UICollectionViewD
                                                           for: indexPath) as! HLTradesCollectionViewCell
             cell.layer.zPosition = 100;
             
-            isExpandedFlowLayoutUsed = !isExpandedFlowLayoutUsed
+            //isExpandedFlowLayoutUsed = !isExpandedFlowLayoutUsed
             let when = DispatchTime.now() + 0.3
             DispatchQueue.main.asyncAfter(deadline: when) {
                 if let swappPageVC = self.parent as? HLSwappPageViewController{
@@ -224,12 +229,12 @@ extension HLDashboardViewController: UICollectionViewDelegate, UICollectionViewD
         } else {
             inCell.left_side.subviews.forEach({ $0.removeFromSuperview() })
         }
-        let verticalCenter:CGFloat = (70.0/2) - productImagesWidth/2;
+        let verticalCenter:CGFloat = (59.0/2) - productImagesWidth/2;
         for img in fromArr {
             if (img != ""){
                 let newImg = UIImageView()
                 if (side=="right"){
-                    newImg.frame = CGRect(x: ( CGFloat(counter) * (productImagesWidth + productImagesMargin)) + productImagesMargin,
+                    newImg.frame = CGRect(x: ( CGFloat(counter) * (productImagesWidth + productImagesMargin)) + productImagesMargin*2,
                                           y: verticalCenter,
                                           width: productImagesWidth,
                                           height: productImagesWidth)

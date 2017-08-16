@@ -31,6 +31,7 @@ class KDDragAndDropCollectionView: UICollectionView, KDDraggable, KDDroppable {
     
     var iDataSource : UICollectionViewDataSource?
     var iDelegate : UICollectionViewDelegate?
+    var currentSide = "mySide"
     
     override func awakeFromNib() {
         super.awakeFromNib()
@@ -50,12 +51,23 @@ class KDDragAndDropCollectionView: UICollectionView, KDDraggable, KDDroppable {
             if self.numberOfItems(inSection: 0) == 0 {
                 //self.alpha = 0.4
                 // show dragging areas
-                barterScreen.myProductsDragView.alpha = 1;
-                barterScreen.otherProductsDragView.alpha = 1;
+                if (currentSide == "mySide"){
+                    barterScreen.myProductsDragView.isHidden = false;
+                    barterScreen.myProductsLabel.isHidden = false
+                } else {
+                    barterScreen.otherProductsDragView.isHidden = false;
+                    barterScreen.otherProductsLabel.isHidden = false
+                    
+                }
             } else {
                 //self.alpha = 1
-                barterScreen.myProductsDragView.alpha = 0;
-                barterScreen.otherProductsDragView.alpha = 0;
+                if (currentSide == "mySide"){
+                    barterScreen.myProductsDragView.isHidden = true;
+                    barterScreen.myProductsLabel.isHidden = true
+                } else {
+                    barterScreen.otherProductsDragView.isHidden = true;
+                    barterScreen.otherProductsLabel.isHidden = true
+                }
             }
         }
         

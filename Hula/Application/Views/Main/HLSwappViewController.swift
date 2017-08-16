@@ -23,8 +23,6 @@ class HLSwappViewController: UIViewController {
     @IBOutlet weak var otherUserImage: UIImageView!
     @IBOutlet weak var otherUserView: UIView!
     @IBOutlet weak var myUserView: UIView!
-    @IBOutlet weak var myUserNick: UILabel!
-    @IBOutlet weak var myUserImage: UIImageView!
     @IBOutlet weak var bottomBarView: UIImageView!
     @IBOutlet weak var sendOfferBtn: HLRoundedButton!
     
@@ -38,10 +36,8 @@ class HLSwappViewController: UIViewController {
         // Do any additional setup after loading the view.
         NotificationCenter.default.addObserver(self, selector: #selector(self.rotated), name: NSNotification.Name.UIDeviceOrientationDidChange, object: nil)
         
-        myUserNick.text = HulaUser.sharedInstance.userNick
-        myUserImage.loadImageFromURL(urlString: HulaUser.sharedInstance.userPhotoURL)
+        
         CommonUtils.sharedInstance.circleImageView(otherUserImage)
-        CommonUtils.sharedInstance.circleImageView(myUserImage)
         self.myUserView.isHidden = true;
         self.otherUserView.isHidden = true;
         self.sendOfferBtn.isHidden = true;
@@ -131,6 +127,11 @@ class HLSwappViewController: UIViewController {
         
     }
     */
+    @IBAction func backToLobbyAction(_ sender: Any) {
+        if let swappPageVC = self.childViewControllers.first as? HLSwappPageViewController {
+            swappPageVC.goTo(page: 0)
+        }
+    }
     @IBAction func sendOfferAction(_ sender: Any) {
         
         if let tradeStatus = barterDelegate?.getCurrentTradeStatus() {

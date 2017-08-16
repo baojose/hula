@@ -50,12 +50,31 @@ class HLBarterScreenViewController: UIViewController {
         super.viewDidLoad()
 
         // Do any additional setup after loading the view.
-        
+        otherProductsLabel.isHidden = true
+        myProductsLabel.isHidden = true
+        otherProductsDragView.isHidden = true
+        myProductsDragView.isHidden = true
         
         self.dragAndDropManager1 = KDDragAndDropManager(canvas: self.view, collectionViews: [otherProductsCollection, otherSelectedProductsCollection ])
+        
+        
         self.dragAndDropManager2 = KDDragAndDropManager(canvas: self.view, collectionViews: [myProductsCollection, mySelectedProductsCollection ])
         
         
+        // draw borders on collectionviews
+        let border = UIView()
+        border.frame = CGRect(x:myProductsCollection.frame.width-1, y: 0, width: 1, height: self.view.frame.height)
+        border.backgroundColor = UIColor(red: 0, green: 0, blue: 0, alpha: 0.1)
+        self.view.addSubview(border)
+        let border2 = UIView()
+        border2.frame = CGRect(x: self.view.frame.width - otherProductsCollection.frame.width, y: 0, width: 1, height: self.view.frame.height)
+        border2.backgroundColor = UIColor(red: 0, green: 0, blue: 0, alpha: 0.1)
+        self.view.addSubview(border2)
+        
+        
+        // tag each collectionview
+        otherSelectedProductsCollection.currentSide = "otherSide"
+        mySelectedProductsCollection.currentSide = "mySide"
     }
     
     override func didReceiveMemoryWarning() {
@@ -372,12 +391,16 @@ extension HLBarterScreenViewController: KDDragAndDropCollectionViewDataSource, U
         cell.image.loadImageFromURL(urlString: product.productImage)
         //print(product.tradeStatus)
         if (product.tradeStatus != 0){
-            cell.statusImage.image = UIImage.init(named: arrowImagesName[product.tradeStatus])
+            
+            
+            //cell.statusImage.image = UIImage.init(named: arrowImagesName[product.tradeStatus])
+            
             if (product.tradeStatus == 1){
                 cell.is_added()
             } else {
                 cell.is_removed()
             }
+            
         } else {
             cell.statusImage.image = nil
         }

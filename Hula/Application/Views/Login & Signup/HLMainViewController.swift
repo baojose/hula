@@ -12,8 +12,10 @@ import AVFoundation
 
 class HLMainViewController: UserBaseViewController {
 
+    @IBOutlet weak var hulaSplashImage: UIImageView!
     override func viewDidLoad() {
         super.viewDidLoad()
+        hulaSplashImage.isHidden = true
     }
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
@@ -44,8 +46,9 @@ class HLMainViewController: UserBaseViewController {
     private func playVideo(){
         
         let token = HulaUser.sharedInstance.token!
-        print(token)
+        //print(token)
         if (token.characters.count>10){
+            hulaSplashImage.isHidden = false
             // we will jump to mainView only if user is not logged in
             self.navToMainView()
         } else {
