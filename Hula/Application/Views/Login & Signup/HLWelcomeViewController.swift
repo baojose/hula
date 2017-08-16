@@ -58,6 +58,7 @@ class HLWelcomeViewController: UserBaseViewController, CLLocationManagerDelegate
                 print("Authorized")
                 self.closeIdentification()
                 self.dismiss(animated: true)
+                self.presentingViewController?.dismiss(animated: true)
                 
                 
             }
