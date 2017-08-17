@@ -79,6 +79,11 @@ class HLCustomCameraViewController: BaseViewController, UIImagePickerControllerD
         arrAlbumPhotos = NSMutableArray.init()
         arrSelectedIndexs = NSMutableArray.init()
         //self.fetchAlbumPhotosAndShow()
+        imageView1.image = nil
+        imageView2.image = nil
+        imageView3.image = nil
+        imageView4.image = nil
+        
         if dataManager.newProduct.arrProductPhotos.count > 0 {
             for i in 0 ..< dataManager.newProduct.arrProductPhotos.count{
                 if i == 0 {

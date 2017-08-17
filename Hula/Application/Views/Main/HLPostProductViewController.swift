@@ -60,11 +60,19 @@ class HLPostProductViewController: BaseViewController, UITextFieldDelegate {
         arrImageFrameViews.add(imgFrameView3)
         arrImageFrameViews.add(imgFrameView4)
         
+        setupImagesBoxes()
+    }
+    func setupImagesBoxes(){
         let arrCameraButtons = NSMutableArray.init(capacity: 4)
         arrCameraButtons.add(cameraButton1)
         arrCameraButtons.add(cameraButton2)
         arrCameraButtons.add(cameraButton3)
         arrCameraButtons.add(cameraButton4)
+        
+        mainImage.image = nil;
+        secondImage.image = nil;
+        thirdImage.image = nil;
+        forthImage.image = nil;
         
         if dataManager.newProduct.arrProductPhotos.count > 0 {
             for i in 0 ..< dataManager.newProduct.arrProductPhotos.count{
@@ -145,6 +153,7 @@ class HLPostProductViewController: BaseViewController, UITextFieldDelegate {
         newImageView.backgroundColor = .black
         newImageView.contentMode = .scaleAspectFit
         newImageView.alpha = 0.0
+        newImageView.tag = 10001
         newImageView.isUserInteractionEnabled = true
         let tap = UITapGestureRecognizer(target: self, action: #selector(optionsFullscreenImage))
         newImageView.addGestureRecognizer(tap)
@@ -181,26 +190,47 @@ class HLPostProductViewController: BaseViewController, UITextFieldDelegate {
             image_dismissing = true
         }
     }
+    func dismissFullscreenImageDirect() {
+            
+        self.navigationController?.isNavigationBarHidden = false
+        self.tabBarController?.tabBar.isHidden = false
+        if let imageView = self.view.viewWithTag(10001) as? UIImageView {
+            UIView.animate(withDuration: 0.3, animations: {
+                imageView.frame = CGRect(x: self.view.frame.width/2 , y: self.view.frame.height/2, width: 30, height:30)
+                imageView.alpha = 0
+                imageView.transform.rotated(by: CGFloat( arc4random_uniform(100)/12))
+            }) { (success) in
+                imageView.removeFromSuperview()
+            }
+        }
+        image_dismissing = true
+    }
     func optionsFullscreenImage(_ sender: UIGestureRecognizer) {
-        let alertController = UIAlertController(title: "Image options", message: "", preferredStyle: .actionSheet)
+        let alertController = UIAlertController(title: "Image options", message: "Choose an option for this image...", preferredStyle: .actionSheet)
         
         
         let editButton = UIAlertAction(title: "Change image", style: .default, handler: { (action) -> Void in
             print("Close")
+            self.dataManager.newProduct.arrProductPhotos.removeObject(at: self.currentEditingIndex);
+            self.presentingViewController?.dismiss(animated: true, completion: nil)
         })
         
         let setDefaultButton = UIAlertAction(title: "Set as default", style: .default, handler: { (action) -> Void in
-            print("Close")
+            swap(&self.dataManager.newProduct.arrProductPhotos[0], &self.dataManager.newProduct.arrProductPhotos[self.currentEditingIndex])
+            self.dismissFullscreenImageDirect( )
+            self.setupImagesBoxes()
         })
         
         
         let  deleteButton = UIAlertAction(title: "Delete image", style: .destructive, handler: { (action) -> Void in
-            print("Delete button tapped")
-            sender.view?.removeFromSuperview()
+            //print("Delete button tapped")
+            self.dataManager.newProduct.arrProductPhotos.removeObject(at: self.currentEditingIndex);
+            self.dismissFullscreenImageDirect( )
+            self.setupImagesBoxes()
         })
         
         let cancelButton = UIAlertAction(title: "Cancel", style: .cancel, handler: { (action) -> Void in
-            print("Cancel button tapped")
+            //print("Cancel button tapped")
         })
         
         
