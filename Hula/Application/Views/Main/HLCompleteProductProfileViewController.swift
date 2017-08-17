@@ -28,7 +28,9 @@ class HLCompleteProductProfileViewController: BaseViewController, UIScrollViewDe
     @IBOutlet var perkMarkImage: UIImageView!
     @IBOutlet weak var charactersRemainingLabel: UILabel!
     
+    @IBOutlet weak var productReferenceImage: UIImageView!
     var productCondition:String = "new"
+    var productImage:UIImage!
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -44,10 +46,14 @@ class HLCompleteProductProfileViewController: BaseViewController, UIScrollViewDe
         
     }
     func initView(){
+        
+        commonUtils.circleImageView(productReferenceImage)
+        productReferenceImage.image = productImage
+        
         pageTitleLabel.attributedText = commonUtils.attributedStringWithTextSpacing(pageTitleLabel.text!, 2.33)
-        categoryTableView.frame = CGRect(x: 0.0, y: 0.0, width: mainScrollView.frame.size.width, height: self.view.frame.size.height)
-        perkContainView.frame = CGRect(x: mainScrollView.frame.size.width, y: 0.0, width: mainScrollView.frame.size.width, height: self.view.frame.size.height)
-        contentView.frame = CGRect(x: 0.0, y: 0, width: mainScrollView.frame.size.width, height: self.view.frame.size.height)
+        categoryTableView.frame = CGRect(x: 0.0, y: 0.0, width: mainScrollView.frame.size.width, height: mainScrollView.frame.size.height)
+        perkContainView.frame = CGRect(x: mainScrollView.frame.size.width, y: 0.0, width: mainScrollView.frame.size.width, height: mainScrollView.frame.size.height)
+        contentView.frame = CGRect(x: 0.0, y: 0, width: mainScrollView.frame.size.width, height: mainScrollView.frame.size.height)
         mainScrollView.contentSize = contentView.frame.size
         mainScrollView.setContentOffset(CGPoint(x:0.0, y:0.0), animated: false)
         self.changeMarkState(0)

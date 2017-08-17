@@ -12,7 +12,6 @@ class HLMyProductTableViewCell: UITableViewCell {
     
     @IBOutlet var productImage: UIImageView!
     @IBOutlet var productDescription: UILabel!
-    @IBOutlet var productEditBtn: UIButton!
     @IBOutlet var warningView: UIView!
     @IBOutlet weak var cellContentView: UIView!
     var alreadyAnimated = false
