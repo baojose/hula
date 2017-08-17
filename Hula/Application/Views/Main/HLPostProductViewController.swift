@@ -61,9 +61,19 @@ class HLPostProductViewController: BaseViewController, UITextFieldDelegate {
         arrImageFrameViews.add(imgFrameView4)
         
         setupImagesBoxes()
+        
+        
+        productTitleTxtField.text = self.dataManager.newProduct.productName
     }
     func setupImagesBoxes(){
         let arrCameraButtons = NSMutableArray.init(capacity: 4)
+        
+        cameraButton1.isHidden = false;
+        cameraButton2.isHidden = false;
+        cameraButton3.isHidden = false;
+        cameraButton4.isHidden = false;
+        
+        
         arrCameraButtons.add(cameraButton1)
         arrCameraButtons.add(cameraButton2)
         arrCameraButtons.add(cameraButton3)
@@ -120,9 +130,11 @@ class HLPostProductViewController: BaseViewController, UITextFieldDelegate {
         //print("Touches began")
         let tappedIndex: Int = (sender.view?.tag)!
         
-        print(dataManager.newProduct.arrProductPhotos[tappedIndex])
-        if let imageView = dataManager.newProduct.arrProductPhotos[tappedIndex] as? UIImage {
-            fullScreenImage(image:imageView, index: tappedIndex)
+        if (dataManager.newProduct.arrProductPhotos.count >= tappedIndex - 1){
+            print(dataManager.newProduct.arrProductPhotos[tappedIndex])
+            if let imageView = dataManager.newProduct.arrProductPhotos[tappedIndex] as? UIImage {
+                fullScreenImage(image:imageView, index: tappedIndex)
+            }
         }
         // selecting main image. Removed
         /*
@@ -206,16 +218,16 @@ class HLPostProductViewController: BaseViewController, UITextFieldDelegate {
         image_dismissing = true
     }
     func optionsFullscreenImage(_ sender: UIGestureRecognizer) {
-        let alertController = UIAlertController(title: "Image options", message: "Choose an option for this image...", preferredStyle: .actionSheet)
+        let alertController = UIAlertController(title: "Image options", message: "Choose an option...", preferredStyle: .actionSheet)
         
         
-        let editButton = UIAlertAction(title: "Change image", style: .default, handler: { (action) -> Void in
+        let editButton = UIAlertAction(title: "Choose another image", style: .default, handler: { (action) -> Void in
             print("Close")
             self.dataManager.newProduct.arrProductPhotos.removeObject(at: self.currentEditingIndex);
             self.presentingViewController?.dismiss(animated: true, completion: nil)
         })
         
-        let setDefaultButton = UIAlertAction(title: "Set as default", style: .default, handler: { (action) -> Void in
+        let setDefaultButton = UIAlertAction(title: "Set image as default", style: .default, handler: { (action) -> Void in
             swap(&self.dataManager.newProduct.arrProductPhotos[0], &self.dataManager.newProduct.arrProductPhotos[self.currentEditingIndex])
             self.dismissFullscreenImageDirect( )
             self.setupImagesBoxes()
@@ -246,6 +258,7 @@ class HLPostProductViewController: BaseViewController, UITextFieldDelegate {
         
     }
     func changePublishBtnState(_ string: String){
+        self.dataManager.newProduct.productName = string
         if dataManager.newProduct.arrProductPhotos.count != 0 && string.characters.count != 0  {
             publishBtn.isEnabled = true
             publishBtn.startAnimation()

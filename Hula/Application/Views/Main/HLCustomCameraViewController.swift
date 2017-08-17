@@ -55,7 +55,14 @@ class HLCustomCameraViewController: BaseViewController, UIImagePickerControllerD
         let value = UIInterfaceOrientation.portrait.rawValue
         UIDevice.current.setValue(value, forKey: "orientation")
     }
-    
+    override func viewWillAppear(_ animated: Bool) {
+        print("resetting images based on real content")
+        for i in 0 ..< self.dataManager.newProduct.arrProductPhotos.count {
+            if let img = self.dataManager.newProduct.arrProductPhotos[i] as? UIImage {
+                showImages(img)
+            }
+        }
+    }
     private func supportedInterfaceOrientations() -> UIInterfaceOrientationMask {
         return UIInterfaceOrientationMask.portrait
     }
