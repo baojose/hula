@@ -41,6 +41,7 @@ class HLSpinnerUIView: UIView {
                 subUIView.removeFromSuperview()
             }
             self.spinning = false
+            self.removeFromSuperview()
         })
     }
     
@@ -48,7 +49,9 @@ class HLSpinnerUIView: UIView {
         UIView.animate(withDuration: duration, delay: 0.0, options: .curveLinear, animations: {
             targetView.transform = targetView.transform.rotated(by: CGFloat( Double.pi + 0.001 ))
         }) { finished in
-            self.rotate(targetView: targetView, duration: duration)
+            if (self.spinning){
+                self.rotate(targetView: targetView, duration: duration)
+            }
         }
     }
 }

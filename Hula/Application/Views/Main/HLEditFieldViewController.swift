@@ -24,6 +24,9 @@ class HLEditFieldViewController: BaseViewController, UITextFieldDelegate, UIText
     @IBOutlet weak var newValueTextView: UITextView!
     @IBOutlet weak var lineSeparator: UILabel!
     @IBOutlet weak var saveButton: HLBouncingButton!
+    @IBOutlet weak var remainigLabel: UILabel!
+    var remainingChars: Int = 200
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         //titleLabel.text = "Change \(field_label)"
@@ -66,7 +69,13 @@ class HLEditFieldViewController: BaseViewController, UITextFieldDelegate, UIText
             self.lineSeparator.frame.origin.y = self.newValueTextView.frame.origin.y + h + 15
             self.saveButton.frame.origin.y = self.lineSeparator.frame.origin.y + 30
         }, completion: nil)
-    
+        var theRemainingChars = self.remainingChars - newValueTextView.text.characters.count
+        if (theRemainingChars < 1){
+            let index = newValueTextView.text.index(newValueTextView.text.startIndex, offsetBy: self.remainingChars)
+            newValueTextView.text = newValueTextView.text.substring(to: index)
+            theRemainingChars = 0
+        }
+        remainigLabel.text = "\(theRemainingChars) characters remaining"
     }
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         let userLocation:CLLocation = locations[0]

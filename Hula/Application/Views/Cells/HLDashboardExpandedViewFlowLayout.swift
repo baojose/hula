@@ -43,10 +43,11 @@ class HLDashboardExpandedViewFlowLayout: UICollectionViewFlowLayout {
             return CGSize(width: itemWidth(), height: itemHeight)
         }
     }
-    
+    /*
     override func targetContentOffset(forProposedContentOffset proposedContentOffset: CGPoint) -> CGPoint {
         return collectionView!.contentOffset
     }
+ */
     /*
     override func layoutAttributesForElements(in rect: CGRect) -> [UICollectionViewLayoutAttributes]? {
         let layoutAttributes = super.layoutAttributesForElements(in: rect)
@@ -59,5 +60,8 @@ class HLDashboardExpandedViewFlowLayout: UICollectionViewFlowLayout {
         return newLayoutAttributes
     }
  */
-
+    
+    override func shouldInvalidateLayout(forBoundsChange newBounds: CGRect) -> Bool {
+        return true
+    }
 }

@@ -53,29 +53,7 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
     
     
     //#MARK: - TableViewDelegate
-    func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat{
-        return 48.0
-    }
-    func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView?{
-        
-        let view = UIView(frame: CGRect(x: 0, y: 0, width: tableView.frame.size.width, height: tableView.sectionHeaderHeight))
-        let label = UILabel(frame: CGRect(x: 20.0, y:23.0, width: 200.0, height: 21.0))
-        label.textColor = UIColor(red: 70.0/255, green: 70.0/255, blue: 70.0/255, alpha: 1.0)
-        label.backgroundColor = UIColor.clear
-        label.font = UIFont(name: "HelveticaNeue", size: 12.0)
-        label.attributedText = commonUtils.attributedStringWithTextSpacing("YOUR INVENTORY", 2.33)
-        view.addSubview(label)
-        
-        let lineLabel = UILabel(frame: CGRect(x: 0, y: tableView.sectionHeaderHeight - 1, width: tableView.frame.size.width, height: 1))
-        lineLabel.backgroundColor = UIColor(red: 193.0/255, green: 193.0/255, blue: 193.0/255, alpha: 1.0)
-        view.addSubview(lineLabel)
-        view.backgroundColor = UIColor.white
-        
-        return view
-    }
-    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat{
-        return 128.0
-    }
+    
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         if (self.arrayProducts.count != 0){
             return self.arrayProducts.count
@@ -87,8 +65,6 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
         
         let cell = tableView.dequeueReusableCell(withIdentifier: "myProductTableViewCell") as! HLMyProductTableViewCell
         let order_sorted = self.arrayProducts.count - indexPath.row - 1
-        cell.productEditBtn.tag = order_sorted
-        cell.productEditBtn.addTarget(self, action: #selector(goEditProductPage), for: .touchUpInside)
         
         let product : NSDictionary = self.arrayProducts[order_sorted] as! NSDictionary
         //print(product)
@@ -124,6 +100,8 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
         return cell
     }
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath){
+        let order_sorted = self.arrayProducts.count - indexPath.row - 1
+        goEditProductPage(index: order_sorted)
     }
     
     // IB Actions
@@ -163,6 +141,7 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
                 let when = DispatchTime.now() + 2 // change 2 to desired number of seconds
                 DispatchQueue.main.asyncAfter(deadline: when) {
                     let viewController = self.storyboard?.instantiateViewController(withIdentifier: "completeProductProfilePage") as! HLCompleteProductProfileViewController
+                    viewController.productImage = self.dataManager.newProduct.arrProductPhotos[0] as! UIImage
                     self.present(viewController, animated: true)
                     
                     HLDataManager.sharedInstance.uploadMode = false
@@ -175,7 +154,7 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
     }
     
     func getUserProducts() {
-        print("Getting user info...")
+        //print("Getting user info...")
         if (HulaUser.sharedInstance.userId.characters.count>0){
             let queryURL = HulaConstants.apiURL + "products/user/" + HulaUser.sharedInstance.userId
             //print(queryURL)
@@ -307,9 +286,9 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
         }
     }
     
-    func goEditProductPage(sender: UIButton){
+    func goEditProductPage(index: Int){
         //print(sender.tag)
-        let productToDisplay : NSDictionary = self.arrayProducts[sender.tag] as! NSDictionary
+        let productToDisplay : NSDictionary = self.arrayProducts[index] as! NSDictionary
         let viewController = self.storyboard?.instantiateViewController(withIdentifier: "editProductMainPage") as! HLEditProductMainViewController
         viewController.productToDisplay = productToDisplay
         self.navigationController?.pushViewController(viewController, animated: true)

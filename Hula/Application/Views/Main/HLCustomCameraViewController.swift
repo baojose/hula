@@ -51,6 +51,23 @@ class HLCustomCameraViewController: BaseViewController, UIImagePickerControllerD
         self.initCamera()
         self.beginSession()
         
+        
+        let value = UIInterfaceOrientation.portrait.rawValue
+        UIDevice.current.setValue(value, forKey: "orientation")
+    }
+    override func viewWillAppear(_ animated: Bool) {
+        print("resetting images based on real content")
+        for i in 0 ..< self.dataManager.newProduct.arrProductPhotos.count {
+            if let img = self.dataManager.newProduct.arrProductPhotos[i] as? UIImage {
+                showImages(img)
+            }
+        }
+    }
+    private func supportedInterfaceOrientations() -> UIInterfaceOrientationMask {
+        return UIInterfaceOrientationMask.portrait
+    }
+    private func shouldAutorotate() -> Bool {
+        return false
     }
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
@@ -69,6 +86,11 @@ class HLCustomCameraViewController: BaseViewController, UIImagePickerControllerD
         arrAlbumPhotos = NSMutableArray.init()
         arrSelectedIndexs = NSMutableArray.init()
         //self.fetchAlbumPhotosAndShow()
+        imageView1.image = nil
+        imageView2.image = nil
+        imageView3.image = nil
+        imageView4.image = nil
+        
         if dataManager.newProduct.arrProductPhotos.count > 0 {
             for i in 0 ..< dataManager.newProduct.arrProductPhotos.count{
                 if i == 0 {
@@ -102,7 +124,7 @@ class HLCustomCameraViewController: BaseViewController, UIImagePickerControllerD
     func openImagePicker(){
         picker.allowsEditing = false
         picker.sourceType = .photoLibrary
-        picker.mediaTypes = UIImagePickerController.availableMediaTypes(for: .photoLibrary)!
+        //picker.mediaTypes = UIImagePickerController.availableMediaTypes(for: .photoLibrary)!
         present(picker, animated: true, completion: nil)
     }
     
@@ -129,6 +151,19 @@ class HLCustomCameraViewController: BaseViewController, UIImagePickerControllerD
     }
     
     @IBAction func actionCameraCapture(_ sender: AnyObject) {
+        let flashView = UIView()
+        flashView.frame = self.view.frame
+        flashView.backgroundColor = UIColor.white
+        flashView.alpha = 1.0
+        self.view.addSubview(flashView)
+        UIView.animate(withDuration: 0.3, animations: {
+            flashView.alpha = 0.0
+        }) { (success) in
+            flashView.removeFromSuperview()
+        }
+
+        
+        
         saveToCamera()
     }
     

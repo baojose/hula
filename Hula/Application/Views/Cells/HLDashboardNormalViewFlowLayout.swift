@@ -43,11 +43,17 @@ class HLDashboardNormalViewFlowLayout: UICollectionViewFlowLayout {
             return CGSize(width: itemWidth(), height: itemHeight)
         }
     }
-    
+    /*
     override func targetContentOffset(forProposedContentOffset proposedContentOffset: CGPoint) -> CGPoint {
         return collectionView!.contentOffset
     }
+ */
     
-
+    override func shouldInvalidateLayout(forBoundsChange newBounds: CGRect) -> Bool {
+        return true
+    }
+    override func shouldInvalidateLayout(forPreferredLayoutAttributes preferredAttributes: UICollectionViewLayoutAttributes, withOriginalAttributes originalAttributes: UICollectionViewLayoutAttributes) -> Bool {
+        return true
+    }
     
 }

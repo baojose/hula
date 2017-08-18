@@ -32,7 +32,9 @@ class HLTradesCollectionViewCell: UICollectionViewCell {
         
         CommonUtils.sharedInstance.circleImageView(userImage)
         CommonUtils.sharedInstance.circleImageView(myImage)
-        
+        boxView.frame = CGRect(x: 8, y: 7, width: self.frame.width - 39, height: 59)
+        left_side.frame = CGRect(x: 0, y: 0, width: boxView.frame.width/2, height: 59)
+        right_side.frame = CGRect(x: boxView.frame.width/2, y: 0, width: boxView.frame.width/2, height: 59)
         boxView.layer.borderWidth = 1
         boxView.layer.cornerRadius = 4.0
         boxView.layer.borderColor = UIColor(red:0.9, green:0.9, blue:0.9, alpha: 1.0).cgColor
@@ -51,6 +53,7 @@ class HLTradesCollectionViewCell: UICollectionViewCell {
             boxView.layer.shadowRadius = 0
             optionsDotsImage.alpha = 0.2
         }
+        //print(self.frame)
         
         // test for commit
     }

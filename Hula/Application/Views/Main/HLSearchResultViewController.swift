@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import CoreLocation
 
 class HLSearchResultViewController: BaseViewController, UITableViewDataSource, UITableViewDelegate {
     
@@ -22,6 +23,10 @@ class HLSearchResultViewController: BaseViewController, UITableViewDataSource, U
     var productsList: NSArray = []
     var usersList: NSDictionary = [:]
     var spinner: HLSpinnerUIView!
+    var filteredList: [HulaProduct] = []
+    var filterDistance:CGFloat = 0.0
+    var filterReputation = 0
+    var filterCondition = "all"
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -72,48 +77,40 @@ class HLSearchResultViewController: BaseViewController, UITableViewDataSource, U
         return view
     }
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return productsList.count
+        return filteredList.count
     }
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         
         let cell = tableView.dequeueReusableCell(withIdentifier: "homeProductCell") as! HLProductTableViewCell
         
-        let product = productsList[indexPath.row] as! NSDictionary
+        let product = filteredList[indexPath.row]
         //print(product)
-        cell.productName.text = product.object(forKey: "title") as? String
-        //commonUtils.loadImageOnView(imageView:cell.productImage, withURL:(product.object(forKey: "image_url") as? String)!)
+        cell.productName.text = product.productName
         
-        cell.productImage.loadImageFromURL(urlString: (product.object(forKey: "image_url") as? String)!)
-        if let user_id = product.object(forKey: "owner_id") as? String{
-            //print(user_id)
-            //print(self.usersList)
-            if let user = self.usersList.object(forKey: user_id) as? NSDictionary{
-                //print(user)
-                cell.productOwnerName.text = user.object(forKey: "nick") as? String
-                //commonUtils.loadImageOnView(imageView:cell.productOwnerImage, withURL:(user.object(forKey: "image") as? String)!)
-                cell.productOwnerImage.loadImageFromURL(urlString: (user.object(forKey: "image") as? String)!)
-                if let location = product.object(forKey: "location") as? [CGFloat]{
-                    cell.productDistance.text = "(" + commonUtils.getDistanceFrom(lat: location[0], lon: location[1]) + ")"
-                } else {
-                    cell.productDistance.text = "-"
-                }
-                let up = user.object(forKey: "feedback_points") as? Float
-                let uc = user.object(forKey: "feedback_count") as? Float
-                if (up != nil) && (uc != nil) && (uc != 0) {
-                    let perc_trade = round( up! / uc! * 100)
-                    cell.productTradeRate.text = "\(perc_trade)%"
-                } else {
-                    cell.productTradeRate.text = "-"
-                }
+        cell.productImage.loadImageFromURL(urlString: product.productImage)
+        let user_id = product.productOwner as String;
+        if let user = self.usersList.object(forKey: user_id) as? NSDictionary {
+            //print(user)
+            cell.productOwnerName.text = user.object(forKey: "nick") as? String
+            cell.productOwnerImage.loadImageFromURL(urlString: (user.object(forKey: "image") as? String)!)
+            let up = user.object(forKey: "feedback_points") as? Float
+            let uc = user.object(forKey: "feedback_count") as? Float
+            if (up != nil) && (uc != nil) && (uc != 0) {
+                let perc_trade = round( up! / uc! * 100)
+                cell.productTradeRate.text = "\(perc_trade)%"
+            } else {
+                cell.productTradeRate.text = "-"
             }
         }
+        cell.productDistance.text = "(" + commonUtils.getDistanceFrom(loc: product.productLocation) + ")"
+        
         commonUtils.circleImageView(cell.productOwnerImage)
         return cell
     }
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath){
         let viewController = self.storyboard?.instantiateViewController(withIdentifier: "productDetailPage") as! HLProductDetailViewController
         
-        let product = productsList[indexPath.row] as! NSDictionary
+        let product = filteredList[indexPath.row]
         viewController.productData = product
         self.navigationController?.pushViewController(viewController, animated: true)
     }
@@ -135,7 +132,7 @@ class HLSearchResultViewController: BaseViewController, UITableViewDataSource, U
             let encodedKw = keywordToSearch.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)
             queryURL = HulaConstants.apiURL + "products/search/" + encodedKw!
         }
-        print(queryURL)
+        //print(queryURL)
         HLDataManager.sharedInstance.httpGet(urlstr: queryURL, taskCallback: { (ok, json) in
             if (ok){
                 DispatchQueue.main.async {
@@ -152,8 +149,9 @@ class HLSearchResultViewController: BaseViewController, UITableViewDataSource, U
                         }
                         
                     }
+                    self.getFilteredList()
                     self.productsTableView.reloadData()
-                    if (self.productsList.count == 0){
+                    if (self.filteredList.count == 0){
                         self.productsTableView.isHidden = true
                     } else {
                         self.productsTableView.isHidden = false
@@ -163,5 +161,63 @@ class HLSearchResultViewController: BaseViewController, UITableViewDataSource, U
                 // connection error
             }
         })
+    }
+    
+    func getFilteredList(){
+        filteredList = []
+        for prod in (productsList as? [NSDictionary])!{
+            let hprod = HulaProduct()
+            var isValidCond = false
+            var isValidDist = false
+            var isValidRep = false
+            hprod.populate(with: prod)
+            
+            if filterCondition == "all" || hprod.productCondition == filterCondition{
+                isValidCond = true
+            }
+            
+            
+            if filterReputation == 0 {
+                isValidRep = true
+            }
+            
+            
+            if filterDistance == 0.0 || commonUtils.getCGDistanceFrom(loc: hprod.productLocation) < filterDistance {
+                isValidDist = true
+            }
+            
+            if(isValidCond && isValidRep && isValidDist){
+                filteredList.append(hprod)
+            }
+            
+        }
+        //print(filteredList)
+        productsTableView.reloadData()
+    }
+    
+    @IBAction func showFiltersAction(_ sender: Any) {
+        let viewController = self.storyboard?.instantiateViewController(withIdentifier: "filterPage") as! HLFilterViewController
+        viewController.filterDelegate = self
+        viewController.preselDistance = filterDistance
+        viewController.preselRep = filterReputation
+        viewController.preselCondition = filterCondition
+        self.present(viewController, animated: true) { 
+            // nada
+        }
+        
+    }
+}
+extension HLSearchResultViewController: FiltersDelegate{
+    
+    func filtersChanged(distance:Int, reputation:Int, condition:String){
+        //print("filters changed")
+        //print("dist \(distance)")
+        //print("rep \(reputation)")
+        //print("cond \(condition)")
+        //print("filter changed")
+        filterDistance = CGFloat(distance)
+        filterReputation = reputation
+        filterCondition = condition
+        getFilteredList()
     }
 }

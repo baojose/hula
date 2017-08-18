@@ -15,10 +15,10 @@ class HLCompleteProductProfileViewController: BaseViewController, UIScrollViewDe
     @IBOutlet var categoryTableView: UITableView!
     @IBOutlet var perkContainView: UIView!
     @IBOutlet var perkScrollView: UIScrollView!
-    @IBOutlet weak var doneBtn: HLRoundedNextButton!
     @IBOutlet var desciptionTxtField: UITextField!
     @IBOutlet var conditionNewBtn: UIButton!
     @IBOutlet var conditionUsedBtn: UIButton!
+    @IBOutlet weak var doneBtn: HLRoundedGradientButton!
     
     @IBOutlet var categoryMarkLabel: UILabel!
     @IBOutlet var categoryMarkLineLabel: UILabel!
@@ -26,8 +26,11 @@ class HLCompleteProductProfileViewController: BaseViewController, UIScrollViewDe
     @IBOutlet var perkMarkLabel: UILabel!
     @IBOutlet var perkMarkLineLabel: UILabel!
     @IBOutlet var perkMarkImage: UIImageView!
+    @IBOutlet weak var charactersRemainingLabel: UILabel!
     
+    @IBOutlet weak var productReferenceImage: UIImageView!
     var productCondition:String = "new"
+    var productImage:UIImage!
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -43,16 +46,20 @@ class HLCompleteProductProfileViewController: BaseViewController, UIScrollViewDe
         
     }
     func initView(){
+        
+        commonUtils.circleImageView(productReferenceImage)
+        productReferenceImage.image = productImage
+        
         pageTitleLabel.attributedText = commonUtils.attributedStringWithTextSpacing(pageTitleLabel.text!, 2.33)
-        categoryTableView.frame = CGRect(x: 0.0, y: 0.0, width: mainScrollView.frame.size.width, height: self.view.frame.size.height)
-        perkContainView.frame = CGRect(x: mainScrollView.frame.size.width, y: 0.0, width: mainScrollView.frame.size.width, height: self.view.frame.size.height)
-        contentView.frame = CGRect(x: 0.0, y: 0, width: mainScrollView.frame.size.width, height: self.view.frame.size.height)
+        categoryTableView.frame = CGRect(x: 0.0, y: 0.0, width: mainScrollView.frame.size.width, height: mainScrollView.frame.size.height)
+        perkContainView.frame = CGRect(x: mainScrollView.frame.size.width, y: 0.0, width: mainScrollView.frame.size.width, height: mainScrollView.frame.size.height)
+        contentView.frame = CGRect(x: 0.0, y: 0, width: mainScrollView.frame.size.width, height: mainScrollView.frame.size.height)
         mainScrollView.contentSize = contentView.frame.size
         mainScrollView.setContentOffset(CGPoint(x:0.0, y:0.0), animated: false)
         self.changeMarkState(0)
         self.changeConditionState(conditionNewBtn.tag)
         
-        doneBtn.setup()
+        //doneBtn.setup()
         desciptionTxtField.addTarget(self, action: #selector(textchange(_:)), for: UIControlEvents.editingChanged)
         let tapGesture: UITapGestureRecognizer! = UITapGestureRecognizer.init(target: self, action: #selector(onTapScreen))
         perkContainView.addGestureRecognizer(tapGesture)
@@ -153,14 +160,26 @@ class HLCompleteProductProfileViewController: BaseViewController, UIScrollViewDe
         return textField.resignFirstResponder()
     }
     func changeDoneBtnState(_ string: String){
+        let charCount = string.characters.count
         if string.characters.count != 0  {
             doneBtn.isEnabled = true
-            doneBtn.startAnimation()
+            doneBtn.alpha = 1
+            //doneBtn.startAnimation()
             //print("Is enabled")
         }else{
             doneBtn.isEnabled = false
-            doneBtn.stopAnimation()
+            doneBtn.alpha = 0.5
+            //doneBtn.stopAnimation()
         }
+        
+        var theRemainingChars = 200 - charCount
+        if (theRemainingChars < 1){
+            let str = self.desciptionTxtField.text!
+            let index = str.index(str.startIndex, offsetBy: 200)
+            desciptionTxtField.text = str.substring(to: index)
+            theRemainingChars = 0
+        }
+        charactersRemainingLabel.text = "\(theRemainingChars) characters remaining"
     }
     
     @IBAction func doneBtnPRessed(_ sender: Any) {

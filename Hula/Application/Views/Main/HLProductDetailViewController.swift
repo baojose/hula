@@ -37,7 +37,7 @@ class HLProductDetailViewController: BaseViewController, UIScrollViewDelegate, U
     @IBOutlet var sellerLabel: UILabel!
     @IBOutlet var userInventoryLabel: UILabel!
     
-    var productData: NSDictionary!
+    var productData: HulaProduct!
     var currentProduct: HulaProduct!
     var sellerProducts: NSArray! = []
     var sellerFeedback: NSArray! = []
@@ -61,40 +61,9 @@ class HLProductDetailViewController: BaseViewController, UIScrollViewDelegate, U
     func initData() {
         //print(productData);
         //print(productData);
-        sellerUser = HulaUser()
-        if (currentProduct != nil) && (currentProduct.productId.characters.count > 0) && (productData == nil) {
-            // product does already exist!
-        } else {
-            currentProduct = HulaProduct(
-                id: productData["_id"] as! String,
-                name: productData["title"] as! String,
-                image: productData["image_url"] as! String)
+        currentProduct = productData
         
-            currentProduct.productDescription = productData["description"] as! String
-            currentProduct.productOwner = productData["owner_id"] as! String
-            if let catName = productData["category_name"] as? String{
-                currentProduct.productCategory = catName
-            }
-            if let catId = productData["category_id"] as? String {
-                currentProduct.productCategoryId = catId
-            }
-            currentProduct.productCondition = productData["condition"] as! String
-            if let loc_tmp = productData["location"] as? [Double] {
-                currentProduct.productLocation = CLLocation(latitude: loc_tmp[0], longitude: loc_tmp[1])
-            }
-            var num_images = 0;
-            if let img_arr = productData["images"] as? NSArray {
-                currentProduct.arrProductPhotoLink = []
-                for i in 0 ..< img_arr.count {
-                    if let img_url = img_arr[i] as? String{
-                        if (img_url.characters.count > 0){
-                            currentProduct.arrProductPhotoLink.append(img_url)
-                            num_images += 1
-                        }
-                    }
-                }
-            }
-        }
+        sellerUser = HulaUser()
     }
     func initView() {
         var newFrame: CGRect! = productTableView.frame
@@ -137,7 +106,7 @@ class HLProductDetailViewController: BaseViewController, UIScrollViewDelegate, U
             self.sellerProducts = prods
             var newFrame: CGRect! = self.productTableView.frame
             newFrame.size.height = (CGFloat(self.sellerProducts.count) * 129.0);
-            print(newFrame.size.height)
+            //print(newFrame.size.height)
             self.productTableView.frame = newFrame
             self.mainScrollView.contentSize = CGSize(width: 0, height: self.sellerView.frame.origin.y + self.productTableView.frame.size.height + 300)
             self.productTableView.reloadData()
@@ -176,12 +145,14 @@ class HLProductDetailViewController: BaseViewController, UIScrollViewDelegate, U
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath){
-        print("selected")
-        print(indexPath.row)
+        //print("selected")
+        //print(indexPath.row)
         let viewController = self.storyboard?.instantiateViewController(withIdentifier: "productDetailPage") as! HLProductDetailViewController
         
         let product = sellerProducts[indexPath.row] as! NSDictionary
-        viewController.productData = product
+        let hproduct = HulaProduct();
+        hproduct.populate(with: product)
+        viewController.productData = hproduct
         
         self.navigationController?.pushViewController(viewController, animated: true)
     }
@@ -202,39 +173,23 @@ class HLProductDetailViewController: BaseViewController, UIScrollViewDelegate, U
     
     func setUpProductImagesScrollView() {
         var num_images: CGFloat = 0;
-        /*
-        if let img_arr = productData["images"] as? NSArray {
-            
-            for i in 0 ..< 4 {
-                if let img_url = img_arr[i] as? String{
-                    if (img_url.characters.count > 0){
-                        let imageFrame = CGRect(x: (CGFloat)(i) * productsScrollView.frame.size.width, y: 0, width: productsScrollView.frame.size.width, height: productsScrollView.frame.size.height)
-                        let imgView: UIImageView! = UIImageView.init(frame: imageFrame)
-                        //commonUtils.loadImageOnView(imageView: imgView, withURL: img_url)
-                        imgView.loadImageFromURL(urlString: img_url)
-                        //imgView.image = UIImage(named: "temp_product")
-                        imgView.contentMode = .scaleAspectFill
-                        productsScrollView.addSubview(imgView)
-                        num_images += 1
-                    }
+        if let img_arr = currentProduct.arrProductPhotoLink {
+            //print(img_arr)
+            for i in 0 ..< img_arr.count {
+                let img_url = img_arr[i]
+                if (img_url.characters.count > 0){
+                    let imageFrame = CGRect(x: (CGFloat)(i) * productsScrollView.frame.size.width, y: 0, width: productsScrollView.frame.size.width, height: productsScrollView.frame.size.height)
+                    let imgView: UIImageView! = UIImageView.init(frame: imageFrame)
+                    //commonUtils.loadImageOnView(imageView: imgView, withURL: img_url)
+                    imgView.loadImageFromURL(urlString: img_url)
+                    //imgView.image = UIImage(named: "temp_product")
+                    imgView.contentMode = .scaleAspectFill
+                    productsScrollView.addSubview(imgView)
+                    num_images += 1
                 }
+                
             }
         }
-        */
-        for i in 0 ..< currentProduct.arrProductPhotoLink.count {
-            let img_url = currentProduct.arrProductPhotoLink[i]
-            if (img_url.characters.count > 0){
-                let imageFrame = CGRect(x: (CGFloat)(i) * productsScrollView.frame.size.width, y: 0, width: productsScrollView.frame.size.width, height: productsScrollView.frame.size.height)
-                let imgView: UIImageView! = UIImageView.init(frame: imageFrame)
-                //commonUtils.loadImageOnView(imageView: imgView, withURL: img_url)
-                imgView.loadImageFromURL(urlString: img_url)
-                //imgView.image = UIImage(named: "temp_product")
-                imgView.contentMode = .scaleAspectFill
-                productsScrollView.addSubview(imgView)
-                num_images += 1
-            }
-        }
-        
         productsScrollView.contentSize = CGSize(width: num_images * productsScrollView.frame.size.width, height: 0.0)
         pageControl.numberOfPages = Int(num_images)
         pageControl.currentPage = 0
@@ -257,9 +212,9 @@ class HLProductDetailViewController: BaseViewController, UIScrollViewDelegate, U
     }
     
     @IBAction func addToTradeAction(_ sender: Any) {
-        if let productId = productData["_id"] as? String{
-            print(productId)
-            let otherId = productData["owner_id"] as? String
+        if let productId = currentProduct.productId {
+            //print(productId)
+            let otherId = currentProduct.productOwner
             if (HulaUser.sharedInstance.userId.characters.count>0){
                 // user is loggedin
                 let queryURL = HulaConstants.apiURL + "trades/"

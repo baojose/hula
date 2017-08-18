@@ -230,7 +230,7 @@ class HLHomeViewController: BaseViewController, UIScrollViewDelegate, UITextFiel
         }
     }
     func categoriesAreLoaded(){
-        print("Ya se ha cargado")
+        //print("Ya se ha cargado")
         refreshUI()
     }
     func refreshUI() {

@@ -33,6 +33,8 @@ class HLPostProductViewController: BaseViewController, UITextFieldDelegate {
     
     var arrImageViews: NSMutableArray!
     var arrImageFrameViews: NSMutableArray!
+    var image_dismissing = false
+    var currentEditingIndex:Int = 0
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -58,11 +60,29 @@ class HLPostProductViewController: BaseViewController, UITextFieldDelegate {
         arrImageFrameViews.add(imgFrameView3)
         arrImageFrameViews.add(imgFrameView4)
         
+        setupImagesBoxes()
+        
+        
+        productTitleTxtField.text = self.dataManager.newProduct.productName
+    }
+    func setupImagesBoxes(){
         let arrCameraButtons = NSMutableArray.init(capacity: 4)
+        
+        cameraButton1.isHidden = false;
+        cameraButton2.isHidden = false;
+        cameraButton3.isHidden = false;
+        cameraButton4.isHidden = false;
+        
+        
         arrCameraButtons.add(cameraButton1)
         arrCameraButtons.add(cameraButton2)
         arrCameraButtons.add(cameraButton3)
         arrCameraButtons.add(cameraButton4)
+        
+        mainImage.image = nil;
+        secondImage.image = nil;
+        thirdImage.image = nil;
+        forthImage.image = nil;
         
         if dataManager.newProduct.arrProductPhotos.count > 0 {
             for i in 0 ..< dataManager.newProduct.arrProductPhotos.count{
@@ -108,6 +128,16 @@ class HLPostProductViewController: BaseViewController, UITextFieldDelegate {
     
     func selectedImageTapped(_ sender: UITapGestureRecognizer){
         //print("Touches began")
+        let tappedIndex: Int = (sender.view?.tag)!
+        
+        if (dataManager.newProduct.arrProductPhotos.count >= tappedIndex - 1){
+            print(dataManager.newProduct.arrProductPhotos[tappedIndex])
+            if let imageView = dataManager.newProduct.arrProductPhotos[tappedIndex] as? UIImage {
+                fullScreenImage(image:imageView, index: tappedIndex)
+            }
+        }
+        // selecting main image. Removed
+        /*
         for i in 0 ..< 4{
             let imgView: UIView! = arrImageFrameViews.object(at: i) as! UIView
             UIView.animate(withDuration: 0.2, animations: {
@@ -118,16 +148,117 @@ class HLPostProductViewController: BaseViewController, UITextFieldDelegate {
             sender.view?.backgroundColor = HulaConstants.appMainColor
             self.mainImageLabel.center.x = (sender.view?.center.x)!
         })
-        let tappedIndex: Int = (sender.view?.tag)!
         if (tappedIndex != 0){
             print(tappedIndex)
             swap(&dataManager.newProduct.arrProductPhotos[0], &dataManager.newProduct.arrProductPhotos[tappedIndex])
         }
+         */
     }
+    func fullScreenImage(image: UIImage, index: Int) {
+        print("opening full screen...")
+        currentEditingIndex = index
+        
+        
+        let newImageView = UIImageView(image: image)
+        
+        newImageView.frame = CGRect(x: self.view.frame.width/2, y: self.view.frame.height/2, width: 10, height:10)
+        newImageView.backgroundColor = .black
+        newImageView.contentMode = .scaleAspectFit
+        newImageView.alpha = 0.0
+        newImageView.tag = 10001
+        newImageView.isUserInteractionEnabled = true
+        let tap = UITapGestureRecognizer(target: self, action: #selector(optionsFullscreenImage))
+        newImageView.addGestureRecognizer(tap)
+        let swipe = UIPanGestureRecognizer(target: self, action: #selector(dismissFullscreenImage))
+        newImageView.addGestureRecognizer(swipe)
+        self.view.addSubview(newImageView)
+        image_dismissing = false
+        UIView.animate(withDuration: 0.3, animations: {
+            newImageView.frame = UIScreen.main.bounds
+            newImageView.alpha = 1
+        }) { (success) in
+            self.navigationController?.isNavigationBarHidden = true
+            self.tabBarController?.tabBar.isHidden = true
+        }
+    }
+    
+    func dismissFullscreenImage(_ sender: UIGestureRecognizer) {
+        if (!image_dismissing){
+            guard let panRecognizer = sender as? UIPanGestureRecognizer else {
+                return
+            }
+            let velocity = panRecognizer.velocity(in: self.view)
+            
+            self.navigationController?.isNavigationBarHidden = false
+            self.tabBarController?.tabBar.isHidden = false
+            
+            UIView.animate(withDuration: 0.3, animations: {
+                sender.view?.frame = CGRect(x: self.view.frame.width/2 + velocity.x/2, y: self.view.frame.height/2 + velocity.y/2, width: 30, height:30)
+                sender.view?.alpha = 0
+                sender.view?.transform.rotated(by: CGFloat( arc4random_uniform(100)/12))
+            }) { (success) in
+                sender.view?.removeFromSuperview()
+            }
+            image_dismissing = true
+        }
+    }
+    func dismissFullscreenImageDirect() {
+            
+        self.navigationController?.isNavigationBarHidden = false
+        self.tabBarController?.tabBar.isHidden = false
+        if let imageView = self.view.viewWithTag(10001) as? UIImageView {
+            UIView.animate(withDuration: 0.3, animations: {
+                imageView.frame = CGRect(x: self.view.frame.width/2 , y: self.view.frame.height/2, width: 30, height:30)
+                imageView.alpha = 0
+                imageView.transform.rotated(by: CGFloat( arc4random_uniform(100)/12))
+            }) { (success) in
+                imageView.removeFromSuperview()
+            }
+        }
+        image_dismissing = true
+    }
+    func optionsFullscreenImage(_ sender: UIGestureRecognizer) {
+        let alertController = UIAlertController(title: "Image options", message: "Choose an option...", preferredStyle: .actionSheet)
+        
+        
+        let editButton = UIAlertAction(title: "Choose another image", style: .default, handler: { (action) -> Void in
+            print("Close")
+            self.dataManager.newProduct.arrProductPhotos.removeObject(at: self.currentEditingIndex);
+            self.presentingViewController?.dismiss(animated: true, completion: nil)
+        })
+        
+        let setDefaultButton = UIAlertAction(title: "Set image as default", style: .default, handler: { (action) -> Void in
+            swap(&self.dataManager.newProduct.arrProductPhotos[0], &self.dataManager.newProduct.arrProductPhotos[self.currentEditingIndex])
+            self.dismissFullscreenImageDirect( )
+            self.setupImagesBoxes()
+        })
+        
+        
+        let  deleteButton = UIAlertAction(title: "Delete image", style: .destructive, handler: { (action) -> Void in
+            //print("Delete button tapped")
+            self.dataManager.newProduct.arrProductPhotos.removeObject(at: self.currentEditingIndex);
+            self.dismissFullscreenImageDirect( )
+            self.setupImagesBoxes()
+        })
+        
+        let cancelButton = UIAlertAction(title: "Cancel", style: .cancel, handler: { (action) -> Void in
+            //print("Cancel button tapped")
+        })
+        
+        
+        alertController.addAction(editButton)
+        alertController.addAction(setDefaultButton)
+        alertController.addAction(deleteButton)
+        alertController.addAction(cancelButton)
+        
+        self.present(alertController, animated: true)
+    }
+    
     func reDesignView(){
         
     }
     func changePublishBtnState(_ string: String){
+        self.dataManager.newProduct.productName = string
         if dataManager.newProduct.arrProductPhotos.count != 0 && string.characters.count != 0  {
             publishBtn.isEnabled = true
             publishBtn.startAnimation()

@@ -124,6 +124,15 @@ class CommonUtils: NSObject {
         }
     }
     
+    func getCGDistanceFrom(loc:CLLocation) -> CGFloat{
+        if let userLocation = HulaUser.sharedInstance.location {
+            let distanceInMeters:CGFloat = CGFloat(loc.distance(from: userLocation)) // result is in meters
+            return distanceInMeters  / 1609.0
+        } else {
+            return CGFloat(0.0)
+        }
+    }
+    
     
     func timeAgoSinceDate(date:NSDate, numericDates:Bool) -> String {
         let calendar = NSCalendar.current
