@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import Foundation
 import CoreLocation
 
 class CommonUtils: NSObject {
@@ -215,6 +216,13 @@ class CommonUtils: NSObject {
     }
     func productImageURL(productId: String) -> String{
         return HulaConstants.apiURL + "products/\(productId)/image"
+    }
+    
+    func getThumbFor(url:String) -> String {
+        var parts = url.components(separatedBy: "/")
+        let img_name = "tm_\(parts[parts.count - 1])"
+        parts[parts.count - 1] = img_name
+        return parts.joined(separator:"/")
     }
 }
 

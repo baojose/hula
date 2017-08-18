@@ -8,7 +8,7 @@
 
 import UIKit
 
-class HLBarterScreenViewController: UIViewController {
+class HLBarterScreenViewController: BaseViewController {
     
     
     
@@ -388,7 +388,9 @@ extension HLBarterScreenViewController: KDDragAndDropCollectionViewDataSource, U
         
         cell.label.text = product.productName
         //print(product.productImage)
-        cell.image.loadImageFromURL(urlString: product.productImage)
+        
+        let thumb = commonUtils.getThumbFor(url: product.productImage)
+        cell.image.loadImageFromURL(urlString: thumb)
         //print(product.tradeStatus)
         if (product.tradeStatus != 0){
             

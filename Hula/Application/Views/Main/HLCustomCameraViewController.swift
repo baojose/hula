@@ -47,7 +47,6 @@ class HLCustomCameraViewController: BaseViewController, UIImagePickerControllerD
         picker.delegate = self
         
         self.initView()
-        self.initData()
         self.initCamera()
         self.beginSession()
         
@@ -57,11 +56,7 @@ class HLCustomCameraViewController: BaseViewController, UIImagePickerControllerD
     }
     override func viewWillAppear(_ animated: Bool) {
         print("resetting images based on real content")
-        for i in 0 ..< self.dataManager.newProduct.arrProductPhotos.count {
-            if let img = self.dataManager.newProduct.arrProductPhotos[i] as? UIImage {
-                showImages(img)
-            }
-        }
+        self.initData()
     }
     private func supportedInterfaceOrientations() -> UIInterfaceOrientationMask {
         return UIInterfaceOrientationMask.portrait

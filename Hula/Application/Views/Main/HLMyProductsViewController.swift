@@ -80,7 +80,9 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
         } else {
             if let mainProductImage = product.object(forKey: "image_url") as? String {
                 //commonUtils.loadImageOnView(imageView:cell.productImage, withURL:(mainProductImage))
-                cell.productImage.loadImageFromURL(urlString: mainProductImage)
+                let thumb = commonUtils.getThumbFor(url: mainProductImage)
+                //print(thumb)
+                cell.productImage.loadImageFromURL(urlString: thumb)
             }
         }
         

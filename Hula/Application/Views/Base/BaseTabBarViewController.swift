@@ -10,6 +10,7 @@ import UIKit
 
 class BaseTabBarViewController: UITabBarController, UITabBarControllerDelegate{
     
+    var commonUtils: CommonUtils! = CommonUtils.sharedInstance
     override var supportedInterfaceOrientations : UIInterfaceOrientationMask {
         return UIInterfaceOrientationMask.portrait
     }

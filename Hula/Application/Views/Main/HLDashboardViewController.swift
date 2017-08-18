@@ -8,7 +8,7 @@
 
 import UIKit
 
-class HLDashboardViewController: UIViewController {
+class HLDashboardViewController: BaseViewController {
     
     @IBOutlet weak var landscapeView: UIView!
     @IBOutlet weak var portraitView: UIView!
@@ -254,7 +254,9 @@ extension HLDashboardViewController: UICollectionViewDelegate, UICollectionViewD
                     NSLayoutConstraint.activate([horizontalConstraint])
                     */
                 }
-                newImg.loadImageFromURL(urlString: HulaConstants.apiURL + "products/\(img)/image")
+                
+                let thumb = commonUtils.getThumbFor(url: HulaConstants.apiURL + "products/\(img)/image")
+                newImg.loadImageFromURL(urlString: thumb)
                 
 
                 

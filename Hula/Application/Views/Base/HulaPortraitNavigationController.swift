@@ -10,6 +10,7 @@ import UIKit
 
 class HulaPortraitNavigationController: UINavigationController {
     
+    var commonUtils: CommonUtils! = CommonUtils.sharedInstance
     override func viewDidLoad() {
         super.viewDidLoad()
         NotificationCenter.default.addObserver(self, selector: #selector(self.rotated), name: NSNotification.Name.UIDeviceOrientationDidChange, object: nil)

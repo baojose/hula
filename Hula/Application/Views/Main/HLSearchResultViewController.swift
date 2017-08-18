@@ -87,12 +87,16 @@ class HLSearchResultViewController: BaseViewController, UITableViewDataSource, U
         //print(product)
         cell.productName.text = product.productName
         
-        cell.productImage.loadImageFromURL(urlString: product.productImage)
+        let prod_thumb = commonUtils.getThumbFor(url: product.productImage)
+        cell.productImage.loadImageFromURL(urlString: prod_thumb)
         let user_id = product.productOwner as String;
         if let user = self.usersList.object(forKey: user_id) as? NSDictionary {
             //print(user)
             cell.productOwnerName.text = user.object(forKey: "nick") as? String
-            cell.productOwnerImage.loadImageFromURL(urlString: (user.object(forKey: "image") as? String)!)
+            if let user_img = user.object(forKey: "image") as? String{
+                let thumb = commonUtils.getThumbFor(url: user_img)
+                cell.productOwnerImage.loadImageFromURL(urlString: thumb)
+            }
             let up = user.object(forKey: "feedback_points") as? Float
             let uc = user.object(forKey: "feedback_count") as? Float
             if (up != nil) && (uc != nil) && (uc != 0) {
