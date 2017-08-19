@@ -81,9 +81,9 @@ class HLCustomCameraViewController: BaseViewController, UIImagePickerControllerD
         let recognizer = UITapGestureRecognizer()
         recognizer.addTarget(self, action: #selector(selectedImageTapped))
         imageView1.addGestureRecognizer(recognizer)
-        /*imageView2.addGestureRecognizer(recognizer)
+        imageView2.addGestureRecognizer(recognizer)
         imageView3.addGestureRecognizer(recognizer)
-        imageView4.addGestureRecognizer(recognizer)*/
+        imageView4.addGestureRecognizer(recognizer)
     }
     func initData(){
         arrAlbumPhotos = NSMutableArray.init()
