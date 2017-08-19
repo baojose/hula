@@ -32,6 +32,8 @@ class HLCustomCameraViewController: BaseViewController, UIImagePickerControllerD
     let stillImageOutput = AVCaptureStillImageOutput()
     var previewLayer : AVCaptureVideoPreviewLayer?
     var captureDevice : AVCaptureDevice?
+    var currentEditingIndex: Int = 0
+    var image_dismissing: Bool = false
     
     // vars related with Photo Albums
     var arrAlbumPhotos: NSMutableArray!
@@ -55,8 +57,14 @@ class HLCustomCameraViewController: BaseViewController, UIImagePickerControllerD
         appDelegate.allowRotation = false
     }
     override func viewWillAppear(_ animated: Bool) {
-        print("resetting images based on real content")
+        //print("resetting images based on real content")
         self.initData()
+    }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        
+        self.navigationController?.isNavigationBarHidden = true
+        self.tabBarController?.tabBar.isHidden = true
     }
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
@@ -70,6 +78,12 @@ class HLCustomCameraViewController: BaseViewController, UIImagePickerControllerD
         commonUtils.setRoundedRectBorderImageView(imageView4, 1.0, UIColor.init(white: 1, alpha: 0.9), 0.0)
         
         
+        let recognizer = UITapGestureRecognizer()
+        recognizer.addTarget(self, action: #selector(selectedImageTapped))
+        imageView1.addGestureRecognizer(recognizer)
+        /*imageView2.addGestureRecognizer(recognizer)
+        imageView3.addGestureRecognizer(recognizer)
+        imageView4.addGestureRecognizer(recognizer)*/
     }
     func initData(){
         arrAlbumPhotos = NSMutableArray.init()
@@ -99,6 +113,116 @@ class HLCustomCameraViewController: BaseViewController, UIImagePickerControllerD
     }
 
     
+    
+    
+    
+    func selectedImageTapped(_ sender: UITapGestureRecognizer){
+        print("Touches began")
+        let tappedIndex: Int = (sender.view?.tag)!
+        print(dataManager.newProduct.arrProductPhotos)
+        if (dataManager.newProduct.arrProductPhotos.count > tappedIndex){
+            print(dataManager.newProduct.arrProductPhotos[tappedIndex])
+            if let imageView = dataManager.newProduct.arrProductPhotos[tappedIndex] as? UIImage {
+                fullScreenImage(image:imageView, index: tappedIndex)
+            }
+        }
+    }
+    func fullScreenImage(image: UIImage, index: Int) {
+        print("opening full screen...")
+        currentEditingIndex = index
+        
+        
+        let newImageView = UIImageView(image: image)
+        
+        newImageView.frame = CGRect(x: self.view.frame.width/2, y: self.view.frame.height/2, width: 10, height:10)
+        newImageView.backgroundColor = .black
+        newImageView.contentMode = .scaleAspectFit
+        newImageView.alpha = 0.0
+        newImageView.tag = 10001
+        newImageView.isUserInteractionEnabled = true
+        let tap = UITapGestureRecognizer(target: self, action: #selector(optionsFullscreenImage))
+        newImageView.addGestureRecognizer(tap)
+        let swipe = UIPanGestureRecognizer(target: self, action: #selector(dismissFullscreenImage))
+        newImageView.addGestureRecognizer(swipe)
+        self.view.addSubview(newImageView)
+        image_dismissing = false
+        UIView.animate(withDuration: 0.3, animations: {
+            newImageView.frame = UIScreen.main.bounds
+            newImageView.alpha = 1
+        }) { (success) in
+            self.navigationController?.isNavigationBarHidden = true
+            self.tabBarController?.tabBar.isHidden = true
+        }
+    }
+    
+    func dismissFullscreenImage(_ sender: UIGestureRecognizer) {
+        if (!image_dismissing){
+            guard let panRecognizer = sender as? UIPanGestureRecognizer else {
+                return
+            }
+            let velocity = panRecognizer.velocity(in: self.view)
+            
+            self.navigationController?.isNavigationBarHidden = false
+            self.tabBarController?.tabBar.isHidden = false
+            
+            UIView.animate(withDuration: 0.3, animations: {
+                sender.view?.frame = CGRect(x: self.view.frame.width/2 + velocity.x/2, y: self.view.frame.height/2 + velocity.y/2, width: 30, height:30)
+                sender.view?.alpha = 0
+                sender.view?.transform.rotated(by: CGFloat( arc4random_uniform(100)))
+            }) { (success) in
+                sender.view?.removeFromSuperview()
+            }
+            image_dismissing = true
+        }
+    }
+    func dismissFullscreenImageDirect() {
+        
+        if let imageView = self.view.viewWithTag(10001) as? UIImageView {
+            UIView.animate(withDuration: 0.3, animations: {
+                imageView.frame = CGRect(x: self.view.frame.width/2 , y: self.view.frame.height/2, width: 30, height:30)
+                imageView.alpha = 0
+                imageView.transform.rotated(by: CGFloat( arc4random_uniform(100)/12))
+            }) { (success) in
+                imageView.removeFromSuperview()
+            }
+        }
+        image_dismissing = true
+    }
+    func optionsFullscreenImage(_ sender: UIGestureRecognizer) {
+        let alertController = UIAlertController(title: "Image options", message: "Choose an option...", preferredStyle: .actionSheet)
+        
+        
+        
+        if (self.currentEditingIndex != 0){
+            let setDefaultButton = UIAlertAction(title: "Set image as default", style: .default, handler: { (action) -> Void in
+                swap(&self.dataManager.newProduct.arrProductPhotos[0], &self.dataManager.newProduct.arrProductPhotos[self.currentEditingIndex])
+                self.dismissFullscreenImageDirect( )
+                self.initData()
+            })
+            alertController.addAction(setDefaultButton)
+        }
+        
+        
+        let  deleteButton = UIAlertAction(title: "Delete image", style: .destructive, handler: { (action) -> Void in
+            //print("Delete button tapped")
+            self.dataManager.newProduct.arrProductPhotos.removeObject(at: self.currentEditingIndex);
+            self.dismissFullscreenImageDirect( )
+            self.initData()
+        })
+        alertController.addAction(deleteButton)
+        
+        let cancelButton = UIAlertAction(title: "Cancel", style: .cancel, handler: { (action) -> Void in
+            //print("Cancel button tapped")
+        })
+        
+        
+        alertController.addAction(cancelButton)
+        
+        self.present(alertController, animated: true)
+    }
+
+    
+    
     //MARK: - Delegates
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [String : Any]) {
         let chosenImage = info[UIImagePickerControllerOriginalImage] as! UIImage //2
@@ -120,11 +244,6 @@ class HLCustomCameraViewController: BaseViewController, UIImagePickerControllerD
     // IB Actions
     
     @IBAction func goNextPage(_ sender: UIButton) {
-        dataManager.newProduct.arrProductPhotos = NSMutableArray.init()
-        if imageView1.image != nil {dataManager.newProduct.arrProductPhotos.add(imageView1.image! as UIImage)}
-        if imageView2.image != nil {dataManager.newProduct.arrProductPhotos.add(imageView2.image! as UIImage)}
-        if imageView3.image != nil {dataManager.newProduct.arrProductPhotos.add(imageView3.image! as UIImage)}
-        if imageView4.image != nil {dataManager.newProduct.arrProductPhotos.add(imageView4.image! as UIImage)}
         
         let viewController = self.storyboard?.instantiateViewController(withIdentifier: "postProductPage") as! HLPostProductViewController
         self.present(viewController, animated: true)
@@ -256,6 +375,13 @@ class HLCustomCameraViewController: BaseViewController, UIImagePickerControllerD
         }
         selectFromCameraButton.isEnabled = true
         selectFromCameraButton.alpha = 1
+        
+        
+        dataManager.newProduct.arrProductPhotos = NSMutableArray.init()
+        if imageView1.image != nil {dataManager.newProduct.arrProductPhotos.add(imageView1.image! as UIImage)}
+        if imageView2.image != nil {dataManager.newProduct.arrProductPhotos.add(imageView2.image! as UIImage)}
+        if imageView3.image != nil {dataManager.newProduct.arrProductPhotos.add(imageView3.image! as UIImage)}
+        if imageView4.image != nil {dataManager.newProduct.arrProductPhotos.add(imageView4.image! as UIImage)}
     }
     func hideImages(_ image: UIImage){
         if imageView1.image == image{

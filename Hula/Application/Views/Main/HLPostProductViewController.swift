@@ -46,6 +46,11 @@ class HLPostProductViewController: BaseViewController, UITextFieldDelegate {
         super.didReceiveMemoryWarning()
     }
 
+    override func viewDidAppear(_ animated: Bool) {
+        
+        self.navigationController?.isNavigationBarHidden = false
+        self.tabBarController?.tabBar.isHidden = false
+    }
     func initData(){
         arrImageViews = NSMutableArray.init(capacity: 4)
         arrImageViews.add(mainImage)
@@ -130,7 +135,7 @@ class HLPostProductViewController: BaseViewController, UITextFieldDelegate {
         //print("Touches began")
         let tappedIndex: Int = (sender.view?.tag)!
         
-        if (dataManager.newProduct.arrProductPhotos.count >= tappedIndex - 1){
+        if (dataManager.newProduct.arrProductPhotos.count > tappedIndex ){
             print(dataManager.newProduct.arrProductPhotos[tappedIndex])
             if let imageView = dataManager.newProduct.arrProductPhotos[tappedIndex] as? UIImage {
                 fullScreenImage(image:imageView, index: tappedIndex)
@@ -226,12 +231,17 @@ class HLPostProductViewController: BaseViewController, UITextFieldDelegate {
             self.dataManager.newProduct.arrProductPhotos.removeObject(at: self.currentEditingIndex);
             self.presentingViewController?.dismiss(animated: true, completion: nil)
         })
+        alertController.addAction(editButton)
         
-        let setDefaultButton = UIAlertAction(title: "Set image as default", style: .default, handler: { (action) -> Void in
-            swap(&self.dataManager.newProduct.arrProductPhotos[0], &self.dataManager.newProduct.arrProductPhotos[self.currentEditingIndex])
-            self.dismissFullscreenImageDirect( )
-            self.setupImagesBoxes()
-        })
+        
+        if (self.currentEditingIndex != 0){
+            let setDefaultButton = UIAlertAction(title: "Set image as default", style: .default, handler: { (action) -> Void in
+                swap(&self.dataManager.newProduct.arrProductPhotos[0], &self.dataManager.newProduct.arrProductPhotos[self.currentEditingIndex])
+                self.dismissFullscreenImageDirect( )
+                self.setupImagesBoxes()
+            })
+            alertController.addAction(setDefaultButton)
+        }
         
         
         let  deleteButton = UIAlertAction(title: "Delete image", style: .destructive, handler: { (action) -> Void in
@@ -240,15 +250,11 @@ class HLPostProductViewController: BaseViewController, UITextFieldDelegate {
             self.dismissFullscreenImageDirect( )
             self.setupImagesBoxes()
         })
+        alertController.addAction(deleteButton)
         
         let cancelButton = UIAlertAction(title: "Cancel", style: .cancel, handler: { (action) -> Void in
             //print("Cancel button tapped")
         })
-        
-        
-        alertController.addAction(editButton)
-        alertController.addAction(setDefaultButton)
-        alertController.addAction(deleteButton)
         alertController.addAction(cancelButton)
         
         self.present(alertController, animated: true)
