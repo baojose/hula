@@ -11,12 +11,6 @@ import UIKit
 class BaseTabBarViewController: UITabBarController, UITabBarControllerDelegate{
     
     var commonUtils: CommonUtils! = CommonUtils.sharedInstance
-    override var supportedInterfaceOrientations : UIInterfaceOrientationMask {
-        return UIInterfaceOrientationMask.portrait
-    }
-    override var shouldAutorotate: Bool {
-        return false
-    }
     var isUserLoggedIn: Bool = false
     @IBOutlet weak var tabbar: UITabBar!
     override func viewDidLoad() {
@@ -24,6 +18,9 @@ class BaseTabBarViewController: UITabBarController, UITabBarControllerDelegate{
         self.initTabbar()
         
         self.delegate = self
+        
+        let appDelegate = UIApplication.shared.delegate as! AppDelegate
+        appDelegate.allowRotation = true
     }
     
     override func didReceiveMemoryWarning() {
@@ -82,6 +79,7 @@ class BaseTabBarViewController: UITabBarController, UITabBarControllerDelegate{
         }
     }
 
+    
     func checkUserLogin() -> Bool{
         let user = HulaUser.sharedInstance
         if (user.token.characters.count < 10){

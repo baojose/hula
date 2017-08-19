@@ -50,6 +50,8 @@ class HLPictureSelectViewController: BaseViewController, UIImagePickerController
         self.initCamera()
         self.beginSession()
         
+        let appDelegate = UIApplication.shared.delegate as! AppDelegate
+        appDelegate.allowRotation = false
         
     }
     func initView(){

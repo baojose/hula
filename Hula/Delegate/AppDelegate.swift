@@ -23,6 +23,7 @@ import Crashlytics
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
     var window: UIWindow?
+    var allowRotation: Bool = false
 
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
@@ -54,6 +55,14 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         
         // facebook log
         AppEventsLogger.activate(application)
+    }
+    
+    func application(_ application: UIApplication, supportedInterfaceOrientationsFor window: UIWindow?) -> UIInterfaceOrientationMask {
+        if allowRotation == true {
+            return .allButUpsideDown
+        } else {
+            return .portrait
+        }
     }
 
     func applicationWillTerminate(_ application: UIApplication) {

@@ -29,19 +29,7 @@ class HLMainViewController: UserBaseViewController {
         return .lightContent
     }
     
-    /*
-    override func shouldAutorotate() -> Bool {
-            return false
-    }
-    override func preferredInterfaceOrientationForPresentation() -> UIInterfaceOrientation{
-            return UIInterfaceOrientation.portrait
-    }
-    
-    override func supportedInterfaceOrientations() -> UIInterfaceOrientationMask{
-            return UIInterfaceOrientationMask.portrait
-    }
-    
-    */
+
     
     private func playVideo(){
         

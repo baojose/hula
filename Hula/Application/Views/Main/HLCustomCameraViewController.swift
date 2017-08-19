@@ -51,18 +51,12 @@ class HLCustomCameraViewController: BaseViewController, UIImagePickerControllerD
         self.beginSession()
         
         
-        let value = UIInterfaceOrientation.portrait.rawValue
-        UIDevice.current.setValue(value, forKey: "orientation")
+        let appDelegate = UIApplication.shared.delegate as! AppDelegate
+        appDelegate.allowRotation = false
     }
     override func viewWillAppear(_ animated: Bool) {
         print("resetting images based on real content")
         self.initData()
-    }
-    private func supportedInterfaceOrientations() -> UIInterfaceOrientationMask {
-        return UIInterfaceOrientationMask.portrait
-    }
-    private func shouldAutorotate() -> Bool {
-        return false
     }
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()

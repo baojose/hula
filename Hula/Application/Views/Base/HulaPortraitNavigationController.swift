@@ -26,8 +26,8 @@ class HulaPortraitNavigationController: UINavigationController {
     
     
     func rotated() {
-        if UIDeviceOrientationIsLandscape(UIDevice.current.orientation) {
-            //print("Landscape")
+        let appDelegate = UIApplication.shared.delegate as! AppDelegate
+        if UIDeviceOrientationIsLandscape(UIDevice.current.orientation) && appDelegate.allowRotation {
             let storyboard = UIStoryboard(name: "Main", bundle: nil)
             let myModalViewController = storyboard.instantiateViewController(withIdentifier: "swappView")
             myModalViewController.modalPresentationStyle = UIModalPresentationStyle.fullScreen

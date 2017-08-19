@@ -42,6 +42,9 @@ class HLProductPictureEditViewController: BaseViewController, UIImagePickerContr
         self.initView()
         self.initCamera()
         self.beginSession()
+        
+        let appDelegate = UIApplication.shared.delegate as! AppDelegate
+        appDelegate.allowRotation = false
     }
 
     override func didReceiveMemoryWarning() {
