@@ -5237,6 +5237,30 @@ Log In</string>
                                                                 </subviews>
                                                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                                             </view>
+                                                            <button opaque="NO" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" id="GLu-OJ-g5k">
+                                                                <rect key="frame" x="54" y="-8" width="32" height="32"/>
+                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                                                <state key="normal" image="close_alert_button"/>
+                                                                <connections>
+                                                                    <action selector="deleteImageAction:" destination="QjV-x8-CvW" eventType="touchUpInside" id="cpC-Qo-MfX"/>
+                                                                </connections>
+                                                            </button>
+                                                            <button opaque="NO" tag="1" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" id="QO4-h7-PGh">
+                                                                <rect key="frame" x="131" y="-8" width="32" height="32"/>
+                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                                                <state key="normal" image="close_alert_button"/>
+                                                                <connections>
+                                                                    <action selector="deleteImageAction:" destination="QjV-x8-CvW" eventType="touchUpInside" id="laY-XY-0Z8"/>
+                                                                </connections>
+                                                            </button>
+                                                            <button opaque="NO" tag="2" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" id="z1x-bf-mBq">
+                                                                <rect key="frame" x="210" y="-8" width="32" height="32"/>
+                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                                                <state key="normal" image="close_alert_button"/>
+                                                                <connections>
+                                                                    <action selector="deleteImageAction:" destination="QjV-x8-CvW" eventType="touchUpInside" id="kZq-HR-Rt8"/>
+                                                                </connections>
+                                                            </button>
                                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="Main Image" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="fUh-4T-srl">
                                                                 <rect key="frame" x="2" y="79" width="74" height="21"/>
                                                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxX="YES" flexibleMinY="YES"/>
@@ -5244,6 +5268,14 @@ Log In</string>
                                                                 <color key="textColor" red="0.27450980390000002" green="0.27450980390000002" blue="0.27450980390000002" alpha="1" colorSpace="calibratedRGB"/>
                                                                 <nil key="highlightedColor"/>
                                                             </label>
+                                                            <button opaque="NO" tag="3" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" id="BnG-uH-daT">
+                                                                <rect key="frame" x="288" y="-8" width="32" height="32"/>
+                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                                                <state key="normal" image="close_alert_button"/>
+                                                                <connections>
+                                                                    <action selector="deleteImageAction:" destination="QjV-x8-CvW" eventType="touchUpInside" id="oW4-F1-Pnx"/>
+                                                                </connections>
+                                                            </button>
                                                         </subviews>
                                                         <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                                     </view>
@@ -5319,6 +5351,10 @@ Log In</string>
                         <outlet property="cameraButton3" destination="168-Fc-4H0" id="loh-I4-3bZ"/>
                         <outlet property="cameraButton4" destination="43b-0S-NGb" id="X0Z-R8-yBW"/>
                         <outlet property="contentView" destination="t88-FV-Rrc" id="Xvt-Uu-VnE"/>
+                        <outlet property="deleteImageButton1" destination="GLu-OJ-g5k" id="Thb-BV-KAy"/>
+                        <outlet property="deleteImageButton2" destination="QO4-h7-PGh" id="JTi-Cb-tul"/>
+                        <outlet property="deleteImageButton3" destination="z1x-bf-mBq" id="ALi-G3-jYE"/>
+                        <outlet property="deleteImageButton4" destination="BnG-uH-daT" id="eul-vq-29m"/>
                         <outlet property="forthImage" destination="1UO-zP-VVE" id="J18-Aq-nqP"/>
                         <outlet property="imgFrameView1" destination="1KG-JY-yl6" id="wIK-nB-57K"/>
                         <outlet property="imgFrameView2" destination="bU1-Z9-TGZ" id="hlu-vx-mkZ"/>
