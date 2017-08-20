@@ -144,8 +144,13 @@ class HulaUser: NSObject {
         str = str + "&litoken=" + self.liToken + "&fbtoken=" + self.fbToken + "&push_device_id=" + self.deviceId
         
         if (self.location.coordinate.latitude != 0 && self.location.coordinate.longitude != 0){
-           str = str + "&lat=\(self.location.coordinate.latitude)&lon=\(self.location.coordinate.longitude)&location_name=" + self.userLocationName
+           str = str + "&lat=\(self.location.coordinate.latitude)&lng=\(self.location.coordinate.longitude)&location_name=" + self.userLocationName
         }
         return str
+    }
+    
+    
+    override var description : String {
+        return "User id: \(self.userId!); nick:   \(self.userNick!)  location: \(self.location.coordinate.latitude) ,  \(self.location.coordinate.longitude)\n"
     }
 }

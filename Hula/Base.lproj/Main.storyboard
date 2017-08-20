@@ -3441,7 +3441,7 @@ Log In</string>
                             <button opaque="NO" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" id="uot-rn-BB4" customClass="HLBouncingButton" customModule="Hula" customModuleProvider="target">
                                 <rect key="frame" x="222" y="248" width="137" height="41"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxY="YES"/>
-                                <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="16"/>
+                                <fontDescription key="fontDescription" name="HelveticaNeue-Light" family="Helvetica Neue" pointSize="16"/>
                                 <state key="normal" title="Save" backgroundImage="img_publish_btn_bg_enabled">
                                     <color key="titleColor" cocoaTouchSystemColor="groupTableViewBackgroundColor"/>
                                 </state>
@@ -3467,6 +3467,17 @@ Log In</string>
                                 <color key="textColor" white="0.6143500539991591" alpha="1" colorSpace="calibratedWhite"/>
                                 <nil key="highlightedColor"/>
                             </label>
+                            <button opaque="NO" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" id="Dkp-9k-b1z" customClass="HLRoundedButton" customModule="Hula" customModuleProvider="target">
+                                <rect key="frame" x="16" y="248" width="137" height="41"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <fontDescription key="fontDescription" name="HelveticaNeue-Light" family="Helvetica Neue" pointSize="16"/>
+                                <state key="normal" title="Use my location">
+                                    <color key="titleColor" cocoaTouchSystemColor="groupTableViewBackgroundColor"/>
+                                </state>
+                                <connections>
+                                    <action selector="useMyLocationAction:" destination="U0A-8H-Ru1" eventType="touchUpInside" id="xHG-l2-IOJ"/>
+                                </connections>
+                            </button>
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                     </view>
@@ -3477,6 +3488,7 @@ Log In</string>
                         <outlet property="remainigLabel" destination="0M1-Yi-uAO" id="84U-Sy-C7v"/>
                         <outlet property="saveButton" destination="uot-rn-BB4" id="DYu-7U-IfP"/>
                         <outlet property="titleLabel" destination="G7M-TO-eOZ" id="IvD-LO-jFU"/>
+                        <outlet property="useMyLocationBtn" destination="Dkp-9k-b1z" id="hT5-Rw-cvm"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="gvP-Le-bxx" userLabel="First Responder" sceneMemberID="firstResponder"/>

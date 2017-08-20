@@ -39,6 +39,7 @@ class HLProfileViewController: BaseViewController {
     var arrFeedback: NSArray!
     var spinner: HLSpinnerUIView!
     var image_dismissing:Bool = false
+    var current_image_url:String = ""
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -62,12 +63,15 @@ class HLProfileViewController: BaseViewController {
             
             self.tabBarController?.selectedIndex = 0
         }
+        
     }
     override func viewDidAppear(_ animated: Bool) {
         
-        if !HulaUser.sharedInstance.isUserLoggedIn() {
-            
-            self.tabBarController?.selectedIndex = 0
+        if (HulaUser.sharedInstance.userPhotoURL != "") && (current_image_url != HulaUser.sharedInstance.userPhotoURL){
+            print("Changin image")
+            print(HulaUser.sharedInstance.userPhotoURL)
+            self.profileImageView.loadImageFromURL(urlString: HulaUser.sharedInstance.userPhotoURL)
+            self.current_image_url = HulaUser.sharedInstance.userPhotoURL
         }
     }
     override func didReceiveMemoryWarning() {
@@ -162,8 +166,8 @@ class HLProfileViewController: BaseViewController {
                 print("User cancelled login.")
             case .success(let grantedPermissions, let declinedPermissions, let accessToken):
                 //print("Logged in!")
-                //print(grantedPermissions)
-                //print(declinedPermissions)
+                print(grantedPermissions)
+                print(declinedPermissions)
                 HulaUser.sharedInstance.fbToken = accessToken.authenticationToken as String
                 self.verFacebookIcon.image = UIImage(named: "icon_facebook_on")
                 self.verFacebookIcon.bouncer()
@@ -204,7 +208,7 @@ class HLProfileViewController: BaseViewController {
     
     func getUserProfile() {
         
-        //print("Getting user info...")
+        print("Getting user info...")
         let queryURL = HulaConstants.apiURL + "me"
         //print(queryURL)
         HLDataManager.sharedInstance.httpGet(urlstr: queryURL, taskCallback: { (ok, json) in
@@ -231,6 +235,7 @@ class HLProfileViewController: BaseViewController {
                             if (user["image"] as? String) != nil {
                                 HulaUser.sharedInstance.userPhotoURL = user["image"] as? String
                                 self.profileImageView.loadImageFromURL(urlString: HulaUser.sharedInstance.userPhotoURL)
+                                self.current_image_url = HulaUser.sharedInstance.userPhotoURL
                             }
                             
                             if (user["location_name"] as? String) != nil {
@@ -384,7 +389,7 @@ class HLProfileViewController: BaseViewController {
     func dismissFullscreenImageDirect() {
         
         
-        self.tabBarController?.tabBar.isHidden = true
+        self.tabBarController?.tabBar.isHidden = false
         
         if let imageView = self.view.viewWithTag(10001) as? UIImageView {
             UIView.animate(withDuration: 0.3, animations: {
@@ -403,6 +408,8 @@ class HLProfileViewController: BaseViewController {
         
         let  editButton = UIAlertAction(title: "Change image", style: .destructive, handler: { (action) -> Void in
             //print("Delete button tapped")
+            let cameraViewController = self.storyboard?.instantiateViewController(withIdentifier: "selectPictureGeneral") as! HLPictureSelectViewController
+            self.present(cameraViewController, animated: true)
             self.dismissFullscreenImageDirect()
             
         })
