@@ -133,6 +133,7 @@
 		273A1EA61ED6440A005D163E /* HLSwappProductTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HLSwappProductTableViewCell.swift; sourceTree = "<group>"; };
 		27401F831EBBB87B00F0B95D /* HLEditFieldViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HLEditFieldViewController.swift; sourceTree = "<group>"; };
 		27401F851EC10F7300F0B95D /* HLPictureSelectViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HLPictureSelectViewController.swift; sourceTree = "<group>"; };
+		274D53DE1F49F53D00E00DCD /* Hula-Bridging-Header.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "Hula-Bridging-Header.h"; path = "Hula/Hula-Bridging-Header.h"; sourceTree = SOURCE_ROOT; };
 		275C554F1EA3FB5A00A49051 /* UserData.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = UserData.plist; sourceTree = "<group>"; };
 		277C6C421EA2385B00530B0F /* HLRoundedButton.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HLRoundedButton.swift; sourceTree = "<group>"; };
 		278988FA1ED7933600C0FBA9 /* HLCalculatorViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HLCalculatorViewController.swift; sourceTree = "<group>"; };
@@ -390,6 +391,7 @@
 		F86698A01E703A80002129E1 /* Libraries */ = {
 			isa = PBXGroup;
 			children = (
+				274D53DE1F49F53D00E00DCD /* Hula-Bridging-Header.h */,
 			);
 			path = Libraries;
 			sourceTree = "<group>";
@@ -1108,6 +1110,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = trading.hula.hula;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_OBJC_BRIDGING_HEADER = "$(PROJECT_DIR)/$(PROJECT_NAME)/$(PROJECT_NAME)-Bridging-Header.h";
 				SWIFT_VERSION = 3.0;
 			};
 			name = Debug;
@@ -1125,6 +1128,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = trading.hula.hula;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_OBJC_BRIDGING_HEADER = "$(PROJECT_DIR)/$(PROJECT_NAME)/$(PROJECT_NAME)-Bridging-Header.h";
 				SWIFT_VERSION = 3.0;
 			};
 			name = Release;
