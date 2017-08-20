@@ -44,7 +44,7 @@ class HLCalculatorViewController: UIViewController {
 
     @IBAction func okAction(_ sender: Any) {
         
-        self.calculatorDelegate?.amountSelected(amount: Float(amount)/100, side: self.side )
+        self.calculatorDelegate?.amountSelected(amount: amount, side: self.side )
         self.dismiss(animated: true, completion: nil)
     }
     @IBAction func numberPressAction(_ sender: Any) {
@@ -60,16 +60,16 @@ class HLCalculatorViewController: UIViewController {
     }
     @IBAction func add1Action(_ sender: Any) {
         
-        amount += 100
+        amount += 1
         updatePrice()
     }
     
     @IBAction func add5Action(_ sender: Any) {
-        amount += 500
+        amount += 5
         updatePrice()
     }
     @IBAction func add10Action(_ sender: Any) {
-        amount += 1000
+        amount += 10
         updatePrice()
     }
     @IBAction func clearAllAction(_ sender: Any) {
@@ -90,13 +90,11 @@ class HLCalculatorViewController: UIViewController {
     
     func updatePrice(){
         //print(amount)
-        let float_amount = CGFloat(amount)/100
-        let twoDecimalPlaces = String(format: "%.2f", float_amount)
-        priceLabel.text = "$\(twoDecimalPlaces)"
+        priceLabel.text = "$\(amount)"
         //print(float_amount)
     }
 }
 
 protocol CalculatorDelegate {
-    func amountSelected(amount:Float, side:String)
+    func amountSelected(amount:Int, side:String)
 }

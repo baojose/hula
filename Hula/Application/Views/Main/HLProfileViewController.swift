@@ -128,10 +128,12 @@ class HLProfileViewController: BaseViewController {
             alert.addAction(facebookAction)
         }
         
-        let linkedinAction = UIAlertAction(title: "Linkedin", style: .default, handler: { action -> Void in
-            self.linkedinValidate()
-        })
-        alert.addAction(linkedinAction)
+        if HulaUser.sharedInstance.liToken.characters.count == 0 {
+            let linkedinAction = UIAlertAction(title: "Linkedin", style: .default, handler: { action -> Void in
+                self.linkedinValidate()
+            })
+            alert.addAction(linkedinAction)
+        }
         
         
         if HulaUser.sharedInstance.twToken.characters.count == 0 {

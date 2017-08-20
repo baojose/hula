@@ -583,13 +583,13 @@ extension HLBarterScreenViewController: HLBarterScreenDelegate{
 
 extension HLBarterScreenViewController: CalculatorDelegate{
     
-    func amountSelected(amount:Float, side:String){
-        if (amount > 0.0){
+    func amountSelected(amount:Int, side:String){
+        if (amount > 0){
             
             if (side == "owner"){
-                thisTrade.owner_money = amount
+                thisTrade.owner_money = Float((amount))
             } else {
-                thisTrade.other_money = amount
+                thisTrade.other_money = Float((amount))
             }
         }
     }
