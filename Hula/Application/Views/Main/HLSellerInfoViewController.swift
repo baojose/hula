@@ -15,6 +15,7 @@ class HLSellerInfoViewController: BaseViewController, UITableViewDelegate, UITab
     @IBOutlet var lblOtherItemInStock: UILabel!
     @IBOutlet var sellerProductTableView: UITableView!
     
+    @IBOutlet weak var containerView: UIView!
     @IBOutlet weak var sellerNameLabel: UILabel!
     @IBOutlet weak var sellerLocationLabel: UILabel!
     
@@ -41,13 +42,15 @@ class HLSellerInfoViewController: BaseViewController, UITableViewDelegate, UITab
         commonUtils.circleImageView(profileImage)
         lblOtherItemInStock.attributedText = commonUtils.attributedStringWithTextSpacing("OTHER ITEMS IN STOCK", 2.33)
         var newFrame: CGRect! = sellerProductTableView.frame
-        newFrame.size.height = 10 * 129;
+        newFrame.size.height = CGFloat(userProducts.count) * 129 + 100;
         sellerProductTableView.frame = newFrame
-        mainScrollView.contentSize = CGSize(width: 0, height: sellerProductTableView.frame.origin.y + sellerProductTableView.frame.size.height)
+        let totalHeight = sellerProductTableView.frame.origin.y + sellerProductTableView.frame.size.height
+        mainScrollView.contentSize = CGSize(width: 0, height: totalHeight)
         
         profileImage.loadImageFromURL(urlString: user.userPhotoURL)
         sellerNameLabel.text = user.userNick
         sellerLocationLabel.text = user.userLocationName
+        containerView.frame.size.height = totalHeight
         
     }
     
@@ -69,5 +72,16 @@ class HLSellerInfoViewController: BaseViewController, UITableViewDelegate, UITab
             }
         }
         return cell
+    }
+    
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath){
+        let viewController = self.storyboard?.instantiateViewController(withIdentifier: "productDetailPage") as! HLProductDetailViewController
+        
+        if let product = userProducts[indexPath.row] as? [String:Any] as NSDictionary?{
+            let hproduct = HulaProduct();
+            hproduct.populate(with: product)
+            viewController.productData = hproduct
+            self.navigationController?.pushViewController(viewController, animated: true)
+        }
     }
 }
