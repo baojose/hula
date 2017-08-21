@@ -22,8 +22,8 @@ class HLProductDetailViewController: BaseViewController, UIScrollViewDelegate, U
     @IBOutlet weak var productDistance: UILabel!
     @IBOutlet weak var productCategory: UILabel!
     @IBOutlet weak var productCondition: UILabel!
-    @IBOutlet weak var screenTitle: UILabel!
     
+    @IBOutlet weak var addToTradeViewContainer: UIView!
     @IBOutlet var productsScrollView: UIScrollView!
     @IBOutlet var productNameLabel: UILabel!
     @IBOutlet var productDescriptionLabel: UILabel!
@@ -103,7 +103,7 @@ class HLProductDetailViewController: BaseViewController, UIScrollViewDelegate, U
         
         
         // start bartering item button
-        commonUtils.setRoundedRectBorderButton(addToTradeBtn, 1.0, UIColor.white, addToTradeBtn.frame.size.height / 2.0)
+        //commonUtils.setRoundedRectBorderButton(addToTradeBtn, 1.0, UIColor.white, addToTradeBtn.frame.size.height / 2.0)
         
         HLDataManager.sharedInstance.getUserProfile(userId: currentProduct.productOwner, taskCallback: {(user, prods) in
             self.sellerUser = user
@@ -121,11 +121,9 @@ class HLProductDetailViewController: BaseViewController, UIScrollViewDelegate, U
         // button visible only on other users
         if (currentProduct.productOwner == HulaUser.sharedInstance.userId){
             // this is my own product, so i cannot swapp it with me
-            addToTradeBtn.isHidden = true
-            addToTradeBg.isHidden = true
+            addToTradeViewContainer.isHidden = true
         } else {
-            addToTradeBtn.isHidden = false
-            addToTradeBg.isHidden = false
+            addToTradeViewContainer.isHidden = false
         }
     }
     
