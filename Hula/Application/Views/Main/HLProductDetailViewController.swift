@@ -189,6 +189,7 @@ class HLProductDetailViewController: BaseViewController, UIScrollViewDelegate, U
                     imgView.loadImageFromURL(urlString: img_url)
                     //imgView.image = UIImage(named: "temp_product")
                     imgView.contentMode = .scaleAspectFill
+                    imgView.clipsToBounds = true
                     productsScrollView.addSubview(imgView)
                     num_images += 1
                 }
