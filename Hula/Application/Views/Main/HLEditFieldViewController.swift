@@ -18,6 +18,7 @@ class HLEditFieldViewController: BaseViewController, UITextFieldDelegate, UIText
     var field_previous_val: String = ""
     var field_new_val: String = ""
     var field_key: String = "userNick"
+    var spinner: HLSpinnerUIView!
 
     @IBOutlet weak var titleLabel: UILabel!
     @IBOutlet weak var currentValueLabel: UILabel!
@@ -25,6 +26,9 @@ class HLEditFieldViewController: BaseViewController, UITextFieldDelegate, UIText
     @IBOutlet weak var lineSeparator: UILabel!
     @IBOutlet weak var saveButton: HLBouncingButton!
     @IBOutlet weak var remainigLabel: UILabel!
+    @IBOutlet weak var useMyLocationBtn: HLRoundedButton!
+    
+    
     var remainingChars: Int = 200
     
     override func viewDidLoad() {
@@ -34,13 +38,10 @@ class HLEditFieldViewController: BaseViewController, UITextFieldDelegate, UIText
         newValueTextView.delegate = self
         
         
-        // location manager
-        locationManager.requestWhenInUseAuthorization()
-        locationManager.delegate = self
-        locationManager.desiredAccuracy = kCLLocationAccuracyBest
-        locationManager.startUpdatingLocation()
-        
-        
+        useMyLocationBtn.isHidden = true
+        if (field_key == "userLocationName"){
+            useMyLocationBtn.isHidden = false
+        }
         
         titleLabel.text = field_title
         currentValueLabel.text = "CURRENT: \(field_previous_val)"
@@ -109,13 +110,29 @@ class HLEditFieldViewController: BaseViewController, UITextFieldDelegate, UIText
    
             self.newValueTextView.text = city! + ", " + country!
             self.userData.userLocationName = city! + ", " + country!
+            self.spinner.hide()
         }
     }
+    
+    @IBAction func useMyLocationAction(_ sender: Any) {
+        // location manager
+        locationManager.requestWhenInUseAuthorization()
+        locationManager.delegate = self
+        locationManager.desiredAccuracy = kCLLocationAccuracyBest
+        locationManager.startUpdatingLocation()
+        
+        spinner = HLSpinnerUIView()
+        self.view.addSubview(spinner)
+        spinner.show(inView: self.view)
+        
+    }
+    
     
     @IBAction func saveNewValueAction(_ sender: Any) {
         field_new_val = newValueTextView.text!
         userData.setValue(field_new_val, forKey: field_key)
         userData.updateServerData()
+        HLDataManager.sharedInstance.writeUserData()
         let _ = self.navigationController?.popViewController(animated: true)
     }
     /*

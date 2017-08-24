@@ -11,6 +11,7 @@ import FacebookCore
 import FacebookLogin
 import TwitterKit
 import CoreLocation
+import LinkedinSwift
 
 
 class HLProfileViewController: BaseViewController {
@@ -36,8 +37,12 @@ class HLProfileViewController: BaseViewController {
     @IBOutlet weak var fullsizeViewReference: UIView!
     
     
+    private let linkedinHelper = LinkedinSwiftHelper(configuration: LinkedinSwiftConfiguration(clientId: "77pqp8cu8tj7vb", clientSecret: "yx3RJzo3X9guNEhY", state: "DLKDJF46ikMMZADfdfds", permissions: ["r_basicprofile", "r_emailaddress"], redirectUrl: "https://hula.trading/"))
+    
     var arrFeedback: NSArray!
     var spinner: HLSpinnerUIView!
+    var image_dismissing:Bool = false
+    var current_image_url:String = ""
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -49,6 +54,11 @@ class HLProfileViewController: BaseViewController {
         //self.expiredTokenAlert()
         
         
+        let recognizer = UITapGestureRecognizer()
+        recognizer.addTarget(self, action: #selector(selectedImageTapped))
+        profileImageView.addGestureRecognizer(recognizer)
+        
+        
     }
     override func viewWillAppear(_ animated: Bool) {
         
@@ -56,12 +66,15 @@ class HLProfileViewController: BaseViewController {
             
             self.tabBarController?.selectedIndex = 0
         }
+        
     }
     override func viewDidAppear(_ animated: Bool) {
         
-        if !HulaUser.sharedInstance.isUserLoggedIn() {
-            
-            self.tabBarController?.selectedIndex = 0
+        if (HulaUser.sharedInstance.userPhotoURL != "") && (current_image_url != HulaUser.sharedInstance.userPhotoURL){
+            print("Changin image")
+            print(HulaUser.sharedInstance.userPhotoURL)
+            self.profileImageView.loadImageFromURL(urlString: HulaUser.sharedInstance.userPhotoURL)
+            self.current_image_url = HulaUser.sharedInstance.userPhotoURL
         }
     }
     override func didReceiveMemoryWarning() {
@@ -115,8 +128,12 @@ class HLProfileViewController: BaseViewController {
             alert.addAction(facebookAction)
         }
         
-        let linkedinAction = UIAlertAction(title: "Linkedin", style: .default, handler: nil)
-        alert.addAction(linkedinAction)
+        if HulaUser.sharedInstance.liToken.characters.count == 0 {
+            let linkedinAction = UIAlertAction(title: "Linkedin", style: .default, handler: { action -> Void in
+                self.linkedinValidate()
+            })
+            alert.addAction(linkedinAction)
+        }
         
         
         if HulaUser.sharedInstance.twToken.characters.count == 0 {
@@ -156,8 +173,8 @@ class HLProfileViewController: BaseViewController {
                 print("User cancelled login.")
             case .success(let grantedPermissions, let declinedPermissions, let accessToken):
                 //print("Logged in!")
-                //print(grantedPermissions)
-                //print(declinedPermissions)
+                print(grantedPermissions)
+                print(declinedPermissions)
                 HulaUser.sharedInstance.fbToken = accessToken.authenticationToken as String
                 self.verFacebookIcon.image = UIImage(named: "icon_facebook_on")
                 self.verFacebookIcon.bouncer()
@@ -193,12 +210,29 @@ class HLProfileViewController: BaseViewController {
         self.present(alert, animated: true, completion: nil)
     }
     
+    func linkedinValidate(){
+        linkedinHelper.authorizeSuccess({ (token) in
+            
+            //print(token)
+            self.verLinkedinIcon.image = UIImage(named: "icon_linkedin_on")
+            self.verLinkedinIcon.bouncer()
+            HulaUser.sharedInstance.liToken = token.accessToken
+            HulaUser.sharedInstance.updateServerData()
+            //This token is useful for fetching profile info from LinkedIn server
+        }, error: { (error) in
+            
+            print(error.localizedDescription)
+            //show respective error
+        }) {
+            //show sign in cancelled event
+        }
+    }
     
     // Custom functions for ViewController
     
     func getUserProfile() {
         
-        //print("Getting user info...")
+        print("Getting user info...")
         let queryURL = HulaConstants.apiURL + "me"
         //print(queryURL)
         HLDataManager.sharedInstance.httpGet(urlstr: queryURL, taskCallback: { (ok, json) in
@@ -225,6 +259,7 @@ class HLProfileViewController: BaseViewController {
                             if (user["image"] as? String) != nil {
                                 HulaUser.sharedInstance.userPhotoURL = user["image"] as? String
                                 self.profileImageView.loadImageFromURL(urlString: HulaUser.sharedInstance.userPhotoURL)
+                                self.current_image_url = HulaUser.sharedInstance.userPhotoURL
                             }
                             
                             if (user["location_name"] as? String) != nil {
@@ -323,5 +358,93 @@ class HLProfileViewController: BaseViewController {
         self.present(alert, animated: true, completion:{} )
 
         
+    }
+    
+    
+    
+    
+    func selectedImageTapped(_ sender: UITapGestureRecognizer){
+        fullScreenImage(image:profileImageView.image!, index: 1)
+    }
+    
+    
+    func fullScreenImage(image: UIImage, index: Int) {
+        let newImageView = UIImageView(image: image)
+        
+        newImageView.frame = CGRect(x: self.view.frame.width/2, y: self.view.frame.height/2, width: 10, height:10)
+        newImageView.backgroundColor = .black
+        newImageView.contentMode = .scaleAspectFit
+        newImageView.alpha = 0.0
+        newImageView.tag = 10001
+        newImageView.isUserInteractionEnabled = true
+        let tap = UITapGestureRecognizer(target: self, action: #selector(optionsFullscreenImage))
+        newImageView.addGestureRecognizer(tap)
+        let swipe = UIPanGestureRecognizer(target: self, action: #selector(dismissFullscreenImage))
+        newImageView.addGestureRecognizer(swipe)
+        self.view.addSubview(newImageView)
+        image_dismissing = false
+        UIView.animate(withDuration: 0.3, animations: {
+            newImageView.frame = UIScreen.main.bounds
+            newImageView.alpha = 1
+        }) { (success) in
+            self.tabBarController?.tabBar.isHidden = true
+        }
+    }
+    
+    func dismissFullscreenImage(_ sender: UIGestureRecognizer) {
+        if (!image_dismissing){
+            guard let panRecognizer = sender as? UIPanGestureRecognizer else {
+                return
+            }
+            let velocity = panRecognizer.velocity(in: self.view)
+            
+            self.tabBarController?.tabBar.isHidden = false
+            
+            UIView.animate(withDuration: 0.3, animations: {
+                sender.view?.frame = CGRect(x: self.view.frame.width/2 + velocity.x/2, y: self.view.frame.height/2 + velocity.y/2, width: 30, height:30)
+                sender.view?.alpha = 0
+                sender.view?.transform.rotated(by: CGFloat( arc4random_uniform(100)))
+            }) { (success) in
+                sender.view?.removeFromSuperview()
+            }
+            image_dismissing = true
+        }
+    }
+    func dismissFullscreenImageDirect() {
+        
+        
+        self.tabBarController?.tabBar.isHidden = false
+        
+        if let imageView = self.view.viewWithTag(10001) as? UIImageView {
+            UIView.animate(withDuration: 0.3, animations: {
+                imageView.frame = CGRect(x: self.view.frame.width/2 , y: self.view.frame.height/2, width: 30, height:30)
+                imageView.alpha = 0
+                imageView.transform.rotated(by: CGFloat( arc4random_uniform(100)/12))
+            }) { (success) in
+                imageView.removeFromSuperview()
+            }
+        }
+        image_dismissing = true
+    }
+    func optionsFullscreenImage(_ sender: UIGestureRecognizer) {
+        let alertController = UIAlertController(title: "Profile image options", message: "Choose an option...", preferredStyle: .actionSheet)
+        
+        
+        let  editButton = UIAlertAction(title: "Change image", style: .destructive, handler: { (action) -> Void in
+            //print("Delete button tapped")
+            let cameraViewController = self.storyboard?.instantiateViewController(withIdentifier: "selectPictureGeneral") as! HLPictureSelectViewController
+            self.present(cameraViewController, animated: true)
+            self.dismissFullscreenImageDirect()
+            
+        })
+        alertController.addAction(editButton)
+        
+        let cancelButton = UIAlertAction(title: "Close", style: .cancel, handler: { (action) -> Void in
+            //print("Cancel button tapped")
+            self.dismissFullscreenImageDirect()
+        })
+        alertController.addAction(cancelButton)
+        
+        self.present(alertController, animated: true)
     }
 }

@@ -174,10 +174,12 @@ class HLDataManager: NSObject {
 
     
     func logout() {
-        let user = HulaUser.sharedInstance
+        var user = HulaUser.sharedInstance
         user.token = ""
         user.userId = ""
-        user.logout()
+        
+        user = HulaUser.init()
+        user.logout();
         self.writeUserData()
     }
     
@@ -423,7 +425,7 @@ class HLDataManager: NSObject {
     }
     
     
-    private func writeUserData(){
+    func writeUserData(){
         let paths = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true) as NSArray
         let documentsDirectory = paths.object(at: 0) as! NSString
         let path = documentsDirectory.appendingPathComponent(HulaConstants.userFile + ".plist")
@@ -439,6 +441,7 @@ class HLDataManager: NSObject {
         dict.setObject(user.userName, forKey: "userName" as NSCopying)
         dict.setObject(user.userEmail, forKey: "userEmail" as NSCopying)
         dict.setObject(user.userLocationName, forKey: "userLocationName" as NSCopying)
+        dict.setObject([CGFloat(user.location.coordinate.latitude), CGFloat(user.location.coordinate.longitude)] as [CGFloat], forKey: "userLocation" as NSCopying)
         dict.setObject(user.userPhotoURL, forKey: "userPhotoURL" as NSCopying)
         dict.setObject(user.userBio, forKey: "userBio" as NSCopying)
         //...
@@ -554,6 +557,9 @@ class HLDataManager: NSObject {
         }
         if dict.object(forKey: "location_name") as? String != nil {
             user.userLocationName = dict.object(forKey: "location_name")! as! String
+        }
+        if let loc = dict.object(forKey: "userLocation") as? [CGFloat] {
+            user.location = CLLocation(latitude: CLLocationDegrees(loc[0]), longitude: CLLocationDegrees(loc[1]))
         }
     }
     

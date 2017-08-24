@@ -31,6 +31,12 @@ class HLPostProductViewController: BaseViewController, UITextFieldDelegate {
     @IBOutlet weak var imgFrameView3: UIView!
     @IBOutlet weak var imgFrameView4: UIView!
     
+    @IBOutlet weak var deleteImageButton1: UIButton!
+    @IBOutlet weak var deleteImageButton2: UIButton!
+    @IBOutlet weak var deleteImageButton3: UIButton!
+    @IBOutlet weak var deleteImageButton4: UIButton!
+    
+    
     var arrImageViews: NSMutableArray!
     var arrImageFrameViews: NSMutableArray!
     var image_dismissing = false
@@ -46,6 +52,11 @@ class HLPostProductViewController: BaseViewController, UITextFieldDelegate {
         super.didReceiveMemoryWarning()
     }
 
+    override func viewDidAppear(_ animated: Bool) {
+        
+        self.navigationController?.isNavigationBarHidden = false
+        self.tabBarController?.tabBar.isHidden = false
+    }
     func initData(){
         arrImageViews = NSMutableArray.init(capacity: 4)
         arrImageViews.add(mainImage)
@@ -67,17 +78,27 @@ class HLPostProductViewController: BaseViewController, UITextFieldDelegate {
     }
     func setupImagesBoxes(){
         let arrCameraButtons = NSMutableArray.init(capacity: 4)
+        let arrDeleteButtons = NSMutableArray.init(capacity: 4)
         
         cameraButton1.isHidden = false;
         cameraButton2.isHidden = false;
         cameraButton3.isHidden = false;
         cameraButton4.isHidden = false;
         
+        deleteImageButton1.isHidden = true;
+        deleteImageButton2.isHidden = true;
+        deleteImageButton3.isHidden = true;
+        deleteImageButton4.isHidden = true;
         
         arrCameraButtons.add(cameraButton1)
         arrCameraButtons.add(cameraButton2)
         arrCameraButtons.add(cameraButton3)
         arrCameraButtons.add(cameraButton4)
+        
+        arrDeleteButtons.add(deleteImageButton1)
+        arrDeleteButtons.add(deleteImageButton2)
+        arrDeleteButtons.add(deleteImageButton3)
+        arrDeleteButtons.add(deleteImageButton4)
         
         mainImage.image = nil;
         secondImage.image = nil;
@@ -88,6 +109,7 @@ class HLPostProductViewController: BaseViewController, UITextFieldDelegate {
             for i in 0 ..< dataManager.newProduct.arrProductPhotos.count{
                 let imgView: UIImageView! = arrImageViews.object(at: i) as! UIImageView
                 let buttonView: UIButton! = arrCameraButtons.object(at: i) as! UIButton
+                let deleteButtonView: UIButton! = arrDeleteButtons.object(at: i) as! UIButton
                 let frameView: UIView! = arrImageFrameViews.object(at: i) as! UIView
                 frameView.isUserInteractionEnabled = true
                 let recognizer = UITapGestureRecognizer()
@@ -101,8 +123,10 @@ class HLPostProductViewController: BaseViewController, UITextFieldDelegate {
                 if let selectedImage = dataManager.newProduct.arrProductPhotos.object(at: i) as? UIImage {
                     imgView.image = selectedImage
                     buttonView.isHidden = true;
+                    deleteButtonView.isHidden = false
                 } else {
                     buttonView.isHidden = false;
+                    deleteButtonView.isHidden = true
                 }
             }
         }
@@ -130,7 +154,7 @@ class HLPostProductViewController: BaseViewController, UITextFieldDelegate {
         //print("Touches began")
         let tappedIndex: Int = (sender.view?.tag)!
         
-        if (dataManager.newProduct.arrProductPhotos.count >= tappedIndex - 1){
+        if (dataManager.newProduct.arrProductPhotos.count > tappedIndex ){
             print(dataManager.newProduct.arrProductPhotos[tappedIndex])
             if let imageView = dataManager.newProduct.arrProductPhotos[tappedIndex] as? UIImage {
                 fullScreenImage(image:imageView, index: tappedIndex)
@@ -226,12 +250,17 @@ class HLPostProductViewController: BaseViewController, UITextFieldDelegate {
             self.dataManager.newProduct.arrProductPhotos.removeObject(at: self.currentEditingIndex);
             self.presentingViewController?.dismiss(animated: true, completion: nil)
         })
+        alertController.addAction(editButton)
         
-        let setDefaultButton = UIAlertAction(title: "Set image as default", style: .default, handler: { (action) -> Void in
-            swap(&self.dataManager.newProduct.arrProductPhotos[0], &self.dataManager.newProduct.arrProductPhotos[self.currentEditingIndex])
-            self.dismissFullscreenImageDirect( )
-            self.setupImagesBoxes()
-        })
+        
+        if (self.currentEditingIndex != 0){
+            let setDefaultButton = UIAlertAction(title: "Set image as default", style: .default, handler: { (action) -> Void in
+                swap(&self.dataManager.newProduct.arrProductPhotos[0], &self.dataManager.newProduct.arrProductPhotos[self.currentEditingIndex])
+                self.dismissFullscreenImageDirect( )
+                self.setupImagesBoxes()
+            })
+            alertController.addAction(setDefaultButton)
+        }
         
         
         let  deleteButton = UIAlertAction(title: "Delete image", style: .destructive, handler: { (action) -> Void in
@@ -240,20 +269,23 @@ class HLPostProductViewController: BaseViewController, UITextFieldDelegate {
             self.dismissFullscreenImageDirect( )
             self.setupImagesBoxes()
         })
+        alertController.addAction(deleteButton)
         
         let cancelButton = UIAlertAction(title: "Cancel", style: .cancel, handler: { (action) -> Void in
             //print("Cancel button tapped")
         })
-        
-        
-        alertController.addAction(editButton)
-        alertController.addAction(setDefaultButton)
-        alertController.addAction(deleteButton)
         alertController.addAction(cancelButton)
         
         self.present(alertController, animated: true)
     }
     
+    @IBAction func deleteImageAction(_ sender: Any) {
+        let tag:Int = (sender as? UIButton)!.tag
+        if (self.dataManager.newProduct.arrProductPhotos.count > tag){
+            self.dataManager.newProduct.arrProductPhotos.removeObject(at: tag);
+            self.setupImagesBoxes()
+        }
+    }
     func reDesignView(){
         
     }

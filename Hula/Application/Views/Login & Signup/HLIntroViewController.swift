@@ -7,6 +7,8 @@
 //
 
 import UIKit
+import AVKit
+import AVFoundation
 
 class HLIntroViewController: UserBaseViewController, UIScrollViewDelegate {
     
@@ -42,7 +44,16 @@ class HLIntroViewController: UserBaseViewController, UIScrollViewDelegate {
         return .lightContent
     }
     func initUI(){
-
+        guard let path = Bundle.main.path(forResource: "slide_1_2", ofType:"mov") else {
+            debugPrint("Video file not found")
+            return
+        }
+        let player = AVPlayer(url: URL(fileURLWithPath: path))
+        let playerLayer = AVPlayerLayer(player: player)
+        playerLayer.frame = introView1.bounds
+        introView1.layer.addSublayer(playerLayer)
+        //NotificationCenter.default.addObserver(self, selector: #selector(HLMainViewController.playerEnded(notification:)), name:NSNotification.Name.AVPlayerItemDidPlayToEndTime, object: player.currentItem)
+        player.play()
     }
     func initData(){
         pageCtrl.currentPage = 0
@@ -67,6 +78,8 @@ class HLIntroViewController: UserBaseViewController, UIScrollViewDelegate {
     func scrollViewDidScroll(_ scrollView: UIScrollView){
         let posX: Int! = Int(mainScrollView.contentOffset.x / mainScrollView.frame.size.width)
         pageCtrl.currentPage = posX
+        
+        
         if (mainScrollView.contentOffset.x > 4.0 * mainScrollView.frame.size.width) {
             if (jump_just_once){
                 jump_just_once = false;

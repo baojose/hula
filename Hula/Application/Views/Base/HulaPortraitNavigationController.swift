@@ -10,6 +10,7 @@ import UIKit
 
 class HulaPortraitNavigationController: UINavigationController {
     
+    var commonUtils: CommonUtils! = CommonUtils.sharedInstance
     override func viewDidLoad() {
         super.viewDidLoad()
         NotificationCenter.default.addObserver(self, selector: #selector(self.rotated), name: NSNotification.Name.UIDeviceOrientationDidChange, object: nil)
@@ -25,8 +26,8 @@ class HulaPortraitNavigationController: UINavigationController {
     
     
     func rotated() {
-        if UIDeviceOrientationIsLandscape(UIDevice.current.orientation) {
-            //print("Landscape")
+        let appDelegate = UIApplication.shared.delegate as! AppDelegate
+        if UIDeviceOrientationIsLandscape(UIDevice.current.orientation) && appDelegate.allowRotation {
             let storyboard = UIStoryboard(name: "Main", bundle: nil)
             let myModalViewController = storyboard.instantiateViewController(withIdentifier: "swappView")
             myModalViewController.modalPresentationStyle = UIModalPresentationStyle.fullScreen

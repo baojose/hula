@@ -10,6 +10,7 @@ import UIKit
 
 class UserBaseViewController: UIViewController {
     
+    var commonUtils: CommonUtils! = CommonUtils.sharedInstance
     override func viewDidLoad() {
         super.viewDidLoad()
         self.automaticallyAdjustsScrollViewInsets = false

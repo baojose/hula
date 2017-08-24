@@ -23,6 +23,7 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
         self.initView()
         
         
+        
         spinner = HLSpinnerUIView()
         self.view.addSubview(spinner)
         spinner.show(inView: self.view)
@@ -31,6 +32,7 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         self.getUserProducts()
+        print(HulaUser.sharedInstance)
     }
     
     override func didReceiveMemoryWarning() {
@@ -40,6 +42,10 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
     override func viewDidAppear(_ animated: Bool) {
         
         super.viewDidAppear(animated)
+        
+        
+        let appDelegate = UIApplication.shared.delegate as! AppDelegate
+        appDelegate.allowRotation = true
     }
     func initData(){
         
@@ -80,7 +86,9 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
         } else {
             if let mainProductImage = product.object(forKey: "image_url") as? String {
                 //commonUtils.loadImageOnView(imageView:cell.productImage, withURL:(mainProductImage))
-                cell.productImage.loadImageFromURL(urlString: mainProductImage)
+                let thumb = commonUtils.getThumbFor(url: mainProductImage)
+                //print(thumb)
+                cell.productImage.loadImageFromURL(urlString: thumb)
             }
         }
         
@@ -238,16 +246,17 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
     }
     
     func updateProductDataString() -> String{
-        print(HLDataManager.sharedInstance.newProduct.arrProductPhotoLink)
-        print(self.arrayImagesURL)
+        //print(HLDataManager.sharedInstance.newProduct.arrProductPhotoLink)
+        //print(self.arrayImagesURL)
         let product_images_array = dataManager.newProduct.arrProductPhotoLink.joined(separator: ",")
         var dataString:String = "title=" + dataManager.newProduct.productName.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)!
         dataString += "&description=" + dataManager.newProduct.productDescription.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)!
         dataString += "&condition=" + dataManager.newProduct.productCondition.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)!
         dataString += "&category_id=" + dataManager.newProduct.productCategory.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)!
         dataString += "&images=" + product_images_array.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)!
-        dataString += "&lat=40"
-        dataString += "&lng=-3"
+        dataString += "&lat=\(HulaUser.sharedInstance.location.coordinate.latitude)"
+        dataString += "&lng=\(HulaUser.sharedInstance.location.coordinate.longitude)"
+        print(dataString)
         return dataString
     }
     

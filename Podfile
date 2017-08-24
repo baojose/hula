@@ -14,7 +14,8 @@ target 'Hula' do
   pod 'Fabric'
   pod 'TwitterKit'
   pod 'Crashlytics'
-  
+  pod 'LinkedinSwift', '>= 1.6.2'
+  pod 'EasyTipView', '~> 1.0.2'
   
   target 'HulaTests' do
     inherit! :search_paths

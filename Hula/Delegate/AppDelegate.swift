@@ -17,12 +17,13 @@ import FacebookShare
 import Fabric
 import TwitterKit
 import Crashlytics
-
+import LinkedinSwift
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
     var window: UIWindow?
+    var allowRotation: Bool = false
 
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
@@ -55,6 +56,14 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // facebook log
         AppEventsLogger.activate(application)
     }
+    
+    func application(_ application: UIApplication, supportedInterfaceOrientationsFor window: UIWindow?) -> UIInterfaceOrientationMask {
+        if allowRotation == true {
+            return .allButUpsideDown
+        } else {
+            return .portrait
+        }
+    }
 
     func applicationWillTerminate(_ application: UIApplication) {
         // Called when the application is about to terminate. Save data if appropriate. See also applicationDidEnterBackground:.
@@ -68,6 +77,13 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             let isHandled = FBSDKApplicationDelegate.sharedInstance().application(app, open: url, sourceApplication: options[.sourceApplication] as! String!, annotation: options[.annotation])
             return isHandled
         }
+        
+        if LinkedinSwiftHelper.shouldHandle(url) {
+            if #available(iOS 9.0, *) {
+                return LinkedinSwiftHelper.application(app, open: url, sourceApplication: options[UIApplicationOpenURLOptionsKey.sourceApplication] as? String, annotation: options[UIApplicationOpenURLOptionsKey.annotation])
+            }
+        }
+        
         return false
     }
     

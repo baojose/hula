@@ -8,7 +8,7 @@
 
 import UIKit
 
-class HLBarterScreenViewController: UIViewController {
+class HLBarterScreenViewController: BaseViewController {
     
     
     
@@ -388,7 +388,9 @@ extension HLBarterScreenViewController: KDDragAndDropCollectionViewDataSource, U
         
         cell.label.text = product.productName
         //print(product.productImage)
-        cell.image.loadImageFromURL(urlString: product.productImage)
+        
+        let thumb = commonUtils.getThumbFor(url: product.productImage)
+        cell.image.loadImageFromURL(urlString: thumb)
         //print(product.tradeStatus)
         if (product.tradeStatus != 0){
             
@@ -581,13 +583,13 @@ extension HLBarterScreenViewController: HLBarterScreenDelegate{
 
 extension HLBarterScreenViewController: CalculatorDelegate{
     
-    func amountSelected(amount:Float, side:String){
-        if (amount > 0.0){
+    func amountSelected(amount:Int, side:String){
+        if (amount > 0){
             
             if (side == "owner"){
-                thisTrade.owner_money = amount
+                thisTrade.owner_money = Float((amount))
             } else {
-                thisTrade.other_money = amount
+                thisTrade.other_money = Float((amount))
             }
         }
     }

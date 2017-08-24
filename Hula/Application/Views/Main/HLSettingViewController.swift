@@ -106,7 +106,7 @@ class HLSettingViewController: BaseViewController {
         var previous = "";
         var label = ""
         var item_toUpdate = "";
-        var remChar = 200
+        var remChar:Int = 200
         switch (sender as! UIButton).tag {
         case 0:
             // image update
