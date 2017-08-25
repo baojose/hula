@@ -9,6 +9,7 @@
 import UIKit
 import AVKit
 import AVFoundation
+import SpriteKit
 
 class HLIntroViewController: UserBaseViewController, UIScrollViewDelegate {
     
@@ -44,6 +45,7 @@ class HLIntroViewController: UserBaseViewController, UIScrollViewDelegate {
         return .lightContent
     }
     func initUI(){
+        /*
         guard let path = Bundle.main.path(forResource: "slide_1_2", ofType:"mov") else {
             debugPrint("Video file not found")
             return
@@ -54,6 +56,20 @@ class HLIntroViewController: UserBaseViewController, UIScrollViewDelegate {
         introView1.layer.addSublayer(playerLayer)
         //NotificationCenter.default.addObserver(self, selector: #selector(HLMainViewController.playerEnded(notification:)), name:NSNotification.Name.AVPlayerItemDidPlayToEndTime, object: player.currentItem)
         player.play()
+        */
+        let margin = CGFloat(20)
+        let animation_frame = CGRect(origin: CGPoint(x:margin, y:100), size: CGSize(width: self.view.frame.width-margin*2, height: self.view.frame.width-margin*2))
+        let scene = HulaVideoTransp(size: animation_frame.size)
+        let skView = SKView(frame: animation_frame)
+        skView.showsFPS = false
+        skView.backgroundColor = UIColor(red: 0, green: 0, blue: 0, alpha: 0)
+        skView.showsNodeCount = false
+        skView.ignoresSiblingOrder = true
+        scene.scaleMode = .aspectFill
+        skView.presentScene(scene)
+        
+        
+        introView2.addSubview(skView)
     }
     func initData(){
         pageCtrl.currentPage = 0

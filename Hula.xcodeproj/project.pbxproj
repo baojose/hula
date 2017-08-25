@@ -30,12 +30,12 @@
 		27401F861EC10F7300F0B95D /* HLPictureSelectViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27401F851EC10F7300F0B95D /* HLPictureSelectViewController.swift */; };
 		275C55501EA3FB5A00A49051 /* UserData.plist in Resources */ = {isa = PBXBuildFile; fileRef = 275C554F1EA3FB5A00A49051 /* UserData.plist */; };
 		277C6C431EA2385B00530B0F /* HLRoundedButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 277C6C421EA2385B00530B0F /* HLRoundedButton.swift */; };
-		277D255D1F4B7B8B00DABBFB /* slide_1_2.mov in Resources */ = {isa = PBXBuildFile; fileRef = 277D255C1F4B7B8B00DABBFB /* slide_1_2.mov */; };
 		278988FB1ED7933600C0FBA9 /* HLCalculatorViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 278988FA1ED7933600C0FBA9 /* HLCalculatorViewController.swift */; };
 		279BAAD81E9D726D00091D24 /* HLNotificationsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 279BAAD71E9D726D00091D24 /* HLNotificationsViewController.swift */; };
 		27AA28FE1F09A0B100AB1895 /* HLPageControl.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27AA28FD1F09A0B100AB1895 /* HLPageControl.swift */; };
+		27AD31621F5041BE0047952A /* HulaVideoTransp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27AD31611F5041BE0047952A /* HulaVideoTransp.swift */; };
+		27AD31641F5047460047952A /* slide_1_2.atlas in Resources */ = {isa = PBXBuildFile; fileRef = 27AD31631F5047460047952A /* slide_1_2.atlas */; };
 		27B228B81EA89FF10079EED6 /* HLBouncingButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27B228B71EA89FF10079EED6 /* HLBouncingButton.swift */; };
-		27BA76451F4B73BC00A460AF /* slide_1_2.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = 27BA76441F4B70BA00A460AF /* slide_1_2.mp4 */; };
 		27C733C51EA2BC7E003A6FD6 /* HLIdentificationViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27C733C41EA2BC7E003A6FD6 /* HLIdentificationViewController.swift */; };
 		27C733C71EA2D051003A6FD6 /* HLRoundedGradientButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27C733C61EA2D050003A6FD6 /* HLRoundedGradientButton.swift */; };
 		27C733C91EA2D1E0003A6FD6 /* HLRoundedNextButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27C733C81EA2D1E0003A6FD6 /* HLRoundedNextButton.swift */; };
@@ -139,12 +139,12 @@
 		274D53DE1F49F53D00E00DCD /* Hula-Bridging-Header.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "Hula-Bridging-Header.h"; path = "Hula/Hula-Bridging-Header.h"; sourceTree = SOURCE_ROOT; };
 		275C554F1EA3FB5A00A49051 /* UserData.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = UserData.plist; sourceTree = "<group>"; };
 		277C6C421EA2385B00530B0F /* HLRoundedButton.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HLRoundedButton.swift; sourceTree = "<group>"; };
-		277D255C1F4B7B8B00DABBFB /* slide_1_2.mov */ = {isa = PBXFileReference; lastKnownFileType = video.quicktime; path = slide_1_2.mov; sourceTree = "<group>"; };
 		278988FA1ED7933600C0FBA9 /* HLCalculatorViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HLCalculatorViewController.swift; sourceTree = "<group>"; };
 		279BAAD71E9D726D00091D24 /* HLNotificationsViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HLNotificationsViewController.swift; sourceTree = "<group>"; };
 		27AA28FD1F09A0B100AB1895 /* HLPageControl.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HLPageControl.swift; sourceTree = "<group>"; };
+		27AD31611F5041BE0047952A /* HulaVideoTransp.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HulaVideoTransp.swift; sourceTree = "<group>"; };
+		27AD31631F5047460047952A /* slide_1_2.atlas */ = {isa = PBXFileReference; lastKnownFileType = folder.skatlas; path = slide_1_2.atlas; sourceTree = "<group>"; };
 		27B228B71EA89FF10079EED6 /* HLBouncingButton.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HLBouncingButton.swift; sourceTree = "<group>"; };
-		27BA76441F4B70BA00A460AF /* slide_1_2.mp4 */ = {isa = PBXFileReference; lastKnownFileType = file; path = slide_1_2.mp4; sourceTree = "<group>"; };
 		27C733C41EA2BC7E003A6FD6 /* HLIdentificationViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HLIdentificationViewController.swift; sourceTree = "<group>"; };
 		27C733C61EA2D050003A6FD6 /* HLRoundedGradientButton.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HLRoundedGradientButton.swift; sourceTree = "<group>"; };
 		27C733C81EA2D1E0003A6FD6 /* HLRoundedNextButton.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HLRoundedNextButton.swift; sourceTree = "<group>"; };
@@ -391,6 +391,7 @@
 				F86698C31E703EA6002129E1 /* HLDataManager.swift */,
 				271F5C591EDAD90C00A7B1C1 /* HulaTrade.swift */,
 				27ECC96A1F4E0C8E00A48B59 /* HulaTip.swift */,
+				27AD31611F5041BE0047952A /* HulaVideoTransp.swift */,
 			);
 			path = Controller;
 			sourceTree = "<group>";
@@ -424,8 +425,7 @@
 		F86698A61E703A80002129E1 /* Medias */ = {
 			isa = PBXGroup;
 			children = (
-				277D255C1F4B7B8B00DABBFB /* slide_1_2.mov */,
-				27BA76441F4B70BA00A460AF /* slide_1_2.mp4 */,
+				27AD31631F5047460047952A /* slide_1_2.atlas */,
 				F890E4931E709378008719B9 /* splash_intro.mp4 */,
 			);
 			path = Medias;
@@ -708,8 +708,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				27BA76451F4B73BC00A460AF /* slide_1_2.mp4 in Resources */,
-				277D255D1F4B7B8B00DABBFB /* slide_1_2.mov in Resources */,
+				27AD31641F5047460047952A /* slide_1_2.atlas in Resources */,
 				F8BE7C431E7237A100FAE07D /* BebasNeue Regular.otf in Resources */,
 				F8BE7C421E7237A100FAE07D /* BebasNeue Light.otf in Resources */,
 				F8BE7C411E7237A100FAE07D /* BebasNeue Book.otf in Resources */,
@@ -961,6 +960,7 @@
 				27D589861F2DEECF00240A36 /* HLProductPictureEditViewController.swift in Sources */,
 				F8274D4F1E712FCB002A3164 /* HLProfileViewController.swift in Sources */,
 				27401F841EBBB87B00F0B95D /* HLEditFieldViewController.swift in Sources */,
+				27AD31621F5041BE0047952A /* HulaVideoTransp.swift in Sources */,
 				279BAAD81E9D726D00091D24 /* HLNotificationsViewController.swift in Sources */,
 				F86698C41E703EA6002129E1 /* HLDataManager.swift in Sources */,
 				F86698B71E703CB9002129E1 /* HLAPIClient.swift in Sources */,
