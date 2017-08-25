@@ -61,12 +61,14 @@ class HLDashboardViewController: BaseViewController {
         self.mainCollectionView.reloadData()
         */
         
+        
+        /*
         CommonUtils.sharedInstance.showTutorial(arrayTips: [
             HulaTip(delay: 1, view: self.mainCollectionView, text: "Texto 1, tras un segundo"),
             HulaTip(delay: 3, view: self.mainCollectionView, text: "Texto 2, tras tres segundos"),
             HulaTip(delay: 1, view: self.mainCollectionView, text: "Texto 1, tras un segundo más")
         ])
-        
+        */
     }
  
 
@@ -161,7 +163,7 @@ extension HLDashboardViewController: UICollectionViewDelegate, UICollectionViewD
                 }
             }
             
-            cell.myImage.loadImageFromURL(urlString: HulaUser.sharedInstance.userPhotoURL)
+            cell.myImage.loadImageFromURL(urlString: CommonUtils.sharedInstance.userImageURL(userId: HulaUser.sharedInstance.userId))
             cell.myImage.isHidden = false
             cell.middleArrows.isHidden = false
             cell.tradeNumber.textColor = HulaConstants.appMainColor

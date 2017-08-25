@@ -20,6 +20,8 @@ class ChatTableViewCell: UITableViewCell {
         // Initialization code
         CommonUtils.sharedInstance.circleImageView(rightUserImage)
         CommonUtils.sharedInstance.circleImageView(leftUserImage)
+        mainHolder.layer.cornerRadius = 20.0
+        mainHolder.clipsToBounds = true
     }
 
     override func setSelected(_ selected: Bool, animated: Bool) {
