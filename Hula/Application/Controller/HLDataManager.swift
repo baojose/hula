@@ -342,7 +342,6 @@ class HLDataManager: NSObject {
                 print("statusCode should be 200, but is \(httpStatus.statusCode)")
                 print(response ?? "No response")
             }
-            
             let json = try! JSONSerialization.jsonObject(with: data, options: [])
             taskCallback(true, json as AnyObject?)
         }

@@ -7,6 +7,9 @@
 //
 
 import UIKit
+import AVKit
+import AVFoundation
+import SpriteKit
 
 class HLIntroViewController: UserBaseViewController, UIScrollViewDelegate {
     
@@ -42,7 +45,31 @@ class HLIntroViewController: UserBaseViewController, UIScrollViewDelegate {
         return .lightContent
     }
     func initUI(){
-
+        /*
+        guard let path = Bundle.main.path(forResource: "slide_1_2", ofType:"mov") else {
+            debugPrint("Video file not found")
+            return
+        }
+        let player = AVPlayer(url: URL(fileURLWithPath: path))
+        let playerLayer = AVPlayerLayer(player: player)
+        playerLayer.frame = introView1.bounds
+        introView1.layer.addSublayer(playerLayer)
+        //NotificationCenter.default.addObserver(self, selector: #selector(HLMainViewController.playerEnded(notification:)), name:NSNotification.Name.AVPlayerItemDidPlayToEndTime, object: player.currentItem)
+        player.play()
+        */
+        let margin = CGFloat(20)
+        let animation_frame = CGRect(origin: CGPoint(x:margin, y:100), size: CGSize(width: self.view.frame.width-margin*2, height: self.view.frame.width-margin*2))
+        let scene = HulaVideoTransp(size: animation_frame.size)
+        let skView = SKView(frame: animation_frame)
+        skView.showsFPS = false
+        skView.backgroundColor = UIColor(red: 0, green: 0, blue: 0, alpha: 0)
+        skView.showsNodeCount = false
+        skView.ignoresSiblingOrder = true
+        scene.scaleMode = .aspectFill
+        skView.presentScene(scene)
+        
+        
+        introView2.addSubview(skView)
     }
     func initData(){
         pageCtrl.currentPage = 0
@@ -67,6 +94,8 @@ class HLIntroViewController: UserBaseViewController, UIScrollViewDelegate {
     func scrollViewDidScroll(_ scrollView: UIScrollView){
         let posX: Int! = Int(mainScrollView.contentOffset.x / mainScrollView.frame.size.width)
         pageCtrl.currentPage = posX
+        
+        
         if (mainScrollView.contentOffset.x > 4.0 * mainScrollView.frame.size.width) {
             if (jump_just_once){
                 jump_just_once = false;

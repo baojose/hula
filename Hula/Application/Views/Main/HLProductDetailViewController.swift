@@ -22,8 +22,8 @@ class HLProductDetailViewController: BaseViewController, UIScrollViewDelegate, U
     @IBOutlet weak var productDistance: UILabel!
     @IBOutlet weak var productCategory: UILabel!
     @IBOutlet weak var productCondition: UILabel!
-    @IBOutlet weak var screenTitle: UILabel!
     
+    @IBOutlet weak var addToTradeViewContainer: UIView!
     @IBOutlet var productsScrollView: UIScrollView!
     @IBOutlet var productNameLabel: UILabel!
     @IBOutlet var productDescriptionLabel: UILabel!
@@ -81,7 +81,13 @@ class HLProductDetailViewController: BaseViewController, UIScrollViewDelegate, U
         let h = commonUtils.heightString(width: productDescriptionLabel.frame.width, font: productDescriptionLabel.font! , string: productDescriptionLabel.text!) + 30
         productDescriptionLabel.frame.size = CGSize(width: productDescriptionLabel.frame.size.width, height: h)
         sellerView.frame.origin.y = productDescriptionLabel.frame.origin.y + productDescriptionLabel.frame.size.height
-        mainScrollView.contentSize = CGSize(width: 0, height: sellerView.frame.origin.y + productTableView.frame.size.height + 300)
+        
+        
+        
+        
+        productTableView.frame.origin.y = sellerView.frame.origin.y + sellerView.frame.size.height
+        
+        mainScrollView.contentSize = CGSize(width: 0, height: productTableView.frame.origin.y + productTableView.frame.size.height + 100)
         
         // seta product images
         self.setUpProductImagesScrollView()
@@ -97,7 +103,7 @@ class HLProductDetailViewController: BaseViewController, UIScrollViewDelegate, U
         
         
         // start bartering item button
-        commonUtils.setRoundedRectBorderButton(addToTradeBtn, 1.0, UIColor.white, addToTradeBtn.frame.size.height / 2.0)
+        //commonUtils.setRoundedRectBorderButton(addToTradeBtn, 1.0, UIColor.white, addToTradeBtn.frame.size.height / 2.0)
         
         HLDataManager.sharedInstance.getUserProfile(userId: currentProduct.productOwner, taskCallback: {(user, prods) in
             self.sellerUser = user
@@ -108,18 +114,16 @@ class HLProductDetailViewController: BaseViewController, UIScrollViewDelegate, U
             newFrame.size.height = (CGFloat(self.sellerProducts.count) * 129.0);
             //print(newFrame.size.height)
             self.productTableView.frame = newFrame
-            self.mainScrollView.contentSize = CGSize(width: 0, height: self.sellerView.frame.origin.y + self.productTableView.frame.size.height + 300)
+            self.mainScrollView.contentSize = CGSize(width: 0, height: self.productTableView.frame.origin.y + self.productTableView.frame.size.height + 100)
             self.productTableView.reloadData()
         })
         
         // button visible only on other users
         if (currentProduct.productOwner == HulaUser.sharedInstance.userId){
             // this is my own product, so i cannot swapp it with me
-            addToTradeBtn.isHidden = true
-            addToTradeBg.isHidden = true
+            addToTradeViewContainer.isHidden = true
         } else {
-            addToTradeBtn.isHidden = false
-            addToTradeBg.isHidden = false
+            addToTradeViewContainer.isHidden = false
         }
     }
     
@@ -138,7 +142,8 @@ class HLProductDetailViewController: BaseViewController, UIScrollViewDelegate, U
             cell.productName.text = pr.object(forKey: "title") as? String
             
             if let im_ur = pr.object(forKey: "image_url") as? String {
-                cell.productImage.loadImageFromURL(urlString:im_ur)
+                let thumb = commonUtils.getThumbFor(url: im_ur)
+                cell.productImage.loadImageFromURL(urlString:thumb)
             }
         }
         return cell
@@ -184,6 +189,7 @@ class HLProductDetailViewController: BaseViewController, UIScrollViewDelegate, U
                     imgView.loadImageFromURL(urlString: img_url)
                     //imgView.image = UIImage(named: "temp_product")
                     imgView.contentMode = .scaleAspectFill
+                    imgView.clipsToBounds = true
                     productsScrollView.addSubview(imgView)
                     num_images += 1
                 }
@@ -203,6 +209,7 @@ class HLProductDetailViewController: BaseViewController, UIScrollViewDelegate, U
     }
     
     @IBAction func gotoUserPage(_ sender: Any) {
+        print("Going to user...")
         let viewController = self.storyboard?.instantiateViewController(withIdentifier: "sellerInfoPage") as! HLSellerInfoViewController
         
         viewController.user = self.sellerUser

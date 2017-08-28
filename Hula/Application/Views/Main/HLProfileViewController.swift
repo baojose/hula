@@ -11,6 +11,7 @@ import FacebookCore
 import FacebookLogin
 import TwitterKit
 import CoreLocation
+import LinkedinSwift
 
 
 class HLProfileViewController: BaseViewController {
@@ -35,6 +36,8 @@ class HLProfileViewController: BaseViewController {
     @IBOutlet weak var viewFeedbackBtn: UIButton!
     @IBOutlet weak var fullsizeViewReference: UIView!
     
+    
+    private let linkedinHelper = LinkedinSwiftHelper(configuration: LinkedinSwiftConfiguration(clientId: "77pqp8cu8tj7vb", clientSecret: "yx3RJzo3X9guNEhY", state: "DLKDJF46ikMMZADfdfds", permissions: ["r_basicprofile", "r_emailaddress"], redirectUrl: "https://hula.trading/"))
     
     var arrFeedback: NSArray!
     var spinner: HLSpinnerUIView!
@@ -125,8 +128,12 @@ class HLProfileViewController: BaseViewController {
             alert.addAction(facebookAction)
         }
         
-        let linkedinAction = UIAlertAction(title: "Linkedin", style: .default, handler: nil)
-        alert.addAction(linkedinAction)
+        if HulaUser.sharedInstance.liToken.characters.count == 0 {
+            let linkedinAction = UIAlertAction(title: "Linkedin", style: .default, handler: { action -> Void in
+                self.linkedinValidate()
+            })
+            alert.addAction(linkedinAction)
+        }
         
         
         if HulaUser.sharedInstance.twToken.characters.count == 0 {
@@ -203,6 +210,23 @@ class HLProfileViewController: BaseViewController {
         self.present(alert, animated: true, completion: nil)
     }
     
+    func linkedinValidate(){
+        linkedinHelper.authorizeSuccess({ (token) in
+            
+            //print(token)
+            self.verLinkedinIcon.image = UIImage(named: "icon_linkedin_on")
+            self.verLinkedinIcon.bouncer()
+            HulaUser.sharedInstance.liToken = token.accessToken
+            HulaUser.sharedInstance.updateServerData()
+            //This token is useful for fetching profile info from LinkedIn server
+        }, error: { (error) in
+            
+            print(error.localizedDescription)
+            //show respective error
+        }) {
+            //show sign in cancelled event
+        }
+    }
     
     // Custom functions for ViewController
     

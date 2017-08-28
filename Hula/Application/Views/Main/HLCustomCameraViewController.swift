@@ -63,8 +63,6 @@ class HLCustomCameraViewController: BaseViewController, UIImagePickerControllerD
     
     override func viewDidAppear(_ animated: Bool) {
         
-        self.navigationController?.isNavigationBarHidden = true
-        self.tabBarController?.tabBar.isHidden = true
     }
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()

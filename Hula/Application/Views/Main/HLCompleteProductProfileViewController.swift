@@ -47,14 +47,15 @@ class HLCompleteProductProfileViewController: BaseViewController, UIScrollViewDe
     }
     func initView(){
         
+        
         commonUtils.circleImageView(productReferenceImage)
         productReferenceImage.image = productImage
         
         pageTitleLabel.attributedText = commonUtils.attributedStringWithTextSpacing(pageTitleLabel.text!, 2.33)
-        categoryTableView.frame = CGRect(x: 0.0, y: 0.0, width: mainScrollView.frame.size.width, height: mainScrollView.frame.size.height)
-        perkContainView.frame = CGRect(x: mainScrollView.frame.size.width, y: 0.0, width: mainScrollView.frame.size.width, height: mainScrollView.frame.size.height)
-        contentView.frame = CGRect(x: 0.0, y: 0, width: mainScrollView.frame.size.width, height: mainScrollView.frame.size.height)
-        mainScrollView.contentSize = contentView.frame.size
+        categoryTableView.frame.origin = CGPoint(x: 0.0, y: 0.0)
+        perkContainView.frame.origin = CGPoint(x: mainScrollView.frame.size.width, y: 0.0)
+        contentView.frame.origin = CGPoint(x: 0.0, y: 0)
+        //mainScrollView.contentSize = contentView.frame.size
         mainScrollView.setContentOffset(CGPoint(x:0.0, y:0.0), animated: false)
         self.changeMarkState(0)
         self.changeConditionState(conditionNewBtn.tag)
@@ -134,7 +135,7 @@ class HLCompleteProductProfileViewController: BaseViewController, UIScrollViewDe
     }
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath){
         let category : NSDictionary = dataManager.arrCategories.object(at: indexPath.row) as! NSDictionary
-        print(category)
+        //print(category)
         dataManager.newProduct.productCategory = category.object(forKey: "_id") as! String
         
         UIView.animate(withDuration: 0.3, animations: {
@@ -182,6 +183,15 @@ class HLCompleteProductProfileViewController: BaseViewController, UIScrollViewDe
         charactersRemainingLabel.text = "\(theRemainingChars) characters remaining"
     }
     
+    @IBAction func backAction(_ sender: Any) {
+        
+        UIView.animate(withDuration: 0.3, animations: {
+            self.perkContainView.frame.origin.x = self.mainScrollView.frame.size.width
+            self.categoryTableView.frame.origin.x = 0
+        })
+        self.changeMarkState(0)
+        
+    }
     @IBAction func doneBtnPRessed(_ sender: Any) {
         print("Complete button pressed")
         if (dataManager.newProduct.arrProductPhotoLink.count>0){

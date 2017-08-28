@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import EasyTipView
 
 class HLHomeViewController: BaseViewController, UIScrollViewDelegate, UITextFieldDelegate, UITableViewDelegate, UITableViewDataSource {
     
@@ -33,6 +34,17 @@ class HLHomeViewController: BaseViewController, UIScrollViewDelegate, UITextFiel
         boxRoundedView.layer.borderColor = UIColor(red: 0.0, green: 0.0, blue: 0.0, alpha: 0.3).cgColor
         boxRoundedOriginalSize = boxRoundedView.frame.size
         cancelButton.alpha = 0
+        
+        
+        // easy tip
+        
+        var preferences = EasyTipView.Preferences()
+        preferences.drawing.font = UIFont(name: "Helvetica Neue", size: 13)!
+        preferences.drawing.foregroundColor = UIColor.darkGray
+        preferences.drawing.backgroundColor = UIColor(red: 0.9, green: 0.9, blue: 0.9, alpha: 0.95)
+        preferences.drawing.arrowPosition = EasyTipView.ArrowPosition.any
+        EasyTipView.globalPreferences = preferences
+        
     }
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)

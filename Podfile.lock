@@ -1,4 +1,19 @@
 PODS:
+  - AFNetworking (3.1.0):
+    - AFNetworking/NSURLSession (= 3.1.0)
+    - AFNetworking/Reachability (= 3.1.0)
+    - AFNetworking/Security (= 3.1.0)
+    - AFNetworking/Serialization (= 3.1.0)
+    - AFNetworking/UIKit (= 3.1.0)
+  - AFNetworking/NSURLSession (3.1.0):
+    - AFNetworking/Reachability
+    - AFNetworking/Security
+    - AFNetworking/Serialization
+  - AFNetworking/Reachability (3.1.0)
+  - AFNetworking/Security (3.1.0)
+  - AFNetworking/Serialization (3.1.0)
+  - AFNetworking/UIKit (3.1.0):
+    - AFNetworking/NSURLSession
   - Bolts (1.8.4):
     - Bolts/AppLinks (= 1.8.4)
     - Bolts/Tasks (= 1.8.4)
@@ -7,6 +22,7 @@ PODS:
   - Bolts/Tasks (1.8.4)
   - Crashlytics (3.8.4):
     - Fabric (~> 1.6.3)
+  - EasyTipView (1.0.2)
   - Fabric (1.6.11)
   - FacebookCore (0.2.0):
     - Bolts (~> 1.8)
@@ -27,6 +43,11 @@ PODS:
     - FBSDKCoreKit
   - FBSDKShareKit (4.22.1):
     - FBSDKCoreKit
+  - IOSLinkedInAPIFix (2.0.4):
+    - AFNetworking (>= 2.0.0)
+  - LinkedinSwift (1.7.4):
+    - AFNetworking (>= 3.1.0)
+    - IOSLinkedInAPIFix (>= 2.0.4)
   - TwitterCore (2.8.0):
     - Fabric
   - TwitterKit (2.8.1):
@@ -34,15 +55,19 @@ PODS:
 
 DEPENDENCIES:
   - Crashlytics
+  - EasyTipView (~> 1.0.2)
   - Fabric
   - FacebookCore
   - FacebookLogin
   - FacebookShare
+  - LinkedinSwift (>= 1.6.2)
   - TwitterKit
 
 SPEC CHECKSUMS:
+  AFNetworking: 5e0e199f73d8626b11e79750991f5d173d1f8b67
   Bolts: 8a7995239dbe724f9cba2248b766d48b7ebdd322
   Crashlytics: 79e236942ca1e7fc641df1feb9a275360a78ab6a
+  EasyTipView: b93a19be981cc2221d6d7191d49872f547e0bebf
   Fabric: 5911403591946b8228ab1c51d98f1d7137e863c6
   FacebookCore: 2cb3f0fbff218e9d3119cec84bae983b232412de
   FacebookLogin: c9d606504735780a9e3002465a615512e0a691a5
@@ -50,9 +75,11 @@ SPEC CHECKSUMS:
   FBSDKCoreKit: 9c2daf0162214d6d2e21cf8208a9c6c2a2e42b9c
   FBSDKLoginKit: 00cf28916b9f0169763a3d61985d745b579fe304
   FBSDKShareKit: 1cbd0fdc2bb3277dd3522512855dcf1f4088f734
+  IOSLinkedInAPIFix: a520fd805a03dade35f42904c7d89ded2a84c752
+  LinkedinSwift: fba071cbbcedf42471f45c0cd2438cba3f6c9c7c
   TwitterCore: e959987be23c767004d29eb7fab8d85d8585a2e5
   TwitterKit: 3b6044a7320340326a4098f3e37aa1dbaeb94942
 
-PODFILE CHECKSUM: 6ce13d330b444f1fd95478038e8113febc76e9dc
+PODFILE CHECKSUM: bd65630b98d7560d7399c8f45953baa8af2da053
 
-COCOAPODS: 1.2.1
+COCOAPODS: 1.3.1

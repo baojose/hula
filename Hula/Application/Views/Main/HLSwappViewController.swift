@@ -26,6 +26,7 @@ class HLSwappViewController: UIViewController {
     @IBOutlet weak var bottomBarView: UIImageView!
     @IBOutlet weak var sendOfferBtn: HLRoundedButton!
     
+    @IBOutlet weak var chatButton: HLRoundedButton!
     var initialOtherUserX:CGFloat = 0.0
     
     var selectedScreen = 0
@@ -74,6 +75,18 @@ class HLSwappViewController: UIViewController {
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if let swappPageViewController = segue.destination as? HLSwappPageViewController {
             swappPageViewController.swappDelegate = self
+        }
+        
+        
+        if let chatVC = segue.destination as? ChatViewController {
+            if let swappPageVC = self.childViewControllers.first as? HLSwappPageViewController {
+                let thisTrade: NSDictionary = swappPageVC.arrTrades[swappPageVC.currentIndex]
+                if let chat = thisTrade.object(forKey: "chat") as? [NSDictionary]{
+                    chatVC.chat = chat
+                    chatVC.trade_id = (thisTrade.object(forKey: "_id") as? String)!
+                    //print(chat)
+                }
+            }
         }
     }
     
@@ -177,6 +190,7 @@ class HLSwappViewController: UIViewController {
                 self.myUserView.frame.origin.x = 0
                 self.otherUserView.frame.origin.x = self.initialOtherUserX
                 self.sendOfferBtn.alpha = 1
+                self.chatButton.alpha = 1
             }
             
             if let swappPageVC = self.childViewControllers.first as? HLSwappPageViewController {
@@ -214,6 +228,7 @@ class HLSwappViewController: UIViewController {
                 self.otherUserView.frame.origin.x = self.initialOtherUserX + 500
                 self.sendOfferBtn.alpha = 0
                 self.mainCentralLabel.text = "Available Table Rooms"
+                self.chatButton.alpha = 0
             }
         }
     }

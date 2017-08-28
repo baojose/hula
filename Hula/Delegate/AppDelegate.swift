@@ -17,7 +17,7 @@ import FacebookShare
 import Fabric
 import TwitterKit
 import Crashlytics
-
+import LinkedinSwift
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
@@ -77,6 +77,13 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             let isHandled = FBSDKApplicationDelegate.sharedInstance().application(app, open: url, sourceApplication: options[.sourceApplication] as! String!, annotation: options[.annotation])
             return isHandled
         }
+        
+        if LinkedinSwiftHelper.shouldHandle(url) {
+            if #available(iOS 9.0, *) {
+                return LinkedinSwiftHelper.application(app, open: url, sourceApplication: options[UIApplicationOpenURLOptionsKey.sourceApplication] as? String, annotation: options[UIApplicationOpenURLOptionsKey.annotation])
+            }
+        }
+        
         return false
     }
     
