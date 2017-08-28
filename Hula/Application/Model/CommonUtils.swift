@@ -9,8 +9,13 @@
 import UIKit
 import Foundation
 import CoreLocation
+import EasyTipView
 
-class CommonUtils: NSObject {
+class CommonUtils: NSObject, EasyTipViewDelegate {
+    
+    var currentTipArr: [HulaTip] = []
+    var currentTip:Int = 0
+    var lastTip:EasyTipView = EasyTipView(text: "");
     
     class var sharedInstance: CommonUtils {
         struct Static {
@@ -223,6 +228,38 @@ class CommonUtils: NSObject {
         let img_name = "tm_\(parts[parts.count - 1])"
         parts[parts.count - 1] = img_name
         return parts.joined(separator:"/")
+    }
+    
+    
+    func showTutorial(arrayTips: [HulaTip]){
+        currentTipArr = arrayTips
+        currentTip = -1
+        self.showNextTip(false)
+    }
+    
+    func showNextTip(_ direct:Bool){
+        //self.lastTip.dismiss()
+        self.currentTip += 1
+        if (self.currentTip < self.currentTipArr.count){
+            var when = DispatchTime.now() + Double(currentTipArr[currentTip].delay)
+            if (direct){
+                when = DispatchTime.now()
+            }
+            DispatchQueue.main.asyncAfter(deadline: when) {
+                
+                if (self.currentTip < self.currentTipArr.count){
+                    //EasyTipView.show(forView: self.currentTipArr[self.currentTip].view, text: self.currentTipArr[self.currentTip].text, delegate:self )
+                    
+                    self.lastTip = EasyTipView(text: self.currentTipArr[self.currentTip].text)
+                    self.lastTip.show(forView: self.currentTipArr[self.currentTip].view)
+                    
+                    self.showNextTip(false)
+                }
+            }
+        }
+    }
+    func easyTipViewDidDismiss(_ tipView: EasyTipView) {
+        self.showNextTip(true)
     }
 }
 

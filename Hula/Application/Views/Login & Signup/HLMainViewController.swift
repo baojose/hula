@@ -32,6 +32,7 @@ class HLMainViewController: UserBaseViewController {
     private func playVideo(){
         
         let token = HulaUser.sharedInstance.token!
+        //print(token)
         if (token.characters.count>10  && false ){
             // we will jump to mainView only if user is not logged in
             self.navToMainView()

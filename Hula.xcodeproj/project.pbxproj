@@ -30,12 +30,14 @@
 		27401F861EC10F7300F0B95D /* HLPictureSelectViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27401F851EC10F7300F0B95D /* HLPictureSelectViewController.swift */; };
 		275C55501EA3FB5A00A49051 /* UserData.plist in Resources */ = {isa = PBXBuildFile; fileRef = 275C554F1EA3FB5A00A49051 /* UserData.plist */; };
 		277C6C431EA2385B00530B0F /* HLRoundedButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 277C6C421EA2385B00530B0F /* HLRoundedButton.swift */; };
-		277D255D1F4B7B8B00DABBFB /* slide_1_2.mov in Resources */ = {isa = PBXBuildFile; fileRef = 277D255C1F4B7B8B00DABBFB /* slide_1_2.mov */; };
 		278988FB1ED7933600C0FBA9 /* HLCalculatorViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 278988FA1ED7933600C0FBA9 /* HLCalculatorViewController.swift */; };
 		279BAAD81E9D726D00091D24 /* HLNotificationsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 279BAAD71E9D726D00091D24 /* HLNotificationsViewController.swift */; };
 		27AA28FE1F09A0B100AB1895 /* HLPageControl.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27AA28FD1F09A0B100AB1895 /* HLPageControl.swift */; };
+		27AD31621F5041BE0047952A /* HulaVideoTransp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27AD31611F5041BE0047952A /* HulaVideoTransp.swift */; };
+		27AD31641F5047460047952A /* slide_1_2.atlas in Resources */ = {isa = PBXBuildFile; fileRef = 27AD31631F5047460047952A /* slide_1_2.atlas */; };
+		27AD31661F5072520047952A /* ChatViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27AD31651F5072520047952A /* ChatViewController.swift */; };
+		27AD31681F5074AC0047952A /* ChatTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27AD31671F5074AC0047952A /* ChatTableViewCell.swift */; };
 		27B228B81EA89FF10079EED6 /* HLBouncingButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27B228B71EA89FF10079EED6 /* HLBouncingButton.swift */; };
-		27BA76451F4B73BC00A460AF /* slide_1_2.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = 27BA76441F4B70BA00A460AF /* slide_1_2.mp4 */; };
 		27C733C51EA2BC7E003A6FD6 /* HLIdentificationViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27C733C41EA2BC7E003A6FD6 /* HLIdentificationViewController.swift */; };
 		27C733C71EA2D051003A6FD6 /* HLRoundedGradientButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27C733C61EA2D050003A6FD6 /* HLRoundedGradientButton.swift */; };
 		27C733C91EA2D1E0003A6FD6 /* HLRoundedNextButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27C733C81EA2D1E0003A6FD6 /* HLRoundedNextButton.swift */; };
@@ -44,6 +46,7 @@
 		27D589861F2DEECF00240A36 /* HLProductPictureEditViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27D589851F2DEECF00240A36 /* HLProductPictureEditViewController.swift */; };
 		27D5898A1F2E91FA00240A36 /* HLProductModalViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27D589891F2E91FA00240A36 /* HLProductModalViewController.swift */; };
 		27D5898C1F36301F00240A36 /* HLRoundedGradientNextButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27D5898B1F36301F00240A36 /* HLRoundedGradientNextButton.swift */; };
+		27ECC96B1F4E0C8E00A48B59 /* HulaTip.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27ECC96A1F4E0C8E00A48B59 /* HulaTip.swift */; };
 		99F54F96A90A0DEF39B4F77F /* Pods_HulaTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BB38D039DCF53784B1101219 /* Pods_HulaTests.framework */; };
 		D4C767CE36A44207F314461B /* Pods_HulaUITests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AA99A61775E451E94755B6FC /* Pods_HulaUITests.framework */; };
 		F8274D4F1E712FCB002A3164 /* HLProfileViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F8274D4E1E712FCB002A3164 /* HLProfileViewController.swift */; };
@@ -138,12 +141,14 @@
 		274D53DE1F49F53D00E00DCD /* Hula-Bridging-Header.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "Hula-Bridging-Header.h"; path = "Hula/Hula-Bridging-Header.h"; sourceTree = SOURCE_ROOT; };
 		275C554F1EA3FB5A00A49051 /* UserData.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = UserData.plist; sourceTree = "<group>"; };
 		277C6C421EA2385B00530B0F /* HLRoundedButton.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HLRoundedButton.swift; sourceTree = "<group>"; };
-		277D255C1F4B7B8B00DABBFB /* slide_1_2.mov */ = {isa = PBXFileReference; lastKnownFileType = video.quicktime; path = slide_1_2.mov; sourceTree = "<group>"; };
 		278988FA1ED7933600C0FBA9 /* HLCalculatorViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HLCalculatorViewController.swift; sourceTree = "<group>"; };
 		279BAAD71E9D726D00091D24 /* HLNotificationsViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HLNotificationsViewController.swift; sourceTree = "<group>"; };
 		27AA28FD1F09A0B100AB1895 /* HLPageControl.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HLPageControl.swift; sourceTree = "<group>"; };
+		27AD31611F5041BE0047952A /* HulaVideoTransp.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HulaVideoTransp.swift; sourceTree = "<group>"; };
+		27AD31631F5047460047952A /* slide_1_2.atlas */ = {isa = PBXFileReference; lastKnownFileType = folder.skatlas; path = slide_1_2.atlas; sourceTree = "<group>"; };
+		27AD31651F5072520047952A /* ChatViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ChatViewController.swift; sourceTree = "<group>"; };
+		27AD31671F5074AC0047952A /* ChatTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ChatTableViewCell.swift; sourceTree = "<group>"; };
 		27B228B71EA89FF10079EED6 /* HLBouncingButton.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HLBouncingButton.swift; sourceTree = "<group>"; };
-		27BA76441F4B70BA00A460AF /* slide_1_2.mp4 */ = {isa = PBXFileReference; lastKnownFileType = file; path = slide_1_2.mp4; sourceTree = "<group>"; };
 		27C733C41EA2BC7E003A6FD6 /* HLIdentificationViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HLIdentificationViewController.swift; sourceTree = "<group>"; };
 		27C733C61EA2D050003A6FD6 /* HLRoundedGradientButton.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HLRoundedGradientButton.swift; sourceTree = "<group>"; };
 		27C733C81EA2D1E0003A6FD6 /* HLRoundedNextButton.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HLRoundedNextButton.swift; sourceTree = "<group>"; };
@@ -153,6 +158,7 @@
 		27D589851F2DEECF00240A36 /* HLProductPictureEditViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HLProductPictureEditViewController.swift; sourceTree = "<group>"; };
 		27D589891F2E91FA00240A36 /* HLProductModalViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HLProductModalViewController.swift; sourceTree = "<group>"; };
 		27D5898B1F36301F00240A36 /* HLRoundedGradientNextButton.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HLRoundedGradientNextButton.swift; sourceTree = "<group>"; };
+		27ECC96A1F4E0C8E00A48B59 /* HulaTip.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HulaTip.swift; sourceTree = "<group>"; };
 		2949F49E550423C849CC8C66 /* Pods_Hula.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Hula.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		366F1CB838330F3A7BA3CF6B /* Pods-HulaUITests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-HulaUITests.debug.xcconfig"; path = "Pods/Target Support Files/Pods-HulaUITests/Pods-HulaUITests.debug.xcconfig"; sourceTree = "<group>"; };
 		3684442621355F3BD05B8FCD /* Pods-HulaUITests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-HulaUITests.release.xcconfig"; path = "Pods/Target Support Files/Pods-HulaUITests/Pods-HulaUITests.release.xcconfig"; sourceTree = "<group>"; };
@@ -268,6 +274,7 @@
 				272814221EF099BB00984562 /* HLSwappViewController.swift */,
 				272814281F0314C100984562 /* HLDragableImage.swift */,
 				27D589891F2E91FA00240A36 /* HLProductModalViewController.swift */,
+				27AD31651F5072520047952A /* ChatViewController.swift */,
 			);
 			name = Swapp;
 			sourceTree = "<group>";
@@ -388,6 +395,8 @@
 				F86698B61E703CB9002129E1 /* HLAPIClient.swift */,
 				F86698C31E703EA6002129E1 /* HLDataManager.swift */,
 				271F5C591EDAD90C00A7B1C1 /* HulaTrade.swift */,
+				27ECC96A1F4E0C8E00A48B59 /* HulaTip.swift */,
+				27AD31611F5041BE0047952A /* HulaVideoTransp.swift */,
 			);
 			path = Controller;
 			sourceTree = "<group>";
@@ -421,8 +430,7 @@
 		F86698A61E703A80002129E1 /* Medias */ = {
 			isa = PBXGroup;
 			children = (
-				277D255C1F4B7B8B00DABBFB /* slide_1_2.mov */,
-				27BA76441F4B70BA00A460AF /* slide_1_2.mp4 */,
+				27AD31631F5047460047952A /* slide_1_2.atlas */,
 				F890E4931E709378008719B9 /* splash_intro.mp4 */,
 			);
 			path = Medias;
@@ -465,6 +473,7 @@
 				272814241EF52BDD00984562 /* HLDashboardNormalViewFlowLayout.swift */,
 				272814261EF530EE00984562 /* HLDashboardExpandedViewFlowLayout.swift */,
 				271533441F07C85200E5F319 /* HLProductCollectionViewCell.swift */,
+				27AD31671F5074AC0047952A /* ChatTableViewCell.swift */,
 			);
 			path = Cells;
 			sourceTree = "<group>";
@@ -705,8 +714,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				27BA76451F4B73BC00A460AF /* slide_1_2.mp4 in Resources */,
-				277D255D1F4B7B8B00DABBFB /* slide_1_2.mov in Resources */,
+				27AD31641F5047460047952A /* slide_1_2.atlas in Resources */,
 				F8BE7C431E7237A100FAE07D /* BebasNeue Regular.otf in Resources */,
 				F8BE7C421E7237A100FAE07D /* BebasNeue Light.otf in Resources */,
 				F8BE7C411E7237A100FAE07D /* BebasNeue Book.otf in Resources */,
@@ -945,6 +953,7 @@
 				F86698AF1E703A80002129E1 /* AppDelegate.swift in Sources */,
 				F8BE7C331E71FF5400FAE07D /* HLSettingViewController.swift in Sources */,
 				F86698BF1E703E10002129E1 /* BaseTabBarViewController.swift in Sources */,
+				27AD31661F5072520047952A /* ChatViewController.swift in Sources */,
 				271533451F07C85200E5F319 /* HLProductCollectionViewCell.swift in Sources */,
 				272720431EBA9BE90084CF3C /* HLWelcomeViewController.swift in Sources */,
 				273A1EA71ED6440A005D163E /* HLSwappProductTableViewCell.swift in Sources */,
@@ -958,6 +967,7 @@
 				27D589861F2DEECF00240A36 /* HLProductPictureEditViewController.swift in Sources */,
 				F8274D4F1E712FCB002A3164 /* HLProfileViewController.swift in Sources */,
 				27401F841EBBB87B00F0B95D /* HLEditFieldViewController.swift in Sources */,
+				27AD31621F5041BE0047952A /* HulaVideoTransp.swift in Sources */,
 				279BAAD81E9D726D00091D24 /* HLNotificationsViewController.swift in Sources */,
 				F86698C41E703EA6002129E1 /* HLDataManager.swift in Sources */,
 				F86698B71E703CB9002129E1 /* HLAPIClient.swift in Sources */,
@@ -976,6 +986,7 @@
 				271533431F07C15600E5F319 /* KDDragAndDropManager.swift in Sources */,
 				27C733C51EA2BC7E003A6FD6 /* HLIdentificationViewController.swift in Sources */,
 				F86698B11E703AB7002129E1 /* HulaUser.swift in Sources */,
+				27ECC96B1F4E0C8E00A48B59 /* HulaTip.swift in Sources */,
 				F86698BB1E703DBE002129E1 /* BaseViewController.swift in Sources */,
 				F8BE7C311E71FF4200FAE07D /* HLFeedbackHistoryViewController.swift in Sources */,
 				F8B651FF1E7B677A009D1DC6 /* HLMyProductTableViewCell.swift in Sources */,
@@ -993,6 +1004,7 @@
 				F86698CB1E7044D6002129E1 /* HLLogInViewController.swift in Sources */,
 				F8B651EE1E7A352E009D1DC6 /* HLMyProductsViewController.swift in Sources */,
 				F86698CD1E7044F2002129E1 /* HLIntroViewController.swift in Sources */,
+				27AD31681F5074AC0047952A /* ChatTableViewCell.swift in Sources */,
 				F86698B31E703AC9002129E1 /* HulaProduct.swift in Sources */,
 				272814211EF08BD200984562 /* HLSwappPageViewController.swift in Sources */,
 			);
