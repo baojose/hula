@@ -19,6 +19,9 @@ class HLFilterViewController: BaseViewController {
     var preselRep: Int = 0
     var preselCondition: String = "all"
     
+    @IBOutlet weak var publishBtn: HLRoundedGradientNextButton!
+    
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         self.initData()
@@ -37,6 +40,9 @@ class HLFilterViewController: BaseViewController {
         self.changeDistanceFilterButtonSelctedState( getTagForDistance(preselDistance) )
         self.changeTradeFilterButtonSelctedState( getTagForRep(preselRep)  )
         self.changeConditionFilterButtonSelctedState( getTagForCond(preselCondition) )
+        
+        publishBtn.setup()
+        publishBtn.isEnabled = false
     }
     
     
@@ -48,14 +54,23 @@ class HLFilterViewController: BaseViewController {
     @IBAction func distanceFilterOptionBtnClicked(_ sender: Any) {
         let button: UIButton = sender as! UIButton
         self.changeDistanceFilterButtonSelctedState(button.tag)
+        
+        publishBtn.isEnabled = true
+        publishBtn.startAnimation()
     }
     @IBAction func tradeFilterOptionBtnClicked(_ sender: Any) {
         let button: UIButton = sender as! UIButton
         self.changeTradeFilterButtonSelctedState(button.tag)
+        
+        publishBtn.isEnabled = true
+        publishBtn.startAnimation()
     }
     @IBAction func conditionOptionBtnClicked(_ sender: Any) {
         let button: UIButton = sender as! UIButton
         self.changeConditionFilterButtonSelctedState(button.tag)
+        
+        publishBtn.isEnabled = true
+        publishBtn.startAnimation()
     }
     
     
