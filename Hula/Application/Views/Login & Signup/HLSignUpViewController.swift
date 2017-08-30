@@ -44,7 +44,8 @@ class HLSignUpViewController: UserBaseViewController, UITextFieldDelegate  {
         super.didReceiveMemoryWarning()
     }
     @IBAction func closeIdentificationVC(_ sender: Any) {
-        self.closeIdentification()
+        //self.closeIdentification()
+        _ = self.navigationController?.popViewController(animated: true)
     }
     
     @IBAction func nextStepPressed(_ sender: Any) {

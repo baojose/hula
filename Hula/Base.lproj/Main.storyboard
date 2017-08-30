@@ -1678,7 +1678,7 @@ Log In</string>
                                                 <rect key="frame" x="0.0" y="48" width="375" height="113"/>
                                                 <autoresizingMask key="autoresizingMask"/>
                                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="dr5-35-SRZ" id="lPp-Fl-qqy">
-                                                    <rect key="frame" x="0.0" y="0.0" width="375" height="113"/>
+                                                    <rect key="frame" x="0.0" y="0.0" width="375" height="112.5"/>
                                                     <autoresizingMask key="autoresizingMask"/>
                                                     <subviews>
                                                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="5 hours ago" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="ODt-f7-Y70">
@@ -5562,6 +5562,14 @@ Log In</string>
                                             <action selector="dismissToPreviousPage:" destination="KPC-Gk-U82" eventType="touchUpInside" id="k6M-0c-Gg4"/>
                                         </connections>
                                     </button>
+                                    <button opaque="NO" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" id="f5w-p0-tDs">
+                                        <rect key="frame" x="8" y="34" width="29" height="29"/>
+                                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                        <state key="normal" image="icon_back"/>
+                                        <connections>
+                                            <action selector="backAction:" destination="KPC-Gk-U82" eventType="touchUpInside" id="Cxy-Wv-Jf6"/>
+                                        </connections>
+                                    </button>
                                 </subviews>
                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                             </view>
@@ -5805,14 +5813,6 @@ Log In</string>
                                                                 </subviews>
                                                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                                             </view>
-                                                            <button opaque="NO" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" id="f5w-p0-tDs">
-                                                                <rect key="frame" x="27" y="284" width="29" height="29"/>
-                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                                                <state key="normal" image="icon_back"/>
-                                                                <connections>
-                                                                    <action selector="backAction:" destination="KPC-Gk-U82" eventType="touchUpInside" id="Cxy-Wv-Jf6"/>
-                                                                </connections>
-                                                            </button>
                                                         </subviews>
                                                         <connections>
                                                             <outlet property="delegate" destination="KPC-Gk-U82" id="ol9-VO-Hiw"/>
@@ -6684,7 +6684,7 @@ Log In</string>
         <simulatedScreenMetrics key="destination" type="retina4_7.fullscreen"/>
     </simulatedMetricsContainer>
     <inferredMetricsTieBreakers>
-        <segue reference="8X8-bg-W6f"/>
-        <segue reference="wT5-4p-lNl"/>
+        <segue reference="UoL-AY-aB4"/>
+        <segue reference="E8M-XX-yCt"/>
     </inferredMetricsTieBreakers>
 </document>

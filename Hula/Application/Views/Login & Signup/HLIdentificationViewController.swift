@@ -16,6 +16,10 @@ class HLIdentificationViewController: UserBaseViewController {
         super.viewDidLoad()
         let loginRecieved = Notification.Name("fbLoginRecieved")
         NotificationCenter.default.addObserver(self, selector: #selector(self.loginDataRecieved), name: loginRecieved, object: nil)
+        
+        
+        let appDelegate = UIApplication.shared.delegate as! AppDelegate
+        appDelegate.allowRotation = false
     }
     
     override func didReceiveMemoryWarning() {

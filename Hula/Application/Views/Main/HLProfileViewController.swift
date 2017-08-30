@@ -316,6 +316,7 @@ class HLProfileViewController: BaseViewController {
                             self.userFullNameLabel.text = HulaUser.sharedInstance.userName
                             self.userNickLabel.text = HulaUser.sharedInstance.userNick
                             self.userBioLabel.text = HulaUser.sharedInstance.userBio
+                            HLDataManager.sharedInstance.writeUserData()
                             if (HulaUser.sharedInstance.isIncompleteProfile()){
                                 // badges to inform the user
                                 UIView.animate(withDuration: 0.4, animations: {
@@ -427,7 +428,7 @@ class HLProfileViewController: BaseViewController {
         image_dismissing = true
     }
     func optionsFullscreenImage(_ sender: UIGestureRecognizer) {
-        let alertController = UIAlertController(title: "Profile image options", message: "Choose an option...", preferredStyle: .actionSheet)
+        let alertController = UIAlertController(title: "Edit profile image", message: "Do you want to replace this image with a new one?", preferredStyle: .actionSheet)
         
         
         let  editButton = UIAlertAction(title: "Change image", style: .destructive, handler: { (action) -> Void in

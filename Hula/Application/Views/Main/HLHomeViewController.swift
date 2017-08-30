@@ -49,6 +49,10 @@ class HLHomeViewController: BaseViewController, UIScrollViewDelegate, UITextFiel
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         boxRoundedOriginalSize = boxRoundedView.frame.size
+        
+        // force allow rotation on this VC
+        let appDelegate = UIApplication.shared.delegate as! AppDelegate
+        appDelegate.allowRotation = true
     }
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
