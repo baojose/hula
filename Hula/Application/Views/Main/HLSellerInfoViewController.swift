@@ -22,6 +22,17 @@ class HLSellerInfoViewController: BaseViewController, UITableViewDelegate, UITab
     @IBOutlet weak var sellerFeedbackLabel: UILabel!
     
     
+    @IBOutlet weak var fbIcon: UIImageView!
+    @IBOutlet weak var liIcon: UIImageView!
+    @IBOutlet weak var twIcon: UIImageView!
+    @IBOutlet weak var emIcon: UIImageView!
+    
+    
+    @IBOutlet weak var tradesStartedLabel: UILabel!
+    @IBOutlet weak var tradesEndedLabel: UILabel!
+    @IBOutlet weak var tradesClosedLabel: UILabel!
+    
+    
     var user = HulaUser();
     var userProducts: NSArray = []
     var userFeedback: NSArray = []
@@ -37,19 +48,37 @@ class HLSellerInfoViewController: BaseViewController, UITableViewDelegate, UITab
     }
     
     func initData(){
-    }
-    func initView(){
-        commonUtils.circleImageView(profileImage)
-        lblOtherItemInStock.attributedText = commonUtils.attributedStringWithTextSpacing("OTHER ITEMS IN STOCK", 2.33)
-        var newFrame: CGRect! = sellerProductTableView.frame
-        newFrame.size.height = CGFloat(userProducts.count) * 129 + 100;
-        sellerProductTableView.frame = newFrame
-        let totalHeight = sellerProductTableView.frame.origin.y + sellerProductTableView.frame.size.height
-        mainScrollView.contentSize = CGSize(width: 0, height: totalHeight)
         
         profileImage.loadImageFromURL(urlString: user.userPhotoURL)
         sellerNameLabel.text = user.userNick
         sellerLocationLabel.text = user.userLocationName
+        
+        if (user.twToken.characters.count>1){
+            twIcon.image = UIImage(named: "icon_twitter_on")
+        }
+        if (user.status == "verified"){
+            emIcon.image = UIImage(named: "icon_mail_on")
+        }
+        if (user.fbToken.characters.count>1){
+            fbIcon.image = UIImage(named: "icon_facebook_on")
+        }
+        if (user.liToken.characters.count>1){
+            liIcon.image = UIImage(named: "icon_linkedin_on")
+        }
+        
+        sellerFeedbackLabel.text = user.getFeedback()
+    }
+    func initView(){
+        commonUtils.circleImageView(profileImage)
+        
+        lblOtherItemInStock.attributedText = commonUtils.attributedStringWithTextSpacing("OTHER ITEMS IN STOCK", 2.33)
+        
+        var newFrame: CGRect! = sellerProductTableView.frame
+        newFrame.size.height = CGFloat(userProducts.count) * 129 + 200;
+        sellerProductTableView.frame = newFrame
+        let totalHeight = sellerProductTableView.frame.origin.y + sellerProductTableView.frame.size.height
+        mainScrollView.contentSize = CGSize(width: 0, height: totalHeight)
+        
         containerView.frame.size.height = totalHeight
         
     }

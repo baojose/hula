@@ -41,7 +41,7 @@ class HLSwappViewController: UIViewController {
         CommonUtils.sharedInstance.circleImageView(otherUserImage)
         self.myUserView.isHidden = true;
         self.otherUserView.isHidden = true;
-        self.sendOfferBtn.isHidden = true;
+        self.sendOfferBtn.alpha = 0;
     }
     override func viewWillAppear(_ animated: Bool) {
         
@@ -203,13 +203,13 @@ class HLSwappViewController: UIViewController {
                 } else {
                     otherUserImage.loadImageFromURL(urlString: CommonUtils.sharedInstance.userImageURL(userId: thisTrade.object(forKey: "owner_id") as! String))
                 }
-                
                 if let current_user_turn = thisTrade.object(forKey: "turn_user_id") as? String{
                     if current_user_turn != HulaUser.sharedInstance.userId {
                         self.sendOfferBtn.alpha = 0
                         self.mainCentralLabel.alpha=1;
                         self.mainCentralLabel.text = "Waiting for response..."
                     }
+                    
                 }
                 
                 otherUserNick.text = "User in room \(index)"

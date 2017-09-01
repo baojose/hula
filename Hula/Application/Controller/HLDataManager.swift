@@ -221,7 +221,8 @@ class HLDataManager: NSObject {
                 DispatchQueue.main.async {
                     if let dictionary = json as? [String: Any] {
                         let userReturned = HulaUser()
-                        //print(dictionary)
+                        print("----------- User loaded")
+                        print(dictionary)
                         if let user = dictionary["user"] as? [String: Any] {
                             if (user["name"] as? String) != nil {
                                 userReturned.userName = user["name"] as? String
@@ -241,6 +242,21 @@ class HLDataManager: NSObject {
                             
                             if (user["location_name"] as? String) != nil {
                                 userReturned.userLocationName = user["location_name"] as? String
+                            }
+                            if let tmp = user["feedback_count"] as? Float {
+                                userReturned.feedback_count = tmp
+                            }
+                            if let tmp = user["feedback_points"] as? Float {
+                                userReturned.feedback_points = tmp
+                            }
+                            if let tmp = user["trades_started"] as? Float {
+                                userReturned.trades_started = tmp
+                            }
+                            if let tmp = user["trades_finished"] as? Float {
+                                userReturned.trades_finished = tmp
+                            }
+                            if let tmp = user["trades_closed"] as? Float {
+                                userReturned.trades_closed = tmp
                             }
                             
                             if let loc = user["location"] as? [CGFloat] {

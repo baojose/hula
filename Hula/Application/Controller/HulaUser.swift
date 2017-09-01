@@ -27,6 +27,11 @@ class HulaUser: NSObject {
     var liToken: String!
     var deviceId: String!
     var maxTrades: Int = 3
+    var feedback_count: Float = 0.0
+    var feedback_points: Float = 0.0
+    var trades_started: Float = 0.0
+    var trades_finished: Float = 0.0
+    var trades_closed: Float = 0.0
     var arrayProducts = [] as Array
     
     class var sharedInstance: HulaUser {
@@ -51,6 +56,8 @@ class HulaUser: NSObject {
         self.twToken = ""
         self.liToken = ""
         self.deviceId = ""
+        self.feedback_count = 0.0
+        self.feedback_points = 0.0
         self.location = CLLocation(latitude: 0, longitude: 0)
         self.maxTrades = 3
         self.arrayProducts = []
@@ -91,6 +98,8 @@ class HulaUser: NSObject {
         self.liToken = ""
         self.maxTrades = 3
         self.deviceId = ""
+        self.feedback_count = 0.0
+        self.feedback_points = 0.0
         self.location = CLLocation(latitude: 0, longitude: 0)
         self.arrayProducts = []
     }
@@ -148,7 +157,16 @@ class HulaUser: NSObject {
         }
         return str
     }
-    
+    func getFeedback() -> String{
+        var res = "-"
+        if self.feedback_count > 0 {
+            let perc: Int =  Int(round( self.feedback_points/self.feedback_count * 100))
+            res = "\(perc)%"
+        } else {
+            res = "-"
+        }
+        return "-"
+    }
     
     override var description : String {
         return "User id: \(self.userId!); nick:   \(self.userNick!)  location: \(self.location.coordinate.latitude) ,  \(self.location.coordinate.longitude)\n"

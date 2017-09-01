@@ -27,31 +27,22 @@ class HLDashboardViewController: BaseViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        refreshCollectionViewData()
         
         
-    }
-    
-    override func viewDidLayoutSubviews() {
-        print("refreshing")
-        //self.mainCollectionView.reloadData()
+        mainCollectionView.collectionViewLayout = HLDashboardNormalViewFlowLayout()
         //refreshCollectionViewData()
     }
+
     
     override func viewWillAppear(_ animated: Bool) {
         mainCollectionView.frame = self.view.frame
-        //self.mainCollectionView.collectionViewLayout.invalidateLayout()
-        
-        //self.mainCollectionView.setCollectionViewLayout(HLDashboardNormalViewFlowLayout(), animated: false)
-        //
-        //isExpandedFlowLayoutUsed = false
         refreshCollectionViewData()
         
-        self.mainCollectionView.reloadData()
     }
     
     override func viewDidAppear(_ animated: Bool) {
         self.mainCollectionView.scrollToItem(at: IndexPath(row: 0, section: 0) , at: .top, animated: true)
+        mainCollectionView.collectionViewLayout.invalidateLayout()
         
         /*
         self.mainCollectionView.setCollectionViewLayout(HLDashboardNormalViewFlowLayout(), animated: false)
@@ -68,7 +59,7 @@ class HLDashboardViewController: BaseViewController {
             HulaTip(delay: 3, view: self.mainCollectionView, text: "Texto 2, tras tres segundos"),
             HulaTip(delay: 1, view: self.mainCollectionView, text: "Texto 1, tras un segundo más")
         ])
-        */
+         */
     }
  
 
@@ -102,10 +93,10 @@ class HLDashboardViewController: BaseViewController {
                             self.swappPageVC?.arrTrades = HLDataManager.sharedInstance.arrTrades as [NSDictionary]
                         }
                         self.mainCollectionView.reloadData()
+                        self.mainCollectionView.scrollToItem(at: IndexPath(row: 0, section: 0) , at: .top, animated: true)
                     }
                 }
             }
-            mainCollectionView.collectionViewLayout = HLDashboardNormalViewFlowLayout()
             //isExpandedFlowLayoutUsed = false
         } else {
             print("Error. Not detected parent parent vc")
@@ -128,6 +119,8 @@ extension HLDashboardViewController: UICollectionViewDelegate, UICollectionViewD
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "tradeCell",
                                                       for: indexPath) as! HLTradesCollectionViewCell
         cell.tradeNumber.text = "\(indexPath.row+1)"
+        
+        cell.dbDelegate = self
         
         //print(cell.frame)
         // Configure the cell
@@ -207,8 +200,7 @@ extension HLDashboardViewController: UICollectionViewDelegate, UICollectionViewD
             
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "tradeCell",
                                                           for: indexPath) as! HLTradesCollectionViewCell
-            cell.layer.zPosition = 100;
-            
+
             //isExpandedFlowLayoutUsed = !isExpandedFlowLayoutUsed
             let when = DispatchTime.now() + 0.3
             DispatchQueue.main.asyncAfter(deadline: when) {
