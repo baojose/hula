@@ -97,8 +97,16 @@ class HLSettingViewController: BaseViewController {
     
     // IB Actions
     @IBAction func userLogout(_ sender: Any) {
-        HLDataManager.sharedInstance.logout()
-        self.goBackToPreviousPage(sender)
+        
+        let viewController = self.storyboard?.instantiateViewController(withIdentifier: "alertView") as! AlertViewController
+        
+        viewController.delegate = self
+        viewController.isCancelVisible = true
+        viewController.message = "Are you sure you want to log out?"
+        
+        self.parent?.navigationController?.present(viewController, animated: true)
+        
+        
     }
     @IBAction func editItemAction(_ sender: Any) {
         print((sender as! UIButton).tag)
@@ -181,6 +189,17 @@ class HLSettingViewController: BaseViewController {
             if view.tag == 220{
                 view.removeFromSuperview()
             }
+        }
+    }
+}
+
+extension HLSettingViewController: AlertDelegate{
+    func alertResponded(response: String) {
+        print("Response: \(response)")
+        
+        if (response == "ok"){
+            HLDataManager.sharedInstance.logout()
+            self.goBackToPreviousPage("")
         }
     }
 }

@@ -28,6 +28,7 @@ class HLDashboardViewController: BaseViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        NotificationCenter.default.addObserver(self, selector: #selector(self.rotated), name: NSNotification.Name.UIDeviceOrientationDidChange, object: nil)
         
         mainCollectionView.collectionViewLayout = HLDashboardNormalViewFlowLayout()
         //refreshCollectionViewData()
@@ -61,6 +62,7 @@ class HLDashboardViewController: BaseViewController {
         ])
          */
     }
+    
  
 
     override func didReceiveMemoryWarning() {
@@ -75,6 +77,12 @@ class HLDashboardViewController: BaseViewController {
             // After dismiss
         }
         
+    }
+    
+    func rotated(){
+        if !UIDeviceOrientationIsPortrait(UIDevice.current.orientation) {
+            mainCollectionView.collectionViewLayout.invalidateLayout()
+        }
     }
     
     func refreshCollectionViewData(){

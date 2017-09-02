@@ -113,4 +113,29 @@ class HLSellerInfoViewController: BaseViewController, UITableViewDelegate, UITab
             self.navigationController?.pushViewController(viewController, animated: true)
         }
     }
+    
+    @IBAction func addToTradeAction(_ sender: Any) {
+            //print(productId)
+            let otherId = user.userId
+            if (HulaUser.sharedInstance.userId.characters.count>0){
+                // user is loggedin
+                let queryURL = HulaConstants.apiURL + "trades/"
+                let dataString:String = "product_id=&other_id=\(otherId!)"
+                HLDataManager.sharedInstance.httpPost(urlstr: queryURL, postString: dataString, isPut: false, taskCallback: { (ok, json) in
+                    if (ok){
+                        // show barter screen
+                        DispatchQueue.main.async {
+                            let storyboard = UIStoryboard(name: "Main", bundle: nil)
+                            let myModalViewController = storyboard.instantiateViewController(withIdentifier: "swappView")
+                            myModalViewController.modalPresentationStyle = UIModalPresentationStyle.fullScreen
+                            myModalViewController.modalTransitionStyle = UIModalTransitionStyle.crossDissolve
+                            self.present(myModalViewController, animated: true, completion: nil)
+                        }
+                    } else {
+                        // connection error
+                        print("Connection error")
+                    }
+                })
+            }
+    }
 }

@@ -86,23 +86,7 @@ class CommonUtils: NSObject, EasyTipViewDelegate {
         return boundingBox.height
     }
 
-    func loadImageOnView(imageView:UIImageView, withURL:String){
-        let urlString = withURL
-        guard let url = URL(string: urlString) else { return }
-        URLSession.shared.dataTask(with: url) { (data, response, error) in
-            if error != nil {
-                print("Failed fetching image:", error!)
-                return
-            }
-            guard let response = response as? HTTPURLResponse, response.statusCode == 200 else {
-                print("Not a proper HTTPURLResponse or statusCode")
-                return
-            }
-            DispatchQueue.main.async {
-                imageView.image = UIImage(data: data!)
-            }
-            }.resume()
-    }
+
     
     func getDistanceFrom(lat:CGFloat, lon:CGFloat) -> String{
         let coordinate₀ = CLLocation(latitude: CLLocationDegrees(lat), longitude: CLLocationDegrees(lon))
@@ -224,6 +208,9 @@ class CommonUtils: NSObject, EasyTipViewDelegate {
     }
     
     func getThumbFor(url:String) -> String {
+        if (url==""){
+            return HulaConstants.noProductThumb
+        }
         var parts = url.components(separatedBy: "/")
         let img_name = "tm_\(parts[parts.count - 1])"
         parts[parts.count - 1] = img_name
@@ -291,17 +278,20 @@ let imageCache = NSCache<AnyObject, AnyObject>()
 extension UIImageView {
     func loadImageFromURL(urlString: String) {
         self.image = nil
+        var _urlString = ""
         if (urlString == ""){
-            return
+            _urlString = HulaConstants.noProductThumb
+        } else {
+            _urlString = urlString
         }
         // check for cache
-        if let cachedImage = imageCache.object(forKey: urlString as AnyObject) as? UIImage {
+        if let cachedImage = imageCache.object(forKey: _urlString as AnyObject) as? UIImage {
             self.image = cachedImage
             return
         }
         
-        URLSession.shared.dataTask(with: NSURL(string: urlString)! as URL, completionHandler: { (data, response, error) -> Void in
-            //print("getting: \(urlString)")
+        URLSession.shared.dataTask(with: NSURL(string: _urlString)! as URL, completionHandler: { (data, response, error) -> Void in
+            //print("getting: \(_urlString)")
             if error != nil {
                 print(error!)
                 return
@@ -315,7 +305,7 @@ extension UIImageView {
                     self.transform = CGAffineTransform(scaleX: 1, y: 1)
                 })
                 if self.image != nil {
-                    imageCache.setObject(image!, forKey: urlString as AnyObject)
+                    imageCache.setObject(image!, forKey: _urlString as AnyObject)
                 }
             })
             
