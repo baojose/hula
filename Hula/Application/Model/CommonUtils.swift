@@ -226,6 +226,7 @@ class CommonUtils: NSObject, EasyTipViewDelegate {
     
     func showNextTip(_ direct:Bool){
         //self.lastTip.dismiss()
+        print("shownext")
         self.currentTip += 1
         if (self.currentTip < self.currentTipArr.count){
             var when = DispatchTime.now() + Double(currentTipArr[currentTip].delay)
@@ -235,18 +236,19 @@ class CommonUtils: NSObject, EasyTipViewDelegate {
             DispatchQueue.main.asyncAfter(deadline: when) {
                 
                 if (self.currentTip < self.currentTipArr.count){
-                    //EasyTipView.show(forView: self.currentTipArr[self.currentTip].view, text: self.currentTipArr[self.currentTip].text, delegate:self )
+                    EasyTipView.show(forView: self.currentTipArr[self.currentTip].view, text: self.currentTipArr[self.currentTip].text, delegate:self )
                     
-                    self.lastTip = EasyTipView(text: self.currentTipArr[self.currentTip].text)
-                    self.lastTip.show(forView: self.currentTipArr[self.currentTip].view)
+                    //self.lastTip = EasyTipView(text: self.currentTipArr[self.currentTip].text)
+                    //self.lastTip.show(forView: self.currentTipArr[self.currentTip].view)
                     
-                    self.showNextTip(false)
+                    //self.showNextTip(false)
                 }
             }
         }
     }
     func easyTipViewDidDismiss(_ tipView: EasyTipView) {
-        self.showNextTip(true)
+        print("dismissed")
+        self.showNextTip(false)
     }
 }
 

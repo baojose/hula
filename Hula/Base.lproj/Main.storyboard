@@ -2379,19 +2379,8 @@ Log In</string>
                                     </button>
                                 </subviews>
                             </view>
-                            <button opaque="NO" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" id="wOQ-jY-BBX" customClass="HLRoundedButton" customModule="Hula" customModuleProvider="target">
-                                <rect key="frame" x="443" y="334" width="51" height="32"/>
-                                <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMinY="YES"/>
-                                <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="17"/>
-                                <state key="normal" title="Chat">
-                                    <color key="titleColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
-                                </state>
-                                <connections>
-                                    <segue destination="mx5-tX-dRS" kind="modal" id="6RJ-Xb-e8z"/>
-                                </connections>
-                            </button>
                             <button opaque="NO" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" id="MyB-ee-C6Y" customClass="HLRoundedButton" customModule="Hula" customModuleProvider="target">
-                                <rect key="frame" x="241" y="335" width="185" height="30"/>
+                                <rect key="frame" x="281" y="335" width="106" height="30"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES"/>
                                 <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="17"/>
                                 <state key="normal" title="Send offer">
@@ -2399,6 +2388,16 @@ Log In</string>
                                 </state>
                                 <connections>
                                     <action selector="sendOfferAction:" destination="YHt-Pc-Ojx" eventType="touchUpInside" id="6ey-iZ-aXm"/>
+                                </connections>
+                            </button>
+                            <button opaque="NO" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" id="wOQ-jY-BBX" customClass="HLRoundedButton" customModule="Hula" customModuleProvider="target">
+                                <rect key="frame" x="445" y="332" width="36" height="36"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMinY="YES"/>
+                                <state key="normal" image="chat-icon">
+                                    <color key="titleColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                </state>
+                                <connections>
+                                    <segue destination="mx5-tX-dRS" kind="modal" id="6RJ-Xb-e8z"/>
                                 </connections>
                             </button>
                         </subviews>
@@ -6328,6 +6327,11 @@ Log In</string>
                         <rect key="frame" x="0.0" y="0.0" width="667" height="375"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
+                            <view contentMode="scaleToFill" misplaced="YES" id="XYX-7I-QVA">
+                                <rect key="frame" x="322" y="382" width="24" height="18"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                            </view>
                             <view contentMode="scaleToFill" id="e24-Ji-y0r">
                                 <rect key="frame" x="0.0" y="0.0" width="668" height="375"/>
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -6598,6 +6602,11 @@ Log In</string>
                                 </subviews>
                                 <color key="backgroundColor" white="0.97011718749999998" alpha="1" colorSpace="calibratedWhite"/>
                             </view>
+                            <view contentMode="scaleToFill" misplaced="YES" id="jBp-VF-t3p">
+                                <rect key="frame" x="426" y="383" width="24" height="18"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                            </view>
                         </subviews>
                         <color key="backgroundColor" white="0.97011718749999998" alpha="1" colorSpace="calibratedWhite"/>
                     </view>
@@ -6605,7 +6614,9 @@ Log In</string>
                     <freeformSimulatedSizeMetrics key="simulatedDestinationMetrics"/>
                     <size key="freeformSize" width="667" height="375"/>
                     <connections>
+                        <outlet property="ChatFakeView" destination="jBp-VF-t3p" id="FiQ-DN-XnG"/>
                         <outlet property="leftBackground" destination="4WV-0w-VgU" id="7hu-mL-aZv"/>
+                        <outlet property="moneyBtn" destination="xXH-sC-plA" id="d4A-9U-qgf"/>
                         <outlet property="myProductsCollection" destination="dRd-A1-3Ps" id="bjD-w6-0sW"/>
                         <outlet property="myProductsDragView" destination="kJx-gG-UNP" id="QGK-vi-85j"/>
                         <outlet property="myProductsLabel" destination="1lO-hZ-tUF" id="c1F-IX-w6b"/>
@@ -6616,6 +6627,7 @@ Log In</string>
                         <outlet property="otherSelectedProductsCollection" destination="n4h-ml-8YQ" id="bwY-Fi-QgK"/>
                         <outlet property="rightBackground" destination="CTa-Lt-qCU" id="4wQ-4y-eOJ"/>
                         <outlet property="sectionCover" destination="Mqd-eF-bkK" id="cS1-zy-dZx"/>
+                        <outlet property="sendOfferFakeView" destination="XYX-7I-QVA" id="1iK-L8-ClI"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="4nm-9t-4fb" userLabel="First Responder" sceneMemberID="firstResponder"/>
@@ -6762,6 +6774,7 @@ Log In</string>
         <image name="button_green_alert_sm" width="107" height="38"/>
         <image name="calculator-layout" width="865" height="681"/>
         <image name="cash_button_trade_interface" width="25" height="25"/>
+        <image name="chat-icon" width="20" height="20"/>
         <image name="close-cross" width="44" height="47"/>
         <image name="close_alert_button" width="32" height="32"/>
         <image name="drag-rect" width="152" height="266"/>

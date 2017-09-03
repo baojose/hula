@@ -24,6 +24,7 @@ class HLDataManager: NSObject {
     var arrTrades : [NSDictionary]! = []
     var arrNotifications : NSMutableArray!
     var uploadMode: Bool!
+    var onboardingTutorials:NSMutableDictionary = [:]
     
     let categoriesLoaded = Notification.Name("categoriesLoaded")
     let loginRecieved = Notification.Name("loginRecieved")
@@ -395,11 +396,11 @@ class HLDataManager: NSObject {
         dict.setObject(user.userName, forKey: "userName" as NSCopying)
         dict.setObject(user.userEmail, forKey: "userEmail" as NSCopying)
         dict.setObject(user.userLocationName, forKey: "userLocationName" as NSCopying)
+        dict.setObject(self.onboardingTutorials, forKey: "onboardingTutorials" as NSCopying)
         dict.setObject([CGFloat(user.location.coordinate.latitude), CGFloat(user.location.coordinate.longitude)] as [CGFloat], forKey: "userLocation" as NSCopying)
         dict.setObject(user.userPhotoURL, forKey: "userPhotoURL" as NSCopying)
         dict.setObject(user.userBio, forKey: "userBio" as NSCopying)
         //...
-        //writing to GameData.plist
         dict.write(toFile: path, atomically: false)
         //let resultDictionary = NSMutableDictionary(contentsOfFile: path)
         //print("Saved UserData.plist file is --> \(String(describing: resultDictionary?.description))")
@@ -461,7 +462,9 @@ class HLDataManager: NSObject {
             //print(dict)
             
             updateUserFromDict(dict: dict)
-            
+            if let tmp = dict.object(forKey: "onboardingTutorials") as? NSMutableDictionary {
+                self.onboardingTutorials = tmp
+            }
             
             self.loadUserNotifications()
         }

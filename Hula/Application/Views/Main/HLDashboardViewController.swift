@@ -54,13 +54,7 @@ class HLDashboardViewController: BaseViewController {
         */
         
         
-        /*
-        CommonUtils.sharedInstance.showTutorial(arrayTips: [
-            HulaTip(delay: 1, view: self.mainCollectionView, text: "Texto 1, tras un segundo"),
-            HulaTip(delay: 3, view: self.mainCollectionView, text: "Texto 2, tras tres segundos"),
-            HulaTip(delay: 1, view: self.mainCollectionView, text: "Texto 1, tras un segundo más")
-        ])
-         */
+        
     }
     
  
@@ -102,6 +96,30 @@ class HLDashboardViewController: BaseViewController {
                         }
                         self.mainCollectionView.reloadData()
                         self.mainCollectionView.scrollToItem(at: IndexPath(row: 0, section: 0) , at: .top, animated: true)
+                    }
+                    
+                    
+                    
+                    // TUTORIAL
+                    if let cell = self.mainCollectionView.cellForItem(at: IndexPath(item: 0, section: 0)) as? HLTradesCollectionViewCell{  
+                        if (HLDataManager.sharedInstance.arrTrades.count == 0){
+                            // show empty rooms tutorial
+                            if let _ = HLDataManager.sharedInstance.onboardingTutorials.object(forKey: "dashboard_empty") as? String{
+                                CommonUtils.sharedInstance.showTutorial(arrayTips: [
+                                    HulaTip(delay: 1, view: cell.left_side, text: "Here you have your available trading rooms. Now they are empty, but as you start trading with other users, you will find here your progress"),
+                                    HulaTip(delay: 0.5, view: self.mainCollectionView, text: "Need more trading rooms? tap here to add more spaces!")
+                                ])
+                                HLDataManager.sharedInstance.onboardingTutorials.setValue("done", forKey: "dashboard_empty")
+                            }
+                        } else {
+                            // show full rooms tutorial
+                            if let _ = HLDataManager.sharedInstance.onboardingTutorials.object(forKey: "dashboard_full") as? String{
+                                CommonUtils.sharedInstance.showTutorial(arrayTips: [
+                                    HulaTip(delay: 1, view: cell.left_side, text: "Your first trade is here! Enter on any of these trade rooms in order to barter with other users")
+                                    ])
+                                HLDataManager.sharedInstance.onboardingTutorials.setValue("done", forKey: "dashboard_full")
+                            }
+                        }
                     }
                 }
             }

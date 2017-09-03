@@ -11,6 +11,7 @@ import UIKit
 class HLBarterScreenViewController: BaseViewController {
     
     
+    @IBOutlet weak var moneyBtn: UIButton!
     
     @IBOutlet weak var sectionCover: UIButton!
     @IBOutlet weak var otherProductsCollection: KDDragAndDropCollectionView!
@@ -18,12 +19,14 @@ class HLBarterScreenViewController: BaseViewController {
     @IBOutlet weak var myProductsCollection: KDDragAndDropCollectionView!
     @IBOutlet weak var mySelectedProductsCollection: KDDragAndDropCollectionView!
     
+    @IBOutlet weak var ChatFakeView: UIView!
     
     @IBOutlet weak var rightBackground: UIView!
     @IBOutlet weak var leftBackground: UIView!
     @IBOutlet weak var otherProductsDragView: UIImageView!
     @IBOutlet weak var myProductsDragView: UIImageView!
     
+    @IBOutlet weak var sendOfferFakeView: UIView!
     
     @IBOutlet weak var otherProductsLabel: UILabel!
     @IBOutlet weak var myProductsLabel: UILabel!
@@ -139,6 +142,32 @@ class HLBarterScreenViewController: BaseViewController {
             })
             HulaTrade.sharedInstance.owner_products = thisTrade.owner_products
             HulaTrade.sharedInstance.other_products = thisTrade.other_products
+            
+            
+            // TUTORIAL
+            
+            if self.thisTrade.turn_user_id == HulaUser.sharedInstance.userId{
+                if let _ = HLDataManager.sharedInstance.onboardingTutorials.object(forKey: "barter_my_turn") as? String{
+                } else {
+                    CommonUtils.sharedInstance.showTutorial(arrayTips: [
+                        HulaTip(delay: 2, view: self.otherProductsCollection, text: "Welcome to the trading room! Drag any product you want from the user list to the trading area"),
+                        HulaTip(delay: 0.4, view: self.myProductsCollection, text: "You can offer anything from your stock by also dragging your products to the trading area"),
+                        HulaTip(delay: 0.4, view: self.moneyBtn, text: "If you don't find anything interesting in the user stock, you can add money to the trade"),
+                        HulaTip(delay: 0.4, view: self.ChatFakeView, text: "Need to talk? Use the chat button to send the user a message"),
+                        HulaTip(delay: 0.4, view: self.sendOfferFakeView, text: "Once you are glad with your selection, send your offer to the user and wait for his reply")
+                        ])
+                    HLDataManager.sharedInstance.onboardingTutorials.setValue("done", forKey: "barter_my_turn")
+                }
+            } else {
+                if let _ = HLDataManager.sharedInstance.onboardingTutorials.object(forKey: "barter_other_turn") as? String{
+                } else {
+                    CommonUtils.sharedInstance.showTutorial(arrayTips: [
+                        HulaTip(delay: 2, view: self.otherProductsCollection, text: "Welcome to the trading room! This trading is waiting for the other user to select the items he wants. As soon as the offer is ready you will be notified"),
+                        HulaTip(delay: 0.4, view: self.ChatFakeView, text: "Need to talk? Use the chat button to send the user a message")
+                        ])
+                    HLDataManager.sharedInstance.onboardingTutorials.setValue("done", forKey: "barter_other_turn")
+                }
+            }
         }
     }
     
