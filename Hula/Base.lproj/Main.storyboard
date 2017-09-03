@@ -2217,22 +2217,26 @@ Log In</string>
                                 <rect key="frame" x="3" y="29" width="369" height="629"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
                             </imageView>
+                            <imageView opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" misplaced="YES" image="mobile-img" id="3jn-ec-LhR">
+                                <rect key="frame" x="18" y="201" width="340" height="467"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES"/>
+                            </imageView>
                             <view contentMode="scaleToFill" misplaced="YES" id="dm0-AH-ZvU">
-                                <rect key="frame" x="40" y="208" width="294" height="252"/>
+                                <rect key="frame" x="40" y="223" width="294" height="207"/>
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
                                 <subviews>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" text="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. " textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="4AE-eV-aSi">
-                                        <rect key="frame" x="11" y="80" width="272" height="82"/>
+                                        <rect key="frame" x="11" y="31" width="272" height="125"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                         <fontDescription key="fontDescription" name="HelveticaNeue-Light" family="Helvetica Neue" pointSize="16"/>
                                         <color key="textColor" red="0.99989169840000003" green="1" blue="0.99988096950000005" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                         <nil key="highlightedColor"/>
                                     </label>
                                     <button opaque="NO" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" id="3ga-Xi-1ca" userLabel="OK, Got it. Thanks!!">
-                                        <rect key="frame" x="58" y="203" width="179" height="39"/>
-                                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                        <rect key="frame" x="58" y="158" width="179" height="39"/>
+                                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES"/>
                                         <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="16"/>
-                                        <state key="normal" title="OK, Got it. Thanks!! " backgroundImage="opacity_background_button_S">
+                                        <state key="normal" title="Got it! Continue" backgroundImage="opacity_background_button_S">
                                             <color key="titleColor" red="0.99989169840000003" green="1" blue="0.99988096950000005" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                         </state>
                                         <connections>
@@ -2240,7 +2244,7 @@ Log In</string>
                                         </connections>
                                     </button>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" text="Welcome to Hula" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="63h-iQ-eVN">
-                                        <rect key="frame" x="11" y="22" width="272" height="33"/>
+                                        <rect key="frame" x="11" y="10" width="272" height="33"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                         <fontDescription key="fontDescription" name="HelveticaNeue-Light" family="Helvetica Neue" pointSize="25"/>
                                         <color key="textColor" red="0.99989169840000003" green="1" blue="0.99988096950000005" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
@@ -2251,6 +2255,14 @@ Log In</string>
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                     </view>
+                    <connections>
+                        <outlet property="backgroundImage" destination="3xD-fH-Lzf" id="Ety-tn-DnK"/>
+                        <outlet property="continueButton" destination="3ga-Xi-1ca" id="odF-8s-UdQ"/>
+                        <outlet property="descriptionLabel" destination="4AE-eV-aSi" id="Jam-Ai-fKD"/>
+                        <outlet property="messagesView" destination="dm0-AH-ZvU" id="g3w-rY-o0c"/>
+                        <outlet property="mobileImage" destination="3jn-ec-LhR" id="ov5-UX-GKz"/>
+                        <outlet property="titleLabel" destination="63h-iQ-eVN" id="cNy-oY-6s5"/>
+                    </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="tP5-RP-VLC" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
@@ -6814,6 +6826,7 @@ Log In</string>
         <image name="img_publish_btn_bg_enabled" width="137" height="39"/>
         <image name="img_tabbar_bg" width="666" height="61"/>
         <image name="mid_bar_trade_screen" width="7" height="375"/>
+        <image name="mobile-img" width="340" height="467"/>
         <image name="more_options_trade" width="5" height="19"/>
         <image name="next_trade_screen" width="8" height="12"/>
         <image name="opacity_background_button" width="49" height="50"/>

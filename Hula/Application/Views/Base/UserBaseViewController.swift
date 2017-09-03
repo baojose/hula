@@ -37,16 +37,17 @@ class UserBaseViewController: UIViewController {
             
             
             
-            let viewControllers: [UIViewController] = self.navigationController!.viewControllers as [UIViewController];
-            for aViewController:UIViewController in viewControllers {
-                if aViewController.isKind(of: BaseTabBarViewController.self) {
-                    if let tb = aViewController as? BaseTabBarViewController {
-                        //print("BaseTabBarViewController index:")
-                        //print(tb.selectedIndex)
-                        tb.tabBarController?.selectedIndex = 0
-                        tb.selectedIndex = 0
+            if let viewControllers = self.navigationController?.viewControllers as? [UIViewController]{
+                for aViewController:UIViewController in viewControllers {
+                    if aViewController.isKind(of: BaseTabBarViewController.self) {
+                        if let tb = aViewController as? BaseTabBarViewController {
+                            //print("BaseTabBarViewController index:")
+                            //print(tb.selectedIndex)
+                            tb.tabBarController?.selectedIndex = 0
+                            tb.selectedIndex = 0
+                        }
+                        _ = self.navigationController?.popToViewController(aViewController, animated: true)
                     }
-                    _ = self.navigationController?.popToViewController(aViewController, animated: true)
                 }
             }
             /*

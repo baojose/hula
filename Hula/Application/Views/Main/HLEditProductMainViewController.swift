@@ -71,6 +71,9 @@ class HLEditProductMainViewController: BaseViewController, ProductPictureDelegat
                 if (ok){
                     self.spinner.hide()
                     DispatchQueue.main.async {
+                        if let productListVC = self.parent?.childViewControllers.first as? HLMyProductsViewController{
+                            productListVC.getUserProducts()
+                        }
                         _ = self.navigationController?.popViewController(animated: true)
                     }
                 }

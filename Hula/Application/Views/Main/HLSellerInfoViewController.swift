@@ -49,21 +49,22 @@ class HLSellerInfoViewController: BaseViewController, UITableViewDelegate, UITab
     
     func initData(){
         
-        profileImage.loadImageFromURL(urlString: user.userPhotoURL)
+        let thumb = CommonUtils.sharedInstance.getThumbFor(url: user.userPhotoURL)
+        profileImage.loadImageFromURL(urlString: thumb)
         sellerNameLabel.text = user.userNick
         sellerLocationLabel.text = user.userLocationName
         
         if (user.twToken.characters.count>1){
             twIcon.image = UIImage(named: "icon_twitter_on")
         }
-        if (user.status == "verified"){
-            emIcon.image = UIImage(named: "icon_mail_on")
-        }
         if (user.fbToken.characters.count>1){
             fbIcon.image = UIImage(named: "icon_facebook_on")
         }
         if (user.liToken.characters.count>1){
             liIcon.image = UIImage(named: "icon_linkedin_on")
+        }
+        if (user.status == "verified"){
+            emIcon.image = UIImage(named: "icon_mail_on")
         }
         
         sellerFeedbackLabel.text = user.getFeedback()

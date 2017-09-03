@@ -62,8 +62,8 @@ class HLEditFieldViewController: BaseViewController, UITextFieldDelegate, UIText
     }
    
     func textViewDidChange(_: UITextView){
-        let w = self.view.frame.size.width-30
-        let h = commonUtils.heightString(width: w, font: newValueTextView.font! , string: newValueTextView.text) + 40
+        let w = newValueTextView.frame.size.width
+        let h = commonUtils.heightString(width: w, font: newValueTextView.font! , string: newValueTextView.text + "mm") + 40
         
         UIView.animate(withDuration: 0.4, delay: 0, usingSpringWithDamping: 0.5, initialSpringVelocity: 0, options: [], animations: {
             self.newValueTextView.frame.size = CGSize(width: self.view.frame.size.width-30, height: h)

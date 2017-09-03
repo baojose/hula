@@ -301,7 +301,10 @@ class HLPostProductViewController: BaseViewController, UITextFieldDelegate {
     }
     func onTapScreen(){
         productTitleTxtField.resignFirstResponder()
-        mainScrollView.setContentOffset(CGPoint(x: 0.0, y: 0.0), animated: true)
+        
+        UIView.animate(withDuration: 0.3, animations: {
+            self.mainScrollView.contentOffset =  CGPoint(x: 0.0, y: 0.0)
+        })
     }
     @IBAction func cameraButtonTap(_ sender: Any) {
         print((sender as AnyObject).tag)
@@ -309,7 +312,9 @@ class HLPostProductViewController: BaseViewController, UITextFieldDelegate {
     }
     //#MARK - TextField Delegate
     func textFieldShouldBeginEditing(_ textField: UITextField) -> Bool{
-        mainScrollView.setContentOffset(CGPoint(x: 0.0, y: 195.0), animated: true)
+        UIView.animate(withDuration: 0.3, animations: {
+            self.mainScrollView.contentOffset =  CGPoint(x: 0.0, y: 195.0)
+        })
         return true
     }
     func textchange(_ textField:UITextField) {

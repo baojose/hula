@@ -75,7 +75,8 @@ class HLProfileViewController: BaseViewController {
         if (HulaUser.sharedInstance.userPhotoURL != "") && (current_image_url != HulaUser.sharedInstance.userPhotoURL){
             print("Changing image")
             print(HulaUser.sharedInstance.userPhotoURL)
-            self.profileImageView.loadImageFromURL(urlString: HulaUser.sharedInstance.userPhotoURL)
+            let thumb = commonUtils.getThumbFor(url: HulaUser.sharedInstance.userPhotoURL)
+            self.profileImageView.loadImageFromURL(urlString: thumb)
             self.current_image_url = HulaUser.sharedInstance.userPhotoURL
         }
         
@@ -280,7 +281,8 @@ class HLProfileViewController: BaseViewController {
                             }
                             
                             self.userFeedbackLabel.text = HulaUser.sharedInstance.getFeedback()
-                            self.profileImageView.loadImageFromURL(urlString: HulaUser.sharedInstance.userPhotoURL)
+                            let thumb = self.commonUtils.getThumbFor(url: HulaUser.sharedInstance.userPhotoURL)
+                            self.profileImageView.loadImageFromURL(urlString: thumb)
                             self.current_image_url = HulaUser.sharedInstance.userPhotoURL
                             self.userFullNameLabel.text = HulaUser.sharedInstance.userName
                             self.userNickLabel.text = HulaUser.sharedInstance.userNick
@@ -354,6 +356,11 @@ class HLProfileViewController: BaseViewController {
         newImageView.alpha = 0.0
         newImageView.tag = 10001
         newImageView.isUserInteractionEnabled = true
+        
+        
+        newImageView.loadImageFromURL(urlString: HulaUser.sharedInstance.userPhotoURL)
+        
+        
         let tap = UITapGestureRecognizer(target: self, action: #selector(optionsFullscreenImage))
         newImageView.addGestureRecognizer(tap)
         let swipe = UIPanGestureRecognizer(target: self, action: #selector(dismissFullscreenImage))

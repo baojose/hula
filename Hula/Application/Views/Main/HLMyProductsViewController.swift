@@ -16,6 +16,7 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
     var arrayImagesURL = ["","","",""] as Array
     var spinner: HLSpinnerUIView!
     
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -35,7 +36,7 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
         
         
         if dataManager.uploadMode == false {
-            self.getUserProducts()
+            self.productTableView.reloadData()
         }
     }
     
@@ -148,9 +149,9 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
     
     
     func newPostModeDesign(_ notification: NSNotification) {
-        print("NewPostMode")
-        print(HLDataManager.sharedInstance.newProduct.productId)
-        print(dataManager.uploadMode)
+        //print("NewPostMode")
+        //print(HLDataManager.sharedInstance.newProduct.productId)
+        //print(dataManager.uploadMode)
         if dataManager.uploadMode == true {
             
             if HLDataManager.sharedInstance.newProduct.productId.characters.count > 0 && self.arrayProducts.count > 0{
@@ -172,15 +173,20 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
             }
             productTableView.reloadData()
             productTableView.setContentOffset(CGPoint(x: 0.0, y: 0.0), animated: false)
-            if let newcell = productTableView.cellForRow(at: IndexPath(item: 0, section: 0 )) as? HLMyProductTableViewCell{
-                print("animationg...")
-                newcell.animateAsNew()
+            
+            if let newCell = productTableView.cellForRow(at: IndexPath(item: 0, section: 0)) as? HLMyProductTableViewCell{
+                newCell.alpha = 0
+                let when = DispatchTime.now() + 0.3 // change 2 to desired number of seconds
+                DispatchQueue.main.asyncAfter(deadline: when) {
+                    newCell.alpha = 1
+                    newCell.animateAsNew()
+                }
             }
         }
     }
     
     func getUserProducts() {
-        print("Getting product info...")
+        //print("Getting product info...")
         if (HulaUser.sharedInstance.userId.characters.count>0){
             let queryURL = HulaConstants.apiURL + "products/user/" + HulaUser.sharedInstance.userId
             //print(queryURL)
@@ -241,7 +247,7 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
                                 HLDataManager.sharedInstance.newProduct.productId = product_id
                             }
                         }
-                        self.productTableView.reloadData()
+                        //self.productTableView.reloadData()
                     }
                 } else {
                     // connection error
@@ -263,7 +269,7 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
                             print(dictionary)
                         }
                         HLDataManager.sharedInstance.uploadMode = false
-                        self.productTableView.reloadData()
+                        //self.productTableView.reloadData()
                     }
                 } else {
                     // connection error
