@@ -25,6 +25,7 @@ class HLSwappViewController: UIViewController {
     @IBOutlet weak var myUserView: UIView!
     @IBOutlet weak var bottomBarView: UIImageView!
     @IBOutlet weak var sendOfferBtn: HLRoundedButton!
+    @IBOutlet weak var remainingTimeLabel: UILabel!
     
     @IBOutlet weak var chatButton: HLRoundedButton!
     var initialOtherUserX:CGFloat = 0.0
@@ -42,6 +43,7 @@ class HLSwappViewController: UIViewController {
         self.myUserView.isHidden = true;
         self.otherUserView.isHidden = true;
         self.sendOfferBtn.alpha = 0;
+        self.remainingTimeLabel.alpha = 0;
     }
     override func viewWillAppear(_ animated: Bool) {
         
@@ -207,7 +209,25 @@ class HLSwappViewController: UIViewController {
                     if current_user_turn != HulaUser.sharedInstance.userId {
                         self.sendOfferBtn.alpha = 0
                         self.mainCentralLabel.alpha=1;
-                        self.mainCentralLabel.text = "Waiting for response..."
+                        self.mainCentralLabel.text = "Waiting for user reply"
+                        self.remainingTimeLabel.alpha = 1
+                        let h_str = thisTrade.object(forKey: "last_update") as! String
+                        let date = h_str.dateFromISO8601?.addingTimeInterval(HulaConstants.courtesyTime * 60.0 * 60.0)
+                        //print(date)
+                        
+                        let formatter = DateComponentsFormatter()
+                        formatter.allowedUnits = [.hour]
+                        formatter.unitsStyle = .short
+                        var str_hours = formatter.string(from: Date(), to: date!)!
+                        str_hours = (str_hours.replacingOccurrences(of: " hr", with: ""))
+                        if (str_hours[0] == "-"){
+                            str_hours = "0";
+                        }
+                    
+                        self.remainingTimeLabel.text = "Remaining time for response: \(str_hours)h"
+                        
+                    } else {
+                        self.remainingTimeLabel.alpha = 0;
                     }
                     
                 }
