@@ -21,6 +21,8 @@ struct HulaConstants {
     // Server API Links
     static let apiURL: String = "https://api.hula.trading/v1/"
     static let staticServerURL: String = "https://hula.trading"
+    static let noProductThumb: String = "https://hula.trading/files/user/nope.jpg"
+    
     
     // local storage
     static let userFile: String = "UserData"

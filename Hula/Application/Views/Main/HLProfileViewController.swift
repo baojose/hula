@@ -67,15 +67,32 @@ class HLProfileViewController: BaseViewController {
             self.tabBarController?.selectedIndex = 0
         }
         
+        
+        
     }
     override func viewDidAppear(_ animated: Bool) {
         
         if (HulaUser.sharedInstance.userPhotoURL != "") && (current_image_url != HulaUser.sharedInstance.userPhotoURL){
-            print("Changin image")
+            print("Changing image")
             print(HulaUser.sharedInstance.userPhotoURL)
-            self.profileImageView.loadImageFromURL(urlString: HulaUser.sharedInstance.userPhotoURL)
+            let thumb = commonUtils.getThumbFor(url: HulaUser.sharedInstance.userPhotoURL)
+            self.profileImageView.loadImageFromURL(urlString: thumb)
             self.current_image_url = HulaUser.sharedInstance.userPhotoURL
         }
+        
+        
+        if (HulaUser.sharedInstance.isIncompleteProfile()){
+            // badges to inform the user
+            UIView.animate(withDuration: 0.4, animations: {
+                self.completeProfileTooltip.alpha = 1
+                self.settingsAlertBadge.alpha = 1
+            })
+        } else {
+            self.completeProfileTooltip.alpha = 0
+            self.settingsAlertBadge.alpha = 0
+        }
+        
+        
     }
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
@@ -232,7 +249,7 @@ class HLProfileViewController: BaseViewController {
     
     func getUserProfile() {
         
-        print("Getting user info...")
+        //print("Getting user info...")
         let queryURL = HulaConstants.apiURL + "me"
         //print(queryURL)
         HLDataManager.sharedInstance.httpGet(urlstr: queryURL, taskCallback: { (ok, json) in
@@ -244,78 +261,41 @@ class HLProfileViewController: BaseViewController {
                         
                         if let user = dictionary["user"] as? [String: Any]  {
                             self.spinner.hide()
-                            if (user["name"] as? String) != nil {
-                                HulaUser.sharedInstance.userName = user["name"] as? String
+                            HulaUser.sharedInstance.populate(with: user as NSDictionary)
+                            
+                            if (HulaUser.sharedInstance.fbToken != ""){
+                                self.verFacebookIcon.image = UIImage(named: "icon_facebook_on")
+                                self.verFacebookIcon.bouncer()
                             }
-                            if (user["nick"] as? String) != nil {
-                                HulaUser.sharedInstance.userNick = user["nick"] as? String
+                            if (HulaUser.sharedInstance.liToken != ""){
+                                self.verLinkedinIcon.image = UIImage(named: "icon_linkedin_on")
+                                self.verLinkedinIcon.bouncer()
                             }
-                            if (user["bio"] as? String) != nil {
-                                HulaUser.sharedInstance.userBio = user["bio"] as? String
+                            if (HulaUser.sharedInstance.twToken != ""){
+                                self.verTwitterIcon.image = UIImage(named: "icon_twitter_on")
+                                self.verTwitterIcon.bouncer()
                             }
-                            if (user["email"] as? String) != nil {
-                                HulaUser.sharedInstance.userEmail = user["email"] as? String
-                            }
-                            if (user["image"] as? String) != nil {
-                                HulaUser.sharedInstance.userPhotoURL = user["image"] as? String
-                                self.profileImageView.loadImageFromURL(urlString: HulaUser.sharedInstance.userPhotoURL)
-                                self.current_image_url = HulaUser.sharedInstance.userPhotoURL
+                            if (HulaUser.sharedInstance.status == "verified"){
+                                self.verMailIcon.image = UIImage(named: "icon_mail_on")
+                                self.verMailIcon.bouncer()
                             }
                             
-                            if (user["location_name"] as? String) != nil {
-                                HulaUser.sharedInstance.userLocationName = user["location_name"] as? String
-                            }
-                            
-                            if let loc = user["location"] as? [CGFloat] {
-                                let lat = loc[0]
-                                let lon = loc[1]
-                                HulaUser.sharedInstance.location = CLLocation(latitude:CLLocationDegrees(lat), longitude:CLLocationDegrees(lon));
-                                //print(HulaUser.sharedInstance.location)
-                            }
-                            
-                            if let fbt = (user["fb_token"] as? String) {
-                                if (fbt != ""){
-                                    HulaUser.sharedInstance.fbToken = fbt
-                                    self.verFacebookIcon.image = UIImage(named: "icon_facebook_on")
-                                    self.verFacebookIcon.bouncer()
-                                }
-                            }
-                            if let lit = (user["li_token"] as? String) {
-                                if (lit != ""){
-                                    HulaUser.sharedInstance.liToken = user["li_token"] as? String
-                                    self.verLinkedinIcon.image = UIImage(named: "icon_linkedin_on")
-                                    self.verLinkedinIcon.bouncer()
-                                }
-                            }
-                            if let twt = (user["tw_token"] as? String){
-                                if (twt != ""){
-                                    HulaUser.sharedInstance.twToken = user["tw_token"] as? String
-                                    self.verTwitterIcon.image = UIImage(named: "icon_twitter_on")
-                                    self.verTwitterIcon.bouncer()
-                                }
-                            }
-                            if let uStatus = (user["status"] as? String) {
-                                if (uStatus == "verified"){
-                                    HulaUser.sharedInstance.status = user["status"] as? String
-                                    self.verMailIcon.image = UIImage(named: "icon_mail_on")
-                                    self.verMailIcon.bouncer()
-                                }
-                            }
-                            
-                            if (user["feedback_count"] as? CGFloat) != nil {
-                                
-                                let feedback_points:CGFloat = (user["feedback_points"] as? CGFloat)!
-                                let feedback_count:CGFloat = (user["feedback_count"] as? CGFloat)!
-                                if (feedback_count>0){
-                                    let perc: Int =  Int(round( feedback_points/feedback_count * 100))
-                                    self.userFeedbackLabel.text = "\(perc)%"
-                                } else {
-                                    self.userFeedbackLabel.text = "-"
-                                }
-                            }
+                            self.userFeedbackLabel.text = HulaUser.sharedInstance.getFeedback()
+                            let thumb = self.commonUtils.getThumbFor(url: HulaUser.sharedInstance.userPhotoURL)
+                            self.profileImageView.loadImageFromURL(urlString: thumb)
+                            self.current_image_url = HulaUser.sharedInstance.userPhotoURL
                             self.userFullNameLabel.text = HulaUser.sharedInstance.userName
                             self.userNickLabel.text = HulaUser.sharedInstance.userNick
                             self.userBioLabel.text = HulaUser.sharedInstance.userBio
+                            
+                            self.tradesStartedLabel.text = "\(Int(HulaUser.sharedInstance.trades_started))"
+                            self.tradesEndedLabel.text = "\(Int(HulaUser.sharedInstance.trades_finished))"
+                            self.tradesClosedLabel.text = "\(Int(HulaUser.sharedInstance.trades_closed))"
+                            
+                            
+                            HLDataManager.sharedInstance.writeUserData()
+                            
+                            
                             if (HulaUser.sharedInstance.isIncompleteProfile()){
                                 // badges to inform the user
                                 UIView.animate(withDuration: 0.4, animations: {
@@ -326,7 +306,6 @@ class HLProfileViewController: BaseViewController {
                             
                             if let feedback = dictionary["feedback"] as? NSArray {
                                 self.arrFeedback = feedback
-                                //print(self.arrFeedback)
                             }
                             
                             let app = UIApplication.shared.delegate as! AppDelegate
@@ -377,6 +356,11 @@ class HLProfileViewController: BaseViewController {
         newImageView.alpha = 0.0
         newImageView.tag = 10001
         newImageView.isUserInteractionEnabled = true
+        
+        
+        newImageView.loadImageFromURL(urlString: HulaUser.sharedInstance.userPhotoURL)
+        
+        
         let tap = UITapGestureRecognizer(target: self, action: #selector(optionsFullscreenImage))
         newImageView.addGestureRecognizer(tap)
         let swipe = UIPanGestureRecognizer(target: self, action: #selector(dismissFullscreenImage))
@@ -427,7 +411,7 @@ class HLProfileViewController: BaseViewController {
         image_dismissing = true
     }
     func optionsFullscreenImage(_ sender: UIGestureRecognizer) {
-        let alertController = UIAlertController(title: "Profile image options", message: "Choose an option...", preferredStyle: .actionSheet)
+        let alertController = UIAlertController(title: "Edit profile image", message: "Do you want to replace this image with a new one?", preferredStyle: .actionSheet)
         
         
         let  editButton = UIAlertAction(title: "Change image", style: .destructive, handler: { (action) -> Void in

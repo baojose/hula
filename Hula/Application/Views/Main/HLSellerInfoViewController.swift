@@ -22,6 +22,17 @@ class HLSellerInfoViewController: BaseViewController, UITableViewDelegate, UITab
     @IBOutlet weak var sellerFeedbackLabel: UILabel!
     
     
+    @IBOutlet weak var fbIcon: UIImageView!
+    @IBOutlet weak var liIcon: UIImageView!
+    @IBOutlet weak var twIcon: UIImageView!
+    @IBOutlet weak var emIcon: UIImageView!
+    
+    
+    @IBOutlet weak var tradesStartedLabel: UILabel!
+    @IBOutlet weak var tradesEndedLabel: UILabel!
+    @IBOutlet weak var tradesClosedLabel: UILabel!
+    
+    
     var user = HulaUser();
     var userProducts: NSArray = []
     var userFeedback: NSArray = []
@@ -37,19 +48,38 @@ class HLSellerInfoViewController: BaseViewController, UITableViewDelegate, UITab
     }
     
     func initData(){
+        
+        let thumb = CommonUtils.sharedInstance.getThumbFor(url: user.userPhotoURL)
+        profileImage.loadImageFromURL(urlString: thumb)
+        sellerNameLabel.text = user.userNick
+        sellerLocationLabel.text = user.userLocationName
+        
+        if (user.twToken.characters.count>1){
+            twIcon.image = UIImage(named: "icon_twitter_on")
+        }
+        if (user.fbToken.characters.count>1){
+            fbIcon.image = UIImage(named: "icon_facebook_on")
+        }
+        if (user.liToken.characters.count>1){
+            liIcon.image = UIImage(named: "icon_linkedin_on")
+        }
+        if (user.status == "verified"){
+            emIcon.image = UIImage(named: "icon_mail_on")
+        }
+        
+        sellerFeedbackLabel.text = user.getFeedback()
     }
     func initView(){
         commonUtils.circleImageView(profileImage)
+        
         lblOtherItemInStock.attributedText = commonUtils.attributedStringWithTextSpacing("OTHER ITEMS IN STOCK", 2.33)
+        
         var newFrame: CGRect! = sellerProductTableView.frame
-        newFrame.size.height = CGFloat(userProducts.count) * 129 + 100;
+        newFrame.size.height = CGFloat(userProducts.count) * 129 + 200;
         sellerProductTableView.frame = newFrame
         let totalHeight = sellerProductTableView.frame.origin.y + sellerProductTableView.frame.size.height
         mainScrollView.contentSize = CGSize(width: 0, height: totalHeight)
         
-        profileImage.loadImageFromURL(urlString: user.userPhotoURL)
-        sellerNameLabel.text = user.userNick
-        sellerLocationLabel.text = user.userLocationName
         containerView.frame.size.height = totalHeight
         
     }
@@ -83,5 +113,30 @@ class HLSellerInfoViewController: BaseViewController, UITableViewDelegate, UITab
             viewController.productData = hproduct
             self.navigationController?.pushViewController(viewController, animated: true)
         }
+    }
+    
+    @IBAction func addToTradeAction(_ sender: Any) {
+            //print(productId)
+            let otherId = user.userId
+            if (HulaUser.sharedInstance.userId.characters.count>0){
+                // user is loggedin
+                let queryURL = HulaConstants.apiURL + "trades/"
+                let dataString:String = "product_id=&other_id=\(otherId!)"
+                HLDataManager.sharedInstance.httpPost(urlstr: queryURL, postString: dataString, isPut: false, taskCallback: { (ok, json) in
+                    if (ok){
+                        // show barter screen
+                        DispatchQueue.main.async {
+                            let storyboard = UIStoryboard(name: "Main", bundle: nil)
+                            let myModalViewController = storyboard.instantiateViewController(withIdentifier: "swappView")
+                            myModalViewController.modalPresentationStyle = UIModalPresentationStyle.fullScreen
+                            myModalViewController.modalTransitionStyle = UIModalTransitionStyle.crossDissolve
+                            self.present(myModalViewController, animated: true, completion: nil)
+                        }
+                    } else {
+                        // connection error
+                        print("Connection error")
+                    }
+                })
+            }
     }
 }

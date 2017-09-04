@@ -10,7 +10,6 @@ import UIKit
 
 class HLEditProductMainViewController: BaseViewController, ProductPictureDelegate {
     
-    var productToDisplay:NSDictionary = [:]
     var product = HulaProduct()
     @IBOutlet var mainScrollVIew: UIScrollView!
     @IBOutlet var contentView: UIView!
@@ -42,11 +41,10 @@ class HLEditProductMainViewController: BaseViewController, ProductPictureDelegat
     }
     
     func initData() {
-        product.populate(with: productToDisplay)
+        //product.populate(with: productToDisplay)
     }
     func initView() {
         mainScrollVIew.contentSize = contentView.frame.size
-        //print(productToDisplay);
         productImage.loadImageFromURL(urlString: product.productImage)
         productTitle.text = product.productName
         productTitleLabel.text = product.productName
@@ -73,6 +71,9 @@ class HLEditProductMainViewController: BaseViewController, ProductPictureDelegat
                 if (ok){
                     self.spinner.hide()
                     DispatchQueue.main.async {
+                        if let productListVC = self.parent?.childViewControllers.first as? HLMyProductsViewController{
+                            productListVC.getUserProducts()
+                        }
                         _ = self.navigationController?.popViewController(animated: true)
                     }
                 }

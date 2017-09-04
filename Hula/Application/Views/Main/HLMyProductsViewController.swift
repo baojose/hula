@@ -12,9 +12,10 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
 
     @IBOutlet var productTableView: UITableView!
     @IBOutlet weak var noProductsView: UIView!
-    var arrayProducts = [] as Array
+    var arrayProducts: [HulaProduct] = []
     var arrayImagesURL = ["","","",""] as Array
     var spinner: HLSpinnerUIView!
+    
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -23,6 +24,7 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
         self.initView()
         
         
+        self.getUserProducts()
         
         spinner = HLSpinnerUIView()
         self.view.addSubview(spinner)
@@ -31,8 +33,11 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
     }
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        self.getUserProducts()
-        print(HulaUser.sharedInstance)
+        
+        
+        if dataManager.uploadMode == false {
+            self.productTableView.reloadData()
+        }
     }
     
     override func didReceiveMemoryWarning() {
@@ -70,55 +75,68 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         
         let cell = tableView.dequeueReusableCell(withIdentifier: "myProductTableViewCell") as! HLMyProductTableViewCell
-        let order_sorted = self.arrayProducts.count - indexPath.row - 1
-        
-        let product : NSDictionary = self.arrayProducts[order_sorted] as! NSDictionary
-        //print(product)
-        if let productTitle = product.object(forKey: "title") as? String {
-            cell.productDescription.text = productTitle
-        } else {
-            cell.productDescription.text = "Untitled product"
+        var order_sorted = self.arrayProducts.count - indexPath.row - 1
+        if(order_sorted > self.arrayProducts.count){
+            order_sorted = self.arrayProducts.count - 1
         }
-        if (product.object(forKey: "image_url") as? String == ""){
-            if let product_image = product.object(forKey: "image") as? UIImage {
-                cell.productImage.image = product_image
+        if(order_sorted < 0){
+            order_sorted = 0
+        }
+        
+        let product : HulaProduct = self.arrayProducts[order_sorted]
+        //print(product)
+        cell.productDescription.text = product.productName
+        
+        if (product.productImage.characters.count == 0){
+            if (dataManager.newProduct.arrProductPhotos.count>0){
+                if let img = dataManager.newProduct.arrProductPhotos.object(at: 0) as? UIImage {
+                    cell.productImage.image = img
+                } else {
+                    cell.productImage.loadImageFromURL(urlString: HulaConstants.noProductThumb)
+                }
+            } else {
+                cell.productImage.loadImageFromURL(urlString: HulaConstants.noProductThumb)
             }
         } else {
-            if let mainProductImage = product.object(forKey: "image_url") as? String {
-                //commonUtils.loadImageOnView(imageView:cell.productImage, withURL:(mainProductImage))
-                let thumb = commonUtils.getThumbFor(url: mainProductImage)
-                //print(thumb)
-                cell.productImage.loadImageFromURL(urlString: thumb)
-            }
+            let thumb = commonUtils.getThumbFor(url: product.productImage)
+            cell.productImage.loadImageFromURL(urlString: thumb)
         }
         
         cell.warningView.isHidden = false
-        if let desc = product.object(forKey: "description") as? String {
-            //print("Hidden")
-            if (desc != ""){
-                cell.warningView.isHidden = true
-            }
+        if (product.productDescription != ""){
+            cell.warningView.isHidden = true
         }
         let titleHeight: CGFloat! = commonUtils.heightString(width: cell.productDescription.frame.size.width, font: cell.productDescription.font, string: cell.productDescription.text!)
         cell.productDescription.frame = CGRect(x: cell.productDescription.frame.origin.x, y:(cell.contentView.frame.size.height - titleHeight) / 2.0, width: cell.productDescription.frame.size.width, height: titleHeight)
         
-        if (indexPath.row == 0 && dataManager.uploadMode == true ){
-            cell.animateAsNew()
-        }
+
         return cell
     }
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath){
-        let order_sorted = self.arrayProducts.count - indexPath.row - 1
-        goEditProductPage(index: order_sorted)
+        var order_sorted = self.arrayProducts.count - indexPath.row - 1
+        if(order_sorted > self.arrayProducts.count){
+            order_sorted = self.arrayProducts.count - 1
+        }
+        if(order_sorted < 0){
+            order_sorted = 0
+        }
+        
+        let product : HulaProduct = self.arrayProducts[order_sorted]
+        if (product.productDescription == "" ){
+            // product is incomplete
+            let viewController = self.storyboard?.instantiateViewController(withIdentifier: "completeProductProfilePage") as! HLCompleteProductProfileViewController
+            self.dataManager.newProduct = product
+            self.present(viewController, animated: true)
+            
+            HLDataManager.sharedInstance.uploadMode = false
+        } else {
+            goEditProductPage(index: order_sorted)
+        }
     }
     
     // IB Actions
     
     @IBAction func presentAddNewProductPage(_ sender: UIButton) {
-
-        
-        
-        //print("button pressed")
         dataManager.uploadMode = true
         dataManager.newProduct = HulaProduct.init()
         let cameraViewController = self.storyboard?.instantiateViewController(withIdentifier: "customCameraPage") as! HLCustomCameraViewController
@@ -131,19 +149,17 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
     
     
     func newPostModeDesign(_ notification: NSNotification) {
+        //print("NewPostMode")
+        //print(HLDataManager.sharedInstance.newProduct.productId)
+        //print(dataManager.uploadMode)
         if dataManager.uploadMode == true {
-            var newProduct = [String : AnyObject]()
-            newProduct["title"] = dataManager.newProduct.productName as AnyObject
-            newProduct["image"] = dataManager.newProduct.arrProductPhotos[0] as AnyObject
-            newProduct["image_url"] = "" as AnyObject
-            newProduct["description"] = dataManager.newProduct.productDescription as AnyObject
-            newProduct["condition"] = dataManager.newProduct.productCondition as AnyObject
             
-            if (HLDataManager.sharedInstance.newProduct.productId.characters.count>0){
-                self.arrayProducts[self.arrayProducts.count  - 1] = newProduct
+            if HLDataManager.sharedInstance.newProduct.productId.characters.count > 0 && self.arrayProducts.count > 0{
+                self.arrayProducts[self.arrayProducts.count  - 1] = dataManager.newProduct
                 updateProduct()
             } else {
-                self.arrayProducts.append(newProduct)
+                self.arrayProducts.append(HLDataManager.sharedInstance.newProduct)
+                //self.arrayProducts.insert(HLDataManager.sharedInstance.newProduct, at: 0)
                 uploadImages()
                 uploadProduct()
                 let when = DispatchTime.now() + 2 // change 2 to desired number of seconds
@@ -158,11 +174,19 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
             productTableView.reloadData()
             productTableView.setContentOffset(CGPoint(x: 0.0, y: 0.0), animated: false)
             
+            if let newCell = productTableView.cellForRow(at: IndexPath(item: 0, section: 0)) as? HLMyProductTableViewCell{
+                newCell.alpha = 0
+                let when = DispatchTime.now() + 0.3 // change 2 to desired number of seconds
+                DispatchQueue.main.asyncAfter(deadline: when) {
+                    newCell.alpha = 1
+                    newCell.animateAsNew()
+                }
+            }
         }
     }
     
     func getUserProducts() {
-        //print("Getting user info...")
+        //print("Getting product info...")
         if (HulaUser.sharedInstance.userId.characters.count>0){
             let queryURL = HulaConstants.apiURL + "products/user/" + HulaUser.sharedInstance.userId
             //print(queryURL)
@@ -171,8 +195,18 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
                 if (ok){
                     DispatchQueue.main.async {
                         if let dictionary = json as? [Any] {
-                            //print(dictionary)
-                            self.arrayProducts = dictionary
+                            print(dictionary)
+                            let products_arr = dictionary
+                            
+                            self.arrayProducts = []
+                            for pr in products_arr {
+                                if let tmp = pr as? NSDictionary{
+                                    let prod = HulaProduct()
+                                    prod.populate(with: tmp)
+                                    self.arrayProducts.append(prod)
+                                }
+                            }
+                            
                             self.spinner.hide()
                             HulaUser.sharedInstance.arrayProducts = dictionary
                             if (self.arrayProducts.count != 0){
@@ -213,7 +247,7 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
                                 HLDataManager.sharedInstance.newProduct.productId = product_id
                             }
                         }
-                        self.productTableView.reloadData()
+                        //self.productTableView.reloadData()
                     }
                 } else {
                     // connection error
@@ -227,7 +261,7 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
         if (HLDataManager.sharedInstance.newProduct.productId.characters.count>0){
             let queryURL = HulaConstants.apiURL + "products/" + HLDataManager.sharedInstance.newProduct.productId
             let dataString:String = updateProductDataString()
-            print(dataString)
+            //print(dataString)
             HLDataManager.sharedInstance.httpPost(urlstr: queryURL, postString: dataString, isPut: true, taskCallback: { (ok, json) in
                 if (ok){
                     DispatchQueue.main.async {
@@ -235,7 +269,7 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
                             print(dictionary)
                         }
                         HLDataManager.sharedInstance.uploadMode = false
-                        self.productTableView.reloadData()
+                        //self.productTableView.reloadData()
                     }
                 } else {
                     // connection error
@@ -269,17 +303,21 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
                     if (dataManager.newProduct.arrProductPhotos[i] as? UIImage != nil){
                         dataManager.uploadImage(dataManager.newProduct.arrProductPhotos[i] as! UIImage, itemPosition:i, taskCallback: { (ok, json) in
                             if (ok){
-                                print("Uploaded!")
+                                //print("Uploaded!")
                                 DispatchQueue.main.async {
                                     if let dictionary = json as? [String: Any] {
-                                        print(dictionary)
+                                        //print(dictionary)
                                         if let filePath:String = dictionary["path"] as? String {
-                                            print(filePath)
+                                            //print(filePath)
                                             if let pos = dictionary["position"] as? String {
                                                 //print(pos)
                                                 self.arrayImagesURL[Int(pos)!] = HulaConstants.staticServerURL + filePath
-                                                HLDataManager.sharedInstance.newProduct.arrProductPhotoLink = self.arrayImagesURL 
-                                                print(self.arrayImagesURL[Int(pos)!])
+                                                HLDataManager.sharedInstance.newProduct.arrProductPhotoLink = self.arrayImagesURL
+                                                if Int(pos) == 0 {
+                                                    HLDataManager.sharedInstance.newProduct.productImage = HulaConstants.staticServerURL + filePath
+                                                }
+                                                //print(self.arrayImagesURL[Int(pos)!])
+                                                self.updateProduct()
                                             }
                                         }
                                     }
@@ -297,9 +335,10 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
     
     func goEditProductPage(index: Int){
         //print(sender.tag)
-        let productToDisplay : NSDictionary = self.arrayProducts[index] as! NSDictionary
+        //let productToDisplay : HulaProduct = self.arrayProducts[index]
         let viewController = self.storyboard?.instantiateViewController(withIdentifier: "editProductMainPage") as! HLEditProductMainViewController
-        viewController.productToDisplay = productToDisplay
+        //viewController.productToDisplay = productToDisplay
+        viewController.product = self.arrayProducts[index]
         self.navigationController?.pushViewController(viewController, animated: true)
     }
     

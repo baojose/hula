@@ -35,7 +35,8 @@ class HLLogInViewController: UserBaseViewController, UITextFieldDelegate {
         nextButton.stopAnimation()
     }
     @IBAction func closeIdentificationVC(_ sender: Any) {
-        self.closeIdentification()
+        //self.closeIdentification()
+        _ = self.navigationController?.popViewController(animated: true)
     }
     
     @IBAction func emailValueChanged(_ sender: Any) {

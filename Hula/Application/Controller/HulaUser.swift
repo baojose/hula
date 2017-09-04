@@ -27,6 +27,11 @@ class HulaUser: NSObject {
     var liToken: String!
     var deviceId: String!
     var maxTrades: Int = 3
+    var feedback_count: Float = 0.0
+    var feedback_points: Float = 0.0
+    var trades_started: Float = 0.0
+    var trades_finished: Float = 0.0
+    var trades_closed: Float = 0.0
     var arrayProducts = [] as Array
     
     class var sharedInstance: HulaUser {
@@ -51,6 +56,11 @@ class HulaUser: NSObject {
         self.twToken = ""
         self.liToken = ""
         self.deviceId = ""
+        self.feedback_count = 0.0
+        self.feedback_points = 0.0
+        self.trades_started = 0.0
+        self.trades_finished = 0.0
+        self.trades_closed = 0.0
         self.location = CLLocation(latitude: 0, longitude: 0)
         self.maxTrades = 3
         self.arrayProducts = []
@@ -91,6 +101,11 @@ class HulaUser: NSObject {
         self.liToken = ""
         self.maxTrades = 3
         self.deviceId = ""
+        self.feedback_count = 0.0
+        self.feedback_points = 0.0
+        self.trades_started = 0.0
+        self.trades_finished = 0.0
+        self.trades_closed = 0.0
         self.location = CLLocation(latitude: 0, longitude: 0)
         self.arrayProducts = []
     }
@@ -148,6 +163,51 @@ class HulaUser: NSObject {
         }
         return str
     }
+    func getFeedback() -> String{
+        var res = "-"
+        if self.feedback_count > 0 {
+            let perc: Int =  Int(round( self.feedback_points/self.feedback_count * 100))
+            res = "\(perc)%"
+        } else {
+            res = "-"
+        }
+        return res
+    }
+    
+    
+    
+    func populate(with: NSDictionary){
+        if let tmp = with.object(forKey: "_id") as? String { userId = tmp }
+        if let tmp = with.object(forKey: "name") as? String { userName = tmp }
+        if let tmp = with.object(forKey: "nick") as? String { userNick = tmp }
+        if let tmp = with.object(forKey: "bio") as? String { userBio = tmp }
+        if let tmp = with.object(forKey: "email") as? String { userEmail = tmp }
+        if let tmp = with.object(forKey: "image") as? String { userPhotoURL = tmp }
+        if let tmp = with.object(forKey: "location_name") as? [CGFloat]  {
+            let lat = tmp[0]
+            let lon = tmp[1]
+            location = CLLocation(latitude:CLLocationDegrees(lat), longitude:CLLocationDegrees(lon));
+        }
+        if let tmp = with.object(forKey: "fb_token") as? String { fbToken = tmp }
+        if let tmp = with.object(forKey: "tw_token") as? String { twToken = tmp }
+        if let tmp = with.object(forKey: "li_token") as? String { liToken = tmp }
+        if let tmp = with.object(forKey: "status") as? String { status = tmp }
+        
+        if let tmp = with.object(forKey: "feedback_count") as? Float { feedback_count = tmp }
+        if let tmp = with.object(forKey: "feedback_points") as? Float { feedback_points = tmp }
+        
+        
+        if let tmp = with.object(forKey: "trades_started") as? Float { trades_started = tmp }
+        if let tmp = with.object(forKey: "trades_finished") as? Float { trades_finished = tmp }
+        if let tmp = with.object(forKey: "trades_closed") as? Float { trades_closed = tmp }
+        
+        if let tmp = with.object(forKey: "deviceId") as? String { deviceId = tmp }
+        if let tmp = with.object(forKey: "maxTrades") as? Int { maxTrades = tmp }
+        
+        
+        
+    }
+    
     
     
     override var description : String {

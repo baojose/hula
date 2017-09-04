@@ -31,6 +31,7 @@ class HLCompleteProductProfileViewController: BaseViewController, UIScrollViewDe
     @IBOutlet weak var productReferenceImage: UIImageView!
     var productCondition:String = "new"
     var productImage:UIImage!
+    var currentMode:Int = 0;
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -47,15 +48,17 @@ class HLCompleteProductProfileViewController: BaseViewController, UIScrollViewDe
     }
     func initView(){
         
-        
         commonUtils.circleImageView(productReferenceImage)
-        productReferenceImage.image = productImage
-        
+        if productImage != nil{
+            productReferenceImage.image = productImage
+        } else{
+            productReferenceImage.loadImageFromURL(urlString: HLDataManager.sharedInstance.newProduct.productImage)
+        }
         pageTitleLabel.attributedText = commonUtils.attributedStringWithTextSpacing(pageTitleLabel.text!, 2.33)
         categoryTableView.frame.origin = CGPoint(x: 0.0, y: 0.0)
         perkContainView.frame.origin = CGPoint(x: mainScrollView.frame.size.width, y: 0.0)
         contentView.frame.origin = CGPoint(x: 0.0, y: 0)
-        //mainScrollView.contentSize = contentView.frame.size
+        
         mainScrollView.setContentOffset(CGPoint(x:0.0, y:0.0), animated: false)
         self.changeMarkState(0)
         self.changeConditionState(conditionNewBtn.tag)
@@ -64,6 +67,8 @@ class HLCompleteProductProfileViewController: BaseViewController, UIScrollViewDe
         desciptionTxtField.addTarget(self, action: #selector(textchange(_:)), for: UIControlEvents.editingChanged)
         let tapGesture: UITapGestureRecognizer! = UITapGestureRecognizer.init(target: self, action: #selector(onTapScreen))
         perkContainView.addGestureRecognizer(tapGesture)
+        
+        perkScrollView.contentSize = CGSize(width: mainScrollView.frame.size.width, height: mainScrollView.frame.size.height+130)
     }
     
     func changeMarkState(_ mode: Int!){
@@ -74,6 +79,7 @@ class HLCompleteProductProfileViewController: BaseViewController, UIScrollViewDe
             perkMarkLabel.textColor = UIColor.lightGray
             perkMarkImage.image = UIImage.init(named: "icon_unprogress")
             perkMarkLineLabel.isHidden = true
+            currentMode = 0
         }else if mode == 1{
             perkMarkLabel.textColor = HulaConstants.appMainColor
             perkMarkImage.image = UIImage.init(named: "icon_progress")
@@ -81,6 +87,7 @@ class HLCompleteProductProfileViewController: BaseViewController, UIScrollViewDe
             categoryMarkLabel.textColor = UIColor.lightGray
             categoryMarkImage.image = UIImage.init(named: "icon_checked")
             categoryMarkLineLabel.isHidden = true
+            currentMode = 1
         }
     }
     @IBAction func newConditionClicked(_ sender: UIButton!) {
@@ -184,25 +191,27 @@ class HLCompleteProductProfileViewController: BaseViewController, UIScrollViewDe
     }
     
     @IBAction func backAction(_ sender: Any) {
-        
-        UIView.animate(withDuration: 0.3, animations: {
-            self.perkContainView.frame.origin.x = self.mainScrollView.frame.size.width
-            self.categoryTableView.frame.origin.x = 0
-        })
-        self.changeMarkState(0)
-        
+        if currentMode == 0{
+            self.dismissToPreviousPage(sender)
+        } else {
+            UIView.animate(withDuration: 0.3, animations: {
+                self.perkContainView.frame.origin.x = self.mainScrollView.frame.size.width
+                self.categoryTableView.frame.origin.x = 0
+            })
+            self.changeMarkState(0)
+        }
     }
     @IBAction func doneBtnPRessed(_ sender: Any) {
         print("Complete button pressed")
-        if (dataManager.newProduct.arrProductPhotoLink.count>0){
+        //if (dataManager.newProduct.arrProductPhotoLink.count>0 || dataManager.newProduct.productImage != ""){
             dataManager.newProduct.productDescription = desciptionTxtField.text
             dataManager.newProduct.productCondition = productCondition
             dataManager.uploadMode = true
             NotificationCenter.default.post(name: NSNotification.Name(rawValue: "uploadModeUpdateDesign"), object: nil)
             self.dismiss(animated: true, completion: nil)
-        } else {
-            print("Images still uploading...")
-        }
+        //} else {
+            //print("Images still uploading...")
+        //}
     }
     
 }
