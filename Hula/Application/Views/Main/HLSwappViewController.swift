@@ -27,6 +27,7 @@ class HLSwappViewController: UIViewController {
     @IBOutlet weak var sendOfferBtn: HLRoundedButton!
     @IBOutlet weak var remainingTimeLabel: UILabel!
     
+    @IBOutlet weak var addTradeRoomBtn: HLRoundedButton!
     @IBOutlet weak var chatButton: HLRoundedButton!
     var initialOtherUserX:CGFloat = 0.0
     
@@ -44,6 +45,8 @@ class HLSwappViewController: UIViewController {
         self.otherUserView.isHidden = true;
         self.sendOfferBtn.alpha = 0;
         self.remainingTimeLabel.alpha = 0;
+        self.addTradeRoomBtn.alpha = 1;
+        self.mainCentralLabel.alpha = 0;
     }
     override func viewWillAppear(_ animated: Bool) {
         
@@ -67,6 +70,8 @@ class HLSwappViewController: UIViewController {
         self.otherUserView.isHidden = false;
         controlSetupBottomBar(index: 0)
         
+        self.addTradeRoomBtn.alpha = 1;
+        self.mainCentralLabel.alpha = 0;
     }
 
     override func didReceiveMemoryWarning() {
@@ -193,17 +198,21 @@ class HLSwappViewController: UIViewController {
                 self.otherUserView.frame.origin.x = self.initialOtherUserX
                 self.sendOfferBtn.alpha = 1
                 self.chatButton.alpha = 1
+                
+                self.addTradeRoomBtn.alpha = 0;
+                self.mainCentralLabel.alpha = 0;
             }
             
             if let swappPageVC = self.childViewControllers.first as? HLSwappPageViewController {
                 let thisTrade: NSDictionary = swappPageVC.arrTrades[swappPageVC.currentIndex]
                 
+                var other_user_id = ""
                 
                 if (HulaUser.sharedInstance.userId == thisTrade.object(forKey: "owner_id") as! String){
                     // I am the owner
-                    otherUserImage.loadImageFromURL(urlString: CommonUtils.sharedInstance.userImageURL(userId: thisTrade.object(forKey: "other_id") as! String))
+                    other_user_id = thisTrade.object(forKey: "other_id") as! String
                 } else {
-                    otherUserImage.loadImageFromURL(urlString: CommonUtils.sharedInstance.userImageURL(userId: thisTrade.object(forKey: "owner_id") as! String))
+                    other_user_id = thisTrade.object(forKey: "owner_id") as! String
                 }
                 if let current_user_turn = thisTrade.object(forKey: "turn_user_id") as? String{
                     if current_user_turn != HulaUser.sharedInstance.userId {
@@ -232,7 +241,22 @@ class HLSwappViewController: UIViewController {
                     
                 }
                 
-                otherUserNick.text = "User in room \(index)"
+                otherUserImage.loadImageFromURL(urlString: CommonUtils.sharedInstance.userImageURL(userId: other_user_id))
+
+                let queryURL = HulaConstants.apiURL + "users/\(other_user_id)/nick"
+                HLDataManager.sharedInstance.httpGet(urlstr: queryURL, taskCallback: { (result, json) in
+                    
+                    if let dict = json as? [String:String]{
+                    //print(dict)
+                        if let nick = dict["nick"] {
+                            //print(nick)
+                            DispatchQueue.main.async {
+                                self.otherUserNick.text = nick
+                            }
+                        }
+                    }
+                })
+                
             }
             
             
@@ -242,8 +266,9 @@ class HLSwappViewController: UIViewController {
                 self.extraRoomBtn.alpha = 1
                 self.extraRoomImage.alpha = 1
                 self.nextTradeBtn.alpha = 1
- */
-                self.mainCentralLabel.alpha=1;
+                 */
+                self.addTradeRoomBtn.alpha = 1;
+                self.mainCentralLabel.alpha=0;
                 self.myUserView.frame.origin.x = -500
                 self.otherUserView.frame.origin.x = self.initialOtherUserX + 500
                 self.sendOfferBtn.alpha = 0
