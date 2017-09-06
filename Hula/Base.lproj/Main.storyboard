@@ -2407,12 +2407,24 @@ Log In</string>
                                     <segue destination="mx5-tX-dRS" kind="modal" id="6RJ-Xb-e8z"/>
                                 </connections>
                             </button>
+                            <button opaque="NO" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" id="Pqo-Ld-tKY" customClass="HLRoundedButton" customModule="Hula" customModuleProvider="target">
+                                <rect key="frame" x="268" y="334" width="132" height="32"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="17"/>
+                                <state key="normal" title="New Trade Room">
+                                    <color key="titleColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                </state>
+                                <connections>
+                                    <action selector="sendOfferAction:" destination="YHt-Pc-Ojx" eventType="touchUpInside" id="97q-OE-Vud"/>
+                                </connections>
+                            </button>
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                     </view>
                     <freeformSimulatedSizeMetrics key="simulatedDestinationMetrics"/>
                     <size key="freeformSize" width="667" height="375"/>
                     <connections>
+                        <outlet property="addTradeRoomBtn" destination="Pqo-Ld-tKY" id="cQV-h0-sH4"/>
                         <outlet property="bottomBarView" destination="7ru-Zz-6rA" id="O7r-db-COh"/>
                         <outlet property="chatButton" destination="wOQ-jY-BBX" id="C5F-Nc-R38"/>
                         <outlet property="mainCentralLabel" destination="A7C-1J-WdA" id="Rmq-Iv-hIq"/>
