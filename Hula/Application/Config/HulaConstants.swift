@@ -18,7 +18,7 @@ struct HulaConstants {
     static let product_max_size = 800.0
     static let product_image_thumb_size:CGSize = CGSize(width: product_max_size, height: product_max_size)
     
-    static let courtesyTime: Double = 272.0 // hours between trades
+    static let courtesyTime: Double = 72.0 // hours between trades
     
     // Server API Links
     static let apiURL: String = "https://api.hula.trading/v1/"

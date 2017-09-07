@@ -12,6 +12,7 @@ class HLSwappViewController: UIViewController {
     
     weak var barterDelegate: HLBarterScreenDelegate?
     
+    @IBOutlet weak var mobileImage: UIImageView!
     @IBOutlet weak var portraitView: UIView!
     @IBOutlet weak var mainContainer: UIView!
     //@IBOutlet weak var swappPageControl: HLPageControl!
@@ -47,6 +48,10 @@ class HLSwappViewController: UIViewController {
         self.remainingTimeLabel.alpha = 0;
         self.addTradeRoomBtn.alpha = 1;
         self.mainCentralLabel.alpha = 0;
+        
+        
+        self.mobileImage.alpha = 0
+        self.mobileImage.transform = CGAffineTransform(rotationAngle: CGFloat(Double.pi/2));
     }
     override func viewWillAppear(_ animated: Bool) {
         
@@ -63,15 +68,18 @@ class HLSwappViewController: UIViewController {
         }
     }
     override func viewDidAppear(_ animated: Bool) {
-        initialOtherUserX = otherUserView.frame.origin.x
+        initialOtherUserX = self.view.frame.width - self.otherUserView.frame.width
         self.myUserView.frame.origin.x = -500
-        self.otherUserView.frame.origin.x = self.initialOtherUserX + 500
+        self.otherUserView.frame.origin.x = self.view.frame.width + 500
         self.myUserView.isHidden = false;
         self.otherUserView.isHidden = false;
         controlSetupBottomBar(index: 0)
         
         self.addTradeRoomBtn.alpha = 1;
         self.mainCentralLabel.alpha = 0;
+        
+        
+        self.rotateAnimation()
     }
 
     override func didReceiveMemoryWarning() {
@@ -97,6 +105,9 @@ class HLSwappViewController: UIViewController {
         }
     }
     
+    @IBAction func closeSwappMode(_ sender: Any) {
+        self.dismiss(animated: true)
+    }
 
     /*
     // MARK: - Navigation
@@ -108,6 +119,31 @@ class HLSwappViewController: UIViewController {
     }
     */
     
+    
+    func rotateAnimation(){
+        if UIDeviceOrientationIsPortrait(UIDevice.current.orientation) {
+            mobileImage.alpha = 0
+            self.mobileImage.transform = CGAffineTransform(rotationAngle: CGFloat(-Double.pi/2));
+            UIView.animate(withDuration: 0.5, animations: {
+                self.mobileImage.alpha = 1
+            }, completion: { (success) in
+                UIView.animate(withDuration: 1.2, animations: {
+                    self.mobileImage.transform = CGAffineTransform(rotationAngle: CGFloat(Double.pi));
+                }, completion: { (success) in
+                    UIView.animate(withDuration: 1.5, animations: {
+                        self.mobileImage.alpha = 0
+                    }, completion: { (success) in
+                        self.mobileImage.transform = .identity
+                        let when = DispatchTime.now() + 1
+                        DispatchQueue.main.asyncAfter(deadline: when) {
+                            
+                            self.rotateAnimation()
+                        }
+                    })
+                })
+            })
+        }
+    }
     
     func rotated() {
         if UIDeviceOrientationIsPortrait(UIDevice.current.orientation) {
@@ -195,7 +231,7 @@ class HLSwappViewController: UIViewController {
  */
                 self.mainCentralLabel.alpha=0;
                 self.myUserView.frame.origin.x = 0
-                self.otherUserView.frame.origin.x = self.initialOtherUserX
+                self.otherUserView.frame.origin.x = self.view.frame.width - self.otherUserView.frame.width
                 self.sendOfferBtn.alpha = 1
                 self.chatButton.alpha = 1
                 
@@ -274,6 +310,7 @@ class HLSwappViewController: UIViewController {
                 self.sendOfferBtn.alpha = 0
                 self.mainCentralLabel.text = "Available Table Rooms"
                 self.chatButton.alpha = 0
+                self.remainingTimeLabel.alpha = 0;
             }
         }
     }
