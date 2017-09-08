@@ -16,6 +16,7 @@ class CommonUtils: NSObject, EasyTipViewDelegate {
     var currentTipArr: [HulaTip] = []
     var currentTip:Int = 0
     var lastTip:EasyTipView = EasyTipView(text: "");
+    var startingViewController: UIViewController!
     
     class var sharedInstance: CommonUtils {
         struct Static {
@@ -219,6 +220,8 @@ class CommonUtils: NSObject, EasyTipViewDelegate {
     
     
     func showTutorial(arrayTips: [HulaTip]){
+        
+        print(startingViewController)
         currentTipArr = arrayTips
         currentTip = -1
         self.showNextTip(false)
@@ -236,7 +239,7 @@ class CommonUtils: NSObject, EasyTipViewDelegate {
             DispatchQueue.main.asyncAfter(deadline: when) {
                 
                 if (self.currentTip < self.currentTipArr.count){
-                    EasyTipView.show(forView: self.currentTipArr[self.currentTip].view, text: self.currentTipArr[self.currentTip].text, delegate:self )
+                    EasyTipView.show(forView: self.currentTipArr[self.currentTip].view, withinSuperview: self.currentTipArr[self.currentTip].view.parentViewController?.view, text: self.currentTipArr[self.currentTip].text, delegate:self )
                     
                     //self.lastTip = EasyTipView(text: self.currentTipArr[self.currentTip].text)
                     //self.lastTip.show(forView: self.currentTipArr[self.currentTip].view)
@@ -249,6 +252,21 @@ class CommonUtils: NSObject, EasyTipViewDelegate {
     func easyTipViewDidDismiss(_ tipView: EasyTipView) {
         print("dismissed")
         self.showNextTip(false)
+    }
+    
+    func getTopViewController() -> UIViewController? {
+        if var topController = UIApplication.shared.keyWindow?.rootViewController {
+            while let presentedViewController = topController.presentedViewController {
+                topController = presentedViewController
+            }
+            
+            // topController should now be your topmost view controller
+            print(topController)
+            return topController;
+        } else {
+            return nil
+        }
+        
     }
 }
 
@@ -328,6 +346,19 @@ extension UIView {
     }
 }
 
+
+extension UIView {
+    var parentViewController: UIViewController? {
+        var parentResponder: UIResponder? = self
+        while parentResponder != nil {
+            parentResponder = parentResponder!.next
+            if let viewController = parentResponder as? UIViewController {
+                return viewController
+            }
+        }
+        return nil
+    }
+}
 // character at position
 extension String {
     
