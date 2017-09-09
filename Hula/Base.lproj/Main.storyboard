@@ -2305,14 +2305,14 @@ Log In</string>
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
                             </imageView>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" text="Available Trade Rooms" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="A7C-1J-WdA">
-                                <rect key="frame" x="213" y="334" width="241" height="21"/>
+                                <rect key="frame" x="213" y="331" width="241" height="21"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES"/>
                                 <fontDescription key="fontDescription" name="HelveticaNeue-Light" family="Helvetica Neue" pointSize="16"/>
                                 <color key="textColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                 <nil key="highlightedColor"/>
                             </label>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" text="Remaining time for response: 72h" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="pPP-Sw-Adn">
-                                <rect key="frame" x="213" y="349" width="241" height="21"/>
+                                <rect key="frame" x="213" y="346" width="241" height="21"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES"/>
                                 <fontDescription key="fontDescription" name="HelveticaNeue-Light" family="Helvetica Neue" pointSize="10"/>
                                 <color key="textColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
@@ -2388,6 +2388,10 @@ Log In</string>
                                     <color key="titleColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                 </state>
                             </button>
+                            <view contentMode="scaleToFill" misplaced="YES" id="t72-mw-2Co">
+                                <rect key="frame" x="313" y="362" width="40" height="10"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES"/>
+                            </view>
                             <view contentMode="scaleToFill" misplaced="YES" id="8Qd-eS-47d">
                                 <rect key="frame" x="0.0" y="0.0" width="667" height="377"/>
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -2444,6 +2448,7 @@ Log In</string>
                         <outlet property="portraitView" destination="8Qd-eS-47d" id="P2v-zm-pga"/>
                         <outlet property="remainingTimeLabel" destination="pPP-Sw-Adn" id="SWd-Ex-eKp"/>
                         <outlet property="sendOfferBtn" destination="MyB-ee-C6Y" id="2WY-7I-M0F"/>
+                        <outlet property="threeDotsView" destination="t72-mw-2Co" id="xxH-bc-DpK"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="Co1-j5-fgC" userLabel="First Responder" sceneMemberID="firstResponder"/>

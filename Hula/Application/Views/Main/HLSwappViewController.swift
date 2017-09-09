@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import SpriteKit
 
 class HLSwappViewController: UIViewController {
     
@@ -28,6 +29,7 @@ class HLSwappViewController: UIViewController {
     @IBOutlet weak var sendOfferBtn: HLRoundedButton!
     @IBOutlet weak var remainingTimeLabel: UILabel!
     
+    @IBOutlet weak var threeDotsView: UIView!
     @IBOutlet weak var addTradeRoomBtn: HLRoundedButton!
     @IBOutlet weak var chatButton: HLRoundedButton!
     var initialOtherUserX:CGFloat = 0.0
@@ -52,6 +54,16 @@ class HLSwappViewController: UIViewController {
         
         self.mobileImage.alpha = 0
         self.mobileImage.transform = CGAffineTransform(rotationAngle: CGFloat(Double.pi/2));
+        
+        let threeDots = HLThreeDotsWaiting(size: CGSize(width:40, height:10))
+        let skView = SKView(frame: CGRect(x: 0, y: 0, width: 40, height: 10))
+        //skView.showsFPS = true
+        //skView.showsNodeCount = true
+        skView.backgroundColor = UIColor(red: 0, green: 0, blue: 0, alpha: 0)
+        skView.presentScene(threeDots)
+        threeDotsView.addSubview(skView)
+        threeDots.animateDots()
+        threeDotsView.isHidden = true
     }
     override func viewWillAppear(_ animated: Bool) {
         
@@ -238,6 +250,7 @@ class HLSwappViewController: UIViewController {
                 self.addTradeRoomBtn.alpha = 0;
                 self.mainCentralLabel.alpha = 0;
             }
+            self.threeDotsView.isHidden = true;
             
             if let swappPageVC = self.childViewControllers.first as? HLSwappPageViewController {
                 let thisTrade: NSDictionary = swappPageVC.arrTrades[swappPageVC.currentIndex]
@@ -270,9 +283,11 @@ class HLSwappViewController: UIViewController {
                         }
                     
                         self.remainingTimeLabel.text = "Remaining time for response: \(str_hours)h"
+                        self.threeDotsView.isHidden = false;
                         
                     } else {
                         self.remainingTimeLabel.alpha = 0;
+                        self.threeDotsView.isHidden = true;
                     }
                     
                 }
@@ -308,9 +323,10 @@ class HLSwappViewController: UIViewController {
                 self.myUserView.frame.origin.x = -500
                 self.otherUserView.frame.origin.x = self.initialOtherUserX + 500
                 self.sendOfferBtn.alpha = 0
-                self.mainCentralLabel.text = "Available Table Rooms"
+                //self.mainCentralLabel.text = "Available Table Rooms"
                 self.chatButton.alpha = 0
                 self.remainingTimeLabel.alpha = 0;
+                self.threeDotsView.isHidden = true
             }
         }
     }

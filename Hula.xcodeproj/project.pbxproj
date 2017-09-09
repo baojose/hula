@@ -32,6 +32,7 @@
 		277C6C431EA2385B00530B0F /* HLRoundedButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 277C6C421EA2385B00530B0F /* HLRoundedButton.swift */; };
 		278988FB1ED7933600C0FBA9 /* HLCalculatorViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 278988FA1ED7933600C0FBA9 /* HLCalculatorViewController.swift */; };
 		279BAAD81E9D726D00091D24 /* HLNotificationsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 279BAAD71E9D726D00091D24 /* HLNotificationsViewController.swift */; };
+		279D93BD1F63E74F00360435 /* HLThreeDotsWaiting.swift in Sources */ = {isa = PBXBuildFile; fileRef = 279D93BC1F63E74F00360435 /* HLThreeDotsWaiting.swift */; };
 		27AA28FE1F09A0B100AB1895 /* HLPageControl.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27AA28FD1F09A0B100AB1895 /* HLPageControl.swift */; };
 		27AD31621F5041BE0047952A /* HulaVideoTransp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27AD31611F5041BE0047952A /* HulaVideoTransp.swift */; };
 		27AD31641F5047460047952A /* slide_1_2.atlas in Resources */ = {isa = PBXBuildFile; fileRef = 27AD31631F5047460047952A /* slide_1_2.atlas */; };
@@ -144,6 +145,7 @@
 		277C6C421EA2385B00530B0F /* HLRoundedButton.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HLRoundedButton.swift; sourceTree = "<group>"; };
 		278988FA1ED7933600C0FBA9 /* HLCalculatorViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HLCalculatorViewController.swift; sourceTree = "<group>"; };
 		279BAAD71E9D726D00091D24 /* HLNotificationsViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HLNotificationsViewController.swift; sourceTree = "<group>"; };
+		279D93BC1F63E74F00360435 /* HLThreeDotsWaiting.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HLThreeDotsWaiting.swift; sourceTree = "<group>"; };
 		27AA28FD1F09A0B100AB1895 /* HLPageControl.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HLPageControl.swift; sourceTree = "<group>"; };
 		27AD31611F5041BE0047952A /* HulaVideoTransp.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HulaVideoTransp.swift; sourceTree = "<group>"; };
 		27AD31631F5047460047952A /* slide_1_2.atlas */ = {isa = PBXFileReference; lastKnownFileType = folder.skatlas; path = slide_1_2.atlas; sourceTree = "<group>"; };
@@ -293,6 +295,7 @@
 				27AA28FD1F09A0B100AB1895 /* HLPageControl.swift */,
 				27C969B61F2BF05F00D4B433 /* HLSpinnerUIView.swift */,
 				27D5898B1F36301F00240A36 /* HLRoundedGradientNextButton.swift */,
+				279D93BC1F63E74F00360435 /* HLThreeDotsWaiting.swift */,
 			);
 			name = Utils;
 			sourceTree = "<group>";
@@ -984,6 +987,7 @@
 				272814231EF099BB00984562 /* HLSwappViewController.swift in Sources */,
 				273A1EA21ECF9D37005D163E /* HulaPortraitNavigationController.swift in Sources */,
 				F8B651F21E7A6A1E009D1DC6 /* HLPostProductViewController.swift in Sources */,
+				279D93BD1F63E74F00360435 /* HLThreeDotsWaiting.swift in Sources */,
 				27401F861EC10F7300F0B95D /* HLPictureSelectViewController.swift in Sources */,
 				F890E49A1E710187008719B9 /* HLHomeCategoryTableViewCell.swift in Sources */,
 				271533431F07C15600E5F319 /* KDDragAndDropManager.swift in Sources */,
