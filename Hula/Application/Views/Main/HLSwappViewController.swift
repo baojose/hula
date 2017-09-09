@@ -219,9 +219,14 @@ class HLSwappViewController: UIViewController {
                         if (ok){
                             print(json!)
                             DispatchQueue.main.async {
-                                if let swappPageVC = self.childViewControllers.first as? HLSwappPageViewController {
-                                    swappPageVC.goTo(page: 0)
-                                }
+                                
+                                let viewController = self.storyboard?.instantiateViewController(withIdentifier: "alertView") as! AlertViewController
+                                
+                                viewController.delegate = self as AlertDelegate
+                                viewController.isCancelVisible = false
+                                viewController.message = "Your offer has been sent.\nPlease allow 72 hours for the user to reply."
+                                
+                                self.present(viewController, animated: true)
                             }
                         } else {
                             // connection error
@@ -352,4 +357,16 @@ extension HLSwappViewController: SwappPageViewControllerDelegate {
 
 protocol HLBarterScreenDelegate: class {
     func getCurrentTradeStatus() -> HulaTrade
+}
+
+extension HLSwappViewController: AlertDelegate{
+    func alertResponded(response: String) {
+        print("Response: \(response)")
+        
+        DispatchQueue.main.async {
+            if let swappPageVC = self.childViewControllers.first as? HLSwappPageViewController {
+                swappPageVC.goTo(page: 0)
+            }
+        }
+    }
 }
