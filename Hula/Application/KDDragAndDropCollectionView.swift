@@ -45,8 +45,6 @@ class KDDragAndDropCollectionView: UICollectionView, KDDraggable, KDDroppable {
     
     override func reloadData() {
         super.reloadData()
-        print("draganddrop parent")
-        print()
         if let barterScreen = self.delegate as? HLBarterScreenViewController {
             if self.numberOfItems(inSection: 0) == 0 {
                 //self.alpha = 0.4

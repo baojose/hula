@@ -247,7 +247,11 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
                                 HLDataManager.sharedInstance.newProduct.productId = product_id
                             }
                         }
-                        //self.productTableView.reloadData()
+                        
+                        
+                        if (self.arrayProducts.count > 0){
+                            self.noProductsView.isHidden = true
+                        }
                     }
                 } else {
                     // connection error
@@ -269,7 +273,10 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
                             print(dictionary)
                         }
                         HLDataManager.sharedInstance.uploadMode = false
-                        //self.productTableView.reloadData()
+                        
+                        if (self.arrayProducts.count > 0){
+                            self.noProductsView.isHidden = true
+                        }
                     }
                 } else {
                     // connection error

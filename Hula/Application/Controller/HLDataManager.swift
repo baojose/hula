@@ -24,7 +24,7 @@ class HLDataManager: NSObject {
     var arrTrades : [NSDictionary]! = []
     var arrNotifications : NSMutableArray!
     var uploadMode: Bool!
-    var onboardingTutorials:NSMutableDictionary = [:]
+    var onboardingTutorials: NSMutableDictionary!
     
     let categoriesLoaded = Notification.Name("categoriesLoaded")
     let loginRecieved = Notification.Name("loginRecieved")
@@ -462,9 +462,10 @@ class HLDataManager: NSObject {
             //print(dict)
             
             updateUserFromDict(dict: dict)
-            if let tmp = dict.object(forKey: "onboardingTutorials") as? NSMutableDictionary {
-                self.onboardingTutorials = tmp
-            }
+            let tmp = dict.object(forKey: "onboardingTutorials") as? NSDictionary
+            let tmpMutable:NSMutableDictionary = NSMutableDictionary(dictionary: tmp!)
+            self.onboardingTutorials = tmpMutable
+            
             
             self.loadUserNotifications()
         }

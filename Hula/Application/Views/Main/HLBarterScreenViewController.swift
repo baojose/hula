@@ -116,10 +116,16 @@ class HLBarterScreenViewController: BaseViewController {
             if self.thisTrade.turn_user_id == HulaUser.sharedInstance.userId{
                 // my turn
                 self.sectionCover.isHidden = true
-                self.view.isUserInteractionEnabled = true
+                self.myProductsCollection.isUserInteractionEnabled = true
+                self.mySelectedProductsCollection.isUserInteractionEnabled = true
+                self.otherProductsCollection.isUserInteractionEnabled = true
+                self.otherSelectedProductsCollection.isUserInteractionEnabled = true
             } else {
                 self.sectionCover.isHidden = false
-                self.view.isUserInteractionEnabled = false
+                self.myProductsCollection.isUserInteractionEnabled = false
+                self.mySelectedProductsCollection.isUserInteractionEnabled = false
+                self.otherProductsCollection.isUserInteractionEnabled = false
+                self.otherSelectedProductsCollection.isUserInteractionEnabled = false
                 
             }
             //print(otp)
@@ -156,13 +162,14 @@ class HLBarterScreenViewController: BaseViewController {
                         HulaTip(delay: 0.4, view: self.ChatFakeView, text: "Need to talk? Use the chat button to send the user a message"),
                         HulaTip(delay: 0.4, view: self.sendOfferFakeView, text: "Once you are glad with your selection, send your offer to the user and wait for his reply")
                         ])
-                    HLDataManager.sharedInstance.onboardingTutorials.setValue("done", forKey: "barter_my_turn")
+                    print(HLDataManager.sharedInstance.onboardingTutorials)
+                    HLDataManager.sharedInstance.onboardingTutorials.setObject("done", forKey: "barter_my_turn" as NSCopying)
                 }
             } else {
                 if let _ = HLDataManager.sharedInstance.onboardingTutorials.object(forKey: "barter_other_turn") as? String{
                 } else {
                     CommonUtils.sharedInstance.showTutorial(arrayTips: [
-                        HulaTip(delay: 2, view: self.otherProductsCollection, text: "Welcome to the trading room! This trading is waiting for the other user to select the items he wants. As soon as the offer is ready you will be notified"),
+                        HulaTip(delay: 2, view: self.otherProductsCollection, text: "This trading is waiting for the other user to select the items he wants. As soon as the offer is ready you will be notified"),
                         HulaTip(delay: 0.4, view: self.ChatFakeView, text: "Need to talk? Use the chat button to send the user a message")
                         ])
                     HLDataManager.sharedInstance.onboardingTutorials.setValue("done", forKey: "barter_other_turn")

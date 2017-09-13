@@ -7,11 +7,13 @@
 //
 
 import UIKit
+import SpriteKit
 
 class HLSwappViewController: UIViewController {
     
     weak var barterDelegate: HLBarterScreenDelegate?
     
+    @IBOutlet weak var mobileImage: UIImageView!
     @IBOutlet weak var portraitView: UIView!
     @IBOutlet weak var mainContainer: UIView!
     //@IBOutlet weak var swappPageControl: HLPageControl!
@@ -27,6 +29,7 @@ class HLSwappViewController: UIViewController {
     @IBOutlet weak var sendOfferBtn: HLRoundedButton!
     @IBOutlet weak var remainingTimeLabel: UILabel!
     
+    @IBOutlet weak var threeDotsView: UIView!
     @IBOutlet weak var addTradeRoomBtn: HLRoundedButton!
     @IBOutlet weak var chatButton: HLRoundedButton!
     var initialOtherUserX:CGFloat = 0.0
@@ -47,6 +50,20 @@ class HLSwappViewController: UIViewController {
         self.remainingTimeLabel.alpha = 0;
         self.addTradeRoomBtn.alpha = 1;
         self.mainCentralLabel.alpha = 0;
+        
+        
+        self.mobileImage.alpha = 0
+        self.mobileImage.transform = CGAffineTransform(rotationAngle: CGFloat(Double.pi/2));
+        
+        let threeDots = HLThreeDotsWaiting(size: CGSize(width:40, height:10))
+        let skView = SKView(frame: CGRect(x: 0, y: 0, width: 40, height: 10))
+        //skView.showsFPS = true
+        //skView.showsNodeCount = true
+        skView.backgroundColor = UIColor(red: 0, green: 0, blue: 0, alpha: 0)
+        skView.presentScene(threeDots)
+        threeDotsView.addSubview(skView)
+        threeDots.animateDots()
+        threeDotsView.isHidden = true
     }
     override func viewWillAppear(_ animated: Bool) {
         
@@ -63,15 +80,18 @@ class HLSwappViewController: UIViewController {
         }
     }
     override func viewDidAppear(_ animated: Bool) {
-        initialOtherUserX = otherUserView.frame.origin.x
+        initialOtherUserX = self.view.frame.width - self.otherUserView.frame.width
         self.myUserView.frame.origin.x = -500
-        self.otherUserView.frame.origin.x = self.initialOtherUserX + 500
+        self.otherUserView.frame.origin.x = self.view.frame.width + 500
         self.myUserView.isHidden = false;
         self.otherUserView.isHidden = false;
         controlSetupBottomBar(index: 0)
         
         self.addTradeRoomBtn.alpha = 1;
         self.mainCentralLabel.alpha = 0;
+        
+        
+        self.rotateAnimation()
     }
 
     override func didReceiveMemoryWarning() {
@@ -97,6 +117,9 @@ class HLSwappViewController: UIViewController {
         }
     }
     
+    @IBAction func closeSwappMode(_ sender: Any) {
+        self.dismiss(animated: true)
+    }
 
     /*
     // MARK: - Navigation
@@ -108,6 +131,31 @@ class HLSwappViewController: UIViewController {
     }
     */
     
+    
+    func rotateAnimation(){
+        if UIDeviceOrientationIsPortrait(UIDevice.current.orientation) {
+            mobileImage.alpha = 0
+            self.mobileImage.transform = CGAffineTransform(rotationAngle: CGFloat(-Double.pi/2));
+            UIView.animate(withDuration: 0.5, animations: {
+                self.mobileImage.alpha = 1
+            }, completion: { (success) in
+                UIView.animate(withDuration: 1.2, animations: {
+                    self.mobileImage.transform = CGAffineTransform(rotationAngle: CGFloat(Double.pi));
+                }, completion: { (success) in
+                    UIView.animate(withDuration: 1.5, animations: {
+                        self.mobileImage.alpha = 0
+                    }, completion: { (success) in
+                        self.mobileImage.transform = .identity
+                        let when = DispatchTime.now() + 1
+                        DispatchQueue.main.asyncAfter(deadline: when) {
+                            
+                            self.rotateAnimation()
+                        }
+                    })
+                })
+            })
+        }
+    }
     
     func rotated() {
         if UIDeviceOrientationIsPortrait(UIDevice.current.orientation) {
@@ -171,9 +219,14 @@ class HLSwappViewController: UIViewController {
                         if (ok){
                             print(json!)
                             DispatchQueue.main.async {
-                                if let swappPageVC = self.childViewControllers.first as? HLSwappPageViewController {
-                                    swappPageVC.goTo(page: 0)
-                                }
+                                
+                                let viewController = self.storyboard?.instantiateViewController(withIdentifier: "alertView") as! AlertViewController
+                                
+                                viewController.delegate = self as AlertDelegate
+                                viewController.isCancelVisible = false
+                                viewController.message = "Your offer has been sent.\nPlease allow 72 hours for the user to reply."
+                                
+                                self.present(viewController, animated: true)
                             }
                         } else {
                             // connection error
@@ -195,13 +248,14 @@ class HLSwappViewController: UIViewController {
  */
                 self.mainCentralLabel.alpha=0;
                 self.myUserView.frame.origin.x = 0
-                self.otherUserView.frame.origin.x = self.initialOtherUserX
+                self.otherUserView.frame.origin.x = self.view.frame.width - self.otherUserView.frame.width
                 self.sendOfferBtn.alpha = 1
                 self.chatButton.alpha = 1
                 
                 self.addTradeRoomBtn.alpha = 0;
                 self.mainCentralLabel.alpha = 0;
             }
+            self.threeDotsView.isHidden = true;
             
             if let swappPageVC = self.childViewControllers.first as? HLSwappPageViewController {
                 let thisTrade: NSDictionary = swappPageVC.arrTrades[swappPageVC.currentIndex]
@@ -234,9 +288,11 @@ class HLSwappViewController: UIViewController {
                         }
                     
                         self.remainingTimeLabel.text = "Remaining time for response: \(str_hours)h"
+                        self.threeDotsView.isHidden = false;
                         
                     } else {
                         self.remainingTimeLabel.alpha = 0;
+                        self.threeDotsView.isHidden = true;
                     }
                     
                 }
@@ -272,8 +328,10 @@ class HLSwappViewController: UIViewController {
                 self.myUserView.frame.origin.x = -500
                 self.otherUserView.frame.origin.x = self.initialOtherUserX + 500
                 self.sendOfferBtn.alpha = 0
-                self.mainCentralLabel.text = "Available Table Rooms"
+                //self.mainCentralLabel.text = "Available Table Rooms"
                 self.chatButton.alpha = 0
+                self.remainingTimeLabel.alpha = 0;
+                self.threeDotsView.isHidden = true
             }
         }
     }
@@ -299,4 +357,16 @@ extension HLSwappViewController: SwappPageViewControllerDelegate {
 
 protocol HLBarterScreenDelegate: class {
     func getCurrentTradeStatus() -> HulaTrade
+}
+
+extension HLSwappViewController: AlertDelegate{
+    func alertResponded(response: String) {
+        print("Response: \(response)")
+        
+        DispatchQueue.main.async {
+            if let swappPageVC = self.childViewControllers.first as? HLSwappPageViewController {
+                swappPageVC.goTo(page: 0)
+            }
+        }
+    }
 }
