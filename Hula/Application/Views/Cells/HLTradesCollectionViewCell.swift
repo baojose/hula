@@ -22,6 +22,7 @@ class HLTradesCollectionViewCell: UICollectionViewCell {
     @IBOutlet weak var boxView: UIView!
     
     var dbDelegate: HLDashboardViewController?
+    var tradeId: String = ""
     
     var isEmptyRoom = true;
     
@@ -92,8 +93,10 @@ class HLTradesCollectionViewCell: UICollectionViewCell {
             alert.addAction(reportAction)
             
             
-            let removeAction = UIAlertAction(title: "Remove this trade", style: .destructive, handler: { action -> Void in
-                
+            let removeAction = UIAlertAction(title: "Delete this trade", style: .destructive, handler: { action -> Void in
+                if (self.tradeId != ""){
+                    self.closeTrade()
+                }
             })
             alert.addAction(removeAction)
             
@@ -104,5 +107,28 @@ class HLTradesCollectionViewCell: UICollectionViewCell {
         }
     }
     
-    
+    func closeTrade(){
+        let queryURL = HulaConstants.apiURL + "trades/\(self.tradeId)"
+        let status = HulaConstants.end_status
+        let dataString:String = "status=\(status)"
+        //print(dataString)
+        HLDataManager.sharedInstance.httpPost(urlstr: queryURL, postString: dataString, isPut: true, taskCallback: { (ok, json) in
+            if (ok){
+                print(json!)
+                DispatchQueue.main.async {
+                    
+                    let alert = UIAlertController(title: "Your trade has been canceled",
+                                                  message: "We have moved it to your trade history page, inside your profile section.",
+                                                  preferredStyle: .alert )
+                    let reportAction = UIAlertAction(title: "Ok", style: .default, handler: { action -> Void in
+                        
+                    })
+                    alert.addAction(reportAction)
+                }
+            } else {
+                // connection error
+                print("Connection error")
+            }
+        })
+    }
 }

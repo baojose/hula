@@ -39,12 +39,15 @@ class HLBarterScreenViewController: BaseViewController {
     var otherProductsDiff : [String] = []
     var myTradeIndex: Int = 1
     
+    var mainSwapViewHolder: HLSwappViewController?
+    
     var thisTrade: HulaTrade = HulaTrade()
     
     let arrowImagesName = ["","icon-product-added", "icon-product-removed", "icon-product-multipledeals"]
     
     var otherUserId: String = ""
     
+    var didTradeMutate:Bool = false
     
     var dragAndDropManager1 : KDDragAndDropManager?
     var dragAndDropManager2 : KDDragAndDropManager?
@@ -91,11 +94,8 @@ class HLBarterScreenViewController: BaseViewController {
         if let swappPageVC = self.parent as? HLSwappPageViewController{
             
             //print(swappPageVC.parent)
-            if let thisHolderScreen = swappPageVC.parent as? HLSwappViewController {
-                thisHolderScreen.barterDelegate = self
-            }
             
-            
+            myTradeIndex = swappPageVC.currentIndex
             
             let ct = swappPageVC.arrTrades[swappPageVC.currentIndex]
             //print("ct \(ct)")
@@ -174,6 +174,13 @@ class HLBarterScreenViewController: BaseViewController {
                         ])
                     HLDataManager.sharedInstance.onboardingTutorials.setValue("done", forKey: "barter_other_turn")
                 }
+            }
+            
+            
+            if let thisHolderScreen = swappPageVC.parent as? HLSwappViewController {
+                self.mainSwapViewHolder = thisHolderScreen
+                self.mainSwapViewHolder?.barterDelegate = self
+                self.mainSwapViewHolder?.controlSetupBottomBar(index: myTradeIndex)
             }
         }
     }
@@ -334,6 +341,8 @@ class HLBarterScreenViewController: BaseViewController {
         viewController.side = "other"
         
         self.present(viewController, animated: true)
+        self.didTradeMutate = true
+        self.mainSwapViewHolder?.controlSetupBottomBar(index: myTradeIndex)
     }
     
     @IBAction func addMonewToOwner(_ sender: Any) {
@@ -342,6 +351,8 @@ class HLBarterScreenViewController: BaseViewController {
         viewController.calculatorDelegate = self
         viewController.side = "owner"
         self.present(viewController, animated: true)
+        self.didTradeMutate = true
+        self.mainSwapViewHolder?.controlSetupBottomBar(index: myTradeIndex)
     }
 }
 
@@ -492,6 +503,8 @@ extension HLBarterScreenViewController: KDDragAndDropCollectionViewDataSource, U
             default: break
             }
         }
+        self.didTradeMutate = true
+        self.mainSwapViewHolder?.controlSetupBottomBar(index: myTradeIndex)
         
         
     }
@@ -507,6 +520,8 @@ extension HLBarterScreenViewController: KDDragAndDropCollectionViewDataSource, U
             otherProducts.remove( at: indexPath.item)
         default: break
         }
+        self.didTradeMutate = true
+        self.mainSwapViewHolder?.controlSetupBottomBar(index: myTradeIndex)
     }
     
     func collectionView(_ collectionView: UICollectionView, moveDataItemFromIndexPath from: IndexPath, toIndexPath to : IndexPath) -> Void {
@@ -536,6 +551,8 @@ extension HLBarterScreenViewController: KDDragAndDropCollectionViewDataSource, U
             myProducts.insert(fromDataItem, at: to.item)
         }
         
+        self.didTradeMutate = true
+        self.mainSwapViewHolder?.controlSetupBottomBar(index: myTradeIndex)
         
     }
     
@@ -614,6 +631,10 @@ extension HLBarterScreenViewController: HLBarterScreenDelegate{
         trade.owner_money = thisTrade.owner_money
         trade.other_money = thisTrade.other_money
         return trade
+    }
+    
+    func isTradeMutated() -> Bool!{
+        return self.didTradeMutate
     }
 }
 

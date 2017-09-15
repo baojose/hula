@@ -140,8 +140,7 @@ extension HLDashboardViewController: UICollectionViewDelegate, UICollectionViewD
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         return max((swappPageVC?.arrTrades.count)!, HulaUser.sharedInstance.maxTrades)
     }
-    func collectionView(_ collectionView: UICollectionView,
-                                 cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "tradeCell",
                                                       for: indexPath) as! HLTradesCollectionViewCell
         cell.tradeNumber.text = "\(indexPath.row+1)"
@@ -156,6 +155,8 @@ extension HLDashboardViewController: UICollectionViewDelegate, UICollectionViewD
             let thisTrade : NSDictionary = (swappPageVC?.arrTrades[indexPath.row])!
             cell.emptyRoomLabel.text = ""
             //print(thisTrade)
+            cell.tradeId = (thisTrade.object(forKey: "_id") as? String)!
+            
             var otherUserId = thisTrade.object(forKey: "other_id") as? String
             if otherUserId == HulaUser.sharedInstance.userId {
                 otherUserId = thisTrade.object(forKey: "owner_id") as? String
@@ -224,8 +225,7 @@ extension HLDashboardViewController: UICollectionViewDelegate, UICollectionViewD
         if ((swappPageVC?.arrTrades.count)! > indexPath.row){
 
             
-            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "tradeCell",
-                                                          for: indexPath) as! HLTradesCollectionViewCell
+            //let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "tradeCell", for: indexPath) as! HLTradesCollectionViewCell
 
             //isExpandedFlowLayoutUsed = !isExpandedFlowLayoutUsed
             let when = DispatchTime.now() + 0.3

@@ -95,10 +95,14 @@ class HLDataManager: NSObject {
             //print(ok)
             if (ok){
                 self.arrTrades=[];
-                if let array = json as? [Any] {
+                if let array = json as? [NSDictionary] {
                     for trade in array {
                         // access all objects in array
-                        self.arrTrades.append(trade as! NSDictionary)
+                        if let st = trade.object(forKey: "status") as? String{
+                            if st != HulaConstants.end_status && st != HulaConstants.cancel_status {
+                                self.arrTrades.append(trade)
+                            }
+                        }
                     }
                 }
                 taskCallback(true)
