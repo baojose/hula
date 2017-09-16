@@ -19,6 +19,7 @@ class HulaProduct: NSObject {
     var arrProductPhotos: NSMutableArray!
     var productDescription: String!
     var productImage: String!
+    var productStatus: String!
     var tradeStatus: Int = 0
     var productOwner: String!
     var productCategoryId: String!
@@ -42,6 +43,7 @@ class HulaProduct: NSObject {
         self.arrProductPhotos = NSMutableArray.init()
         self.arrProductPhotoLink = []
         self.tradeStatus = 0
+        self.productStatus = ""
         self.productOwner = ""
         self.productLocation = CLLocation(latitude: 0.0, longitude: 0.0)
     }
@@ -52,6 +54,7 @@ class HulaProduct: NSObject {
         self.productCondition = ""
         self.productCategory = ""
         self.productCategoryId = ""
+        self.productStatus = ""
         self.productImage = image
         self.arrProductPhotos = NSMutableArray.init()
         self.arrProductPhotoLink = []
@@ -71,6 +74,7 @@ class HulaProduct: NSObject {
         if let tmp = with.object(forKey: "category_name") as? String { productCategory = tmp }
         if let tmp = with.object(forKey: "category_id") as? String { productCategoryId = tmp }
         if let tmp = with.object(forKey: "image_url") as? String { productImage = tmp }
+        if let tmp = with.object(forKey: "status") as? String { productStatus = tmp }
         if let tmp = with.object(forKey: "owner_id") as? String { productOwner = tmp }
         if let tmp = with.object(forKey: "images") as? [String] {
             arrProductPhotoLink = []

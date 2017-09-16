@@ -145,6 +145,18 @@ class HLProductDetailViewController: BaseViewController, UIScrollViewDelegate, U
                 let thumb = commonUtils.getThumbFor(url: im_ur)
                 cell.productImage.loadImageFromURL(urlString:thumb)
             }
+            
+            if let st = pr.object(forKey: "status") as? String{
+                if st == "traded"{
+                    cell.tradedAlertImage.isHidden = false
+                    cell.tradedLabel.isHidden = false
+                    cell.goArrow.isHidden = true
+                } else {
+                    cell.tradedAlertImage.isHidden = true
+                    cell.tradedLabel.isHidden = true
+                    cell.goArrow.isHidden = false
+                }
+            }
         }
         return cell
     }
@@ -157,9 +169,11 @@ class HLProductDetailViewController: BaseViewController, UIScrollViewDelegate, U
         let product = sellerProducts[indexPath.row] as! NSDictionary
         let hproduct = HulaProduct();
         hproduct.populate(with: product)
-        viewController.productData = hproduct
+        if hproduct.productStatus != "traded" {
+            viewController.productData = hproduct
         
-        self.navigationController?.pushViewController(viewController, animated: true)
+            self.navigationController?.pushViewController(viewController, animated: true)
+        }
     }
     
     

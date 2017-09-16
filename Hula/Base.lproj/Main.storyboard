@@ -1678,7 +1678,7 @@ Log In</string>
                                                 <rect key="frame" x="0.0" y="48" width="375" height="113"/>
                                                 <autoresizingMask key="autoresizingMask"/>
                                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="dr5-35-SRZ" id="lPp-Fl-qqy">
-                                                    <rect key="frame" x="0.0" y="0.0" width="375" height="112.5"/>
+                                                    <rect key="frame" x="0.0" y="0.0" width="375" height="113"/>
                                                     <autoresizingMask key="autoresizingMask"/>
                                                     <subviews>
                                                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="5 hours ago" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="ODt-f7-Y70">
@@ -3989,11 +3989,25 @@ Log In</string>
                                                                     <rect key="frame" x="351" y="58" width="8" height="12"/>
                                                                     <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
                                                                 </imageView>
+                                                                <imageView opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleAspectFit" misplaced="YES" image="icon_alert_thumbnails" id="3aO-Xa-B5P">
+                                                                    <rect key="frame" x="15" y="18" width="25" height="25"/>
+                                                                    <autoresizingMask key="autoresizingMask"/>
+                                                                </imageView>
+                                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" text="Traded" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="shg-YK-cB6">
+                                                                    <rect key="frame" x="133" y="101" width="166" height="21"/>
+                                                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxX="YES" heightSizable="YES"/>
+                                                                    <fontDescription key="fontDescription" name="HelveticaNeue-Light" family="Helvetica Neue" pointSize="12"/>
+                                                                    <color key="textColor" red="0.67163127659999999" green="0.0988971082" blue="0.075851733889999995" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                                                    <nil key="highlightedColor"/>
+                                                                </label>
                                                             </subviews>
                                                         </tableViewCellContentView>
                                                         <connections>
+                                                            <outlet property="goArrow" destination="Z6H-G5-lfp" id="UFz-CF-Y6P"/>
                                                             <outlet property="productImage" destination="xyT-O0-dif" id="KoZ-yr-eNa"/>
                                                             <outlet property="productName" destination="7KC-rd-hB5" id="pbd-dq-jlp"/>
+                                                            <outlet property="tradedAlertImage" destination="3aO-Xa-B5P" id="7bD-h6-LGv"/>
+                                                            <outlet property="tradedLabel" destination="shg-YK-cB6" id="QHF-N1-3BD"/>
                                                         </connections>
                                                     </tableViewCell>
                                                 </prototypes>
@@ -6363,7 +6377,7 @@ Log In</string>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <view contentMode="scaleToFill" misplaced="YES" id="XYX-7I-QVA">
-                                <rect key="frame" x="322" y="382" width="24" height="18"/>
+                                <rect key="frame" x="322" y="367" width="24" height="18"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES"/>
                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                             </view>
@@ -6638,7 +6652,7 @@ Log In</string>
                                 <color key="backgroundColor" white="0.97011718749999998" alpha="1" colorSpace="calibratedWhite"/>
                             </view>
                             <view contentMode="scaleToFill" misplaced="YES" id="jBp-VF-t3p">
-                                <rect key="frame" x="426" y="383" width="24" height="18"/>
+                                <rect key="frame" x="466" y="373" width="24" height="18"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES"/>
                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                             </view>

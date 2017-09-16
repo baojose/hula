@@ -64,6 +64,7 @@ class HLSwappViewController: UIViewController {
         threeDotsView.addSubview(skView)
         threeDots.animateDots()
         threeDotsView.isHidden = true
+        controlSetupBottomBar(index:0);
     }
     override func viewWillAppear(_ animated: Bool) {
         
@@ -85,7 +86,6 @@ class HLSwappViewController: UIViewController {
         self.otherUserView.frame.origin.x = self.view.frame.width + 500
         self.myUserView.isHidden = false;
         self.otherUserView.isHidden = false;
-        controlSetupBottomBar(index: 0)
         
         self.addTradeRoomBtn.alpha = 1;
         self.mainCentralLabel.alpha = 0;
@@ -248,6 +248,8 @@ class HLSwappViewController: UIViewController {
         }
     }
     func controlSetupBottomBar(index:Int){
+        print("seting up bottom bar with index: \(index)")
+        
         if (index != 0){
             UIView.animate(withDuration: 0.3) {
                 /*

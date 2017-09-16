@@ -97,7 +97,7 @@ class HLBarterScreenViewController: BaseViewController {
             
             //print(swappPageVC.parent)
             
-            myTradeIndex = swappPageVC.currentIndex
+            myTradeIndex = min(swappPageVC.currentIndex, swappPageVC.arrTrades.count)
             
             let ct = swappPageVC.arrTrades[swappPageVC.currentIndex]
             //print("ct \(ct)")
@@ -186,7 +186,7 @@ class HLBarterScreenViewController: BaseViewController {
             if let thisHolderScreen = swappPageVC.parent as? HLSwappViewController {
                 self.mainSwapViewHolder = thisHolderScreen
                 self.mainSwapViewHolder?.barterDelegate = self
-                self.mainSwapViewHolder?.controlSetupBottomBar(index: myTradeIndex)
+                self.mainSwapViewHolder?.controlSetupBottomBar(index: myTradeIndex + 1)
             }
         }
     }
@@ -348,7 +348,7 @@ class HLBarterScreenViewController: BaseViewController {
         
         self.present(viewController, animated: true)
         self.didTradeMutate = true
-        self.mainSwapViewHolder?.controlSetupBottomBar(index: myTradeIndex)
+        self.mainSwapViewHolder?.controlSetupBottomBar(index: myTradeIndex + 1)
     }
     
     @IBAction func addMonewToOwner(_ sender: Any) {
@@ -358,7 +358,7 @@ class HLBarterScreenViewController: BaseViewController {
         viewController.side = "owner"
         self.present(viewController, animated: true)
         self.didTradeMutate = true
-        self.mainSwapViewHolder?.controlSetupBottomBar(index: myTradeIndex)
+        self.mainSwapViewHolder?.controlSetupBottomBar(index: myTradeIndex + 1)
     }
 }
 
@@ -510,7 +510,7 @@ extension HLBarterScreenViewController: KDDragAndDropCollectionViewDataSource, U
             }
         }
         self.didTradeMutate = true
-        self.mainSwapViewHolder?.controlSetupBottomBar(index: myTradeIndex)
+        self.mainSwapViewHolder?.controlSetupBottomBar(index: myTradeIndex + 1)
         
         
     }
@@ -527,7 +527,7 @@ extension HLBarterScreenViewController: KDDragAndDropCollectionViewDataSource, U
         default: break
         }
         self.didTradeMutate = true
-        self.mainSwapViewHolder?.controlSetupBottomBar(index: myTradeIndex)
+        self.mainSwapViewHolder?.controlSetupBottomBar(index: myTradeIndex + 1)
     }
     
     func collectionView(_ collectionView: UICollectionView, moveDataItemFromIndexPath from: IndexPath, toIndexPath to : IndexPath) -> Void {
@@ -558,7 +558,7 @@ extension HLBarterScreenViewController: KDDragAndDropCollectionViewDataSource, U
         }
         
         self.didTradeMutate = true
-        self.mainSwapViewHolder?.controlSetupBottomBar(index: myTradeIndex)
+        self.mainSwapViewHolder?.controlSetupBottomBar(index: myTradeIndex + 1)
         
     }
     
