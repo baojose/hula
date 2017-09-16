@@ -248,7 +248,7 @@ class HLSwappViewController: UIViewController {
         }
     }
     func controlSetupBottomBar(index:Int){
-        print("seting up bottom bar with index: \(index)")
+        //print("seting up bottom bar with index: \(index)")
         
         if (index != 0){
             UIView.animate(withDuration: 0.3) {
@@ -298,7 +298,7 @@ class HLSwappViewController: UIViewController {
                         }
                         
                         self.remainingTimeLabel.alpha = 1
-                        self.remainingTimeLabel.text = "Remaining time for response: \(str_hours)h"
+                        self.remainingTimeLabel.text = "Remaining time for response: \(str_hours)"
                         self.threeDotsView.isHidden = false;
                         
                     } else {

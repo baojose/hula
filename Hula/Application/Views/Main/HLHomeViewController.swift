@@ -32,7 +32,9 @@ class HLHomeViewController: BaseViewController, UIScrollViewDelegate, UITextFiel
         boxRoundedView.layer.cornerRadius = CGFloat(17)
         boxRoundedView.layer.borderWidth = CGFloat(1.0)
         boxRoundedView.layer.borderColor = UIColor(red: 0.0, green: 0.0, blue: 0.0, alpha: 0.3).cgColor
-        boxRoundedOriginalSize = boxRoundedView.frame.size
+        boxRoundedOriginalSize = view.frame.size
+        boxRoundedOriginalSize.width = boxRoundedOriginalSize.width - 32
+        boxRoundedOriginalSize.height = 35
         cancelButton.alpha = 0
         
         
@@ -48,7 +50,9 @@ class HLHomeViewController: BaseViewController, UIScrollViewDelegate, UITextFiel
     }
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        boxRoundedOriginalSize = boxRoundedView.frame.size
+        boxRoundedOriginalSize = view.frame.size
+        boxRoundedOriginalSize.width = boxRoundedOriginalSize.width - 32
+        boxRoundedOriginalSize.height = 35
         
         // force allow rotation on this VC
         let appDelegate = UIApplication.shared.delegate as! AppDelegate
@@ -75,7 +79,7 @@ class HLHomeViewController: BaseViewController, UIScrollViewDelegate, UITextFiel
         
         self.profileCompleteAlertView.isHidden = true;
         self.noResultView.isHidden = true;
-        print(HulaUser.sharedInstance.userName)
+        //print(HulaUser.sharedInstance.userName)
         if (HulaUser.sharedInstance.userName == ""){
             //self.showProfileCompleteAlertView()
         }
