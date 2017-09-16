@@ -82,18 +82,14 @@ class HLDashboardViewController: BaseViewController {
     func refreshCollectionViewData(){
         if let vc = self.parent as? HLSwappPageViewController {
             swappPageVC = vc
-            if (HLDataManager.sharedInstance.arrTrades.count > 0){
-                swappPageVC?.arrTrades = HLDataManager.sharedInstance.arrTrades as [NSDictionary]
+            if (HLDataManager.sharedInstance.arrCurrentTrades.count > 0){
+                swappPageVC?.arrTrades = HLDataManager.sharedInstance.arrCurrentTrades as [NSDictionary]
             }
             HLDataManager.sharedInstance.getTrades { (success) in
                 if (success){
                     //print("Trades ok")
                     DispatchQueue.main.async {
-                        if (self.swappPageVC?.arrTrades.count != HLDataManager.sharedInstance.arrTrades.count){
-                            self.swappPageVC?.arrTrades = HLDataManager.sharedInstance.arrTrades as [NSDictionary]
-                        } else {
-                            self.swappPageVC?.arrTrades = HLDataManager.sharedInstance.arrTrades as [NSDictionary]
-                        }
+                        self.swappPageVC?.arrTrades = HLDataManager.sharedInstance.arrCurrentTrades as [NSDictionary]
                         self.mainCollectionView.reloadData()
                         self.mainCollectionView.scrollToItem(at: IndexPath(row: 0, section: 0) , at: .top, animated: true)
                     }
@@ -102,7 +98,7 @@ class HLDashboardViewController: BaseViewController {
                     
                     // TUTORIAL
                     if let cell = self.mainCollectionView.cellForItem(at: IndexPath(item: 0, section: 0)) as? HLTradesCollectionViewCell{  
-                        if (HLDataManager.sharedInstance.arrTrades.count == 0){
+                        if (HLDataManager.sharedInstance.arrCurrentTrades.count == 0){
                             // show empty rooms tutorial
                             if let _ = HLDataManager.sharedInstance.onboardingTutorials.object(forKey: "dashboard_empty") as? String{
                                 CommonUtils.sharedInstance.showTutorial(arrayTips: [
@@ -123,23 +119,76 @@ class HLDashboardViewController: BaseViewController {
                     }
                 }
             }
+            self.mainCollectionView.reloadData()
             //isExpandedFlowLayoutUsed = false
         } else {
             print("Error. Not detected parent parent vc")
         }
     }
     
+    
+    func closeTrade(_ tradeId: String){
+        if (tradeId != ""){
+            let queryURL = HulaConstants.apiURL + "trades/\(tradeId)"
+            let status = HulaConstants.end_status
+            let dataString:String = "status=\(status)"
+            //print(dataString)
+            HLDataManager.sharedInstance.httpPost(urlstr: queryURL, postString: dataString, isPut: true, taskCallback: { (ok, json) in
+                if (ok){
+                    //print(json!)
+                    DispatchQueue.main.async {
+                        /*
+                        let alert = UIAlertController(title: "Your trade has been canceled",
+                                                      message: "We have moved it to your trade history page, inside your profile section.",
+                                                      preferredStyle: .alert )
+                        let reportAction = UIAlertAction(title: "OK", style: .default, handler: { action -> Void in
+                            
+                        })
+                        alert.addAction(reportAction)
+                        */
+                        
+                        
+                        let viewController = self.storyboard?.instantiateViewController(withIdentifier: "alertView") as! AlertViewController
+                        
+                        viewController.delegate = self
+                        viewController.isCancelVisible = false
+                        viewController.message = "Your trade has been canceled.\nWe have moved it to your trade history page, inside your profile section."
+                        
+                        self.present(viewController, animated: true)
+                        
+                        
+                        
+                        
+                        self.refreshCollectionViewData()
+                    }
+                } else {
+                    // connection error
+                    print("Connection error")
+                }
+            })
+        }
+    }
+    
 }
 
-
+extension HLDashboardViewController: AlertDelegate{
+    func alertResponded(response: String) {
+        print("Response: \(response)")
+        self.refreshCollectionViewData()
+    }
+}
 
 extension HLDashboardViewController: UICollectionViewDelegate, UICollectionViewDataSource {
     func numberOfSections(in collectionView: UICollectionView) -> Int {
         return 1
     }
+    
+    
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         return max((swappPageVC?.arrTrades.count)!, HulaUser.sharedInstance.maxTrades)
     }
+    
+    
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "tradeCell",
                                                       for: indexPath) as! HLTradesCollectionViewCell

@@ -217,10 +217,10 @@ class HLSwappViewController: UIViewController {
                     status = HulaConstants.end_status
                 }
                 let dataString:String = "status=\(status)&owner_products=\(owner_products)&other_products=\(other_products)"
-                print(dataString)
+                //print(dataString)
                 HLDataManager.sharedInstance.httpPost(urlstr: queryURL, postString: dataString, isPut: true, taskCallback: { (ok, json) in
                     if (ok){
-                        print(json!)
+                        //print(json!)
                         DispatchQueue.main.async {
                             
                             let viewController = self.storyboard?.instantiateViewController(withIdentifier: "alertView") as! AlertViewController
@@ -356,7 +356,7 @@ class HLSwappViewController: UIViewController {
     
     func tradeCanBeClosed(_ trade:NSDictionary) -> Bool{
         if let bids = trade.object(forKey: "bids") as? NSArray{
-            print(bids.count)
+            //print(bids.count)
             
             if let isMutated = barterDelegate?.isTradeMutated(){
                 
