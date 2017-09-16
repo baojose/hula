@@ -64,71 +64,77 @@ class HLTradesCollectionViewCell: UICollectionViewCell {
     
     
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
-     UIView.animate(withDuration: 0.1, animations: {
-     self.transform = CGAffineTransform(scaleX: 1.1,y: 1.1);
-     
-     })
-     UIView.animate(withDuration: 0.1, animations: {
-     self.transform = CGAffineTransform(scaleX: 1.1,y: 1.1);
-     
-     }, completion: { (ok) in
-     UIView.animate(withDuration: 0.4, animations: {
-     self.transform = CGAffineTransform(scaleX: 1,y: 1);
-     })
-     })
+        if (self.tradeId != ""){
+             UIView.animate(withDuration: 0.1, animations: {
+             self.transform = CGAffineTransform(scaleX: 1.1,y: 1.1);
+             
+             })
+             UIView.animate(withDuration: 0.1, animations: {
+             self.transform = CGAffineTransform(scaleX: 1.1,y: 1.1);
+             
+             }, completion: { (ok) in
+             UIView.animate(withDuration: 0.4, animations: {
+             self.transform = CGAffineTransform(scaleX: 1,y: 1);
+             })
+             })
         super.touchesBegan(touches, with: event)
+        }
     }
     
 
     
     @IBAction func tradeOptionsAction(_ sender: Any) {
-        if dbDelegate != nil {
-            let alert = UIAlertController(title: "Trade options",
-                                          message: nil,
-                                          preferredStyle: .actionSheet)
-            
-            let reportAction = UIAlertAction(title: "Report this user", style: .default, handler: { action -> Void in
+        if (self.tradeId != ""){
+            if dbDelegate != nil {
+                let alert = UIAlertController(title: "Trade options",
+                                              message: nil,
+                                              preferredStyle: .actionSheet)
                 
-            })
-            alert.addAction(reportAction)
-            
-            
-            let removeAction = UIAlertAction(title: "Delete this trade", style: .destructive, handler: { action -> Void in
-                if (self.tradeId != ""){
-                    self.closeTrade()
-                }
-            })
-            alert.addAction(removeAction)
-            
-            let cancelAction = UIAlertAction(title: "Cancel", style: .cancel, handler: nil)
-            
-            alert.addAction(cancelAction)
-            dbDelegate?.present(alert, animated: true)
+                let reportAction = UIAlertAction(title: "Report this user", style: .default, handler: { action -> Void in
+                    
+                })
+                alert.addAction(reportAction)
+                
+                
+                let removeAction = UIAlertAction(title: "Delete this trade", style: .destructive, handler: { action -> Void in
+                    if (self.tradeId != ""){
+                        self.closeTrade()
+                    }
+                })
+                alert.addAction(removeAction)
+                
+                let cancelAction = UIAlertAction(title: "Cancel", style: .cancel, handler: nil)
+                
+                alert.addAction(cancelAction)
+                dbDelegate?.present(alert, animated: true)
+            }
         }
     }
     
     func closeTrade(){
-        let queryURL = HulaConstants.apiURL + "trades/\(self.tradeId)"
-        let status = HulaConstants.end_status
-        let dataString:String = "status=\(status)"
-        //print(dataString)
-        HLDataManager.sharedInstance.httpPost(urlstr: queryURL, postString: dataString, isPut: true, taskCallback: { (ok, json) in
-            if (ok){
-                print(json!)
-                DispatchQueue.main.async {
-                    
-                    let alert = UIAlertController(title: "Your trade has been canceled",
-                                                  message: "We have moved it to your trade history page, inside your profile section.",
-                                                  preferredStyle: .alert )
-                    let reportAction = UIAlertAction(title: "Ok", style: .default, handler: { action -> Void in
+        if (self.tradeId != ""){
+            let queryURL = HulaConstants.apiURL + "trades/\(self.tradeId)"
+            let status = HulaConstants.end_status
+            let dataString:String = "status=\(status)"
+            //print(dataString)
+            HLDataManager.sharedInstance.httpPost(urlstr: queryURL, postString: dataString, isPut: true, taskCallback: { (ok, json) in
+                if (ok){
+                    print(json!)
+                    DispatchQueue.main.async {
                         
-                    })
-                    alert.addAction(reportAction)
+                        let alert = UIAlertController(title: "Your trade has been canceled",
+                                                      message: "We have moved it to your trade history page, inside your profile section.",
+                                                      preferredStyle: .alert )
+                        let reportAction = UIAlertAction(title: "Ok", style: .default, handler: { action -> Void in
+                            
+                        })
+                        alert.addAction(reportAction)
+                    }
+                } else {
+                    // connection error
+                    print("Connection error")
                 }
-            } else {
-                // connection error
-                print("Connection error")
-            }
-        })
+            })
+        }
     }
 }

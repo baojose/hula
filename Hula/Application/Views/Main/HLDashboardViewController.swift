@@ -228,7 +228,7 @@ extension HLDashboardViewController: UICollectionViewDelegate, UICollectionViewD
             //let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "tradeCell", for: indexPath) as! HLTradesCollectionViewCell
 
             //isExpandedFlowLayoutUsed = !isExpandedFlowLayoutUsed
-            let when = DispatchTime.now() + 0.3
+            let when = DispatchTime.now() + 0.2
             DispatchQueue.main.asyncAfter(deadline: when) {
                 if let swappPageVC = self.parent as? HLSwappPageViewController{
                     self.selectedBarter = indexPath.row

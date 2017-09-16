@@ -219,28 +219,30 @@ class HLProductDetailViewController: BaseViewController, UIScrollViewDelegate, U
     }
     
     @IBAction func addToTradeAction(_ sender: Any) {
-        if let productId = currentProduct.productId {
-            //print(productId)
-            let otherId = currentProduct.productOwner
-            if (HulaUser.sharedInstance.userId.characters.count>0){
-                // user is loggedin
-                let queryURL = HulaConstants.apiURL + "trades/"
-                let dataString:String = "product_id=\(productId)&other_id=\(otherId!)"
-                HLDataManager.sharedInstance.httpPost(urlstr: queryURL, postString: dataString, isPut: false, taskCallback: { (ok, json) in
-                    if (ok){
-                        // show barter screen
-                        DispatchQueue.main.async {
-                            let storyboard = UIStoryboard(name: "Main", bundle: nil)
-                            let myModalViewController = storyboard.instantiateViewController(withIdentifier: "swappView")
-                            myModalViewController.modalPresentationStyle = UIModalPresentationStyle.fullScreen
-                            myModalViewController.modalTransitionStyle = UIModalTransitionStyle.crossDissolve
-                            self.present(myModalViewController, animated: true, completion: nil)
+        if (currentProduct.productOwner != HulaUser.sharedInstance.userId) {
+            if let productId = currentProduct.productId {
+                //print(productId)
+                let otherId = currentProduct.productOwner
+                if (HulaUser.sharedInstance.userId.characters.count>0){
+                    // user is loggedin
+                    let queryURL = HulaConstants.apiURL + "trades/"
+                    let dataString:String = "product_id=\(productId)&other_id=\(otherId!)"
+                    HLDataManager.sharedInstance.httpPost(urlstr: queryURL, postString: dataString, isPut: false, taskCallback: { (ok, json) in
+                        if (ok){
+                            // show barter screen
+                            DispatchQueue.main.async {
+                                let storyboard = UIStoryboard(name: "Main", bundle: nil)
+                                let myModalViewController = storyboard.instantiateViewController(withIdentifier: "swappView")
+                                myModalViewController.modalPresentationStyle = UIModalPresentationStyle.fullScreen
+                                myModalViewController.modalTransitionStyle = UIModalTransitionStyle.crossDissolve
+                                self.present(myModalViewController, animated: true, completion: nil)
+                            }
+                        } else {
+                            // connection error
+                            print("Connection error")
                         }
-                    } else {
-                        // connection error
-                        print("Connection error")
-                    }
-                })
+                    })
+                }
             }
         }
     }

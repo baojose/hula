@@ -26,6 +26,8 @@ class HLBarterScreenViewController: BaseViewController {
     @IBOutlet weak var otherProductsDragView: UIImageView!
     @IBOutlet weak var myProductsDragView: UIImageView!
     
+    @IBOutlet weak var addMoneyBtn2: UIButton!
+    @IBOutlet weak var addMoneyBtn1: UIButton!
     @IBOutlet weak var sendOfferFakeView: UIView!
     
     @IBOutlet weak var otherProductsLabel: UILabel!
@@ -120,12 +122,16 @@ class HLBarterScreenViewController: BaseViewController {
                 self.mySelectedProductsCollection.isUserInteractionEnabled = true
                 self.otherProductsCollection.isUserInteractionEnabled = true
                 self.otherSelectedProductsCollection.isUserInteractionEnabled = true
+                self.addMoneyBtn1.isUserInteractionEnabled = true
+                self.addMoneyBtn2.isUserInteractionEnabled = true
             } else {
                 self.sectionCover.isHidden = false
                 self.myProductsCollection.isUserInteractionEnabled = false
                 self.mySelectedProductsCollection.isUserInteractionEnabled = false
                 self.otherProductsCollection.isUserInteractionEnabled = false
                 self.otherSelectedProductsCollection.isUserInteractionEnabled = false
+                self.addMoneyBtn1.isUserInteractionEnabled = false
+                self.addMoneyBtn2.isUserInteractionEnabled = false
                 
             }
             //print(otp)

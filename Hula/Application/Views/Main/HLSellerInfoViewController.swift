@@ -116,8 +116,9 @@ class HLSellerInfoViewController: BaseViewController, UITableViewDelegate, UITab
     }
     
     @IBAction func addToTradeAction(_ sender: Any) {
-            //print(productId)
-            let otherId = user.userId
+        //print(productId)
+        let otherId = user.userId
+        if(HulaUser.sharedInstance.userId != otherId){
             if (HulaUser.sharedInstance.userId.characters.count>0){
                 // user is loggedin
                 let queryURL = HulaConstants.apiURL + "trades/"
@@ -138,5 +139,6 @@ class HLSellerInfoViewController: BaseViewController, UITableViewDelegate, UITab
                     }
                 })
             }
+        }
     }
 }
