@@ -22,6 +22,7 @@ class HLDataManager: NSObject {
     var newProduct: HulaProduct!
     var arrCategories : NSMutableArray!
     var arrTrades : [NSDictionary]! = []
+    var arrCurrentTrades : [NSDictionary]! = []
     var arrNotifications : NSMutableArray!
     var uploadMode: Bool!
     var onboardingTutorials: NSMutableDictionary!
@@ -49,6 +50,7 @@ class HLDataManager: NSObject {
         arrCategories = []
         arrNotifications = []
         arrTrades = []
+        arrCurrentTrades = []
         getCategories()
 //        arrCategories = [["icon" : "icon_cat_service" , "name" : "SERVICES"],
 //                         ["icon" : "icon_cat_cars" , "name" : "CARS, BIKES & AUTO PARTS"],
@@ -94,11 +96,18 @@ class HLDataManager: NSObject {
         httpGet(urlstr: queryURL, taskCallback: { (ok, json) in
             //print(ok)
             if (ok){
-                self.arrTrades=[];
-                if let array = json as? [Any] {
+                self.arrTrades = [];
+                self.arrCurrentTrades = [];
+                if let array = json as? [NSDictionary] {
                     for trade in array {
                         // access all objects in array
-                        self.arrTrades.append(trade as! NSDictionary)
+                        if let st = trade.object(forKey: "status") as? String{
+                            //print(st)
+                            if st != HulaConstants.end_status && st != HulaConstants.cancel_status {
+                                self.arrCurrentTrades.append(trade)
+                            }
+                        }
+                        self.arrTrades.append(trade)
                     }
                 }
                 taskCallback(true)

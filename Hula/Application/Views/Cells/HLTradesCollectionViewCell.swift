@@ -21,7 +21,9 @@ class HLTradesCollectionViewCell: UICollectionViewCell {
     @IBOutlet weak var otherTurnView: UIView!
     @IBOutlet weak var boxView: UIView!
     
+    
     var dbDelegate: HLDashboardViewController?
+    var tradeId: String = ""
     
     var isEmptyRoom = true;
     
@@ -63,46 +65,56 @@ class HLTradesCollectionViewCell: UICollectionViewCell {
     
     
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
-     UIView.animate(withDuration: 0.1, animations: {
-     self.transform = CGAffineTransform(scaleX: 1.1,y: 1.1);
-     
-     })
-     UIView.animate(withDuration: 0.1, animations: {
-     self.transform = CGAffineTransform(scaleX: 1.1,y: 1.1);
-     
-     }, completion: { (ok) in
-     UIView.animate(withDuration: 0.4, animations: {
-     self.transform = CGAffineTransform(scaleX: 1,y: 1);
-     })
-     })
+        if (self.tradeId != ""){
+             UIView.animate(withDuration: 0.1, animations: {
+             self.transform = CGAffineTransform(scaleX: 1.1,y: 1.1);
+             
+             })
+             UIView.animate(withDuration: 0.1, animations: {
+             self.transform = CGAffineTransform(scaleX: 1.1,y: 1.1);
+             
+             }, completion: { (ok) in
+             UIView.animate(withDuration: 0.4, animations: {
+             self.transform = CGAffineTransform(scaleX: 1,y: 1);
+             })
+             })
         super.touchesBegan(touches, with: event)
+        }
     }
     
 
     
     @IBAction func tradeOptionsAction(_ sender: Any) {
-        if dbDelegate != nil {
-            let alert = UIAlertController(title: "Trade options",
-                                          message: nil,
-                                          preferredStyle: .actionSheet)
-            
-            let reportAction = UIAlertAction(title: "Report this user", style: .default, handler: { action -> Void in
+        if (self.tradeId != ""){
+            if dbDelegate != nil {
+                let alert = UIAlertController(title: "Trade options",
+                                              message: nil,
+                                              preferredStyle: .actionSheet)
                 
-            })
-            alert.addAction(reportAction)
-            
-            
-            let removeAction = UIAlertAction(title: "Remove this trade", style: .destructive, handler: { action -> Void in
+                let reportAction = UIAlertAction(title: "Report this user", style: .default, handler: { action -> Void in
+                    
+                })
+                alert.addAction(reportAction)
                 
-            })
-            alert.addAction(removeAction)
-            
-            let cancelAction = UIAlertAction(title: "Cancel", style: .cancel, handler: nil)
-            
-            alert.addAction(cancelAction)
-            dbDelegate?.present(alert, animated: true)
+                
+                let removeAction = UIAlertAction(title: "Delete this trade", style: .destructive, handler: { action -> Void in
+                    self.closeTrade()
+                })
+                alert.addAction(removeAction)
+                
+                let cancelAction = UIAlertAction(title: "Cancel", style: .cancel, handler: nil)
+                
+                alert.addAction(cancelAction)
+                dbDelegate?.present(alert, animated: true)
+            }
         }
     }
     
-    
+    func closeTrade(){
+        if (self.tradeId != ""){
+            // call parent closeTrade(id)
+            dbDelegate?.closeTrade(self.tradeId)
+            
+        }
+    }
 }

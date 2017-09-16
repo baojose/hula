@@ -17,7 +17,7 @@ class HLThreeDotsWaiting: SKScene {
         
         self.backgroundColor = UIColor(red: 0, green: 0, blue: 0, alpha: 0);
         //print("loading texture...")
-        print(self.frame)
+        //print(self.frame)
         for i in 1..<4 {
             let node2 = SKShapeNode(circleOfRadius: 2.0)
             
@@ -51,7 +51,7 @@ class HLThreeDotsWaiting: SKScene {
     
     func animateDots() {
         let nodes: [SKNode] = self.children
-        print(nodes)
+        //print(nodes)
         for (index, node) in nodes.enumerated() {
             node.run(.sequence([
                 .wait(forDuration: TimeInterval(index) * 0.2),

@@ -2283,7 +2283,7 @@ Log In</string>
                                 </subviews>
                             </view>
                             <button opaque="NO" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" id="MyB-ee-C6Y" customClass="HLRoundedButton" customModule="Hula" customModuleProvider="target">
-                                <rect key="frame" x="281" y="335" width="106" height="30"/>
+                                <rect key="frame" x="254" y="335" width="160" height="30"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES"/>
                                 <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="17"/>
                                 <state key="normal" title="Send offer">
@@ -2294,7 +2294,7 @@ Log In</string>
                                 </connections>
                             </button>
                             <button opaque="NO" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" id="wOQ-jY-BBX" customClass="HLRoundedButton" customModule="Hula" customModuleProvider="target">
-                                <rect key="frame" x="460" y="332" width="36" height="36"/>
+                                <rect key="frame" x="471" y="332" width="36" height="36"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMinY="YES"/>
                                 <state key="normal" image="chat-icon">
                                     <color key="titleColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
@@ -2741,8 +2741,8 @@ Log In</string>
                                             <action selector="add10Action:" destination="UdN-LB-3En" eventType="touchUpInside" id="O1v-Rf-L3P"/>
                                         </connections>
                                     </button>
-                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" text="$0.00" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="jZz-zO-o81">
-                                        <rect key="frame" x="25" y="0.0" width="280" height="21"/>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" text="$0" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="jZz-zO-o81">
+                                        <rect key="frame" x="25" y="0.0" width="280" height="29"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES"/>
                                         <fontDescription key="fontDescription" name="HelveticaNeue-Thin" family="Helvetica Neue" pointSize="24"/>
                                         <nil key="textColor"/>
@@ -3912,11 +3912,25 @@ Log In</string>
                                                                     <rect key="frame" x="351" y="58" width="8" height="12"/>
                                                                     <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
                                                                 </imageView>
+                                                                <imageView opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleAspectFit" misplaced="YES" image="icon_alert_thumbnails" id="3aO-Xa-B5P">
+                                                                    <rect key="frame" x="15" y="18" width="25" height="25"/>
+                                                                    <autoresizingMask key="autoresizingMask"/>
+                                                                </imageView>
+                                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" text="Traded" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="shg-YK-cB6">
+                                                                    <rect key="frame" x="133" y="101" width="166" height="21"/>
+                                                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxX="YES" heightSizable="YES"/>
+                                                                    <fontDescription key="fontDescription" name="HelveticaNeue-Light" family="Helvetica Neue" pointSize="12"/>
+                                                                    <color key="textColor" red="0.67163127659999999" green="0.0988971082" blue="0.075851733889999995" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                                                    <nil key="highlightedColor"/>
+                                                                </label>
                                                             </subviews>
                                                         </tableViewCellContentView>
                                                         <connections>
+                                                            <outlet property="goArrow" destination="Z6H-G5-lfp" id="UFz-CF-Y6P"/>
                                                             <outlet property="productImage" destination="xyT-O0-dif" id="KoZ-yr-eNa"/>
                                                             <outlet property="productName" destination="7KC-rd-hB5" id="pbd-dq-jlp"/>
+                                                            <outlet property="tradedAlertImage" destination="3aO-Xa-B5P" id="7bD-h6-LGv"/>
+                                                            <outlet property="tradedLabel" destination="shg-YK-cB6" id="QHF-N1-3BD"/>
                                                         </connections>
                                                     </tableViewCell>
                                                 </prototypes>
@@ -4344,7 +4358,9 @@ Log In</string>
                                     <button opaque="NO" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" id="umY-w3-fo9">
                                         <rect key="frame" x="17" y="134" width="110" height="38"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                        <state key="normal" title="Cancel" backgroundImage="button_green_alert_sm"/>
+                                        <state key="normal" title="Cancel" backgroundImage="button_border_green_alert_sm">
+                                            <color key="titleColor" red="0.1851686239" green="0.67163127659999999" blue="0.60030430560000003" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                        </state>
                                         <connections>
                                             <action selector="canceButtonAction:" destination="QMT-7V-PYZ" eventType="touchUpInside" id="h0b-J9-vfz"/>
                                         </connections>
@@ -4357,7 +4373,7 @@ Log In</string>
                                             <action selector="okButtonAction:" destination="QMT-7V-PYZ" eventType="touchUpInside" id="br3-Lq-JfN"/>
                                         </connections>
                                     </button>
-                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" text="Mens Straight Leg Blue Denim Jeans Mens Straight Leg Blue" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="gdM-3b-tcd">
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" text="Alert message" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="gdM-3b-tcd">
                                         <rect key="frame" x="22" y="20" width="279" height="106"/>
                                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES" flexibleMaxY="YES"/>
                                         <fontDescription key="fontDescription" name="HelveticaNeue-Light" family="Helvetica Neue" pointSize="17"/>
@@ -4368,7 +4384,7 @@ Log In</string>
                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                             </view>
                         </subviews>
-                        <color key="backgroundColor" red="0.0" green="0.0" blue="0.0" alpha="0.25726232389999998" colorSpace="custom" customColorSpace="sRGB"/>
+                        <color key="backgroundColor" red="0.0" green="0.0" blue="0.0" alpha="0.60192199855753425" colorSpace="custom" customColorSpace="sRGB"/>
                     </view>
                     <connections>
                         <outlet property="alertBackground" destination="VTC-Kt-WIp" id="RNa-26-Hm9"/>
@@ -4378,7 +4394,7 @@ Log In</string>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="d9O-K5-Fbt" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="3516.5" y="-418.5"/>
+            <point key="canvasLocation" x="2996" y="-418"/>
         </scene>
         <!--Edit Product Main View Controller-->
         <scene sceneID="LaX-Tc-Gmc">
@@ -6284,7 +6300,7 @@ Log In</string>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <view contentMode="scaleToFill" misplaced="YES" id="XYX-7I-QVA">
-                                <rect key="frame" x="322" y="382" width="24" height="18"/>
+                                <rect key="frame" x="322" y="367" width="24" height="18"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES"/>
                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                             </view>
@@ -6313,7 +6329,7 @@ Log In</string>
                                                     <inset key="sectionInset" minX="0.0" minY="0.0" maxX="0.0" maxY="0.0"/>
                                                 </collectionViewFlowLayout>
                                                 <cells>
-                                                    <collectionViewCell opaque="NO" multipleTouchEnabled="YES" contentMode="center" reuseIdentifier="productcell3" id="kOI-GZ-plb" customClass="HLProductCollectionViewCell" customModule="Hula" customModuleProvider="target">
+                                                    <collectionViewCell opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" reuseIdentifier="productcell3" id="kOI-GZ-plb" customClass="HLProductCollectionViewCell" customModule="Hula" customModuleProvider="target">
                                                         <rect key="frame" x="0.0" y="0.0" width="64" height="64"/>
                                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                                         <view key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center">
@@ -6327,13 +6343,13 @@ Log In</string>
                                                                     <color key="textColor" red="0.22352941179999999" green="0.66666666669999997" blue="0.64313725489999995" alpha="1" colorSpace="calibratedRGB"/>
                                                                     <nil key="highlightedColor"/>
                                                                 </label>
-                                                                <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="temp_product" id="mPh-jH-Afq">
-                                                                    <rect key="frame" x="6" y="6" width="52" height="52"/>
-                                                                    <autoresizingMask key="autoresizingMask"/>
-                                                                </imageView>
                                                                 <imageView hidden="YES" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" image="added_left_trade_icon" id="h7s-6g-WGP">
                                                                     <rect key="frame" x="8" y="8" width="17" height="17"/>
                                                                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                                                </imageView>
+                                                                <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="temp_product" id="mPh-jH-Afq">
+                                                                    <rect key="frame" x="6" y="6" width="52" height="52"/>
+                                                                    <autoresizingMask key="autoresizingMask"/>
                                                                 </imageView>
                                                             </subviews>
                                                         </view>
@@ -6368,6 +6384,10 @@ Log In</string>
                                                             <rect key="frame" x="0.0" y="0.0" width="128" height="128"/>
                                                             <autoresizingMask key="autoresizingMask"/>
                                                             <subviews>
+                                                                <imageView opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" image="added_left_trade_icon" id="dV1-3A-A0m">
+                                                                    <rect key="frame" x="11" y="13" width="17" height="17"/>
+                                                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                                                </imageView>
                                                                 <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="temp_product" id="Clo-MI-92f">
                                                                     <rect key="frame" x="8" y="8" width="112" height="83"/>
                                                                     <autoresizingMask key="autoresizingMask" flexibleMaxY="YES"/>
@@ -6379,10 +6399,6 @@ Log In</string>
                                                                     <color key="textColor" red="0.22352941179999999" green="0.66666666669999997" blue="0.64313725489999995" alpha="1" colorSpace="calibratedRGB"/>
                                                                     <nil key="highlightedColor"/>
                                                                 </label>
-                                                                <imageView opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" image="added_left_trade_icon" id="dV1-3A-A0m">
-                                                                    <rect key="frame" x="11" y="13" width="17" height="17"/>
-                                                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                                                </imageView>
                                                                 <view contentMode="scaleToFill" id="IsL-m9-Mbw">
                                                                     <rect key="frame" x="0.0" y="126" width="128" height="1"/>
                                                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxY="YES"/>
@@ -6446,13 +6462,13 @@ Log In</string>
                                                                     <color key="textColor" red="0.22352941179999999" green="0.66666666669999997" blue="0.64313725489999995" alpha="1" colorSpace="calibratedRGB"/>
                                                                     <nil key="highlightedColor"/>
                                                                 </label>
-                                                                <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="temp_product" id="GBU-wD-Y5S">
-                                                                    <rect key="frame" x="6" y="6" width="52" height="52"/>
-                                                                    <autoresizingMask key="autoresizingMask"/>
-                                                                </imageView>
                                                                 <imageView hidden="YES" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" image="added_left_trade_icon" id="ZYb-CU-QXG">
                                                                     <rect key="frame" x="9" y="8" width="17" height="17"/>
                                                                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                                                </imageView>
+                                                                <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="temp_product" id="GBU-wD-Y5S">
+                                                                    <rect key="frame" x="6" y="6" width="52" height="52"/>
+                                                                    <autoresizingMask key="autoresizingMask"/>
                                                                 </imageView>
                                                             </subviews>
                                                         </view>
@@ -6487,6 +6503,10 @@ Log In</string>
                                                             <rect key="frame" x="0.0" y="0.0" width="128" height="128"/>
                                                             <autoresizingMask key="autoresizingMask"/>
                                                             <subviews>
+                                                                <imageView opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" image="added_left_trade_icon" id="jfy-iy-bXH">
+                                                                    <rect key="frame" x="12" y="12" width="17" height="17"/>
+                                                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                                                </imageView>
                                                                 <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="temp_product" id="AI2-HO-pZQ">
                                                                     <rect key="frame" x="8" y="8" width="112" height="83"/>
                                                                     <autoresizingMask key="autoresizingMask" flexibleMaxY="YES"/>
@@ -6498,10 +6518,6 @@ Log In</string>
                                                                     <color key="textColor" red="0.22352941179999999" green="0.66666666669999997" blue="0.64313725489999995" alpha="1" colorSpace="calibratedRGB"/>
                                                                     <nil key="highlightedColor"/>
                                                                 </label>
-                                                                <imageView opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" image="added_left_trade_icon" id="jfy-iy-bXH">
-                                                                    <rect key="frame" x="12" y="12" width="17" height="17"/>
-                                                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                                                </imageView>
                                                                 <view contentMode="scaleToFill" id="k1v-fq-OCp">
                                                                     <rect key="frame" x="0.0" y="127" width="128" height="1"/>
                                                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxY="YES"/>
@@ -6559,7 +6575,7 @@ Log In</string>
                                 <color key="backgroundColor" white="0.97011718749999998" alpha="1" colorSpace="calibratedWhite"/>
                             </view>
                             <view contentMode="scaleToFill" misplaced="YES" id="jBp-VF-t3p">
-                                <rect key="frame" x="426" y="383" width="24" height="18"/>
+                                <rect key="frame" x="466" y="373" width="24" height="18"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES"/>
                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                             </view>
@@ -6571,6 +6587,8 @@ Log In</string>
                     <size key="freeformSize" width="667" height="375"/>
                     <connections>
                         <outlet property="ChatFakeView" destination="jBp-VF-t3p" id="FiQ-DN-XnG"/>
+                        <outlet property="addMoneyBtn1" destination="QNs-eY-NEZ" id="Jep-3e-LQ9"/>
+                        <outlet property="addMoneyBtn2" destination="xXH-sC-plA" id="vNy-0T-j4M"/>
                         <outlet property="leftBackground" destination="4WV-0w-VgU" id="7hu-mL-aZv"/>
                         <outlet property="moneyBtn" destination="xXH-sC-plA" id="d4A-9U-qgf"/>
                         <outlet property="myProductsCollection" destination="dRd-A1-3Ps" id="bjD-w6-0sW"/>
@@ -6727,6 +6745,7 @@ Log In</string>
         <image name="bg_green_splash" width="375" height="667"/>
         <image name="bg_red_splash" width="375" height="667"/>
         <image name="bottom_bar_trade_screen" width="667" height="51"/>
+        <image name="button_border_green_alert_sm" width="107" height="40"/>
         <image name="button_green_alert_sm" width="107" height="38"/>
         <image name="calculator-layout" width="865" height="681"/>
         <image name="cash_button_trade_interface" width="25" height="25"/>
@@ -6820,7 +6839,7 @@ Log In</string>
         <simulatedScreenMetrics key="destination" type="retina4_7.fullscreen"/>
     </simulatedMetricsContainer>
     <inferredMetricsTieBreakers>
-        <segue reference="UoL-AY-aB4"/>
         <segue reference="E8M-XX-yCt"/>
+        <segue reference="8X8-bg-W6f"/>
     </inferredMetricsTieBreakers>
 </document>

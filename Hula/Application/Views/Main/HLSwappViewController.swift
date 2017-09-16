@@ -64,6 +64,7 @@ class HLSwappViewController: UIViewController {
         threeDotsView.addSubview(skView)
         threeDots.animateDots()
         threeDotsView.isHidden = true
+        controlSetupBottomBar(index:0);
     }
     override func viewWillAppear(_ animated: Bool) {
         
@@ -85,7 +86,6 @@ class HLSwappViewController: UIViewController {
         self.otherUserView.frame.origin.x = self.view.frame.width + 500
         self.myUserView.isHidden = false;
         self.otherUserView.isHidden = false;
-        controlSetupBottomBar(index: 0)
         
         self.addTradeRoomBtn.alpha = 1;
         self.mainCentralLabel.alpha = 0;
@@ -201,44 +201,55 @@ class HLSwappViewController: UIViewController {
         }
     }
     @IBAction func sendOfferAction(_ sender: Any) {
-        
         if let tradeStatus = barterDelegate?.getCurrentTradeStatus() {
             //print("tradeStatus: \(tradeStatus)")
             let trade_id = tradeStatus.tradeId
             let turn_id = tradeStatus.turn_user_id
-            print(tradeStatus.owner_products)
+            //print(tradeStatus.owner_products)
             if (turn_id != HulaUser.sharedInstance.userId){
                 print("This is not your turn!!!")
             } else {
-                    let queryURL = HulaConstants.apiURL + "trades/\(trade_id!)"
-                    let owner_products = tradeStatus.owner_products.joined(separator: ",")
-                    let other_products = tradeStatus.other_products.joined(separator: ",")
-                    let dataString:String = "status=offer_sent&owner_products=\(owner_products)&other_products=\(other_products)"
-                    print(dataString)
-                    HLDataManager.sharedInstance.httpPost(urlstr: queryURL, postString: dataString, isPut: true, taskCallback: { (ok, json) in
-                        if (ok){
-                            print(json!)
-                            DispatchQueue.main.async {
-                                
-                                let viewController = self.storyboard?.instantiateViewController(withIdentifier: "alertView") as! AlertViewController
-                                
-                                viewController.delegate = self as AlertDelegate
-                                viewController.isCancelVisible = false
-                                viewController.message = "Your offer has been sent.\nPlease allow 72 hours for the user to reply."
-                                
-                                self.present(viewController, animated: true)
+                let queryURL = HulaConstants.apiURL + "trades/\(trade_id!)"
+                let owner_products = tradeStatus.owner_products.joined(separator: ",")
+                let other_products = tradeStatus.other_products.joined(separator: ",")
+                var status = HulaConstants.sent_status
+                if (sender as? UIButton)!.tag == 91053 {
+                    status = HulaConstants.end_status
+                }
+                let dataString:String = "status=\(status)&owner_products=\(owner_products)&other_products=\(other_products)"
+                //print(dataString)
+                HLDataManager.sharedInstance.httpPost(urlstr: queryURL, postString: dataString, isPut: true, taskCallback: { (ok, json) in
+                    if (ok){
+                        //print(json!)
+                        DispatchQueue.main.async {
+                            
+                            let viewController = self.storyboard?.instantiateViewController(withIdentifier: "alertView") as! AlertViewController
+                            
+                            viewController.delegate = self as AlertDelegate
+                            viewController.isCancelVisible = false
+                            
+                            if (sender as? UIButton)!.tag == 91053 {
+                                viewController.message = "Your offer has been closed. Contact with the user to exchange the selected products.\nIn order to free up this trading room, this trade will be moved to your trade history, on your profile area."
+                            } else {
+                                viewController.message = "Your offer has been sent with your changes.\nPlease allow 72 hours for the user to reply."
                             }
-                        } else {
-                            // connection error
-                            print("Connection error")
+                            
+                            
+                            self.present(viewController, animated: true)
                         }
-                    })
+                    } else {
+                        // connection error
+                        print("Connection error")
+                    }
+                })
             }
         } else {
             print("No trade/barter delegato vc found!")
         }
     }
     func controlSetupBottomBar(index:Int){
+        print("seting up bottom bar with index: \(index)")
+        
         if (index != 0){
             UIView.animate(withDuration: 0.3) {
                 /*
@@ -273,7 +284,6 @@ class HLSwappViewController: UIViewController {
                         self.sendOfferBtn.alpha = 0
                         self.mainCentralLabel.alpha=1;
                         self.mainCentralLabel.text = "Waiting for user reply"
-                        self.remainingTimeLabel.alpha = 1
                         let h_str = thisTrade.object(forKey: "last_update") as! String
                         let date = h_str.dateFromISO8601?.addingTimeInterval(HulaConstants.courtesyTime * 60.0 * 60.0)
                         //print(date)
@@ -286,13 +296,23 @@ class HLSwappViewController: UIViewController {
                         if (str_hours[0] == "-"){
                             str_hours = "0";
                         }
-                    
+                        
+                        self.remainingTimeLabel.alpha = 1
                         self.remainingTimeLabel.text = "Remaining time for response: \(str_hours)h"
                         self.threeDotsView.isHidden = false;
                         
                     } else {
                         self.remainingTimeLabel.alpha = 0;
                         self.threeDotsView.isHidden = true;
+                        if self.tradeCanBeClosed(thisTrade) {
+                            // can be closed
+                            self.sendOfferBtn.titleLabel?.text = "Accept trade"
+                            self.sendOfferBtn.tag = 91053
+                            
+                        } else {
+                            self.sendOfferBtn.titleLabel?.text = "Send offer"
+                            self.sendOfferBtn.tag = 1
+                        }
                     }
                     
                 }
@@ -336,6 +356,20 @@ class HLSwappViewController: UIViewController {
         }
     }
     
+    func tradeCanBeClosed(_ trade:NSDictionary) -> Bool{
+        if let bids = trade.object(forKey: "bids") as? NSArray{
+            //print(bids.count)
+            
+            if let isMutated = barterDelegate?.isTradeMutated(){
+                
+                if (bids.count > 1) && (!isMutated) {
+                    return true
+                }
+            }
+        }
+        return false
+    }
+    
 }
 
 extension HLSwappViewController: SwappPageViewControllerDelegate {
@@ -357,6 +391,7 @@ extension HLSwappViewController: SwappPageViewControllerDelegate {
 
 protocol HLBarterScreenDelegate: class {
     func getCurrentTradeStatus() -> HulaTrade
+    func isTradeMutated() -> Bool!
 }
 
 extension HLSwappViewController: AlertDelegate{

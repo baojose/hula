@@ -25,6 +25,12 @@ struct HulaConstants {
     static let staticServerURL: String = "https://hula.trading"
     static let noProductThumb: String = "https://hula.trading/files/user/nope.jpg"
     
+    // TRADE STATUSES
+    static let sent_status:String = "offer_sent"
+    static let end_status:String = "ended"
+    static let cancel_status:String = "closed"
+    
+    
     
     // local storage
     static let userFile: String = "UserData"

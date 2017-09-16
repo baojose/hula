@@ -11,6 +11,9 @@ import UIKit
 class HLProductTableViewCell: UITableViewCell {
     
     
+    @IBOutlet weak var tradedLabel: UILabel!
+    @IBOutlet weak var goArrow: UIImageView!
+    @IBOutlet weak var tradedAlertImage: UIImageView!
     @IBOutlet var productImage: UIImageView!
     @IBOutlet var productName: UILabel!
     @IBOutlet var productDistance: UILabel!
