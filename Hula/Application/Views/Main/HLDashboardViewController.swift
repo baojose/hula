@@ -216,7 +216,8 @@ extension HLDashboardViewController: UICollectionViewDelegate, UICollectionViewD
             }
             
             
-            if (HulaUser.sharedInstance.userId == otherUserId){
+            if (HulaUser.sharedInstance.userId == thisTrade.object(forKey: "other_id") as? String ){
+                // i am the other of the trade
                 if let other_products_arr = thisTrade.object(forKey: "other_products") as? [String]{
                     drawProducts(inCell: cell, fromArr: other_products_arr, side: "left")
                 }
