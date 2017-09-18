@@ -21,7 +21,7 @@ class ChatViewController: UIViewController {
     var sortedChat:NSMutableDictionary = [:]
     var sectionKeys:[String] = []
     
-    
+    var keyboardHeight:CGFloat = 150
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -44,6 +44,17 @@ class ChatViewController: UIViewController {
         // Dispose of any resources that can be recreated.
     }
     
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow), name: NSNotification.Name.UIKeyboardWillShow, object: nil)
+        
+    }
+    
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        NotificationCenter.default.removeObserver(self, name: NSNotification.Name.UIKeyboardWillShow, object: self.view.window)
+    }
 
     /*
     // MARK: - Navigation
@@ -134,14 +145,8 @@ class ChatViewController: UIViewController {
         })
     }
     
-    /*
-    func keyboardWillShow(_ notification: Notification) {
-        if let keyboardFrame: NSValue = notification.userInfo?[UIKeyboardFrameEndUserInfoKey] as? NSValue {
-            let keyboardRectangle = keyboardFrame.cgRectValue
-            let keyboardHeight = keyboardRectangle.height
-        }
-    }
- */
+    
+ 
 }
 extension ChatViewController: UITextFieldDelegate{
     func textFieldDidBeginEditing(_ textField: UITextField) {
@@ -156,19 +161,27 @@ extension ChatViewController: UITextFieldDelegate{
     }
     
     func animateTextField(textField: UITextField, up: Bool){
-        let movementDistance:CGFloat = -150
-        var movementDuration: Double = 0.3
-        
+        let movementDistance:CGFloat = -keyboardHeight
+        var movementDuration: Double = 0.2
+        //print(keyboardHeight)
         var newFrame:CGRect = CGRect(origin: CGPoint(x:0, y:0), size: self.view.frame.size)
         if up {
             newFrame = newFrame.offsetBy(dx: 0, dy: movementDistance)
-            movementDuration = 0.2
+            movementDuration = 0.3
         }
         UIView.beginAnimations("animateTextField", context: nil)
         UIView.setAnimationBeginsFromCurrentState(true)
         UIView.setAnimationDuration(movementDuration)
         self.view.frame = newFrame
         UIView.commitAnimations()
+    }
+    
+    func keyboardWillShow(_ notification: Notification) {
+        if let keyboardFrame: NSValue = notification.userInfo?[UIKeyboardFrameEndUserInfoKey] as? NSValue {
+            let keyboardRectangle = keyboardFrame.cgRectValue
+            keyboardHeight = keyboardRectangle.height
+            self.animateTextField(textField: chatTextField, up:true)
+        }
     }
 }
 
@@ -239,6 +252,7 @@ extension ChatViewController: UITableViewDelegate, UITableViewDataSource{
                 cell.leftUserImage.isHidden = false
                 cell.rightUserImage.isHidden = true
                 cell.leftUserImage.loadImageFromURL(urlString: CommonUtils.sharedInstance.userImageURL(userId: user_id))
+                cell.mainHolder.frame.origin.x = cell.frame.size.width - cell.mainHolder.frame.size.width - 150
                 //print(user_id)
             } else {
                 // other's message
@@ -249,6 +263,9 @@ extension ChatViewController: UITableViewDelegate, UITableViewDataSource{
                 cell.leftUserImage.isHidden = true
                 cell.rightUserImage.isHidden = false
                 cell.rightUserImage.loadImageFromURL(urlString: CommonUtils.sharedInstance.userImageURL(userId: user_id))
+                
+                
+                cell.mainHolder.frame.origin.x = 150
                 
             }
         }

@@ -30,7 +30,14 @@ class BaseViewController: UIViewController {
     
     //#MARK: Common Actions
     @IBAction func goBackToPreviousPage(_ sender: Any) {
-        _ = self.navigationController?.popViewController(animated: true)
+        if let _ = sender as? String {
+            DispatchQueue.main.async {
+                let viewController = self.storyboard?.instantiateViewController(withIdentifier: "identification") as! HLIdentificationViewController
+                self.navigationController?.navigationController?.pushViewController(viewController, animated: true)
+            }
+        } else {
+            _ = self.navigationController?.popViewController(animated: true)
+        }
         
     }
     @IBAction func dismissToPreviousPage(_ sender: Any) {

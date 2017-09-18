@@ -16,7 +16,6 @@ class HLIntroViewController: UserBaseViewController, UIScrollViewDelegate {
     @IBOutlet var introView1: UIView!
     @IBOutlet var introView2: UIView!
     @IBOutlet var introView3: UIView!
-    @IBOutlet var introView4: UIView!
     @IBOutlet var introView5: UIView!
     @IBOutlet var pageCtrl: UIPageControl!
     @IBOutlet var mainScrollView: UIScrollView!
@@ -91,15 +90,13 @@ class HLIntroViewController: UserBaseViewController, UIScrollViewDelegate {
         introView1.frame = CGRect(x: 0.0, y: 0.0, width: mainScrollView.frame.size.width, height: mainScrollView.frame.size.height)
         introView2.frame = CGRect(x: mainScrollView.frame.size.width, y: 0.0, width: mainScrollView.frame.size.width, height: mainScrollView.frame.size.height)
         introView3.frame = CGRect(x: mainScrollView.frame.size.width * 2.0, y: 0.0, width: mainScrollView.frame.size.width, height: mainScrollView.frame.size.height)
-        introView4.frame = CGRect(x: mainScrollView.frame.size.width * 3.0, y: 0.0, width: mainScrollView.frame.size.width, height: mainScrollView.frame.size.height)
-        introView5.frame = CGRect(x: mainScrollView.frame.size.width * 4.0, y: 0.0, width: mainScrollView.frame.size.width, height: mainScrollView.frame.size.height)
+        introView5.frame = CGRect(x: mainScrollView.frame.size.width * 3.0, y: 0.0, width: mainScrollView.frame.size.width, height: mainScrollView.frame.size.height)
         
         mainScrollView.addSubview(introView1)
         mainScrollView.addSubview(introView2)
         mainScrollView.addSubview(introView3)
-        mainScrollView.addSubview(introView4)
         mainScrollView.addSubview(introView5)
-        mainScrollView.contentSize = CGSize(width: mainScrollView.frame.size.width * 5.0, height: 0)
+        mainScrollView.contentSize = CGSize(width: mainScrollView.frame.size.width * 4.0, height: 0)
         mainScrollView.contentOffset = CGPoint(x: 0.0, y: 0.0)
     }
     

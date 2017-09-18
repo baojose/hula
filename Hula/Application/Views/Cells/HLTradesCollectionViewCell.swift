@@ -51,7 +51,7 @@ class HLTradesCollectionViewCell: UICollectionViewCell {
             boxView.layer.shadowRadius = 3
             optionsDotsImage.alpha = 1.0
         } else {
-            boxView.layer.shadowColor = UIColor(red:0, green:0, blue:0, alpha: 0).cgColor
+            boxView.layer.shadowColor = UIColor(red:1, green:1, blue:1, alpha: 0).cgColor
             boxView.layer.shadowOffset = CGSize(width: 0, height: 0)
             boxView.layer.shadowOpacity = 0
             boxView.layer.shadowRadius = 0

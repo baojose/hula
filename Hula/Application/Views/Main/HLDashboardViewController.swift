@@ -249,7 +249,11 @@ extension HLDashboardViewController: UICollectionViewDelegate, UICollectionViewD
                 cell.myTurnView.isHidden = false
                 cell.otherTurnView.isHidden = true
             }
-            cell.awakeFromNib()
+            cell.boxView.layer.shadowColor = UIColor.black.cgColor
+            cell.boxView.layer.shadowOffset = CGSize(width: 0, height: 0)
+            cell.boxView.layer.shadowOpacity = 0.2
+            cell.boxView.layer.shadowRadius = 3
+            cell.optionsDotsImage.alpha = 1
         } else {
             //print("Empty row \(indexPath.row)")
             cell.isEmptyRoom = true
@@ -262,6 +266,11 @@ extension HLDashboardViewController: UICollectionViewDelegate, UICollectionViewD
             cell.tradeNumber.textColor = UIColor.gray
             cell.myTurnView.isHidden = true
             cell.otherTurnView.isHidden = true
+            cell.boxView.layer.shadowColor = UIColor(red:1, green:1, blue:1, alpha: 0).cgColor
+            cell.boxView.layer.shadowOffset = CGSize(width: 0, height: 0)
+            cell.boxView.layer.shadowOpacity = 0
+            cell.boxView.layer.shadowRadius = 0
+            cell.optionsDotsImage.alpha = 0.2
         }
         
         return cell
