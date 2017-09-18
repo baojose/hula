@@ -13,7 +13,10 @@ class HLSwappViewController: UIViewController {
     
     weak var barterDelegate: HLBarterScreenDelegate?
     
-    @IBOutlet weak var mobileImage: UIImageView!
+    @IBOutlet weak var tradeModeLabel: UILabel!
+    @IBOutlet weak var dashMask: UIView!
+    @IBOutlet weak var dashImage: UIImageView!
+    @IBOutlet weak var mobileImage: UIView!
     @IBOutlet weak var portraitView: UIView!
     @IBOutlet weak var mainContainer: UIView!
     //@IBOutlet weak var swappPageControl: HLPageControl!
@@ -35,6 +38,7 @@ class HLSwappViewController: UIViewController {
     var initialOtherUserX:CGFloat = 0.0
     
     var selectedScreen = 0
+    var initialFrame:CGRect = CGRect(x:0, y:0, width: 191, height: 108)
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -51,9 +55,13 @@ class HLSwappViewController: UIViewController {
         self.addTradeRoomBtn.alpha = 1;
         self.mainCentralLabel.alpha = 0;
         
+        self.dashImage.alpha = 0
+        self.dashMask.alpha = 0
+        
         
         self.mobileImage.alpha = 0
         self.mobileImage.transform = CGAffineTransform(rotationAngle: CGFloat(Double.pi/2));
+        self.tradeModeLabel.transform = CGAffineTransform(rotationAngle: CGFloat(Double.pi));
         
         let threeDots = HLThreeDotsWaiting(size: CGSize(width:40, height:10))
         let skView = SKView(frame: CGRect(x: 0, y: 0, width: 40, height: 10))
@@ -89,6 +97,8 @@ class HLSwappViewController: UIViewController {
         
         self.addTradeRoomBtn.alpha = 1;
         self.mainCentralLabel.alpha = 0;
+        self.dashImage.alpha = 0
+        self.dashMask.alpha = 0
         
         
         self.rotateAnimation()
@@ -136,22 +146,39 @@ class HLSwappViewController: UIViewController {
         if UIDeviceOrientationIsPortrait(UIDevice.current.orientation) {
             mobileImage.alpha = 0
             self.mobileImage.transform = CGAffineTransform(rotationAngle: CGFloat(-Double.pi/2));
+            
+            self.dashImage.alpha = 0
+            self.dashMask.alpha = 0
+            self.dashMask.transform = .identity
+            self.dashMask.frame = self.initialFrame
+            
             UIView.animate(withDuration: 0.5, animations: {
                 self.mobileImage.alpha = 1
             }, completion: { (success) in
-                UIView.animate(withDuration: 1.2, animations: {
+                UIView.animate(withDuration: 1.0, animations: {
                     self.mobileImage.transform = CGAffineTransform(rotationAngle: CGFloat(Double.pi));
+                    self.dashMask.alpha = 1
+                    self.dashImage.alpha = 1
                 }, completion: { (success) in
-                    UIView.animate(withDuration: 1.5, animations: {
+                    
+                    
+                    
+                    UIView.animate(withDuration: 2.0, animations: {
                         self.mobileImage.alpha = 0
                     }, completion: { (success) in
                         self.mobileImage.transform = .identity
-                        let when = DispatchTime.now() + 1
+                        let when = DispatchTime.now() + 0.5
                         DispatchQueue.main.asyncAfter(deadline: when) {
                             
                             self.rotateAnimation()
                         }
                     })
+                })
+                
+                UIView.animate( withDuration: 0.7, delay:0.4, animations: {
+                    self.dashMask.frame.origin.x = 0
+                    self.dashMask.frame.origin.y = -200
+                    self.dashMask.transform = CGAffineTransform(rotationAngle: 0.8)
                 })
             })
         }
