@@ -53,6 +53,7 @@ class HLSignUpViewController: UserBaseViewController, UITextFieldDelegate  {
             switch currentStep {
             case 0:
                 userNick = signupField.text!
+                checkUsernick(nick:userNick)
                 break
             case 1:
                 userEmail = signupField.text!
@@ -87,6 +88,36 @@ class HLSignUpViewController: UserBaseViewController, UITextFieldDelegate  {
                 self.greenBackgroundImage.alpha = 0
             })
         }
+    }
+    
+    func checkUsernick(nick:String){
+        let queryURL = HulaConstants.apiURL + "users/validatenick/\(nick)"
+        print(queryURL)
+        
+        HLDataManager.sharedInstance.httpGet(urlstr: queryURL, taskCallback: { (ok, json) in
+            //print(ok)
+            if (ok){
+                if let dict = json as? [String:String]{
+                    if dict["user"] == "found" {
+                        
+                        DispatchQueue.main.async {
+                            UIView.animate(withDuration: 0.4, animations: {
+                                self.greenBackgroundImage.alpha = 0
+                            }, completion: { (success) in
+                                UIView.animate(withDuration: 1.4, animations: {
+                                    self.greenBackgroundImage.alpha = 1
+                                })
+                            })
+                            
+                            self.currentStep = 0
+                            self.nextButton.setup()
+                            self.resetStepTexts()
+                        }
+                        
+                    }
+                }
+            }
+        })
     }
 
     @IBAction func signupFieldChanged(_ sender: Any) {

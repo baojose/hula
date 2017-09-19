@@ -214,7 +214,9 @@ class HLPictureSelectViewController: BaseViewController, UIImagePickerController
                                 print(pos)
                                 self.resultingImage = HulaConstants.staticServerURL + filePath
                                 HulaUser.sharedInstance.userPhotoURL = self.resultingImage
+                                
                                 HulaUser.sharedInstance.updateServerData()
+                                HLDataManager.sharedInstance.writeUserData()
                                 self.dismissToPreviousPage(self.resultingImage)
                             }
                         }

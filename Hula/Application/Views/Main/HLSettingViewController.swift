@@ -130,6 +130,13 @@ class HLSettingViewController: BaseViewController {
             remChar = 40
         case 2:
             // Full name
+            title = "Validate your email"
+            previous = userData.userEmail
+            label = "Email"
+            item_toUpdate = "userEmail"
+            remChar = 120
+        case 25:
+            // Full name
             title = "Change your full name"
             previous = userData.userName
             label = "Full name"

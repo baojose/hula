@@ -72,26 +72,29 @@ class HLProfileViewController: BaseViewController {
     }
     override func viewDidAppear(_ animated: Bool) {
         
-        if (HulaUser.sharedInstance.userPhotoURL != "") && (current_image_url != HulaUser.sharedInstance.userPhotoURL){
-            print("Changing image")
-            print(HulaUser.sharedInstance.userPhotoURL)
-            let thumb = commonUtils.getThumbFor(url: HulaUser.sharedInstance.userPhotoURL)
-            self.profileImageView.loadImageFromURL(urlString: thumb)
-            self.current_image_url = HulaUser.sharedInstance.userPhotoURL
+        if (HulaUser.sharedInstance.isUserLoggedIn()){
+            
+            if (HulaUser.sharedInstance.userPhotoURL != "") && (current_image_url != HulaUser.sharedInstance.userPhotoURL){
+                print("Changing image")
+                print(HulaUser.sharedInstance.userPhotoURL)
+                let thumb = commonUtils.getThumbFor(url: HulaUser.sharedInstance.userPhotoURL)
+                self.profileImageView.loadImageFromURL(urlString: thumb)
+                self.current_image_url = HulaUser.sharedInstance.userPhotoURL
+            }
+            
+            
+            if (HulaUser.sharedInstance.isIncompleteProfile()){
+                // badges to inform the user
+                UIView.animate(withDuration: 0.4, animations: {
+                    self.completeProfileTooltip.alpha = 1
+                    self.settingsAlertBadge.alpha = 1
+                })
+            } else {
+                self.completeProfileTooltip.alpha = 0
+                self.settingsAlertBadge.alpha = 0
+            }
+        
         }
-        
-        
-        if (HulaUser.sharedInstance.isIncompleteProfile()){
-            // badges to inform the user
-            UIView.animate(withDuration: 0.4, animations: {
-                self.completeProfileTooltip.alpha = 1
-                self.settingsAlertBadge.alpha = 1
-            })
-        } else {
-            self.completeProfileTooltip.alpha = 0
-            self.settingsAlertBadge.alpha = 0
-        }
-        
         
     }
     override func didReceiveMemoryWarning() {
@@ -281,8 +284,8 @@ class HLProfileViewController: BaseViewController {
                             }
                             
                             self.userFeedbackLabel.text = HulaUser.sharedInstance.getFeedback()
-                            let thumb = self.commonUtils.getThumbFor(url: HulaUser.sharedInstance.userPhotoURL)
-                            self.profileImageView.loadImageFromURL(urlString: thumb)
+                            //let thumb = self.commonUtils.getThumbFor(url: HulaUser.sharedInstance.userPhotoURL)
+                            self.profileImageView.loadImageFromURL(urlString: HulaUser.sharedInstance.userPhotoURL)
                             self.current_image_url = HulaUser.sharedInstance.userPhotoURL
                             self.userFullNameLabel.text = HulaUser.sharedInstance.userName
                             self.userNickLabel.text = HulaUser.sharedInstance.userNick
