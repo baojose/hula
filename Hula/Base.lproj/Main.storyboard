@@ -6003,6 +6003,7 @@ Log In</string>
                         <outlet property="perkMarkLineLabel" destination="uBM-WC-zVd" id="0uN-vZ-ya2"/>
                         <outlet property="perkScrollView" destination="JNA-v7-BGn" id="IWW-2Q-ljN"/>
                         <outlet property="productReferenceImage" destination="3bQ-n4-fgX" id="ngP-Vq-rn6"/>
+                        <outlet property="smallBackBtn" destination="f5w-p0-tDs" id="1mH-AS-gMY"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="qkg-O8-Mva" userLabel="First Responder" sceneMemberID="firstResponder"/>
