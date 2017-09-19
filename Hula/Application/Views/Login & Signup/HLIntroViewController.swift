@@ -122,7 +122,7 @@ class HLIntroViewController: UserBaseViewController, UIScrollViewDelegate {
             scene[1].isPaused = true
         }
         
-        if (mainScrollView.contentOffset.x > 4.0 * mainScrollView.frame.size.width) {
+        if (mainScrollView.contentOffset.x > 3.0 * mainScrollView.frame.size.width) {
             if (jump_just_once){
                 jump_just_once = false;
                 self.navToMainView()
