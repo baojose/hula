@@ -4183,13 +4183,20 @@ Log In</string>
                                             <action selector="dismissToPreviousPage:" destination="CMj-OO-BMx" eventType="touchUpInside" id="arE-wc-MuL"/>
                                         </connections>
                                     </button>
-                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" text="Refine results" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="KL3-0c-Kpg">
-                                        <rect key="frame" x="56" y="24" width="263" height="47"/>
-                                        <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" text="Refine" textAlignment="right" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="KL3-0c-Kpg">
+                                        <rect key="frame" x="225" y="24" width="132" height="47"/>
+                                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxY="YES"/>
                                         <fontDescription key="fontDescription" name="HelveticaNeue-Light" family="Helvetica Neue" pointSize="16"/>
-                                        <color key="textColor" red="0.27450980390000002" green="0.27450980390000002" blue="0.27450980390000002" alpha="1" colorSpace="calibratedRGB"/>
+                                        <color key="textColor" red="0.11819837389270432" green="0.11936865482233505" blue="0.11936865482233505" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                         <nil key="highlightedColor"/>
                                     </label>
+                                    <button opaque="NO" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" id="Utj-v8-6Jb">
+                                        <rect key="frame" x="257" y="32" width="103" height="30"/>
+                                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxY="YES"/>
+                                        <connections>
+                                            <action selector="dismissToPreviousPage:" destination="CMj-OO-BMx" eventType="touchUpInside" id="jdc-YK-nAs"/>
+                                        </connections>
+                                    </button>
                                 </subviews>
                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                             </view>
@@ -4431,16 +4438,6 @@ Log In</string>
                                         </subviews>
                                         <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                     </view>
-                                    <button opaque="NO" contentMode="scaleToFill" misplaced="YES" enabled="NO" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" id="78g-pu-2mi" customClass="HLRoundedGradientNextButton" customModule="Hula" customModuleProvider="target">
-                                        <rect key="frame" x="212" y="362" width="137" height="39"/>
-                                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxY="YES"/>
-                                        <state key="normal" title="Apply   ">
-                                            <color key="titleColor" red="0.7669230776" green="0.77499595210000005" blue="0.77499595210000005" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-                                        </state>
-                                        <connections>
-                                            <action selector="dismissToPreviousPage:" destination="CMj-OO-BMx" eventType="touchUpInside" id="9ya-vD-6Xw"/>
-                                        </connections>
-                                    </button>
                                 </subviews>
                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                             </view>
@@ -4448,9 +4445,6 @@ Log In</string>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                     </view>
                     <navigationItem key="navigationItem" id="77i-As-e6W"/>
-                    <connections>
-                        <outlet property="publishBtn" destination="78g-pu-2mi" id="k5G-FV-ycf"/>
-                    </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="fzj-KF-K1X" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
