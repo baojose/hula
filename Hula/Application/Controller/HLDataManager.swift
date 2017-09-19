@@ -191,6 +191,7 @@ class HLDataManager: NSObject {
         user = HulaUser.init()
         user.logout();
         self.writeUserData()
+        
     }
     
     func signupUser(email:String, nick: String, pass:String) {

@@ -200,6 +200,7 @@ extension HLSettingViewController: AlertDelegate{
         if (response == "ok"){
             HLDataManager.sharedInstance.logout()
             self.goBackToPreviousPage("")
+            
         }
     }
 }
