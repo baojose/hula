@@ -472,10 +472,12 @@ class HLDataManager: NSObject {
             //print(dict)
             
             updateUserFromDict(dict: dict)
-            let tmp = dict.object(forKey: "onboardingTutorials") as? NSDictionary
-            let tmpMutable:NSMutableDictionary = NSMutableDictionary(dictionary: tmp!)
-            self.onboardingTutorials = tmpMutable
-            
+            if let tmp = dict.object(forKey: "onboardingTutorials") as? NSDictionary {
+                let tmpMutable:NSMutableDictionary = NSMutableDictionary(dictionary: tmp)
+                self.onboardingTutorials = tmpMutable
+            } else {
+                self.onboardingTutorials = ["XInitializerItem": "DoNotEverChangeMe"]
+            }
             
             self.loadUserNotifications()
         }
