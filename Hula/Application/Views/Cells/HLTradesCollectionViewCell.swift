@@ -114,7 +114,7 @@ class HLTradesCollectionViewCell: UICollectionViewCell {
         if (self.tradeId != ""){
             // call parent closeTrade(id)
             dbDelegate?.closeTrade(self.tradeId)
-            
+            self.tradeId = ""
         }
     }
 }

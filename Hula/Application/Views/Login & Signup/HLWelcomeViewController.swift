@@ -78,7 +78,7 @@ class HLWelcomeViewController: UserBaseViewController, CLLocationManagerDelegate
         continueButton.setTitle(button1, for: .normal)
         UIView.animate(withDuration: 0.4) {
             self.messagesView.frame.size.height = self.view.frame.height - 100
-            self.messagesView.frame.origin.y = 70
+            self.messagesView.frame.origin.y = 90
             self.mobileImage.frame.origin.y = 190
             self.mobileImage.alpha = 1
             self.backgroundImage.alpha = 0

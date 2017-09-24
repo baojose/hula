@@ -257,6 +257,7 @@ extension HLDashboardViewController: UICollectionViewDelegate, UICollectionViewD
         } else {
             //print("Empty row \(indexPath.row)")
             cell.isEmptyRoom = true
+            cell.tradeId = "";
             cell.emptyRoomLabel.text = "Empty Trade Room"
             cell.myImage.isHidden = true
             cell.userImage.image = nil
