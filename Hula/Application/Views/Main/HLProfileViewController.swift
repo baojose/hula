@@ -80,6 +80,8 @@ class HLProfileViewController: BaseViewController {
                 let thumb = commonUtils.getThumbFor(url: HulaUser.sharedInstance.userPhotoURL)
                 self.profileImageView.loadImageFromURL(urlString: thumb)
                 self.current_image_url = HulaUser.sharedInstance.userPhotoURL
+            } else {
+                self.profileImageView.image = UIImage(named: "profile_placeholder")
             }
             
             
@@ -94,6 +96,8 @@ class HLProfileViewController: BaseViewController {
                 self.settingsAlertBadge.alpha = 0
             }
         
+        } else {
+            self.profileImageView.image = UIImage(named: "profile_placeholder")
         }
         
     }
@@ -285,9 +289,13 @@ class HLProfileViewController: BaseViewController {
                             
                             self.userFeedbackLabel.text = HulaUser.sharedInstance.getFeedback()
                             //let thumb = self.commonUtils.getThumbFor(url: HulaUser.sharedInstance.userPhotoURL)
-                            self.profileImageView.loadImageFromURL(urlString: HulaUser.sharedInstance.userPhotoURL)
-                            self.current_image_url = HulaUser.sharedInstance.userPhotoURL
                             self.userFullNameLabel.text = HulaUser.sharedInstance.userName
+                            self.current_image_url = HulaUser.sharedInstance.userPhotoURL
+                            if (self.current_image_url != "") {
+                                self.profileImageView.loadImageFromURL(urlString: HulaUser.sharedInstance.userPhotoURL)
+                            } else {
+                                self.profileImageView.image = UIImage(named: "profile_placeholder")
+                            }
                             self.userNickLabel.text = HulaUser.sharedInstance.userNick
                             self.userBioLabel.text = HulaUser.sharedInstance.userBio
                             
