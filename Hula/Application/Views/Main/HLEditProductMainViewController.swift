@@ -55,7 +55,7 @@ class HLEditProductMainViewController: BaseViewController, ProductPictureDelegat
         redrawProductImages()
     }
     @IBAction func deleteProductAction(_ sender: Any) {
-        let alert = UIAlertController(title: "Delete product", message: "Are you sure you want to delete this product?", preferredStyle: UIAlertControllerStyle.alert)
+        let alert = UIAlertController(title: "Delete product", message: "Think twice before deleting it!", preferredStyle: UIAlertControllerStyle.alert)
         alert.addAction(UIAlertAction(title: "Cancel", style: UIAlertActionStyle.default, handler: nil))
         alert.addAction(UIAlertAction(title: "Delete", style: UIAlertActionStyle.destructive, handler: {UIAlertAction in
             //print("Deleting product")

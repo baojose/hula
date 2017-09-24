@@ -187,7 +187,7 @@ class HLCustomCameraViewController: BaseViewController, UIImagePickerControllerD
         image_dismissing = true
     }
     func optionsFullscreenImage(_ sender: UIGestureRecognizer) {
-        let alertController = UIAlertController(title: "Image options", message: "Choose an option...", preferredStyle: .actionSheet)
+        let alertController = UIAlertController(title: "Image options...", message: nil, preferredStyle: .actionSheet)
         
         
         

@@ -141,7 +141,7 @@ class HLProfileViewController: BaseViewController {
     }
     
     @IBAction func validateAction(_ sender: Any) {
-        let alert = UIAlertController(title: "Select a verification method",
+        let alert = UIAlertController(title: "Select a validation method",
                                        message: nil,
                                        preferredStyle: .actionSheet)
         
@@ -422,7 +422,7 @@ class HLProfileViewController: BaseViewController {
         image_dismissing = true
     }
     func optionsFullscreenImage(_ sender: UIGestureRecognizer) {
-        let alertController = UIAlertController(title: "Edit profile image", message: "Do you want to replace this image with a new one?", preferredStyle: .actionSheet)
+        let alertController = UIAlertController(title: "Do you wanna change your profile picture?", message: nil, preferredStyle: .actionSheet)
         
         
         let  editButton = UIAlertAction(title: "Change image", style: .destructive, handler: { (action) -> Void in

@@ -162,11 +162,11 @@ class HLBarterScreenViewController: BaseViewController {
                 if let _ = HLDataManager.sharedInstance.onboardingTutorials.object(forKey: "barter_my_turn") as? String{
                 } else {
                     CommonUtils.sharedInstance.showTutorial(arrayTips: [
-                        HulaTip(delay: 2, view: self.otherProductsCollection, text: "Welcome to the trading room! Drag any product you want from the user list to the trading area"),
-                        HulaTip(delay: 0.4, view: self.myProductsCollection, text: "You can offer anything from your stock by also dragging your products to the trading area"),
-                        HulaTip(delay: 0.4, view: self.moneyBtn, text: "If you don't find anything interesting in the user stock, you can add money to the trade"),
-                        HulaTip(delay: 0.4, view: self.ChatFakeView, text: "Need to talk? Use the chat button to send the user a message"),
-                        HulaTip(delay: 0.4, view: self.sendOfferFakeView, text: "Once you are glad with your selection, send your offer to the user and wait for his reply")
+                        HulaTip(delay: 2, view: self.otherProductsCollection, text: "Here is their stuff. Drag & drop what you want. Click on the product to get more info."),
+                        HulaTip(delay: 0.4, view: self.myProductsCollection, text: "Here is your stuff."),
+                        HulaTip(delay: 0.4, view: self.moneyBtn, text: "Add money here"),
+                        HulaTip(delay: 0.4, view: self.ChatFakeView, text: "Start chat here"),
+                        HulaTip(delay: 0.4, view: self.sendOfferFakeView, text: "Once you select what you want, find out if the other trader interested. Click the button below to send a notification!")
                         ])
                     print(HLDataManager.sharedInstance.onboardingTutorials)
                     HLDataManager.sharedInstance.onboardingTutorials.setObject("done", forKey: "barter_my_turn" as NSCopying)

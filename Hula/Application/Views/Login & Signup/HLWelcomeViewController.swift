@@ -20,10 +20,10 @@ class HLWelcomeViewController: UserBaseViewController, CLLocationManagerDelegate
     @IBOutlet weak var messagesView: UIView!
     
     var step: Int = 0;
-    var title1:String = "Accept notifications"
-    var title2:String = "Allow location"
-    var description1:String = "Do you want to be notified when another user sends you a message?"
-    var description2:String = "Do you want to see products near you?"
+    var title1:String = "Up for push notifications?"
+    var title2:String = "Allow HULA to access your location"
+    var description1:String = "Notifications may include alerts when a user sends you a message."
+    var description2:String = "Find what you need near you!"
     var button1:String = "Notify me"
     var button2:String = "Use my location"
     var messagesViewPosition:CGPoint = CGPoint(x:0, y:0)

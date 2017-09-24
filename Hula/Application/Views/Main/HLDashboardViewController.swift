@@ -102,7 +102,7 @@ class HLDashboardViewController: BaseViewController {
                             // show empty rooms tutorial
                             if let _ = HLDataManager.sharedInstance.onboardingTutorials.object(forKey: "dashboard_empty") as? String{
                                 CommonUtils.sharedInstance.showTutorial(arrayTips: [
-                                    HulaTip(delay: 1, view: cell.left_side, text: "Here you have your available trading rooms. Now they are empty, but as you start trading with other users, you will find here your progress"),
+                                    HulaTip(delay: 1, view: cell.left_side, text: "You're in the Trade Room!\nto start trading, start exchanging."),
                                     HulaTip(delay: 0.5, view: self.mainCollectionView, text: "Need more trading rooms? tap here to add more spaces!")
                                 ])
                                 HLDataManager.sharedInstance.onboardingTutorials.setValue("done", forKey: "dashboard_empty")
@@ -111,7 +111,7 @@ class HLDashboardViewController: BaseViewController {
                             // show full rooms tutorial
                             if let _ = HLDataManager.sharedInstance.onboardingTutorials.object(forKey: "dashboard_full") as? String{
                                 CommonUtils.sharedInstance.showTutorial(arrayTips: [
-                                    HulaTip(delay: 1, view: cell.left_side, text: "Your first trade is here! Enter on any of these trade rooms in order to barter with other users")
+                                    HulaTip(delay: 1, view: cell.left_side, text: "Welcome to your first trade! Get some advice. Click on the Trade Room you used.")
                                     ])
                                 HLDataManager.sharedInstance.onboardingTutorials.setValue("done", forKey: "dashboard_full")
                             }
@@ -152,7 +152,7 @@ class HLDashboardViewController: BaseViewController {
                         
                         viewController.delegate = self
                         viewController.isCancelVisible = false
-                        viewController.message = "Your trade has been canceled.\nWe have moved it to your trade history page, inside your profile section."
+                        viewController.message = "Your trade is canceled.\nWe've moved it to your trade history section inside your profile."
                         
                         self.present(viewController, animated: true)
                         
