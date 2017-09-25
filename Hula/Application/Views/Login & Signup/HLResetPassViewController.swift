@@ -67,5 +67,24 @@ class HLResetPassViewController: UIViewController, UITextFieldDelegate {
     func dismissKeyboard(){
         view.endEditing(true)
     }
+    @IBAction func resetPassAction(_ sender: Any) {
+        //print("Sending email...")
+        let email = emailField.text!
+        let queryURL = HulaConstants.apiURL + "users/resetmail/\(email)"
+        //print(queryURL)
+        
+        HLDataManager.sharedInstance.httpGet(urlstr: queryURL, taskCallback: { (ok, json) in
+            
+            DispatchQueue.main.async
+                {
+                    let vc = self.storyboard?.instantiateViewController(withIdentifier: "resetSent") as! HLResetSentViewController
+                    //print(vc)
+                    vc.emailText = email
+                    self.navigationController?.pushViewController(vc, animated: true)
+            }
+            
+            
+        })
+    }
     
 }
