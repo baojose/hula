@@ -169,6 +169,32 @@ class HLDashboardViewController: BaseViewController {
         }
     }
     
+    func reportUser(_ userId:String){
+        let queryURL = HulaConstants.apiURL + "users/report/\(userId)"
+        //print(dataString)
+        HLDataManager.sharedInstance.httpGet(urlstr: queryURL, taskCallback: { (ok, json) in
+            if (ok){
+                //print(json!)
+                DispatchQueue.main.async {
+                    
+                    let viewController = self.storyboard?.instantiateViewController(withIdentifier: "alertView") as! AlertViewController
+                    
+                    viewController.delegate = self
+                    viewController.isCancelVisible = false
+                    viewController.message = "The user has been reported. We will review the user behavior and take necessary actions. Thanks for keeping Hula trustworthy."
+                    
+                    self.present(viewController, animated: true)
+                    
+                    
+                    self.refreshCollectionViewData()
+                }
+            } else {
+                // connection error
+                print("Connection error")
+            }
+        })
+    }
+    
 }
 
 extension HLDashboardViewController: AlertDelegate{
@@ -215,6 +241,7 @@ extension HLDashboardViewController: UICollectionViewDelegate, UICollectionViewD
                 
             }
             
+            cell.userId = otherUserId!;
             
             if (HulaUser.sharedInstance.userId == thisTrade.object(forKey: "other_id") as? String ){
                 // i am the other of the trade
