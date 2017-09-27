@@ -345,7 +345,7 @@ class HLSwappViewController: UIViewController {
                 
                 if let bids = thisTrade.object(forKey: "bids") as? [Any] {
                     //print("Bids: \(bids.count)")
-                    if (bids.count == 1){
+                    if (bids.count == 1 && thisTrade.object(forKey: "turn_user_id") as? String == HulaUser.sharedInstance.userId ){
                         // first turn
                         self.chatButton.alpha = 0
                     } else {

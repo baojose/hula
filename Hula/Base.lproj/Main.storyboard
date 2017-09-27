@@ -6504,27 +6504,27 @@ Log In</string>
                                         <autoresizingMask key="autoresizingMask" flexibleMinX="YES" widthSizable="YES" heightSizable="YES"/>
                                         <subviews>
                                             <collectionView clipsSubviews="YES" multipleTouchEnabled="YES" tag="3" contentMode="scaleToFill" misplaced="YES" dataMode="prototypes" id="n4h-ml-8YQ" customClass="KDDragAndDropCollectionView" customModule="Hula" customModuleProvider="target">
-                                                <rect key="frame" x="5" y="0.0" width="192" height="375"/>
+                                                <rect key="frame" x="4" y="0.0" width="202" height="375"/>
                                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                                 <edgeInsets key="layoutMargins" top="0.0" left="0.0" bottom="0.0" right="0.0"/>
                                                 <collectionViewFlowLayout key="collectionViewLayout" minimumLineSpacing="0.0" minimumInteritemSpacing="0.0" id="1xK-6t-bDD">
-                                                    <size key="itemSize" width="64" height="64"/>
+                                                    <size key="itemSize" width="60" height="60"/>
                                                     <size key="headerReferenceSize" width="0.0" height="0.0"/>
                                                     <size key="footerReferenceSize" width="0.0" height="0.0"/>
                                                     <inset key="sectionInset" minX="0.0" minY="0.0" maxX="0.0" maxY="0.0"/>
                                                 </collectionViewFlowLayout>
                                                 <cells>
                                                     <collectionViewCell opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" reuseIdentifier="productcell3" id="kOI-GZ-plb" customClass="HLProductCollectionViewCell" customModule="Hula" customModuleProvider="target">
-                                                        <rect key="frame" x="0.0" y="0.0" width="64" height="64"/>
+                                                        <rect key="frame" x="0.0" y="0.0" width="60" height="60"/>
                                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                                         <view key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center">
-                                                            <rect key="frame" x="0.0" y="0.0" width="64" height="64"/>
+                                                            <rect key="frame" x="0.0" y="0.0" width="60" height="60"/>
                                                             <autoresizingMask key="autoresizingMask"/>
                                                             <subviews>
-                                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Name of the product a bit large" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="Zo9-No-Lkw">
-                                                                    <rect key="frame" x="5" y="24" width="49" height="19"/>
-                                                                    <autoresizingMask key="autoresizingMask" flexibleMaxY="YES"/>
+                                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" text="Name of the product a bit large" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="Zo9-No-Lkw">
+                                                                    <rect key="frame" x="7" y="24" width="45" height="19"/>
+                                                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxY="YES"/>
                                                                     <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="14"/>
                                                                     <color key="textColor" red="0.22352941179999999" green="0.66666666669999997" blue="0.64313725489999995" alpha="1" colorSpace="calibratedRGB"/>
                                                                     <nil key="highlightedColor"/>
@@ -6533,13 +6533,14 @@ Log In</string>
                                                                     <rect key="frame" x="8" y="8" width="17" height="17"/>
                                                                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                                                 </imageView>
-                                                                <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="temp_product" id="mPh-jH-Afq">
-                                                                    <rect key="frame" x="6" y="6" width="52" height="52"/>
-                                                                    <autoresizingMask key="autoresizingMask"/>
+                                                                <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" image="temp_product" id="mPh-jH-Afq">
+                                                                    <rect key="frame" x="6" y="6" width="48" height="48"/>
+                                                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                                 </imageView>
                                                             </subviews>
                                                         </view>
-                                                        <size key="customSize" width="64" height="64"/>
+                                                        <color key="backgroundColor" red="0.99989169840000003" green="1" blue="0.99988096950000005" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                                        <size key="customSize" width="60" height="60"/>
                                                         <connections>
                                                             <outlet property="image" destination="mPh-jH-Afq" id="TO9-gt-g4O"/>
                                                             <outlet property="label" destination="Zo9-No-Lkw" id="r5I-TI-jLf"/>
@@ -6585,13 +6586,14 @@ Log In</string>
                                                                     <color key="textColor" red="0.22352941179999999" green="0.66666666669999997" blue="0.64313725489999995" alpha="1" colorSpace="calibratedRGB"/>
                                                                     <nil key="highlightedColor"/>
                                                                 </label>
-                                                                <view contentMode="scaleToFill" id="IsL-m9-Mbw">
-                                                                    <rect key="frame" x="0.0" y="126" width="128" height="1"/>
+                                                                <view contentMode="scaleToFill" misplaced="YES" id="IsL-m9-Mbw">
+                                                                    <rect key="frame" x="0.0" y="127" width="128" height="1"/>
                                                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxY="YES"/>
                                                                     <color key="backgroundColor" white="0.91565290180000003" alpha="1" colorSpace="calibratedWhite"/>
                                                                 </view>
                                                             </subviews>
                                                         </view>
+                                                        <color key="backgroundColor" red="0.99989169840000003" green="1" blue="0.99988096950000005" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                                         <connections>
                                                             <outlet property="image" destination="Clo-MI-92f" id="uVF-2S-8Rc"/>
                                                             <outlet property="label" destination="hm9-cn-ZRR" id="oV5-Gt-QhA"/>
@@ -6623,27 +6625,27 @@ Log In</string>
                                         <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxX="YES" heightSizable="YES"/>
                                         <subviews>
                                             <collectionView clipsSubviews="YES" multipleTouchEnabled="YES" tag="2" contentMode="scaleToFill" misplaced="YES" dataMode="prototypes" id="bfI-4N-h7M" customClass="KDDragAndDropCollectionView" customModule="Hula" customModuleProvider="target">
-                                                <rect key="frame" x="127" y="0.0" width="200" height="375"/>
+                                                <rect key="frame" x="128" y="0.0" width="203" height="375"/>
                                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                                 <edgeInsets key="layoutMargins" top="0.0" left="0.0" bottom="0.0" right="0.0"/>
                                                 <collectionViewFlowLayout key="collectionViewLayout" minimumLineSpacing="0.0" minimumInteritemSpacing="0.0" id="aWZ-wv-FSs">
-                                                    <size key="itemSize" width="64" height="64"/>
+                                                    <size key="itemSize" width="60" height="60"/>
                                                     <size key="headerReferenceSize" width="0.0" height="0.0"/>
                                                     <size key="footerReferenceSize" width="0.0" height="0.0"/>
                                                     <inset key="sectionInset" minX="0.0" minY="0.0" maxX="0.0" maxY="0.0"/>
                                                 </collectionViewFlowLayout>
                                                 <cells>
                                                     <collectionViewCell opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" reuseIdentifier="productcell2" id="ugO-Cj-BjM" customClass="HLProductCollectionViewCell" customModule="Hula" customModuleProvider="target">
-                                                        <rect key="frame" x="0.0" y="0.0" width="64" height="64"/>
+                                                        <rect key="frame" x="0.0" y="0.0" width="60" height="60"/>
                                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                                         <view key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center">
-                                                            <rect key="frame" x="0.0" y="0.0" width="64" height="64"/>
+                                                            <rect key="frame" x="0.0" y="0.0" width="60" height="60"/>
                                                             <autoresizingMask key="autoresizingMask"/>
                                                             <subviews>
                                                                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" text="Name of the product a bit large" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="SQl-X9-FzW">
-                                                                    <rect key="frame" x="6" y="25" width="52" height="19"/>
-                                                                    <autoresizingMask key="autoresizingMask" flexibleMaxY="YES"/>
+                                                                    <rect key="frame" x="6" y="25" width="48" height="19"/>
+                                                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxY="YES"/>
                                                                     <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="14"/>
                                                                     <color key="textColor" red="0.22352941179999999" green="0.66666666669999997" blue="0.64313725489999995" alpha="1" colorSpace="calibratedRGB"/>
                                                                     <nil key="highlightedColor"/>
@@ -6652,13 +6654,14 @@ Log In</string>
                                                                     <rect key="frame" x="9" y="8" width="17" height="17"/>
                                                                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                                                 </imageView>
-                                                                <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="temp_product" id="GBU-wD-Y5S">
-                                                                    <rect key="frame" x="6" y="6" width="52" height="52"/>
-                                                                    <autoresizingMask key="autoresizingMask"/>
+                                                                <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" image="temp_product" id="GBU-wD-Y5S">
+                                                                    <rect key="frame" x="6" y="6" width="48" height="48"/>
+                                                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                                 </imageView>
                                                             </subviews>
                                                         </view>
-                                                        <size key="customSize" width="64" height="64"/>
+                                                        <color key="backgroundColor" red="0.99989169840000003" green="1" blue="0.99988096950000005" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                                        <size key="customSize" width="60" height="60"/>
                                                         <connections>
                                                             <outlet property="image" destination="GBU-wD-Y5S" id="G39-Te-QcV"/>
                                                             <outlet property="label" destination="SQl-X9-FzW" id="Kej-MY-5sK"/>
@@ -6675,7 +6678,7 @@ Log In</string>
                                                 <rect key="frame" x="0.0" y="0.0" width="128" height="375"/>
                                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" heightSizable="YES"/>
                                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
-                                                <collectionViewFlowLayout key="collectionViewLayout" minimumLineSpacing="0.0" minimumInteritemSpacing="10" id="Vvr-IQ-98g">
+                                                <collectionViewFlowLayout key="collectionViewLayout" minimumLineSpacing="10" minimumInteritemSpacing="10" id="Vvr-IQ-98g">
                                                     <size key="itemSize" width="128" height="128"/>
                                                     <size key="headerReferenceSize" width="0.0" height="0.0"/>
                                                     <size key="footerReferenceSize" width="0.0" height="0.0"/>
@@ -6711,6 +6714,7 @@ Log In</string>
                                                                 </view>
                                                             </subviews>
                                                         </view>
+                                                        <color key="backgroundColor" red="0.99989169840000003" green="1" blue="0.99988096950000005" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                                         <connections>
                                                             <outlet property="image" destination="AI2-HO-pZQ" id="Qf1-WP-QjT"/>
                                                             <outlet property="label" destination="Mpr-PV-Lrh" id="enL-Gf-1Ak"/>
