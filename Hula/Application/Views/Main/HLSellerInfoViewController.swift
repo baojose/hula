@@ -118,26 +118,38 @@ class HLSellerInfoViewController: BaseViewController, UITableViewDelegate, UITab
     @IBAction func addToTradeAction(_ sender: Any) {
         //print(productId)
         let otherId = user.userId
-        if(HulaUser.sharedInstance.userId != otherId){
-            if (HulaUser.sharedInstance.userId.characters.count>0){
-                // user is loggedin
-                let queryURL = HulaConstants.apiURL + "trades/"
-                let dataString:String = "product_id=&other_id=\(otherId!)"
-                HLDataManager.sharedInstance.httpPost(urlstr: queryURL, postString: dataString, isPut: false, taskCallback: { (ok, json) in
-                    if (ok){
-                        // show barter screen
-                        DispatchQueue.main.async {
-                            let storyboard = UIStoryboard(name: "Main", bundle: nil)
-                            let myModalViewController = storyboard.instantiateViewController(withIdentifier: "swappView")
-                            myModalViewController.modalPresentationStyle = UIModalPresentationStyle.fullScreen
-                            myModalViewController.modalTransitionStyle = UIModalTransitionStyle.crossDissolve
-                            self.present(myModalViewController, animated: true, completion: nil)
+        if (HulaUser.sharedInstance.numProducts == 0){
+            
+            let viewController = self.storyboard?.instantiateViewController(withIdentifier: "alertView") as! AlertViewController
+            
+            viewController.isCancelVisible = false
+            viewController.message = "Before trading with a user you must upload at least one product to exchange. Go to your stock section and upload some stuff you don't need anymore."
+            self.present(viewController, animated: true)
+            
+        } else {
+        
+            
+            if(HulaUser.sharedInstance.userId != otherId){
+                if (HulaUser.sharedInstance.userId.characters.count>0){
+                    // user is loggedin
+                    let queryURL = HulaConstants.apiURL + "trades/"
+                    let dataString:String = "product_id=&other_id=\(otherId!)"
+                    HLDataManager.sharedInstance.httpPost(urlstr: queryURL, postString: dataString, isPut: false, taskCallback: { (ok, json) in
+                        if (ok){
+                            // show barter screen
+                            DispatchQueue.main.async {
+                                let storyboard = UIStoryboard(name: "Main", bundle: nil)
+                                let myModalViewController = storyboard.instantiateViewController(withIdentifier: "swappView")
+                                myModalViewController.modalPresentationStyle = UIModalPresentationStyle.fullScreen
+                                myModalViewController.modalTransitionStyle = UIModalTransitionStyle.crossDissolve
+                                self.present(myModalViewController, animated: true, completion: nil)
+                            }
+                        } else {
+                            // connection error
+                            print("Connection error")
                         }
-                    } else {
-                        // connection error
-                        print("Connection error")
-                    }
-                })
+                    })
+                }
             }
         }
     }

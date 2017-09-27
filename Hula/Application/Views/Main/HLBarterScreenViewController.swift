@@ -66,7 +66,6 @@ class HLBarterScreenViewController: BaseViewController {
         self.dragAndDropManager1 = KDDragAndDropManager(canvas: self.view, collectionViews: [otherProductsCollection, otherSelectedProductsCollection ])
         
         
-        self.dragAndDropManager2 = KDDragAndDropManager(canvas: self.view, collectionViews: [myProductsCollection, mySelectedProductsCollection ])
         
         
         // draw borders on collectionviews
@@ -156,27 +155,41 @@ class HLBarterScreenViewController: BaseViewController {
             HulaTrade.sharedInstance.other_products = thisTrade.other_products
             
             
-            // TUTORIAL
+            if (thisTrade.num_bids == 1){
+                // first turn
+                self.addMoneyBtn1.alpha = 0
+                self.addMoneyBtn2.alpha = 0
+                self.myProductsCollection.isUserInteractionEnabled = false
+                self.mySelectedProductsCollection.isUserInteractionEnabled = false
+            } else {
+                self.addMoneyBtn1.alpha = 1
+                self.addMoneyBtn2.alpha = 1
+                self.dragAndDropManager2 = KDDragAndDropManager(canvas: self.view, collectionViews: [myProductsCollection, mySelectedProductsCollection ])
+            }
             
+            
+            // TUTORIAL
             if self.thisTrade.turn_user_id == HulaUser.sharedInstance.userId{
+                // my turn
                 if let _ = HLDataManager.sharedInstance.onboardingTutorials.object(forKey: "barter_my_turn") as? String{
                 } else {
+                    
                     CommonUtils.sharedInstance.showTutorial(arrayTips: [
                         HulaTip(delay: 2, view: self.otherProductsCollection, text: "Here is their stuff. Drag & drop what you want. Click on the product to get more info."),
                         HulaTip(delay: 0.4, view: self.myProductsCollection, text: "Here is your stuff."),
-                        HulaTip(delay: 0.4, view: self.moneyBtn, text: "Add money here"),
-                        HulaTip(delay: 0.4, view: self.ChatFakeView, text: "Start chat here"),
                         HulaTip(delay: 0.4, view: self.sendOfferFakeView, text: "Once you select what you want, find out if the other trader interested. Click the button below to send a notification!")
                         ])
                     print(HLDataManager.sharedInstance.onboardingTutorials)
                     HLDataManager.sharedInstance.onboardingTutorials.setObject("done", forKey: "barter_my_turn" as NSCopying)
                 }
             } else {
+                // other's turn
                 if let _ = HLDataManager.sharedInstance.onboardingTutorials.object(forKey: "barter_other_turn") as? String{
                 } else {
                     CommonUtils.sharedInstance.showTutorial(arrayTips: [
                         HulaTip(delay: 2, view: self.otherProductsCollection, text: "This trading is waiting for the other user to select the items he wants. As soon as the offer is ready you will be notified"),
-                        HulaTip(delay: 0.4, view: self.ChatFakeView, text: "Need to talk? Use the chat button to send the user a message")
+                        HulaTip(delay: 0.4, view: self.moneyBtn, text: "Add money here"),
+                        HulaTip(delay: 0.4, view: self.ChatFakeView, text: "Start chat here")
                         ])
                     HLDataManager.sharedInstance.onboardingTutorials.setValue("done", forKey: "barter_other_turn")
                 }
