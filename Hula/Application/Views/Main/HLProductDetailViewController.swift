@@ -238,7 +238,7 @@ class HLProductDetailViewController: BaseViewController, UIScrollViewDelegate, U
             let viewController = self.storyboard?.instantiateViewController(withIdentifier: "alertView") as! AlertViewController
             
             viewController.isCancelVisible = false
-            viewController.message = "Before trading with a user you must upload at least one product to exchange. Go to your stock section and upload some stuff you don't need anymore."
+            viewController.message = "Go to your stock section to upload something you don't need so you can start trading."
             self.present(viewController, animated: true)
             
         } else {
