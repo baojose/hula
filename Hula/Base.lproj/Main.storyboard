@@ -4142,7 +4142,7 @@ Log In</string>
                                     </imageView>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" id="rhF-WE-8jz">
                                         <rect key="frame" x="76" y="11" width="222" height="38"/>
-                                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                        <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
                                         <fontDescription key="fontDescription" name="HelveticaNeue-Light" family="Helvetica Neue" pointSize="16"/>
                                         <state key="normal" title="Trade with User">
                                             <color key="titleColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
@@ -4221,6 +4221,7 @@ Log In</string>
                         <outlet property="sellerNameLabel" destination="haO-lg-Po1" id="l5E-w5-GvQ"/>
                         <outlet property="sellerVerifiedMethodsView" destination="czc-3K-OWs" id="TFH-nm-1bN"/>
                         <outlet property="sellerView" destination="lLj-Uz-ObW" id="B0o-7p-jlL"/>
+                        <outlet property="tradeWithUserButton" destination="rhF-WE-8jz" id="GBA-UM-Pu6"/>
                         <outlet property="userInventoryLabel" destination="7Aa-8P-G6F" id="dCf-hR-eei"/>
                     </connections>
                 </viewController>
@@ -6440,7 +6441,7 @@ Log In</string>
                                     </imageView>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" id="SYf-Ny-aMh">
                                         <rect key="frame" x="76" y="11" width="222" height="38"/>
-                                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                        <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
                                         <fontDescription key="fontDescription" name="HelveticaNeue-Light" family="Helvetica Neue" pointSize="16"/>
                                         <state key="normal" title="Trade with User">
                                             <color key="titleColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
@@ -6456,6 +6457,7 @@ Log In</string>
                     </view>
                     <navigationItem key="navigationItem" id="2WP-By-sBg"/>
                     <connections>
+                        <outlet property="addToTradeViewContainer" destination="SnR-en-6xi" id="iOd-jW-FbL"/>
                         <outlet property="containerView" destination="7eH-AC-lGg" id="l6I-Ve-xF9"/>
                         <outlet property="emIcon" destination="F5f-MB-ynp" id="e1f-04-1h7"/>
                         <outlet property="fbIcon" destination="B8m-MN-tre" id="1GV-Fg-fG0"/>
@@ -6467,6 +6469,7 @@ Log In</string>
                         <outlet property="sellerLocationLabel" destination="GiZ-AH-Bvx" id="q37-vn-RPm"/>
                         <outlet property="sellerNameLabel" destination="Rec-yy-JOL" id="6H2-xc-QyJ"/>
                         <outlet property="sellerProductTableView" destination="NfK-Ck-Q4B" id="LJt-SZ-ajf"/>
+                        <outlet property="tradeWithUserButton" destination="SYf-Ny-aMh" id="8t0-HV-r5i"/>
                         <outlet property="tradesClosedLabel" destination="keu-Yi-47g" id="wkc-5f-ra6"/>
                         <outlet property="tradesEndedLabel" destination="CZ9-WL-I94" id="vOP-HX-5Kd"/>
                         <outlet property="tradesStartedLabel" destination="gUf-N2-tgl" id="78n-M7-0Ko"/>

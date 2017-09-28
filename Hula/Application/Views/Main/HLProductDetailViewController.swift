@@ -23,6 +23,7 @@ class HLProductDetailViewController: BaseViewController, UIScrollViewDelegate, U
     @IBOutlet weak var productCategory: UILabel!
     @IBOutlet weak var productCondition: UILabel!
     
+    @IBOutlet weak var tradeWithUserButton: UIButton!
     @IBOutlet weak var addToTradeViewContainer: UIView!
     @IBOutlet var productsScrollView: UIScrollView!
     @IBOutlet var productNameLabel: UILabel!
@@ -43,13 +44,17 @@ class HLProductDetailViewController: BaseViewController, UIScrollViewDelegate, U
     var sellerFeedback: NSArray! = []
     var sellerUser: HulaUser!
     
+    var initialTradeFrame: CGRect!
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         self.initData()
         self.initView()
+        self.initialTradeFrame = self.addToTradeViewContainer.frame
     }
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
+        self.addToTradeViewContainer.frame = self.initialTradeFrame
     }
     override func viewDidAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
@@ -69,6 +74,12 @@ class HLProductDetailViewController: BaseViewController, UIScrollViewDelegate, U
         var newFrame: CGRect! = productTableView.frame
         newFrame.size.height = CGFloat(sellerProducts.count) * 129.0;
         productTableView.frame = newFrame
+        
+        
+        tradeWithUserButton.layer.cornerRadius = 19
+        tradeWithUserButton.layer.borderColor = UIColor.white.cgColor
+        tradeWithUserButton.layer.borderWidth = 1.0
+        
         
         // product details
         productNameLabel.text = currentProduct.productName
@@ -243,11 +254,17 @@ class HLProductDetailViewController: BaseViewController, UIScrollViewDelegate, U
             
         } else {
             if (currentProduct.productOwner != HulaUser.sharedInstance.userId) {
+
                 if let productId = currentProduct.productId {
                     //print(productId)
                     let otherId = currentProduct.productOwner
                     if (HulaUser.sharedInstance.userId.characters.count>0){
                         // user is loggedin
+                        DispatchQueue.main.async {
+                            UIView.animate(withDuration: 0.3, animations: {
+                                self.addToTradeViewContainer.frame = self.view.frame
+                            })
+                        }
                         let queryURL = HulaConstants.apiURL + "trades/"
                         let dataString:String = "product_id=\(productId)&other_id=\(otherId!)"
                         HLDataManager.sharedInstance.httpPost(urlstr: queryURL, postString: dataString, isPut: false, taskCallback: { (ok, json) in
