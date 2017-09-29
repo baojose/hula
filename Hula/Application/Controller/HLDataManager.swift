@@ -410,6 +410,8 @@ class HLDataManager: NSObject {
         dict.setObject([CGFloat(user.location.coordinate.latitude), CGFloat(user.location.coordinate.longitude)] as [CGFloat], forKey: "userLocation" as NSCopying)
         dict.setObject(user.userPhotoURL, forKey: "userPhotoURL" as NSCopying)
         dict.setObject(user.userBio, forKey: "userBio" as NSCopying)
+        dict.setObject(user.numProducts, forKey: "numProducts" as NSCopying)
+        
         //...
         dict.write(toFile: path, atomically: false)
         //let resultDictionary = NSMutableDictionary(contentsOfFile: path)
@@ -530,6 +532,9 @@ class HLDataManager: NSObject {
         }
         if let loc = dict.object(forKey: "userLocation") as? [CGFloat] {
             user.location = CLLocation(latitude: CLLocationDegrees(loc[0]), longitude: CLLocationDegrees(loc[1]))
+        }
+        if let n = dict.object(forKey: "numProducts") as? Int {
+            user.numProducts = n
         }
     }
     

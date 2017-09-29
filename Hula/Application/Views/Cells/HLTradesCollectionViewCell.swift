@@ -24,6 +24,7 @@ class HLTradesCollectionViewCell: UICollectionViewCell {
     
     var dbDelegate: HLDashboardViewController?
     var tradeId: String = ""
+    var userId: String = ""
     
     var isEmptyRoom = true;
     
@@ -87,11 +88,13 @@ class HLTradesCollectionViewCell: UICollectionViewCell {
     @IBAction func tradeOptionsAction(_ sender: Any) {
         if (self.tradeId != ""){
             if dbDelegate != nil {
-                let alert = UIAlertController(title: "Trade options",
+                let alert = UIAlertController(title: "Trading options",
                                               message: nil,
                                               preferredStyle: .actionSheet)
                 
                 let reportAction = UIAlertAction(title: "Report this user", style: .default, handler: { action -> Void in
+                    
+                    self.reportUser()
                     
                 })
                 alert.addAction(reportAction)
@@ -114,7 +117,12 @@ class HLTradesCollectionViewCell: UICollectionViewCell {
         if (self.tradeId != ""){
             // call parent closeTrade(id)
             dbDelegate?.closeTrade(self.tradeId)
-            
+            self.tradeId = ""
+        }
+    }
+    func reportUser(){
+        if (self.userId != ""){
+            dbDelegate?.reportUser(self.userId)
         }
     }
 }

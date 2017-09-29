@@ -21,12 +21,14 @@ class HLSellerInfoViewController: BaseViewController, UITableViewDelegate, UITab
     
     @IBOutlet weak var sellerFeedbackLabel: UILabel!
     
+    @IBOutlet weak var tradeWithUserButton: UIButton!
     
     @IBOutlet weak var fbIcon: UIImageView!
     @IBOutlet weak var liIcon: UIImageView!
     @IBOutlet weak var twIcon: UIImageView!
     @IBOutlet weak var emIcon: UIImageView!
     
+    @IBOutlet weak var addToTradeViewContainer: UIImageView!
     
     @IBOutlet weak var tradesStartedLabel: UILabel!
     @IBOutlet weak var tradesEndedLabel: UILabel!
@@ -36,23 +38,32 @@ class HLSellerInfoViewController: BaseViewController, UITableViewDelegate, UITab
     var user = HulaUser();
     var userProducts: NSArray = []
     var userFeedback: NSArray = []
+    var initialTradeFrame: CGRect!
 
     override func viewDidLoad() {
         super.viewDidLoad()
         self.initData()
         self.initView()
+        self.initialTradeFrame = self.addToTradeViewContainer.frame
     }
 
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
     }
     
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        self.addToTradeViewContainer.frame = self.initialTradeFrame
+    }
     func initData(){
         
         let thumb = CommonUtils.sharedInstance.getThumbFor(url: user.userPhotoURL)
         profileImage.loadImageFromURL(urlString: thumb)
         sellerNameLabel.text = user.userNick
         sellerLocationLabel.text = user.userLocationName
+        tradeWithUserButton.layer.cornerRadius = 19
+        tradeWithUserButton.layer.borderColor = UIColor.white.cgColor
+        tradeWithUserButton.layer.borderWidth = 1.0
         
         if (user.twToken.characters.count>1){
             twIcon.image = UIImage(named: "icon_twitter_on")
@@ -118,26 +129,44 @@ class HLSellerInfoViewController: BaseViewController, UITableViewDelegate, UITab
     @IBAction func addToTradeAction(_ sender: Any) {
         //print(productId)
         let otherId = user.userId
-        if(HulaUser.sharedInstance.userId != otherId){
-            if (HulaUser.sharedInstance.userId.characters.count>0){
-                // user is loggedin
-                let queryURL = HulaConstants.apiURL + "trades/"
-                let dataString:String = "product_id=&other_id=\(otherId!)"
-                HLDataManager.sharedInstance.httpPost(urlstr: queryURL, postString: dataString, isPut: false, taskCallback: { (ok, json) in
-                    if (ok){
-                        // show barter screen
-                        DispatchQueue.main.async {
-                            let storyboard = UIStoryboard(name: "Main", bundle: nil)
-                            let myModalViewController = storyboard.instantiateViewController(withIdentifier: "swappView")
-                            myModalViewController.modalPresentationStyle = UIModalPresentationStyle.fullScreen
-                            myModalViewController.modalTransitionStyle = UIModalTransitionStyle.crossDissolve
-                            self.present(myModalViewController, animated: true, completion: nil)
-                        }
-                    } else {
-                        // connection error
-                        print("Connection error")
+        if (HulaUser.sharedInstance.numProducts == 0){
+            
+            let viewController = self.storyboard?.instantiateViewController(withIdentifier: "alertView") as! AlertViewController
+            
+            viewController.isCancelVisible = false
+            viewController.message = "Go to your stock section to upload something you don't need so you can start trading."
+            self.present(viewController, animated: true)
+            
+        } else {
+        
+            
+            if(HulaUser.sharedInstance.userId != otherId){
+                if (HulaUser.sharedInstance.userId.characters.count>0){
+                    // user is loggedin
+                    DispatchQueue.main.async {
+                        UIView.animate(withDuration: 0.3, animations: {
+                            self.addToTradeViewContainer.frame = self.view.frame
+                        })
                     }
-                })
+                    
+                    let queryURL = HulaConstants.apiURL + "trades/"
+                    let dataString:String = "product_id=&other_id=\(otherId!)"
+                    HLDataManager.sharedInstance.httpPost(urlstr: queryURL, postString: dataString, isPut: false, taskCallback: { (ok, json) in
+                        if (ok){
+                            // show barter screen
+                            DispatchQueue.main.async {
+                                let storyboard = UIStoryboard(name: "Main", bundle: nil)
+                                let myModalViewController = storyboard.instantiateViewController(withIdentifier: "swappView")
+                                myModalViewController.modalPresentationStyle = UIModalPresentationStyle.fullScreen
+                                myModalViewController.modalTransitionStyle = UIModalTransitionStyle.crossDissolve
+                                self.present(myModalViewController, animated: true, completion: nil)
+                            }
+                        } else {
+                            // connection error
+                            print("Connection error")
+                        }
+                    })
+                }
             }
         }
     }

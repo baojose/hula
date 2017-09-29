@@ -19,6 +19,7 @@ class HLCompleteProductProfileViewController: BaseViewController, UIScrollViewDe
     @IBOutlet var conditionNewBtn: UIButton!
     @IBOutlet var conditionUsedBtn: UIButton!
     @IBOutlet weak var doneBtn: HLRoundedGradientButton!
+    @IBOutlet weak var smallBackBtn: UIButton!
     
     @IBOutlet var categoryMarkLabel: UILabel!
     @IBOutlet var categoryMarkLineLabel: UILabel!
@@ -48,6 +49,8 @@ class HLCompleteProductProfileViewController: BaseViewController, UIScrollViewDe
     }
     func initView(){
         
+        
+        smallBackBtn.alpha = 0
         commonUtils.circleImageView(productReferenceImage)
         if productImage != nil{
             productReferenceImage.image = productImage
@@ -73,6 +76,7 @@ class HLCompleteProductProfileViewController: BaseViewController, UIScrollViewDe
     
     func changeMarkState(_ mode: Int!){
         if mode == 0 {
+            smallBackBtn.alpha = 0
             categoryMarkLabel.textColor = HulaConstants.appMainColor
             categoryMarkImage.image = UIImage.init(named: "icon_progress")
             categoryMarkLineLabel.isHidden = false
@@ -81,6 +85,7 @@ class HLCompleteProductProfileViewController: BaseViewController, UIScrollViewDe
             perkMarkLineLabel.isHidden = true
             currentMode = 0
         }else if mode == 1{
+            smallBackBtn.alpha = 1
             perkMarkLabel.textColor = HulaConstants.appMainColor
             perkMarkImage.image = UIImage.init(named: "icon_progress")
             perkMarkLineLabel.isHidden = false

@@ -72,26 +72,33 @@ class HLProfileViewController: BaseViewController {
     }
     override func viewDidAppear(_ animated: Bool) {
         
-        if (HulaUser.sharedInstance.userPhotoURL != "") && (current_image_url != HulaUser.sharedInstance.userPhotoURL){
-            print("Changing image")
-            print(HulaUser.sharedInstance.userPhotoURL)
-            let thumb = commonUtils.getThumbFor(url: HulaUser.sharedInstance.userPhotoURL)
-            self.profileImageView.loadImageFromURL(urlString: thumb)
-            self.current_image_url = HulaUser.sharedInstance.userPhotoURL
-        }
+        if (HulaUser.sharedInstance.isUserLoggedIn()){
+            
+            if (HulaUser.sharedInstance.userPhotoURL != "") && (current_image_url != HulaUser.sharedInstance.userPhotoURL){
+                print("Changing image")
+                print(HulaUser.sharedInstance.userPhotoURL)
+                let thumb = commonUtils.getThumbFor(url: HulaUser.sharedInstance.userPhotoURL)
+                self.profileImageView.loadImageFromURL(urlString: thumb)
+                self.current_image_url = HulaUser.sharedInstance.userPhotoURL
+            } else {
+                self.profileImageView.image = UIImage(named: "profile_placeholder")
+            }
+            
+            
+            if (HulaUser.sharedInstance.isIncompleteProfile()){
+                // badges to inform the user
+                UIView.animate(withDuration: 0.4, animations: {
+                    self.completeProfileTooltip.alpha = 1
+                    self.settingsAlertBadge.alpha = 1
+                })
+            } else {
+                self.completeProfileTooltip.alpha = 0
+                self.settingsAlertBadge.alpha = 0
+            }
         
-        
-        if (HulaUser.sharedInstance.isIncompleteProfile()){
-            // badges to inform the user
-            UIView.animate(withDuration: 0.4, animations: {
-                self.completeProfileTooltip.alpha = 1
-                self.settingsAlertBadge.alpha = 1
-            })
         } else {
-            self.completeProfileTooltip.alpha = 0
-            self.settingsAlertBadge.alpha = 0
+            self.profileImageView.image = UIImage(named: "profile_placeholder")
         }
-        
         
     }
     override func didReceiveMemoryWarning() {
@@ -134,7 +141,7 @@ class HLProfileViewController: BaseViewController {
     }
     
     @IBAction func validateAction(_ sender: Any) {
-        let alert = UIAlertController(title: "Select a verification method",
+        let alert = UIAlertController(title: "Select a validation method",
                                        message: nil,
                                        preferredStyle: .actionSheet)
         
@@ -281,10 +288,14 @@ class HLProfileViewController: BaseViewController {
                             }
                             
                             self.userFeedbackLabel.text = HulaUser.sharedInstance.getFeedback()
-                            let thumb = self.commonUtils.getThumbFor(url: HulaUser.sharedInstance.userPhotoURL)
-                            self.profileImageView.loadImageFromURL(urlString: thumb)
-                            self.current_image_url = HulaUser.sharedInstance.userPhotoURL
+                            //let thumb = self.commonUtils.getThumbFor(url: HulaUser.sharedInstance.userPhotoURL)
                             self.userFullNameLabel.text = HulaUser.sharedInstance.userName
+                            self.current_image_url = HulaUser.sharedInstance.userPhotoURL
+                            if (self.current_image_url != "") {
+                                self.profileImageView.loadImageFromURL(urlString: HulaUser.sharedInstance.userPhotoURL)
+                            } else {
+                                self.profileImageView.image = UIImage(named: "profile_placeholder")
+                            }
                             self.userNickLabel.text = HulaUser.sharedInstance.userNick
                             self.userBioLabel.text = HulaUser.sharedInstance.userBio
                             
@@ -411,7 +422,7 @@ class HLProfileViewController: BaseViewController {
         image_dismissing = true
     }
     func optionsFullscreenImage(_ sender: UIGestureRecognizer) {
-        let alertController = UIAlertController(title: "Edit profile image", message: "Do you want to replace this image with a new one?", preferredStyle: .actionSheet)
+        let alertController = UIAlertController(title: "Do you wanna change your profile picture?", message: nil, preferredStyle: .actionSheet)
         
         
         let  editButton = UIAlertAction(title: "Change image", style: .destructive, handler: { (action) -> Void in

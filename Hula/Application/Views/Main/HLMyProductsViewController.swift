@@ -24,7 +24,7 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
         self.initView()
         
         
-        self.getUserProducts()
+        //self.getUserProducts()
         
         spinner = HLSpinnerUIView()
         self.view.addSubview(spinner)
@@ -34,6 +34,7 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         
+        self.getUserProducts()
         
         if dataManager.uploadMode == false {
             self.productTableView.reloadData()
@@ -206,6 +207,8 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
                                     self.arrayProducts.append(prod)
                                 }
                             }
+                            HulaUser.sharedInstance.numProducts = self.arrayProducts.count
+                            
                             
                             self.spinner.hide()
                             HulaUser.sharedInstance.arrayProducts = dictionary
@@ -223,6 +226,7 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
                             })
                         }
                         self.productTableView.reloadData()
+                        HLDataManager.sharedInstance.writeUserData()
                     }
                 } else {
                     // connection error

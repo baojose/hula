@@ -20,10 +20,10 @@ class HLWelcomeViewController: UserBaseViewController, CLLocationManagerDelegate
     @IBOutlet weak var messagesView: UIView!
     
     var step: Int = 0;
-    var title1:String = "Accept notifications"
-    var title2:String = "Allow location"
-    var description1:String = "Do you want to be notified when another user sends you a message?"
-    var description2:String = "Do you want to see products near you?"
+    var title1:String = "Up for push notifications?"
+    var title2:String = "Allow HULA to access your location"
+    var description1:String = "Notifications may include alerts when a user sends you a message."
+    var description2:String = "Find what you need near you!"
     var button1:String = "Notify me"
     var button2:String = "Use my location"
     var messagesViewPosition:CGPoint = CGPoint(x:0, y:0)
@@ -73,15 +73,22 @@ class HLWelcomeViewController: UserBaseViewController, CLLocationManagerDelegate
     }
     
     func showNotificationsScreen(){
-        titleLabel.text = title1
-        descriptionLabel.text = description1
-        continueButton.setTitle(button1, for: .normal)
-        UIView.animate(withDuration: 0.4) {
-            self.messagesView.frame.size.height = self.view.frame.height - 100
-            self.messagesView.frame.origin.y = 70
-            self.mobileImage.frame.origin.y = 190
-            self.mobileImage.alpha = 1
-            self.backgroundImage.alpha = 0
+        //print("notif: \(isPushNotificationEnabled())")
+        let isRegisteredForRemoteNotifications = isPushNotificationEnabled()
+        if !isRegisteredForRemoteNotifications {
+            titleLabel.text = title1
+            descriptionLabel.text = description1
+            continueButton.setTitle(button1, for: .normal)
+            UIView.animate(withDuration: 0.4) {
+                self.messagesView.frame.size.height = self.view.frame.height - 100
+                self.messagesView.frame.origin.y = 90
+                self.mobileImage.frame.origin.y = 190
+                self.mobileImage.alpha = 1
+                self.backgroundImage.alpha = 0
+            }
+        } else {
+            step += 1
+            showLocationScreen()
         }
     }
     
@@ -92,51 +99,72 @@ class HLWelcomeViewController: UserBaseViewController, CLLocationManagerDelegate
         
         showLocationScreen()
     }
+    
+    func isPushNotificationEnabled() -> Bool{
+            return UIApplication.shared.currentUserNotificationSettings?.types.contains(UIUserNotificationType.alert) ?? false
+    }
     func askLocationPermission(){
-        
-        locationManager = CLLocationManager()
-        locationManager.delegate = self
-        
-        
-        if CLLocationManager.locationServicesEnabled() {
-            print("Location services are enabled")
-            switch(CLLocationManager.authorizationStatus()) {
-            case .notDetermined, .restricted:
-                print("Pending...")
-                locationManager.requestWhenInUseAuthorization()
-            //self.closeIdentification()
-            case .denied:
-                print("Not authorized")
-                let alert = UIAlertController(title: "Allow HULA to access your location while you use the app?", message: "HULA uses this to help you to find stuff you like nearby, connect to other users and more. Go to Settings and turn on location for Hula.", preferredStyle: UIAlertControllerStyle.alert)
-                alert.addAction(UIAlertAction(title: "OK", style: UIAlertActionStyle.default, handler: nil))
-                self.present(alert, animated: true, completion: {
+            locationManager = CLLocationManager()
+            locationManager.delegate = self
+            
+            
+            if CLLocationManager.locationServicesEnabled() {
+                print("Location services are enabled")
+                switch(CLLocationManager.authorizationStatus()) {
+                case .notDetermined, .restricted:
+                    print("Pending...")
+                    locationManager.requestWhenInUseAuthorization()
+                //self.closeIdentification()
+                case .denied:
+                    print("Not authorized")
+                    let alert = UIAlertController(title: "Allow HULA to access your location while you use the app?", message: "HULA uses this to help you to find stuff you like nearby, connect to other users and more. Go to Settings and turn on location for Hula.", preferredStyle: UIAlertControllerStyle.alert)
+                    alert.addAction(UIAlertAction(title: "OK", style: UIAlertActionStyle.default, handler: nil))
+                    self.present(alert, animated: true, completion: {
+                        self.closeIdentification()
+                    })
+                case .authorizedAlways, .authorizedWhenInUse:
+                    print("Authorized")
                     self.closeIdentification()
-                })
-            case .authorizedAlways, .authorizedWhenInUse:
-                print("Authorized")
+                    self.dismiss(animated: true)
+                    self.presentingViewController?.dismiss(animated: true)
+                    
+                    
+                }
+            } else {
+                print("Location services are not enabled")
                 self.closeIdentification()
-                self.dismiss(animated: true)
-                self.presentingViewController?.dismiss(animated: true)
-                
-                
             }
-        } else {
-            print("Location services are not enabled")
-            self.closeIdentification()
-        }
     }
     
     func showLocationScreen(){
-        self.messagesViewPosition.x = self.messagesView.frame.origin.x
-        UIView.animate(withDuration: 0.4, animations: { 
-            self.messagesView.frame.origin.x = -500
-        }) { (result) in
-            self.titleLabel.text = self.title2
-            self.descriptionLabel.text = self.description2
-            self.continueButton.setTitle(self.button2, for: .normal)
-            self.messagesView.frame.origin.x = 1000
-            UIView.animate(withDuration: 0.4) {
-                self.messagesView.frame.origin.x = self.messagesViewPosition.x
+        var locationPermissions = false
+        
+        if CLLocationManager.locationServicesEnabled() {
+            switch(CLLocationManager.authorizationStatus()) {
+            case .notDetermined, .restricted, .denied:
+                locationPermissions = false
+            case .authorizedAlways, .authorizedWhenInUse:
+                locationPermissions = true
+            }
+        }
+        
+        //print("locat: \(locationPermissions)")
+        if locationPermissions {
+            self.closeIdentification()
+            self.dismiss(animated: true)
+            self.presentingViewController?.dismiss(animated: true)
+        } else {
+            self.messagesViewPosition.x = self.messagesView.frame.origin.x
+            UIView.animate(withDuration: 0.4, animations: { 
+                self.messagesView.frame.origin.x = -500
+            }) { (result) in
+                self.titleLabel.text = self.title2
+                self.descriptionLabel.text = self.description2
+                self.continueButton.setTitle(self.button2, for: .normal)
+                self.messagesView.frame.origin.x = 1000
+                UIView.animate(withDuration: 0.4) {
+                    self.messagesView.frame.origin.x = self.messagesViewPosition.x
+                }
             }
         }
     }

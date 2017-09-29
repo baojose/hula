@@ -242,10 +242,10 @@ class HLPostProductViewController: BaseViewController, UITextFieldDelegate {
         image_dismissing = true
     }
     func optionsFullscreenImage(_ sender: UIGestureRecognizer) {
-        let alertController = UIAlertController(title: "Image options", message: "Choose an option...", preferredStyle: .actionSheet)
+        let alertController = UIAlertController(title: "Image options...", message: nil, preferredStyle: .actionSheet)
         
         
-        let editButton = UIAlertAction(title: "Choose another image", style: .default, handler: { (action) -> Void in
+        let editButton = UIAlertAction(title: "Try another image", style: .default, handler: { (action) -> Void in
             print("Close")
             self.dataManager.newProduct.arrProductPhotos.removeObject(at: self.currentEditingIndex);
             self.presentingViewController?.dismiss(animated: true, completion: nil)

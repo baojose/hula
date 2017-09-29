@@ -102,7 +102,7 @@ class HLDashboardViewController: BaseViewController {
                             // show empty rooms tutorial
                             if let _ = HLDataManager.sharedInstance.onboardingTutorials.object(forKey: "dashboard_empty") as? String{
                                 CommonUtils.sharedInstance.showTutorial(arrayTips: [
-                                    HulaTip(delay: 1, view: cell.left_side, text: "Here you have your available trading rooms. Now they are empty, but as you start trading with other users, you will find here your progress"),
+                                    HulaTip(delay: 1, view: cell.left_side, text: "You're in the Trade Room!\nto start trading, start exchanging."),
                                     HulaTip(delay: 0.5, view: self.mainCollectionView, text: "Need more trading rooms? tap here to add more spaces!")
                                 ])
                                 HLDataManager.sharedInstance.onboardingTutorials.setValue("done", forKey: "dashboard_empty")
@@ -111,7 +111,7 @@ class HLDashboardViewController: BaseViewController {
                             // show full rooms tutorial
                             if let _ = HLDataManager.sharedInstance.onboardingTutorials.object(forKey: "dashboard_full") as? String{
                                 CommonUtils.sharedInstance.showTutorial(arrayTips: [
-                                    HulaTip(delay: 1, view: cell.left_side, text: "Your first trade is here! Enter on any of these trade rooms in order to barter with other users")
+                                    HulaTip(delay: 1, view: cell.left_side, text: "Welcome to your first trade! Get some advice. Click on the Trade Room you used.")
                                     ])
                                 HLDataManager.sharedInstance.onboardingTutorials.setValue("done", forKey: "dashboard_full")
                             }
@@ -152,7 +152,7 @@ class HLDashboardViewController: BaseViewController {
                         
                         viewController.delegate = self
                         viewController.isCancelVisible = false
-                        viewController.message = "Your trade has been canceled.\nWe have moved it to your trade history page, inside your profile section."
+                        viewController.message = "Your trade is canceled.\nWe've moved it to your trade history section inside your profile."
                         
                         self.present(viewController, animated: true)
                         
@@ -169,11 +169,37 @@ class HLDashboardViewController: BaseViewController {
         }
     }
     
+    func reportUser(_ userId:String){
+        let queryURL = HulaConstants.apiURL + "users/report/\(userId)"
+        //print(dataString)
+        HLDataManager.sharedInstance.httpGet(urlstr: queryURL, taskCallback: { (ok, json) in
+            if (ok){
+                //print(json!)
+                DispatchQueue.main.async {
+                    
+                    let viewController = self.storyboard?.instantiateViewController(withIdentifier: "alertView") as! AlertViewController
+                    
+                    viewController.delegate = self
+                    viewController.isCancelVisible = false
+                    viewController.message = "The user has been reported. We will review the user behavior and take necessary actions. Thanks for keeping Hula trustworthy."
+                    
+                    self.present(viewController, animated: true)
+                    
+                    
+                    self.refreshCollectionViewData()
+                }
+            } else {
+                // connection error
+                print("Connection error")
+            }
+        })
+    }
+    
 }
 
 extension HLDashboardViewController: AlertDelegate{
     func alertResponded(response: String) {
-        print("Response: \(response)")
+        //print("Response: \(response)")
         self.refreshCollectionViewData()
     }
 }
@@ -215,6 +241,7 @@ extension HLDashboardViewController: UICollectionViewDelegate, UICollectionViewD
                 
             }
             
+            cell.userId = otherUserId!;
             
             if (HulaUser.sharedInstance.userId == thisTrade.object(forKey: "other_id") as? String ){
                 // i am the other of the trade
@@ -257,6 +284,7 @@ extension HLDashboardViewController: UICollectionViewDelegate, UICollectionViewD
         } else {
             //print("Empty row \(indexPath.row)")
             cell.isEmptyRoom = true
+            cell.tradeId = "";
             cell.emptyRoomLabel.text = "Empty Trade Room"
             cell.myImage.isHidden = true
             cell.userImage.image = nil

@@ -33,6 +33,7 @@ class HulaUser: NSObject {
     var trades_finished: Float = 0.0
     var trades_closed: Float = 0.0
     var arrayProducts = [] as Array
+    var numProducts:Int = 0
     
     class var sharedInstance: HulaUser {
         struct Static {
@@ -64,6 +65,7 @@ class HulaUser: NSObject {
         self.location = CLLocation(latitude: 0, longitude: 0)
         self.maxTrades = 3
         self.arrayProducts = []
+        self.numProducts = 0
     }
     
     func isIncompleteProfile() -> Bool{
@@ -108,6 +110,7 @@ class HulaUser: NSObject {
         self.trades_closed = 0.0
         self.location = CLLocation(latitude: 0, longitude: 0)
         self.arrayProducts = []
+        self.numProducts = 0
     }
     
     func isUserLoggedIn() -> Bool{

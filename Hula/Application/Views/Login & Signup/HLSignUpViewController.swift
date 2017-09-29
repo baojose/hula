@@ -53,6 +53,7 @@ class HLSignUpViewController: UserBaseViewController, UITextFieldDelegate  {
             switch currentStep {
             case 0:
                 userNick = signupField.text!
+                checkUsernick(nick:userNick)
                 break
             case 1:
                 userEmail = signupField.text!
@@ -88,6 +89,36 @@ class HLSignUpViewController: UserBaseViewController, UITextFieldDelegate  {
             })
         }
     }
+    
+    func checkUsernick(nick:String){
+        let queryURL = HulaConstants.apiURL + "users/validatenick/\(nick)"
+        print(queryURL)
+        
+        HLDataManager.sharedInstance.httpGet(urlstr: queryURL, taskCallback: { (ok, json) in
+            //print(ok)
+            if (ok){
+                if let dict = json as? [String:String]{
+                    if dict["user"] == "found" {
+                        
+                        DispatchQueue.main.async {
+                            UIView.animate(withDuration: 0.4, animations: {
+                                self.greenBackgroundImage.alpha = 0
+                            }, completion: { (success) in
+                                UIView.animate(withDuration: 1.4, animations: {
+                                    self.greenBackgroundImage.alpha = 1
+                                })
+                            })
+                            
+                            self.currentStep = 0
+                            self.nextButton.setup()
+                            self.resetStepTexts()
+                        }
+                        
+                    }
+                }
+            }
+        })
+    }
 
     @IBAction func signupFieldChanged(_ sender: Any) {
         if (self.signupField.text!.characters.count>4){
@@ -101,6 +132,12 @@ class HLSignUpViewController: UserBaseViewController, UITextFieldDelegate  {
         let step_x = self.stepLabel.frame.origin.x
         let description_x = self.descriptionLabel.frame.origin.x
         let signup_x = self.signupField.frame.origin.x
+        
+        UIView.animate(withDuration: 0.2, animations: {
+            self.signupErrorView.frame.origin.y = self.view.frame.height
+            self.greenBackgroundImage.alpha = 1
+        })
+        
         UIView.animate(withDuration: 0.6, delay: 0, options: .curveEaseIn, animations: {
             self.stepLabel.frame.origin.x = -self.view.frame.width*2
             self.descriptionLabel.frame.origin.x = -self.view.frame.width*5
@@ -127,7 +164,10 @@ class HLSignUpViewController: UserBaseViewController, UITextFieldDelegate  {
         let signupOk = notification.object as! Bool
         print(signupOk)
         if (signupOk){
-            self.closeIdentification()
+            let storyBoard : UIStoryboard = UIStoryboard(name: "Main", bundle:nil)
+            let nextViewController = storyBoard.instantiateViewController(withIdentifier: "welcome") as! HLWelcomeViewController
+            //self.present(nextViewController, animated:true, completion:nil)
+            self.navigationController?.pushViewController(nextViewController, animated: true)
         } else {
             DispatchQueue.main.async {
                 UIView.animate(withDuration: 0.5, animations: {

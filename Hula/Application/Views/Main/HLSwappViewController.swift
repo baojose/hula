@@ -288,7 +288,6 @@ class HLSwappViewController: UIViewController {
                 self.myUserView.frame.origin.x = 0
                 self.otherUserView.frame.origin.x = self.view.frame.width - self.otherUserView.frame.width
                 self.sendOfferBtn.alpha = 1
-                self.chatButton.alpha = 1
                 
                 self.addTradeRoomBtn.alpha = 0;
                 self.mainCentralLabel.alpha = 0;
@@ -343,6 +342,17 @@ class HLSwappViewController: UIViewController {
                     }
                     
                 }
+                
+                if let bids = thisTrade.object(forKey: "bids") as? [Any] {
+                    //print("Bids: \(bids.count)")
+                    if (bids.count == 1 && thisTrade.object(forKey: "turn_user_id") as? String == HulaUser.sharedInstance.userId ){
+                        // first turn
+                        self.chatButton.alpha = 0
+                    } else {
+                        self.chatButton.alpha = 1
+                    }
+                }
+                
                 
                 otherUserImage.loadImageFromURL(urlString: CommonUtils.sharedInstance.userImageURL(userId: other_user_id))
 
