@@ -37,6 +37,11 @@ class ChatViewController: UIViewController {
         
         let tapper = UITapGestureRecognizer(target: self, action:#selector(endEditing))
         view.addGestureRecognizer(tapper)
+        
+        NotificationCenter.default.addObserver(self, selector: #selector(self.rotated), name: NSNotification.Name.UIDeviceOrientationDidChange, object: nil)
+        
+        let appDelegate = UIApplication.shared.delegate as! AppDelegate
+        appDelegate.allowRotation = true
     }
 
     override func didReceiveMemoryWarning() {
@@ -146,6 +151,12 @@ class ChatViewController: UIViewController {
     }
     
     
+    func rotated() {
+        if UIDeviceOrientationIsPortrait(UIDevice.current.orientation) {
+            self.presentingViewController?.dismiss(animated: true)
+            self.dismiss(animated: true)
+        }
+    }
  
 }
 extension ChatViewController: UITextFieldDelegate{
