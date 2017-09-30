@@ -167,14 +167,22 @@ class HLSettingViewController: BaseViewController {
             // nada
             break
         }
+        
         if ((sender as! UIButton).tag != 0 ){
-            let editViewController = self.storyboard?.instantiateViewController(withIdentifier: "fieldEditor") as! HLEditFieldViewController
-            editViewController.field_label = label
-            editViewController.field_title = title
-            editViewController.field_previous_val = previous
-            editViewController.field_key = item_toUpdate
-            editViewController.remainingChars = remChar
+            let editViewController = self.storyboard?.instantiateViewController(withIdentifier: "newPassword") as! NewPaswordViewController
             self.navigationController?.pushViewController(editViewController, animated: true)
+
+        } else {
+        
+            if ((sender as! UIButton).tag != 0 ){
+                let editViewController = self.storyboard?.instantiateViewController(withIdentifier: "fieldEditor") as! HLEditFieldViewController
+                editViewController.field_label = label
+                editViewController.field_title = title
+                editViewController.field_previous_val = previous
+                editViewController.field_key = item_toUpdate
+                editViewController.remainingChars = remChar
+                self.navigationController?.pushViewController(editViewController, animated: true)
+            }
         }
         
     }
