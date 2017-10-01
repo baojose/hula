@@ -49,8 +49,17 @@ class HLEditFieldViewController: BaseViewController, UITextFieldDelegate, UIText
             grayLocationLabel.text = HulaUser.sharedInstance.userLocationName
             
         } else {
-            remainigLabel.isHidden = false
-            grayLocationLabel.isHidden = true
+            if (field_key == "userEmail"){
+                useMyLocationBtn.isHidden = true
+                remainigLabel.isHidden = true
+                grayLocationLabel.isHidden = true
+                
+                saveButton.setTitle("Validate", for: .normal)
+                newValueTextView.isEditable = false
+            } else {
+                remainigLabel.isHidden = false
+                grayLocationLabel.isHidden = true
+            }
         }
         
         titleLabel.text = field_title
@@ -159,6 +168,16 @@ class HLEditFieldViewController: BaseViewController, UITextFieldDelegate, UIText
     
     
     @IBAction func saveNewValueAction(_ sender: Any) {
+        
+        if (field_key == "userEmail"){
+            HulaUser.sharedInstance.resendValidationMail()
+            let alert = UIAlertController(title: "Email validation", message: "We have just sent you an email to \(HulaUser.sharedInstance.userEmail!). Please follow the instructions provided on that message.",
+                preferredStyle: UIAlertControllerStyle.alert
+            )
+            alert.addAction(UIAlertAction(title: "OK", style: UIAlertActionStyle.default, handler: nil))
+            self.present(alert, animated: true, completion: nil)
+        }
+        
         field_new_val = newValueTextView.text!
         userData.setValue(field_new_val, forKey: field_key)
         userData.updateServerData()
