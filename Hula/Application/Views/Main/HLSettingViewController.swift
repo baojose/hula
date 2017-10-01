@@ -151,10 +151,10 @@ class HLSettingViewController: BaseViewController {
             remChar = 200
         case 4:
             // Location
-            title = "Change location"
-            previous = userData.userLocationName
-            label = "Location"
-            item_toUpdate = "userLocationName"
+            title = "Change zip code"
+            previous = userData.zip
+            label = "Zip code"
+            item_toUpdate = "zip"
             remChar = 80
         case 5:
             // Password
@@ -168,7 +168,7 @@ class HLSettingViewController: BaseViewController {
             break
         }
         
-        if ((sender as! UIButton).tag != 0 ){
+        if ((sender as! UIButton).tag == 5 ){
             let editViewController = self.storyboard?.instantiateViewController(withIdentifier: "newPassword") as! NewPaswordViewController
             self.navigationController?.pushViewController(editViewController, animated: true)
 

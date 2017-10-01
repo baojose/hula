@@ -267,6 +267,7 @@ class HLProfileViewController: BaseViewController {
                     if let dictionary = json as? [String: Any] {
                         
                         if let user = dictionary["user"] as? [String: Any]  {
+                            //print(user)
                             self.spinner.hide()
                             HulaUser.sharedInstance.populate(with: user as NSDictionary)
                             

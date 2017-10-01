@@ -3757,21 +3757,29 @@ Log In</string>
                                 <nil key="highlightedColor"/>
                             </label>
                             <button opaque="NO" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" id="Dkp-9k-b1z" customClass="HLRoundedButton" customModule="Hula" customModuleProvider="target">
-                                <rect key="frame" x="16" y="248" width="137" height="41"/>
+                                <rect key="frame" x="16" y="248" width="146" height="41"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <fontDescription key="fontDescription" name="HelveticaNeue-Light" family="Helvetica Neue" pointSize="16"/>
-                                <state key="normal" title="Use my location">
+                                <state key="normal" title="Get my location">
                                     <color key="titleColor" cocoaTouchSystemColor="groupTableViewBackgroundColor"/>
                                 </state>
                                 <connections>
                                     <action selector="useMyLocationAction:" destination="U0A-8H-Ru1" eventType="touchUpInside" id="xHG-l2-IOJ"/>
                                 </connections>
                             </button>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" text="Madrid" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="sGP-dl-2UU">
+                                <rect key="frame" x="16" y="217" width="343" height="21"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxY="YES"/>
+                                <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="12"/>
+                                <color key="textColor" white="0.61435005399999998" alpha="1" colorSpace="calibratedWhite"/>
+                                <nil key="highlightedColor"/>
+                            </label>
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                     </view>
                     <connections>
                         <outlet property="currentValueLabel" destination="250-yY-CFY" id="dcF-L0-DOa"/>
+                        <outlet property="grayLocationLabel" destination="sGP-dl-2UU" id="fhQ-Q6-eza"/>
                         <outlet property="lineSeparator" destination="PJp-a4-1VE" id="xdA-VH-FpH"/>
                         <outlet property="newValueTextView" destination="x9H-2h-vL4" id="d2Q-EN-JV3"/>
                         <outlet property="remainigLabel" destination="0M1-Yi-uAO" id="84U-Sy-C7v"/>

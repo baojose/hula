@@ -309,27 +309,29 @@ extension UIImageView {
             self.image = cachedImage
             return
         }
+        if let url = NSURL(string: _urlString) {
         
-        URLSession.shared.dataTask(with: NSURL(string: _urlString)! as URL, completionHandler: { (data, response, error) -> Void in
-            //print("getting: \(_urlString)")
-            if error != nil {
-                print(error!)
-                return
-            }
-            DispatchQueue.main.async(execute: { () -> Void in
-                self.transform = CGAffineTransform(scaleX: 0.1, y: 0.1)
-                let image = UIImage(data: data!)
-                self.image = image
-                
-                UIView.animate(withDuration: 0.1, animations: {
-                    self.transform = CGAffineTransform(scaleX: 1, y: 1)
-                })
-                if self.image != nil {
-                    imageCache.setObject(image!, forKey: _urlString as AnyObject)
+            URLSession.shared.dataTask(with: url as URL, completionHandler: { (data, response, error) -> Void in
+                //print("getting: \(_urlString)")
+                if error != nil {
+                    print(error!)
+                    return
                 }
-            })
-            
-        }).resume()
+                DispatchQueue.main.async(execute: { () -> Void in
+                    self.transform = CGAffineTransform(scaleX: 0.1, y: 0.1)
+                    let image = UIImage(data: data!)
+                    self.image = image
+                    
+                    UIView.animate(withDuration: 0.1, animations: {
+                        self.transform = CGAffineTransform(scaleX: 1, y: 1)
+                    })
+                    if self.image != nil {
+                        imageCache.setObject(image!, forKey: _urlString as AnyObject)
+                    }
+                })
+                
+            }).resume()
+        }
     }
 }
 
