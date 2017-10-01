@@ -28,6 +28,7 @@ class HLEditFieldViewController: BaseViewController, UITextFieldDelegate, UIText
     @IBOutlet weak var remainigLabel: UILabel!
     @IBOutlet weak var useMyLocationBtn: HLRoundedButton!
     
+    @IBOutlet weak var grayLocationLabel: UILabel!
     
     var remainingChars: Int = 200
     
@@ -39,8 +40,26 @@ class HLEditFieldViewController: BaseViewController, UITextFieldDelegate, UIText
         
         
         useMyLocationBtn.isHidden = true
-        if (field_key == "userLocationName"){
+        grayLocationLabel.text = ""
+        if (field_key == "zip"){
             useMyLocationBtn.isHidden = false
+            remainigLabel.isHidden = true
+            grayLocationLabel.isHidden = false
+            
+            grayLocationLabel.text = HulaUser.sharedInstance.userLocationName
+            
+        } else {
+            if (field_key == "userEmail"){
+                useMyLocationBtn.isHidden = true
+                remainigLabel.isHidden = true
+                grayLocationLabel.isHidden = true
+                
+                saveButton.setTitle("Validate", for: .normal)
+                newValueTextView.isEditable = false
+            } else {
+                remainigLabel.isHidden = false
+                grayLocationLabel.isHidden = true
+            }
         }
         
         titleLabel.text = field_title
@@ -69,6 +88,8 @@ class HLEditFieldViewController: BaseViewController, UITextFieldDelegate, UIText
             self.newValueTextView.frame.size = CGSize(width: self.view.frame.size.width-30, height: h)
             self.lineSeparator.frame.origin.y = self.newValueTextView.frame.origin.y + h + 15
             self.saveButton.frame.origin.y = self.lineSeparator.frame.origin.y + 30
+            self.useMyLocationBtn.frame.origin.y = self.lineSeparator.frame.origin.y + 30
+            self.grayLocationLabel.frame.origin.y = self.lineSeparator.frame.origin.y + 5
         }, completion: nil)
         var theRemainingChars = self.remainingChars - newValueTextView.text.characters.count
         if (theRemainingChars < 1){
@@ -77,7 +98,19 @@ class HLEditFieldViewController: BaseViewController, UITextFieldDelegate, UIText
             theRemainingChars = 0
         }
         remainigLabel.text = "\(theRemainingChars) characters remaining"
+        
+        
+        
+        if (field_key == "zip"){
+            getLatLngForZip(zipCode: newValueTextView.text)
+        }
     }
+    func textViewDidEndEditing(_ textView: UITextView) {
+        if (field_key == "zip"){
+            getLatLngForZip(zipCode: textView.text)
+        }
+    }
+    
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         let userLocation:CLLocation = locations[0]
         let long = userLocation.coordinate.longitude;
@@ -85,7 +118,7 @@ class HLEditFieldViewController: BaseViewController, UITextFieldDelegate, UIText
         
         //print(long, lat)
         userData.location = CLLocation(latitude:lat, longitude:long);
-        if (field_key == "userLocationName"){
+        if (field_key == "userLocationName" || field_key == "zip"){
             setUsersClosestCity(userLocation: userLocation)
         }
         locationManager.stopUpdatingLocation()
@@ -107,10 +140,16 @@ class HLEditFieldViewController: BaseViewController, UITextFieldDelegate, UIText
             //print(placeMark.addressDictionary)
             let country = placeMark.addressDictionary?["Country"] as? String
             let city = placeMark.addressDictionary?["City"] as? String
-   
-            self.newValueTextView.text = city! + ", " + country!
+            let zip = placeMark.addressDictionary?["ZIP"] as? String
+            
+            self.newValueTextView.text = zip!
+            self.userData.zip = zip!
             self.userData.userLocationName = city! + ", " + country!
+            self.grayLocationLabel.text = city! + ", " + country!
             self.spinner.hide()
+            
+            
+            
         }
     }
     
@@ -129,6 +168,16 @@ class HLEditFieldViewController: BaseViewController, UITextFieldDelegate, UIText
     
     
     @IBAction func saveNewValueAction(_ sender: Any) {
+        
+        if (field_key == "userEmail"){
+            HulaUser.sharedInstance.resendValidationMail()
+            let alert = UIAlertController(title: "Email validation", message: "We have just sent you an email to \(HulaUser.sharedInstance.userEmail!). Please follow the instructions provided on that message.",
+                preferredStyle: UIAlertControllerStyle.alert
+            )
+            alert.addAction(UIAlertAction(title: "OK", style: UIAlertActionStyle.default, handler: nil))
+            self.present(alert, animated: true, completion: nil)
+        }
+        
         field_new_val = newValueTextView.text!
         userData.setValue(field_new_val, forKey: field_key)
         userData.updateServerData()
@@ -147,6 +196,20 @@ class HLEditFieldViewController: BaseViewController, UITextFieldDelegate, UIText
     @IBAction func goBackAction(_ sender: Any) {
         //self.dismiss(animated: true, completion: nil)
         let _ = self.navigationController?.popViewController(animated: true)
+    }
+    
+    func getLatLngForZip(zipCode: String) {
+        
+        let geoCoder = CLGeocoder()
+        geoCoder.geocodeAddressString(zipCode) { (places, error) in
+            if let placemarks = places, let placemark = placemarks.first {
+                if let loc = placemark.locality {
+                    self.userData.userLocationName = loc + ", " + placemark.country!
+                    self.grayLocationLabel.text = loc + ", " + placemark.country!
+                    self.userData.location = placemark.location
+                }
+            }
+        }
     }
 
 }

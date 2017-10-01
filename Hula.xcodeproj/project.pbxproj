@@ -8,7 +8,6 @@
 
 /* Begin PBXBuildFile section */
 		0FBCBEED5C53860E39E37BDB /* Pods_Hula.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2949F49E550423C849CC8C66 /* Pods_Hula.framework */; };
-		111F79421EA56B5E00904EC5 /* test_UI.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 111F79411EA56B5E00904EC5 /* test_UI.storyboard */; };
 		116669151E98222F0094B157 /* HLHomeNotificationsTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 116669141E98222F0094B157 /* HLHomeNotificationsTableViewCell.swift */; };
 		116669191E9925C20094B157 /* HulaNotifications.swift in Sources */ = {isa = PBXBuildFile; fileRef = 116669181E9925C20094B157 /* HulaNotifications.swift */; };
 		271533421F07C15600E5F319 /* KDDragAndDropCollectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 271533401F07C15600E5F319 /* KDDragAndDropCollectionView.swift */; };
@@ -50,6 +49,7 @@
 		27D589861F2DEECF00240A36 /* HLProductPictureEditViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27D589851F2DEECF00240A36 /* HLProductPictureEditViewController.swift */; };
 		27D5898A1F2E91FA00240A36 /* HLProductModalViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27D589891F2E91FA00240A36 /* HLProductModalViewController.swift */; };
 		27D5898C1F36301F00240A36 /* HLRoundedGradientNextButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27D5898B1F36301F00240A36 /* HLRoundedGradientNextButton.swift */; };
+		27E00F5A1F7EF85B00942462 /* NewPaswordViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27E00F591F7EF85B00942462 /* NewPaswordViewController.swift */; };
 		27ECC96B1F4E0C8E00A48B59 /* HulaTip.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27ECC96A1F4E0C8E00A48B59 /* HulaTip.swift */; };
 		99F54F96A90A0DEF39B4F77F /* Pods_HulaTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BB38D039DCF53784B1101219 /* Pods_HulaTests.framework */; };
 		D4C767CE36A44207F314461B /* Pods_HulaUITests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AA99A61775E451E94755B6FC /* Pods_HulaUITests.framework */; };
@@ -122,7 +122,6 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		111F79411EA56B5E00904EC5 /* test_UI.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = test_UI.storyboard; sourceTree = "<group>"; };
 		116669141E98222F0094B157 /* HLHomeNotificationsTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HLHomeNotificationsTableViewCell.swift; sourceTree = "<group>"; };
 		116669181E9925C20094B157 /* HulaNotifications.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HulaNotifications.swift; sourceTree = "<group>"; };
 		271533401F07C15600E5F319 /* KDDragAndDropCollectionView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = KDDragAndDropCollectionView.swift; sourceTree = "<group>"; };
@@ -166,6 +165,7 @@
 		27D589851F2DEECF00240A36 /* HLProductPictureEditViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HLProductPictureEditViewController.swift; sourceTree = "<group>"; };
 		27D589891F2E91FA00240A36 /* HLProductModalViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HLProductModalViewController.swift; sourceTree = "<group>"; };
 		27D5898B1F36301F00240A36 /* HLRoundedGradientNextButton.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HLRoundedGradientNextButton.swift; sourceTree = "<group>"; };
+		27E00F591F7EF85B00942462 /* NewPaswordViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NewPaswordViewController.swift; sourceTree = "<group>"; };
 		27ECC96A1F4E0C8E00A48B59 /* HulaTip.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HulaTip.swift; sourceTree = "<group>"; };
 		2949F49E550423C849CC8C66 /* Pods_Hula.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Hula.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		366F1CB838330F3A7BA3CF6B /* Pods-HulaUITests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-HulaUITests.debug.xcconfig"; path = "Pods/Target Support Files/Pods-HulaUITests/Pods-HulaUITests.debug.xcconfig"; sourceTree = "<group>"; };
@@ -344,7 +344,6 @@
 			children = (
 				27D437E11F10FC73006E645B /* Hula.entitlements */,
 				F83186171E6FABBA00DD61FA /* Main.storyboard */,
-				111F79411EA56B5E00904EC5 /* test_UI.storyboard */,
 				F86698AC1E703A80002129E1 /* Delegate */,
 				F866989D1E703A80002129E1 /* Application */,
 				F831861D1E6FABBA00DD61FA /* Assets.xcassets */,
@@ -541,6 +540,7 @@
 				F8274D4E1E712FCB002A3164 /* HLProfileViewController.swift */,
 				F8BE7C301E71FF4200FAE07D /* HLFeedbackHistoryViewController.swift */,
 				F8B652021E7C77BF009D1DC6 /* HLSellerInfoViewController.swift */,
+				27E00F591F7EF85B00942462 /* NewPaswordViewController.swift */,
 			);
 			name = Profile;
 			sourceTree = "<group>";
@@ -733,7 +733,6 @@
 				F8BE7C401E7237A100FAE07D /* BebasNeue Bold.otf in Resources */,
 				F8BE7C441E7237A100FAE07D /* BebasNeue Thin.otf in Resources */,
 				F890E4941E70937D008719B9 /* splash_intro.mp4 in Resources */,
-				111F79421EA56B5E00904EC5 /* test_UI.storyboard in Resources */,
 				F83186211E6FABBA00DD61FA /* LaunchScreen.storyboard in Resources */,
 				F831861E1E6FABBA00DD61FA /* Assets.xcassets in Resources */,
 				F8BE7C451E7237A100FAE07D /* BebasNeue.otf in Resources */,
@@ -987,6 +986,7 @@
 				F86698B71E703CB9002129E1 /* HLAPIClient.swift in Sources */,
 				27C969B71F2BF05F00D4B433 /* HLSpinnerUIView.swift in Sources */,
 				F8BE7C4B1E724F3D00FAE07D /* HLProductDetailViewController.swift in Sources */,
+				27E00F5A1F7EF85B00942462 /* NewPaswordViewController.swift in Sources */,
 				273A1EA51ECF9F13005D163E /* HLDashboardViewController.swift in Sources */,
 				27AA28FE1F09A0B100AB1895 /* HLPageControl.swift in Sources */,
 				27C733C91EA2D1E0003A6FD6 /* HLRoundedNextButton.swift in Sources */,

@@ -152,6 +152,8 @@ class HLProductDetailViewController: BaseViewController, UIScrollViewDelegate, U
         
             cell.productName.text = pr.object(forKey: "title") as? String
             
+            
+            
             if let im_ur = pr.object(forKey: "image_url") as? String {
                 let thumb = commonUtils.getThumbFor(url: im_ur)
                 cell.productImage.loadImageFromURL(urlString:thumb)
@@ -162,10 +164,21 @@ class HLProductDetailViewController: BaseViewController, UIScrollViewDelegate, U
                     cell.tradedAlertImage.isHidden = false
                     cell.tradedLabel.isHidden = false
                     cell.goArrow.isHidden = true
+                    cell.isUserInteractionEnabled = false
                 } else {
                     cell.tradedAlertImage.isHidden = true
                     cell.tradedLabel.isHidden = true
                     cell.goArrow.isHidden = false
+                    cell.isUserInteractionEnabled = true
+                    
+                    
+                    if let prid = pr.object(forKey: "_id") as? String {
+                        if (prid == productData.productId){
+                            cell.goArrow.isHidden = true
+                            cell.isUserInteractionEnabled = false
+                        }
+                    }
+                    
                 }
             }
         }

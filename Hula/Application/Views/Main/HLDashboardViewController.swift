@@ -32,6 +32,10 @@ class HLDashboardViewController: BaseViewController {
         
         mainCollectionView.collectionViewLayout = HLDashboardNormalViewFlowLayout()
         //refreshCollectionViewData()
+        
+        
+        let appDelegate = UIApplication.shared.delegate as! AppDelegate
+        appDelegate.allowRotation = true
     }
 
     

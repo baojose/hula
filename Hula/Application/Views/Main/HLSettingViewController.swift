@@ -151,10 +151,10 @@ class HLSettingViewController: BaseViewController {
             remChar = 200
         case 4:
             // Location
-            title = "Change location"
-            previous = userData.userLocationName
-            label = "Location"
-            item_toUpdate = "userLocationName"
+            title = "Change zip code"
+            previous = userData.zip
+            label = "Zip code"
+            item_toUpdate = "zip"
             remChar = 80
         case 5:
             // Password
@@ -167,14 +167,22 @@ class HLSettingViewController: BaseViewController {
             // nada
             break
         }
-        if ((sender as! UIButton).tag != 0 ){
-            let editViewController = self.storyboard?.instantiateViewController(withIdentifier: "fieldEditor") as! HLEditFieldViewController
-            editViewController.field_label = label
-            editViewController.field_title = title
-            editViewController.field_previous_val = previous
-            editViewController.field_key = item_toUpdate
-            editViewController.remainingChars = remChar
+        
+        if ((sender as! UIButton).tag == 5 ){
+            let editViewController = self.storyboard?.instantiateViewController(withIdentifier: "newPassword") as! NewPaswordViewController
             self.navigationController?.pushViewController(editViewController, animated: true)
+
+        } else {
+        
+            if ((sender as! UIButton).tag != 0 ){
+                let editViewController = self.storyboard?.instantiateViewController(withIdentifier: "fieldEditor") as! HLEditFieldViewController
+                editViewController.field_label = label
+                editViewController.field_title = title
+                editViewController.field_previous_val = previous
+                editViewController.field_key = item_toUpdate
+                editViewController.remainingChars = remChar
+                self.navigationController?.pushViewController(editViewController, animated: true)
+            }
         }
         
     }

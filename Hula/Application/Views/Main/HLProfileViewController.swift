@@ -61,25 +61,25 @@ class HLProfileViewController: BaseViewController {
         
     }
     override func viewWillAppear(_ animated: Bool) {
-        
         if !HulaUser.sharedInstance.isUserLoggedIn() {
-            
             self.tabBarController?.selectedIndex = 0
+        } else {
+            self.profileImageView.loadImageFromURL(urlString: HulaUser.sharedInstance.userPhotoURL)
         }
-        
-        
         
     }
     override func viewDidAppear(_ animated: Bool) {
         
         if (HulaUser.sharedInstance.isUserLoggedIn()){
             
-            if (HulaUser.sharedInstance.userPhotoURL != "") && (current_image_url != HulaUser.sharedInstance.userPhotoURL){
-                print("Changing image")
-                print(HulaUser.sharedInstance.userPhotoURL)
-                let thumb = commonUtils.getThumbFor(url: HulaUser.sharedInstance.userPhotoURL)
-                self.profileImageView.loadImageFromURL(urlString: thumb)
-                self.current_image_url = HulaUser.sharedInstance.userPhotoURL
+            if (HulaUser.sharedInstance.userPhotoURL != ""){
+                if (current_image_url != HulaUser.sharedInstance.userPhotoURL) {
+                    //print("Changing image")
+                    //print(HulaUser.sharedInstance.userPhotoURL)
+                    let thumb = commonUtils.getThumbFor(url: HulaUser.sharedInstance.userPhotoURL)
+                    self.profileImageView.loadImageFromURL(urlString: thumb)
+                    self.current_image_url = HulaUser.sharedInstance.userPhotoURL
+                }
             } else {
                 self.profileImageView.image = UIImage(named: "profile_placeholder")
             }
@@ -267,6 +267,7 @@ class HLProfileViewController: BaseViewController {
                     if let dictionary = json as? [String: Any] {
                         
                         if let user = dictionary["user"] as? [String: Any]  {
+                            //print(user)
                             self.spinner.hide()
                             HulaUser.sharedInstance.populate(with: user as NSDictionary)
                             

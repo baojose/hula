@@ -21,6 +21,7 @@ class HulaUser: NSObject {
     var userPass: String!
     var token: String!
     var status: String!
+    var zip: String!
     var location: CLLocation!
     var fbToken: String!
     var twToken: String!
@@ -53,6 +54,7 @@ class HulaUser: NSObject {
         self.userBio = ""
         self.token = ""
         self.status = ""
+        self.zip = ""
         self.fbToken = ""
         self.twToken = ""
         self.liToken = ""
@@ -98,6 +100,7 @@ class HulaUser: NSObject {
         self.userPass = ""
         self.token = ""
         self.status = ""
+        self.zip = ""
         self.fbToken = ""
         self.twToken = ""
         self.liToken = ""
@@ -159,7 +162,7 @@ class HulaUser: NSObject {
     }
     func getPostString() -> String {
         var str = "email=" + self.userEmail + "&name=" + self.userName + "&bio=" + self.userBio + "&nick=" + self.userNick + "&image=" + self.userPhotoURL + "&twtoken=" + self.twToken
-        str = str + "&litoken=" + self.liToken + "&fbtoken=" + self.fbToken + "&push_device_id=" + self.deviceId
+        str = str + "&litoken=" + self.liToken + "&fbtoken=" + self.fbToken + "&push_device_id=" + self.deviceId + "&zip=" + self.zip
         
         if (self.location.coordinate.latitude != 0 && self.location.coordinate.longitude != 0){
            str = str + "&lat=\(self.location.coordinate.latitude)&lng=\(self.location.coordinate.longitude)&location_name=" + self.userLocationName
@@ -195,6 +198,7 @@ class HulaUser: NSObject {
         if let tmp = with.object(forKey: "tw_token") as? String { twToken = tmp }
         if let tmp = with.object(forKey: "li_token") as? String { liToken = tmp }
         if let tmp = with.object(forKey: "status") as? String { status = tmp }
+        if let tmp = with.object(forKey: "zip") as? String { zip = tmp }
         
         if let tmp = with.object(forKey: "feedback_count") as? Float { feedback_count = tmp }
         if let tmp = with.object(forKey: "feedback_points") as? Float { feedback_points = tmp }

@@ -37,7 +37,7 @@ class UserBaseViewController: UIViewController {
             
             
             
-            if let viewControllers = self.navigationController?.viewControllers as? [UIViewController]{
+            if let viewControllers: [UIViewController] = self.navigationController?.viewControllers {
                 for aViewController:UIViewController in viewControllers {
                     if aViewController.isKind(of: BaseTabBarViewController.self) {
                         if let tb = aViewController as? BaseTabBarViewController {

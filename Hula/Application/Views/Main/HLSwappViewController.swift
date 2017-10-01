@@ -77,7 +77,8 @@ class HLSwappViewController: UIViewController {
     override func viewWillAppear(_ animated: Bool) {
         
         // rotation effect
-        self.portraitView.frame.origin.y = 0
+        //self.portraitView.frame.origin.y = 0
+        self.portraitView.frame = self.view.frame
         self.portraitView.transform = CGAffineTransform(rotationAngle: 0)
         if !UIDeviceOrientationIsPortrait(UIDevice.current.orientation) {
             DispatchQueue.main.async {
