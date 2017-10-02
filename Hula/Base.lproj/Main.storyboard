@@ -2361,7 +2361,7 @@ Log In</string>
                                 </subviews>
                             </view>
                             <button opaque="NO" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" id="MyB-ee-C6Y" customClass="HLRoundedButton" customModule="Hula" customModuleProvider="target">
-                                <rect key="frame" x="234" y="334" width="199" height="32"/>
+                                <rect key="frame" x="233" y="334" width="200" height="32"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES"/>
                                 <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="17"/>
                                 <state key="normal" title="Send offer">

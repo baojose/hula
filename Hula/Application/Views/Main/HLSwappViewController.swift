@@ -39,6 +39,7 @@ class HLSwappViewController: UIViewController {
     
     var selectedScreen = 0
     var initialFrame:CGRect = CGRect(x:0, y:0, width: 191, height: 108)
+    var prevUser: String = ""
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -333,11 +334,11 @@ class HLSwappViewController: UIViewController {
                         self.threeDotsView.isHidden = true;
                         if self.tradeCanBeClosed(thisTrade) {
                             // can be closed
-                            self.sendOfferBtn.titleLabel?.text = "Accept trade"
+                            self.sendOfferBtn.setTitle( "Accept trade", for: .normal)
                             self.sendOfferBtn.tag = 91053
                             
                         } else {
-                            self.sendOfferBtn.titleLabel?.text = "Send offer"
+                            self.sendOfferBtn.setTitle( "Send offer", for: .normal)
                             self.sendOfferBtn.tag = 1
                         }
                     }
@@ -355,21 +356,24 @@ class HLSwappViewController: UIViewController {
                 }
                 
                 
-                otherUserImage.loadImageFromURL(urlString: CommonUtils.sharedInstance.userImageURL(userId: other_user_id))
+                if (prevUser != other_user_id) {
+                    prevUser = other_user_id
+                    otherUserImage.loadImageFromURL(urlString: CommonUtils.sharedInstance.userImageURL(userId: other_user_id))
 
-                let queryURL = HulaConstants.apiURL + "users/\(other_user_id)/nick"
-                HLDataManager.sharedInstance.httpGet(urlstr: queryURL, taskCallback: { (result, json) in
-                    
-                    if let dict = json as? [String:String]{
-                    //print(dict)
-                        if let nick = dict["nick"] {
-                            //print(nick)
-                            DispatchQueue.main.async {
-                                self.otherUserNick.text = nick
+                    let queryURL = HulaConstants.apiURL + "users/\(other_user_id)/nick"
+                    HLDataManager.sharedInstance.httpGet(urlstr: queryURL, taskCallback: { (result, json) in
+                        
+                        if let dict = json as? [String:String]{
+                        //print(dict)
+                            if let nick = dict["nick"] {
+                                //print(nick)
+                                DispatchQueue.main.async {
+                                    self.otherUserNick.text = nick
+                                }
                             }
                         }
-                    }
-                })
+                    })
+                }
                 
             }
             
