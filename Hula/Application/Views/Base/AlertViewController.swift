@@ -13,10 +13,12 @@ class AlertViewController: UIViewController {
     @IBOutlet weak var alertBackground: UIView!
     @IBOutlet weak var cancelButton: UIButton!
     @IBOutlet weak var messageLabel: UILabel!
+    @IBOutlet weak var okButton: UIButton!
     
     var message:String = ""
     var delegate:AlertDelegate?
     var isCancelVisible = true
+    var okButtonText = "OK"
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -25,6 +27,7 @@ class AlertViewController: UIViewController {
         alertBackground.layer.cornerRadius = 4.0;
         alertBackground.clipsToBounds = true
         messageLabel.text = message
+        okButton.setTitle(okButtonText, for: .normal)
         if (isCancelVisible){
             cancelButton.isHidden = false;
         } else {

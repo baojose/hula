@@ -4749,6 +4749,7 @@ Log In</string>
                         <outlet property="alertBackground" destination="VTC-Kt-WIp" id="RNa-26-Hm9"/>
                         <outlet property="cancelButton" destination="umY-w3-fo9" id="czf-aD-BJI"/>
                         <outlet property="messageLabel" destination="gdM-3b-tcd" id="MWl-cp-CwJ"/>
+                        <outlet property="okButton" destination="h9D-v0-Xbf" id="uAS-Nm-3AX"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="d9O-K5-Fbt" userLabel="First Responder" sceneMemberID="firstResponder"/>
@@ -7208,6 +7209,6 @@ Log In</string>
     </simulatedMetricsContainer>
     <inferredMetricsTieBreakers>
         <segue reference="wT5-4p-lNl"/>
-        <segue reference="UoL-AY-aB4"/>
+        <segue reference="8X8-bg-W6f"/>
     </inferredMetricsTieBreakers>
 </document>

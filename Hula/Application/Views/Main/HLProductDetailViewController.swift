@@ -38,6 +38,7 @@ class HLProductDetailViewController: BaseViewController, UIScrollViewDelegate, U
     @IBOutlet var sellerLabel: UILabel!
     @IBOutlet var userInventoryLabel: UILabel!
     
+    
     var productData: HulaProduct!
     var currentProduct: HulaProduct!
     var sellerProducts: NSArray! = []
@@ -260,21 +261,35 @@ class HLProductDetailViewController: BaseViewController, UIScrollViewDelegate, U
         if (HulaUser.sharedInstance.numProducts == 0){
                 
             let viewController = self.storyboard?.instantiateViewController(withIdentifier: "alertView") as! AlertViewController
-            
             viewController.isCancelVisible = false
             viewController.message = "Go to your stock section to upload something you don't need so you can start trading."
             self.present(viewController, animated: true)
-            
         } else {
-            if (currentProduct.productOwner != HulaUser.sharedInstance.userId) {
+            let viewController = self.storyboard?.instantiateViewController(withIdentifier: "alertView") as! AlertViewController
+            viewController.isCancelVisible = true
+            viewController.okButtonText = "Accept"
+            viewController.delegate = self
+            viewController.message = "You're about to start a trade. One room will be reserved for this negotiation until it's finished."
+            self.present(viewController, animated: true)
+            
+            
+            
+        }
+    }
+}
 
+extension HLProductDetailViewController: AlertDelegate{
+    func alertResponded(response: String) {
+        if response == "ok" {
+            if (currentProduct.productOwner != HulaUser.sharedInstance.userId) {
+                
                 if let productId = currentProduct.productId {
                     //print(productId)
                     let otherId = currentProduct.productOwner
                     if (HulaUser.sharedInstance.userId.characters.count>0){
                         // user is loggedin
                         DispatchQueue.main.async {
-                            UIView.animate(withDuration: 0.3, animations: {
+                            UIView.animate(withDuration: 0.5, animations: {
                                 self.addToTradeViewContainer.frame = self.view.frame
                             })
                         }
