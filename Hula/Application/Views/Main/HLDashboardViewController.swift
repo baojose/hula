@@ -251,6 +251,15 @@ extension HLDashboardViewController: UICollectionViewDelegate, UICollectionViewD
             let thisTrade : NSDictionary = (swappPageVC?.arrTrades[indexPath.row])!
             cell.emptyRoomLabel.text = ""
             //print(thisTrade)
+            
+            var status =  (thisTrade.object(forKey: "status") as? String)!
+            if status == HulaConstants.end_status || status == HulaConstants.cancel_status {
+                status = "past"
+            } else {
+                status = "current"
+            }
+            cell.tradeStatus = status
+            
             cell.tradeId = (thisTrade.object(forKey: "_id") as? String)!
             
             var otherUserId = thisTrade.object(forKey: "other_id") as? String
@@ -285,23 +294,39 @@ extension HLDashboardViewController: UICollectionViewDelegate, UICollectionViewD
             cell.myImage.isHidden = false
             cell.middleArrows.isHidden = false
             cell.tradeNumber.textColor = HulaConstants.appMainColor
-            if let turnUser = thisTrade.object(forKey: "turn_user_id") as? String{
-                if turnUser != HulaUser.sharedInstance.userId {
-                    cell.myTurnView.isHidden = true
-                    cell.otherTurnView.isHidden = false
+            
+            
+            if status == "current"{
+                // current trades
+                if let turnUser = thisTrade.object(forKey: "turn_user_id") as? String{
+                    if turnUser != HulaUser.sharedInstance.userId {
+                        cell.myTurnView.isHidden = true
+                        cell.otherTurnView.isHidden = false
+                    } else {
+                        cell.myTurnView.isHidden = false
+                        cell.otherTurnView.isHidden = true
+                    }
                 } else {
                     cell.myTurnView.isHidden = false
                     cell.otherTurnView.isHidden = true
                 }
+                cell.boxView.layer.shadowColor = UIColor.black.cgColor
+                cell.boxView.layer.shadowOffset = CGSize(width: 0, height: 0)
+                cell.boxView.layer.shadowOpacity = 0.2
+                cell.boxView.layer.shadowRadius = 3
+                cell.optionsDotsImage.alpha = 1
             } else {
-                cell.myTurnView.isHidden = false
+                // past trades
+                cell.tradeNumber.textColor = UIColor.gray
+                cell.myTurnView.isHidden = true
                 cell.otherTurnView.isHidden = true
+                cell.boxView.layer.shadowColor = UIColor(red:1, green:1, blue:1, alpha: 0).cgColor
+                cell.boxView.layer.shadowOffset = CGSize(width: 0, height: 0)
+                cell.boxView.layer.shadowOpacity = 0
+                cell.boxView.layer.shadowRadius = 0
+                cell.optionsDotsImage.alpha = 0.2
+                
             }
-            cell.boxView.layer.shadowColor = UIColor.black.cgColor
-            cell.boxView.layer.shadowOffset = CGSize(width: 0, height: 0)
-            cell.boxView.layer.shadowOpacity = 0.2
-            cell.boxView.layer.shadowRadius = 3
-            cell.optionsDotsImage.alpha = 1
         } else {
             //print("Empty row \(indexPath.row)")
             cell.isEmptyRoom = true
@@ -337,6 +362,8 @@ extension HLDashboardViewController: UICollectionViewDelegate, UICollectionViewD
 
             //isExpandedFlowLayoutUsed = !isExpandedFlowLayoutUsed
             let when = DispatchTime.now() + 0.2
+            
+            
             DispatchQueue.main.asyncAfter(deadline: when) {
                 if let swappPageVC = self.parent as? HLSwappPageViewController{
                     self.selectedBarter = indexPath.row
@@ -346,7 +373,18 @@ extension HLDashboardViewController: UICollectionViewDelegate, UICollectionViewD
                     //print(swappPageVC.currentTrade!)
                     
                     //always number 1
-                    self.swappPageVC?.goTo(page: 1)
+                    if HLDataManager.sharedInstance.tradeMode == "current"{
+                    
+                        self.swappPageVC?.goTo(page: 1)
+                    } else {
+                        let vc = (self.storyboard?.instantiateViewController( withIdentifier: "pastTrade")) as! HLPastTradeViewController
+                        vc.modalTransitionStyle = .coverVertical
+                        //print(thisTrade)
+                        vc.currTrade = thisTrade
+                        self.present(vc, animated: true, completion: nil)
+                        
+                        
+                    }
                 }
                 //print(self.parent!)
             }
