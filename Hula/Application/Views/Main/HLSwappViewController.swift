@@ -32,6 +32,9 @@ class HLSwappViewController: UIViewController {
     @IBOutlet weak var sendOfferBtn: HLRoundedButton!
     @IBOutlet weak var remainingTimeLabel: UILabel!
     
+    @IBOutlet weak var tradeModeLine: UIView!
+    @IBOutlet weak var currentTradesBtn: UIButton!
+    @IBOutlet weak var pastTradesBtn: UIButton!
     @IBOutlet weak var threeDotsView: UIView!
     @IBOutlet weak var addTradeRoomBtn: HLRoundedButton!
     @IBOutlet weak var chatButton: HLRoundedButton!
@@ -39,6 +42,8 @@ class HLSwappViewController: UIViewController {
     
     var selectedScreen = 0
     var initialFrame:CGRect = CGRect(x:0, y:0, width: 191, height: 108)
+    var prevUser: String = ""
+    var tradeMode = "current"
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -57,6 +62,12 @@ class HLSwappViewController: UIViewController {
         
         self.dashImage.alpha = 0
         self.dashMask.alpha = 0
+        
+        self.currentTradesBtn.alpha = 1;
+        self.pastTradesBtn.alpha = 1
+        self.tradeModeLine.frame.origin.x = self.currentTradesBtn.frame.origin.x
+        self.tradeModeLine.frame.size.width = self.currentTradesBtn.frame.size.width
+        HLDataManager.sharedInstance.tradeMode = "current"
         
         
         self.mobileImage.alpha = 0
@@ -292,6 +303,9 @@ class HLSwappViewController: UIViewController {
                 
                 self.addTradeRoomBtn.alpha = 0;
                 self.mainCentralLabel.alpha = 0;
+                self.currentTradesBtn.alpha = 0;
+                self.pastTradesBtn.alpha = 0
+                self.tradeModeLine.alpha = 0
             }
             self.threeDotsView.isHidden = true;
             
@@ -333,11 +347,11 @@ class HLSwappViewController: UIViewController {
                         self.threeDotsView.isHidden = true;
                         if self.tradeCanBeClosed(thisTrade) {
                             // can be closed
-                            self.sendOfferBtn.titleLabel?.text = "Accept trade"
+                            self.sendOfferBtn.setTitle( "Accept trade", for: .normal)
                             self.sendOfferBtn.tag = 91053
                             
                         } else {
-                            self.sendOfferBtn.titleLabel?.text = "Send offer"
+                            self.sendOfferBtn.setTitle( "Send offer", for: .normal)
                             self.sendOfferBtn.tag = 1
                         }
                     }
@@ -355,21 +369,24 @@ class HLSwappViewController: UIViewController {
                 }
                 
                 
-                otherUserImage.loadImageFromURL(urlString: CommonUtils.sharedInstance.userImageURL(userId: other_user_id))
+                if (prevUser != other_user_id) {
+                    prevUser = other_user_id
+                    otherUserImage.loadImageFromURL(urlString: CommonUtils.sharedInstance.userImageURL(userId: other_user_id))
 
-                let queryURL = HulaConstants.apiURL + "users/\(other_user_id)/nick"
-                HLDataManager.sharedInstance.httpGet(urlstr: queryURL, taskCallback: { (result, json) in
-                    
-                    if let dict = json as? [String:String]{
-                    //print(dict)
-                        if let nick = dict["nick"] {
-                            //print(nick)
-                            DispatchQueue.main.async {
-                                self.otherUserNick.text = nick
+                    let queryURL = HulaConstants.apiURL + "users/\(other_user_id)/nick"
+                    HLDataManager.sharedInstance.httpGet(urlstr: queryURL, taskCallback: { (result, json) in
+                        
+                        if let dict = json as? [String:String]{
+                        //print(dict)
+                            if let nick = dict["nick"] {
+                                //print(nick)
+                                DispatchQueue.main.async {
+                                    self.otherUserNick.text = nick
+                                }
                             }
                         }
-                    }
-                })
+                    })
+                }
                 
             }
             
@@ -390,6 +407,9 @@ class HLSwappViewController: UIViewController {
                 self.chatButton.alpha = 0
                 self.remainingTimeLabel.alpha = 0;
                 self.threeDotsView.isHidden = true
+                self.currentTradesBtn.alpha = 1;
+                self.pastTradesBtn.alpha = 1
+                self.tradeModeLine.alpha = 1
             }
         }
     }
@@ -408,6 +428,29 @@ class HLSwappViewController: UIViewController {
         return false
     }
     
+    @IBAction func showCurrentTrades(_ sender: Any) {
+        self.tradeMode = "current"
+        HLDataManager.sharedInstance.tradeMode = self.tradeMode
+        UIView.animate(withDuration: 0.3) {
+            self.tradeModeLine.frame.origin.x = self.currentTradesBtn.frame.origin.x
+            self.tradeModeLine.frame.size.width = self.currentTradesBtn.frame.size.width
+        }
+        if let db = self.childViewControllers.first?.childViewControllers.first as? HLDashboardViewController{
+            db.refreshCollectionViewData()
+        }
+    }
+    @IBAction func showPastTrades(_ sender: Any) {
+        self.tradeMode = "past"
+        HLDataManager.sharedInstance.tradeMode = self.tradeMode
+        UIView.animate(withDuration: 0.3) {
+            self.tradeModeLine.frame.origin.x = self.pastTradesBtn.frame.origin.x
+            self.tradeModeLine.frame.size.width = self.pastTradesBtn.frame.size.width
+        }
+        
+        if let db = self.childViewControllers.first?.childViewControllers.first as? HLDashboardViewController{
+            db.refreshCollectionViewData()
+        }
+    }
 }
 
 extension HLSwappViewController: SwappPageViewControllerDelegate {

@@ -128,7 +128,6 @@ class HLSellerInfoViewController: BaseViewController, UITableViewDelegate, UITab
     
     @IBAction func addToTradeAction(_ sender: Any) {
         //print(productId)
-        let otherId = user.userId
         if (HulaUser.sharedInstance.numProducts == 0){
             
             let viewController = self.storyboard?.instantiateViewController(withIdentifier: "alertView") as! AlertViewController
@@ -138,8 +137,21 @@ class HLSellerInfoViewController: BaseViewController, UITableViewDelegate, UITab
             self.present(viewController, animated: true)
             
         } else {
-        
+            let viewController = self.storyboard?.instantiateViewController(withIdentifier: "alertView") as! AlertViewController
+            viewController.isCancelVisible = true
+            viewController.okButtonText = "Accept"
+            viewController.delegate = self
+            viewController.message = "You're about to start a trade. One room will be reserved for this negotiation until it's finished."
+            self.present(viewController, animated: true)
             
+        }
+    }
+}
+
+extension HLSellerInfoViewController: AlertDelegate{
+    func alertResponded(response: String) {
+        if response == "ok" {
+            let otherId = user.userId
             if(HulaUser.sharedInstance.userId != otherId){
                 if (HulaUser.sharedInstance.userId.characters.count>0){
                     // user is loggedin

@@ -25,6 +25,7 @@ class HLTradesCollectionViewCell: UICollectionViewCell {
     var dbDelegate: HLDashboardViewController?
     var tradeId: String = ""
     var userId: String = ""
+    var tradeStatus: String = "current"
     
     var isEmptyRoom = true;
     
@@ -68,25 +69,20 @@ class HLTradesCollectionViewCell: UICollectionViewCell {
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
         if (self.tradeId != ""){
              UIView.animate(withDuration: 0.1, animations: {
-             self.transform = CGAffineTransform(scaleX: 1.1,y: 1.1);
-             
-             })
-             UIView.animate(withDuration: 0.1, animations: {
-             self.transform = CGAffineTransform(scaleX: 1.1,y: 1.1);
-             
+                self.transform = CGAffineTransform(scaleX: 1.1,y: 1.1);
              }, completion: { (ok) in
-             UIView.animate(withDuration: 0.4, animations: {
-             self.transform = CGAffineTransform(scaleX: 1,y: 1);
+                 UIView.animate(withDuration: 0.4, animations: {
+                    self.transform = CGAffineTransform(scaleX: 1,y: 1);
+                 })
              })
-             })
-        super.touchesBegan(touches, with: event)
+            super.touchesBegan(touches, with: event)
         }
     }
     
 
     
     @IBAction func tradeOptionsAction(_ sender: Any) {
-        if (self.tradeId != ""){
+        if (self.tradeId != "" && self.tradeStatus == "current"){
             if dbDelegate != nil {
                 let alert = UIAlertController(title: "Trading options",
                                               message: nil,
