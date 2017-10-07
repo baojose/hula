@@ -381,9 +381,9 @@ extension HLDashboardViewController: UICollectionViewDelegate, UICollectionViewD
                         vc.modalTransitionStyle = .coverVertical
                         //print(thisTrade)
                         vc.currTrade = thisTrade
-                        self.present(vc, animated: true, completion: nil)
+                        swappPageVC.present(vc, animated: true, completion: nil)
                         
-                        
+                       
                     }
                 }
                 //print(self.parent!)

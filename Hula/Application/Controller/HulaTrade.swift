@@ -14,6 +14,7 @@ class HulaTrade: NSObject {
     var owner_id: String!
     var other_id: String!
     var date: Date = Date()
+    var last_update: Date = Date()
     var owner_products = [] as [String]
     var other_products = [] as [String]
     var owner_money : Float = 0.0
@@ -40,6 +41,7 @@ class HulaTrade: NSObject {
         self.owner_id = ""
         self.other_id = ""
         self.date = Date()
+        self.last_update = Date()
         self.owner_products = []
         self.other_products = []
         self.owner_money = 0.0
@@ -125,6 +127,11 @@ class HulaTrade: NSObject {
         if (dict["turn_user_id"] as? String) != nil {
             self.turn_user_id = dict["turn_user_id"] as? String
         }
+        if (dict["last_update"] as? String) != nil {
+            let str_date = dict["last_update"] as? String
+            self.last_update = (str_date?.dateFromISO8601)!
+        }
+        
         //print(dict)
         self.last_bid_diff = []
         if let bids = dict["bids"] as? [Any] {
