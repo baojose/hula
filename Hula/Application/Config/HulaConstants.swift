@@ -24,6 +24,7 @@ struct HulaConstants {
     static let apiURL: String = "https://api.hula.trading/v1/"
     static let staticServerURL: String = "https://hula.trading"
     static let noProductThumb: String = "https://hula.trading/files/user/nope.jpg"
+    static let transparentImg: String = "https://hula.trading/img/transparent.png"
     
     // TRADE STATUSES
     static let sent_status:String = "offer_sent"

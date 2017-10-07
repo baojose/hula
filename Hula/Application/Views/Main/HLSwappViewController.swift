@@ -44,6 +44,7 @@ class HLSwappViewController: UIViewController {
     var initialFrame:CGRect = CGRect(x:0, y:0, width: 191, height: 108)
     var prevUser: String = ""
     var tradeMode = "current"
+    var last_index_setup:Int = 0
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -53,8 +54,6 @@ class HLSwappViewController: UIViewController {
         
         
         CommonUtils.sharedInstance.circleImageView(otherUserImage)
-        self.myUserView.isHidden = true;
-        self.otherUserView.isHidden = true;
         self.sendOfferBtn.alpha = 0;
         self.remainingTimeLabel.alpha = 0;
         self.addTradeRoomBtn.alpha = 1;
@@ -101,18 +100,11 @@ class HLSwappViewController: UIViewController {
         }
     }
     override func viewDidAppear(_ animated: Bool) {
-        initialOtherUserX = self.view.frame.width - self.otherUserView.frame.width
-        self.myUserView.frame.origin.x = -500
-        self.otherUserView.frame.origin.x = self.view.frame.width + 500
-        self.myUserView.isHidden = false;
-        self.otherUserView.isHidden = false;
-        
-        self.addTradeRoomBtn.alpha = 1;
-        self.mainCentralLabel.alpha = 0;
-        self.dashImage.alpha = 0
-        self.dashMask.alpha = 0
         
         
+        
+        
+        controlSetupBottomBar(index:last_index_setup);
         self.rotateAnimation()
     }
 
@@ -287,7 +279,9 @@ class HLSwappViewController: UIViewController {
         }
     }
     func controlSetupBottomBar(index:Int){
-        //print("seting up bottom bar with index: \(index)")
+        print("setting up bottom bar with index: \(index)")
+        
+        initialOtherUserX = self.view.frame.width - self.otherUserView.frame.width
         
         if (index != 0){
             UIView.animate(withDuration: 0.3) {
@@ -310,6 +304,7 @@ class HLSwappViewController: UIViewController {
             self.threeDotsView.isHidden = true;
             
             if let swappPageVC = self.childViewControllers.first as? HLSwappPageViewController {
+                last_index_setup = swappPageVC.currentIndex
                 let thisTrade: NSDictionary = swappPageVC.arrTrades[swappPageVC.currentIndex]
                 
                 var other_user_id = ""
@@ -392,6 +387,7 @@ class HLSwappViewController: UIViewController {
             
             
         } else {
+            last_index_setup = 0
             UIView.animate(withDuration: 0.3) {
                 /*
                 self.extraRoomBtn.alpha = 1
@@ -430,25 +426,27 @@ class HLSwappViewController: UIViewController {
     
     @IBAction func showCurrentTrades(_ sender: Any) {
         self.tradeMode = "current"
-        HLDataManager.sharedInstance.tradeMode = self.tradeMode
         UIView.animate(withDuration: 0.3) {
             self.tradeModeLine.frame.origin.x = self.currentTradesBtn.frame.origin.x
             self.tradeModeLine.frame.size.width = self.currentTradesBtn.frame.size.width
         }
-        if let db = self.childViewControllers.first?.childViewControllers.first as? HLDashboardViewController{
-            db.refreshCollectionViewData()
-        }
+        updateTradesList()
     }
     @IBAction func showPastTrades(_ sender: Any) {
         self.tradeMode = "past"
-        HLDataManager.sharedInstance.tradeMode = self.tradeMode
         UIView.animate(withDuration: 0.3) {
             self.tradeModeLine.frame.origin.x = self.pastTradesBtn.frame.origin.x
             self.tradeModeLine.frame.size.width = self.pastTradesBtn.frame.size.width
         }
-        
-        if let db = self.childViewControllers.first?.childViewControllers.first as? HLDashboardViewController{
-            db.refreshCollectionViewData()
+        updateTradesList()
+    }
+    
+    func updateTradesList(){
+        HLDataManager.sharedInstance.tradeMode = self.tradeMode
+        for vc in (self.childViewControllers.first?.childViewControllers)! {
+            if let db = vc as? HLDashboardViewController{
+                db.refreshCollectionViewData()
+            }
         }
     }
 }
@@ -463,7 +461,9 @@ extension HLSwappViewController: SwappPageViewControllerDelegate {
     func swappPageViewController(swappPageViewController: HLSwappPageViewController,
                                     didUpdatePageIndex index: Int) {
         //swappPageControl.currentPage = index
-        
+        if (index == 0){
+            barterDelegate?.reloadTrade()
+        }
         controlSetupBottomBar(index: index)
     }
     
@@ -473,6 +473,7 @@ extension HLSwappViewController: SwappPageViewControllerDelegate {
 protocol HLBarterScreenDelegate: class {
     func getCurrentTradeStatus() -> HulaTrade
     func isTradeMutated() -> Bool!
+    func reloadTrade()
 }
 
 extension HLSwappViewController: AlertDelegate{

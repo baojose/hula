@@ -43,6 +43,11 @@ class HLDashboardViewController: BaseViewController {
         mainCollectionView.frame = self.view.frame
         refreshCollectionViewData()
         
+        if let swappPageVC = self.parent as? HLSwappPageViewController{
+            if let thisHolderScreen = swappPageVC.parent as? HLSwappViewController {
+                thisHolderScreen.last_index_setup = 0
+            }
+        }
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -374,7 +379,7 @@ extension HLDashboardViewController: UICollectionViewDelegate, UICollectionViewD
                     
                     //always number 1
                     if HLDataManager.sharedInstance.tradeMode == "current"{
-                    
+                        
                         self.swappPageVC?.goTo(page: 1)
                     } else {
                         let vc = (self.storyboard?.instantiateViewController( withIdentifier: "pastTrade")) as! HLPastTradeViewController

@@ -53,6 +53,7 @@ class HLBarterScreenViewController: BaseViewController {
     
     var dragAndDropManager1 : KDDragAndDropManager?
     var dragAndDropManager2 : KDDragAndDropManager?
+    var alreadyLoaded = false
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -91,6 +92,7 @@ class HLBarterScreenViewController: BaseViewController {
     }
     
     func loadProductsArrays(){
+        alreadyLoaded = true
         var mtp:[String] = []
         var otp:[String] = []
         if let swappPageVC = self.parent as? HLSwappPageViewController{
@@ -156,6 +158,12 @@ class HLBarterScreenViewController: BaseViewController {
             })
             HulaTrade.sharedInstance.owner_products = thisTrade.owner_products
             HulaTrade.sharedInstance.other_products = thisTrade.other_products
+            
+            
+            
+            
+            print(thisTrade.other_money)
+            print(thisTrade.owner_money)
             
             
             if (self.thisTrade.turn_user_id == HulaUser.sharedInstance.userId && thisTrade.num_bids == 1){
@@ -263,11 +271,8 @@ class HLBarterScreenViewController: BaseViewController {
                 let moneyProd = HulaProduct(id: "xmoney", name: "+$\(Int(round(thisTrade.other_money)))", image: "")
                 final_arr.append(moneyProd)
             }
-            
-            
             otherTradedProducts = final_arr
         default:
-            
             if thisTrade.owner_money > 0 {
                 let moneyProd = HulaProduct(id: "xmoney", name: "+$\( Int(round(thisTrade.owner_money)) )", image: "")
                 final_arr.append(moneyProd)
@@ -282,10 +287,14 @@ class HLBarterScreenViewController: BaseViewController {
     }
     
     override func viewWillAppear(_ animated: Bool) {
-        
-        loadProductsArrays();
-        
-        
+        if !alreadyLoaded{
+            loadProductsArrays();
+        }
+        if let swappPageVC = self.parent as? HLSwappPageViewController{
+            if let thisHolderScreen = swappPageVC.parent as? HLSwappViewController {
+                thisHolderScreen.last_index_setup = 1
+            }
+        }
     }
 
     /*
@@ -666,17 +675,27 @@ extension HLBarterScreenViewController: HLBarterScreenDelegate{
     func isTradeMutated() -> Bool!{
         return self.didTradeMutate
     }
+    
+    func reloadTrade(){
+        self.alreadyLoaded = false
+    }
 }
 
 extension HLBarterScreenViewController: CalculatorDelegate{
     
     func amountSelected(amount:Int, side:String){
+        print("Calculator amount: \(amount)")
         if (amount > 0){
-            
             if (side == "owner"){
                 thisTrade.owner_money = Float((amount))
+                let moneyProd = HulaProduct(id: "xmoney", name: "+$\( Int(round(thisTrade.owner_money)) )", image: HulaConstants.transparentImg)
+                self.myTradedProducts.append(moneyProd)
+                self.mySelectedProductsCollection.reloadData()
             } else {
                 thisTrade.other_money = Float((amount))
+                let moneyProd = HulaProduct(id: "xmoney", name: "+$\( Int(round(thisTrade.other_money)) )", image: HulaConstants.transparentImg)
+                self.otherTradedProducts.append(moneyProd)
+                self.otherSelectedProductsCollection.reloadData()
             }
         }
     }
