@@ -23,9 +23,11 @@ class HLDataManager: NSObject {
     var arrCategories : NSMutableArray!
     var arrTrades : [NSDictionary]! = []
     var arrCurrentTrades : [NSDictionary]! = []
+    var arrPastTrades : [NSDictionary]! = []
     var arrNotifications : NSMutableArray!
     var uploadMode: Bool!
     var onboardingTutorials: NSMutableDictionary!
+    var tradeMode:String = "current"
     
     let categoriesLoaded = Notification.Name("categoriesLoaded")
     let loginRecieved = Notification.Name("loginRecieved")
@@ -51,6 +53,7 @@ class HLDataManager: NSObject {
         arrNotifications = []
         arrTrades = []
         arrCurrentTrades = []
+        arrPastTrades = []
         getCategories()
 //        arrCategories = [["icon" : "icon_cat_service" , "name" : "SERVICES"],
 //                         ["icon" : "icon_cat_cars" , "name" : "CARS, BIKES & AUTO PARTS"],
@@ -98,6 +101,7 @@ class HLDataManager: NSObject {
             if (ok){
                 self.arrTrades = [];
                 self.arrCurrentTrades = [];
+                self.arrPastTrades = []
                 if let array = json as? [NSDictionary] {
                     for trade in array {
                         // access all objects in array
@@ -105,6 +109,8 @@ class HLDataManager: NSObject {
                             //print(st)
                             if st != HulaConstants.end_status && st != HulaConstants.cancel_status {
                                 self.arrCurrentTrades.append(trade)
+                            } else {
+                                self.arrPastTrades.append(trade)
                             }
                         }
                         self.arrTrades.append(trade)

@@ -32,6 +32,9 @@ class HLSwappViewController: UIViewController {
     @IBOutlet weak var sendOfferBtn: HLRoundedButton!
     @IBOutlet weak var remainingTimeLabel: UILabel!
     
+    @IBOutlet weak var tradeModeLine: UIView!
+    @IBOutlet weak var currentTradesBtn: UIButton!
+    @IBOutlet weak var pastTradesBtn: UIButton!
     @IBOutlet weak var threeDotsView: UIView!
     @IBOutlet weak var addTradeRoomBtn: HLRoundedButton!
     @IBOutlet weak var chatButton: HLRoundedButton!
@@ -40,6 +43,7 @@ class HLSwappViewController: UIViewController {
     var selectedScreen = 0
     var initialFrame:CGRect = CGRect(x:0, y:0, width: 191, height: 108)
     var prevUser: String = ""
+    var tradeMode = "current"
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -58,6 +62,12 @@ class HLSwappViewController: UIViewController {
         
         self.dashImage.alpha = 0
         self.dashMask.alpha = 0
+        
+        self.currentTradesBtn.alpha = 1;
+        self.pastTradesBtn.alpha = 1
+        self.tradeModeLine.frame.origin.x = self.currentTradesBtn.frame.origin.x
+        self.tradeModeLine.frame.size.width = self.currentTradesBtn.frame.size.width
+        HLDataManager.sharedInstance.tradeMode = "current"
         
         
         self.mobileImage.alpha = 0
@@ -293,6 +303,9 @@ class HLSwappViewController: UIViewController {
                 
                 self.addTradeRoomBtn.alpha = 0;
                 self.mainCentralLabel.alpha = 0;
+                self.currentTradesBtn.alpha = 0;
+                self.pastTradesBtn.alpha = 0
+                self.tradeModeLine.alpha = 0
             }
             self.threeDotsView.isHidden = true;
             
@@ -394,6 +407,9 @@ class HLSwappViewController: UIViewController {
                 self.chatButton.alpha = 0
                 self.remainingTimeLabel.alpha = 0;
                 self.threeDotsView.isHidden = true
+                self.currentTradesBtn.alpha = 1;
+                self.pastTradesBtn.alpha = 1
+                self.tradeModeLine.alpha = 1
             }
         }
     }
@@ -412,6 +428,29 @@ class HLSwappViewController: UIViewController {
         return false
     }
     
+    @IBAction func showCurrentTrades(_ sender: Any) {
+        self.tradeMode = "current"
+        HLDataManager.sharedInstance.tradeMode = self.tradeMode
+        UIView.animate(withDuration: 0.3) {
+            self.tradeModeLine.frame.origin.x = self.currentTradesBtn.frame.origin.x
+            self.tradeModeLine.frame.size.width = self.currentTradesBtn.frame.size.width
+        }
+        if let db = self.childViewControllers.first?.childViewControllers.first as? HLDashboardViewController{
+            db.refreshCollectionViewData()
+        }
+    }
+    @IBAction func showPastTrades(_ sender: Any) {
+        self.tradeMode = "past"
+        HLDataManager.sharedInstance.tradeMode = self.tradeMode
+        UIView.animate(withDuration: 0.3) {
+            self.tradeModeLine.frame.origin.x = self.pastTradesBtn.frame.origin.x
+            self.tradeModeLine.frame.size.width = self.pastTradesBtn.frame.size.width
+        }
+        
+        if let db = self.childViewControllers.first?.childViewControllers.first as? HLDashboardViewController{
+            db.refreshCollectionViewData()
+        }
+    }
 }
 
 extension HLSwappViewController: SwappPageViewControllerDelegate {
