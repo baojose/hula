@@ -18,6 +18,7 @@ import Fabric
 import TwitterKit
 import Crashlytics
 import LinkedinSwift
+import BRYXBanner
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
@@ -130,6 +131,34 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     func application(_ application: UIApplication,
                      didFailToRegisterForRemoteNotificationsWithError error: Error) {
         print("Failed to register: \(error)")
+    }
+    
+    
+    func application(_ application: UIApplication, didReceiveRemoteNotification userInfo: [AnyHashable : Any]) {
+        //print(userInfo)
+        
+        HLDataManager.sharedInstance.loadUserNotifications()
+        
+        if let aps = userInfo["aps"] as? NSDictionary{
+            //print("aps")
+            //print(aps)
+            if let text = aps.object(forKey: "alert") as? String{
+                let banner = Banner(title: "Notification", subtitle: text, backgroundColor: HulaConstants.appMainColor)
+                banner.dismissesOnTap = true
+                banner.didTapBlock = {
+                    print("tapped")
+                    let storyboard = UIStoryboard(name: "Main", bundle: nil)
+                    let myModalViewController = storyboard.instantiateViewController(withIdentifier: "swappView")
+                    myModalViewController.modalPresentationStyle = UIModalPresentationStyle.fullScreen
+                    myModalViewController.modalTransitionStyle = UIModalTransitionStyle.coverVertical
+                    self.window?.rootViewController?.present(myModalViewController, animated: true, completion: nil)
+                    
+                }
+                banner.show(duration: 5.0)
+            }
+        } else {
+            print("error")
+        }
     }
 }
 

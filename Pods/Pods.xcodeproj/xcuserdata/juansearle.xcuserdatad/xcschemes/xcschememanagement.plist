@@ -9,6 +9,11 @@
 			<key>isShown</key>
 			<false/>
 		</dict>
+		<key>BRYXBanner.xcscheme</key>
+		<dict>
+			<key>isShown</key>
+			<false/>
+		</dict>
 		<key>Bolts.xcscheme</key>
 		<dict>
 			<key>isShown</key>
@@ -77,6 +82,11 @@
 	</dict>
 	<key>SuppressBuildableAutocreation</key>
 	<dict>
+		<key>0F3B36547C3C2CC3060475E614BCBF32</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
 		<key>332F91393FB1DE033D370B4CEDDD5FCF</key>
 		<dict>
 			<key>primary</key>
@@ -102,12 +112,12 @@
 			<key>primary</key>
 			<true/>
 		</dict>
-		<key>89B508C1DDB2C85D8B32971FD79CF037</key>
+		<key>90B4956B5DA8CFE54B547D232BF3136A</key>
 		<dict>
 			<key>primary</key>
 			<true/>
 		</dict>
-		<key>90B4956B5DA8CFE54B547D232BF3136A</key>
+		<key>9FFA3C285EB0EF946FF5C8150EF977A3</key>
 		<dict>
 			<key>primary</key>
 			<true/>
