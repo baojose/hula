@@ -267,15 +267,29 @@ class HLBarterScreenViewController: BaseViewController {
         
         switch type {
         case "other":
-            if thisTrade.other_money > 0 {
-                let moneyProd = HulaProduct(id: "xmoney", name: "+$\(Int(round(thisTrade.other_money)))", image: "")
-                final_arr.append(moneyProd)
+            if (thisTrade.owner_id == HulaUser.sharedInstance.userId){
+                if thisTrade.other_money > 0 {
+                    let moneyProd = HulaProduct(id: "xmoney", name: "+$\(Int(round(thisTrade.other_money)))", image: HulaConstants.transparentImg)
+                    final_arr.append(moneyProd)
+                }
+            } else {
+                if thisTrade.owner_money > 0 {
+                    let moneyProd = HulaProduct(id: "xmoney", name: "+$\(Int(round(thisTrade.owner_money)))", image: HulaConstants.transparentImg)
+                    final_arr.append(moneyProd)
+                }
             }
             otherTradedProducts = final_arr
         default:
-            if thisTrade.owner_money > 0 {
-                let moneyProd = HulaProduct(id: "xmoney", name: "+$\( Int(round(thisTrade.owner_money)) )", image: "")
-                final_arr.append(moneyProd)
+            if (thisTrade.owner_id == HulaUser.sharedInstance.userId){
+                if thisTrade.owner_money > 0 {
+                    let moneyProd = HulaProduct(id: "xmoney", name: "+$\(Int(round(thisTrade.owner_money)))", image: HulaConstants.transparentImg)
+                    final_arr.append(moneyProd)
+                }
+            } else {
+                if thisTrade.other_money > 0 {
+                    let moneyProd = HulaProduct(id: "xmoney", name: "+$\(Int(round(thisTrade.other_money)))", image: HulaConstants.transparentImg)
+                    final_arr.append(moneyProd)
+                }
             }
             myTradedProducts = final_arr
         }
@@ -686,17 +700,48 @@ extension HLBarterScreenViewController: CalculatorDelegate{
     func amountSelected(amount:Int, side:String){
         print("Calculator amount: \(amount)")
         if (amount > 0){
+            // amount valid
+            let final_amount = Float(amount)
+            let moneyProd = HulaProduct(id: "xmoney", name: "+$\( Int(round(final_amount)) )", image: HulaConstants.transparentImg)
             if (side == "owner"){
-                thisTrade.owner_money = Float((amount))
-                let moneyProd = HulaProduct(id: "xmoney", name: "+$\( Int(round(thisTrade.owner_money)) )", image: HulaConstants.transparentImg)
+                if (thisTrade.owner_id == HulaUser.sharedInstance.userId){
+                    thisTrade.owner_money = final_amount
+                    
+                } else {
+                    thisTrade.other_money = final_amount
+                }
+                self.myTradedProducts = removeMoneyProduct(fromProducts:self.myTradedProducts)
                 self.myTradedProducts.append(moneyProd)
                 self.mySelectedProductsCollection.reloadData()
             } else {
-                thisTrade.other_money = Float((amount))
-                let moneyProd = HulaProduct(id: "xmoney", name: "+$\( Int(round(thisTrade.other_money)) )", image: HulaConstants.transparentImg)
+                if (thisTrade.owner_id == HulaUser.sharedInstance.userId){
+                    thisTrade.other_money = final_amount
+                } else {
+                    thisTrade.owner_money = final_amount
+                }
+                self.otherTradedProducts = removeMoneyProduct(fromProducts:self.otherTradedProducts)
                 self.otherTradedProducts.append(moneyProd)
                 self.otherSelectedProductsCollection.reloadData()
             }
+        } else {
+            // if value is 0 then remove all money
+            if (side == "owner"){
+                self.myTradedProducts = removeMoneyProduct(fromProducts:self.myTradedProducts)
+                self.mySelectedProductsCollection.reloadData()
+            } else {
+                self.myTradedProducts = removeMoneyProduct(fromProducts:self.myTradedProducts)
+                self.mySelectedProductsCollection.reloadData()
+            }
         }
+    }
+    
+    func removeMoneyProduct(fromProducts:[HulaProduct]) -> [HulaProduct]{
+        var newArr:[HulaProduct] = []
+        for prod in fromProducts{
+            if prod.productId != "xmoney" {
+                newArr.append(prod)
+            }
+        }
+        return newArr
     }
 }

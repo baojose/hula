@@ -243,11 +243,13 @@ class HLSwappViewController: UIViewController {
                 let queryURL = HulaConstants.apiURL + "trades/\(trade_id!)"
                 let owner_products = tradeStatus.owner_products.joined(separator: ",")
                 let other_products = tradeStatus.other_products.joined(separator: ",")
+                let owner_money:Int = Int(tradeStatus.owner_money)
+                let other_money:Int = Int(tradeStatus.other_money)
                 var status = HulaConstants.sent_status
                 if (sender as? UIButton)!.tag == 91053 {
                     status = HulaConstants.end_status
                 }
-                let dataString:String = "status=\(status)&owner_products=\(owner_products)&other_products=\(other_products)"
+                let dataString:String = "status=\(status)&owner_products=\(owner_products)&other_products=\(other_products)&owner_money=\(owner_money)&other_money=\(other_money)"
                 //print(dataString)
                 HLDataManager.sharedInstance.httpPost(urlstr: queryURL, postString: dataString, isPut: true, taskCallback: { (ok, json) in
                     if (ok){
@@ -278,6 +280,9 @@ class HLSwappViewController: UIViewController {
             print("No trade/barter delegato vc found!")
         }
     }
+    
+    
+    
     func controlSetupBottomBar(index:Int){
         print("setting up bottom bar with index: \(index)")
         
