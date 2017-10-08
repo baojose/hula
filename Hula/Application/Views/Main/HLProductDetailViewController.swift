@@ -279,7 +279,7 @@ class HLProductDetailViewController: BaseViewController, UIScrollViewDelegate, U
 }
 
 extension HLProductDetailViewController: AlertDelegate{
-    func alertResponded(response: String) {
+    func alertResponded(response: String, trigger: String) {
         if response == "ok" {
             if (currentProduct.productOwner != HulaUser.sharedInstance.userId) {
                 

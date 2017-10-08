@@ -149,7 +149,7 @@ class HLSellerInfoViewController: BaseViewController, UITableViewDelegate, UITab
 }
 
 extension HLSellerInfoViewController: AlertDelegate{
-    func alertResponded(response: String) {
+    func alertResponded(response: String, trigger: String) {
         if response == "ok" {
             let otherId = user.userId
             if(HulaUser.sharedInstance.userId != otherId){

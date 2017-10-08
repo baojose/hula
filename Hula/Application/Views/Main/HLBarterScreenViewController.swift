@@ -683,6 +683,8 @@ extension HLBarterScreenViewController: HLBarterScreenDelegate{
         trade.tradeId = thisTrade.tradeId
         trade.owner_money = thisTrade.owner_money
         trade.other_money = thisTrade.other_money
+        trade.owner_id = thisTrade.owner_id
+        trade.other_id = thisTrade.other_id
         return trade
     }
     

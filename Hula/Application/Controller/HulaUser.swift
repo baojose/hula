@@ -162,7 +162,8 @@ class HulaUser: NSObject {
     }
     func getPostString() -> String {
         var str = "email=" + self.userEmail + "&name=" + self.userName + "&bio=" + self.userBio + "&nick=" + self.userNick + "&image=" + self.userPhotoURL + "&twtoken=" + self.twToken
-        str = str + "&litoken=" + self.liToken + "&fbtoken=" + self.fbToken + "&push_device_id=" + self.deviceId + "&zip=" + self.zip
+        str = str + "&litoken=" + self.liToken + "&fbtoken=" + self.fbToken + "&push_device_id=" + self.deviceId
+        str = str + "&zip=" + self.zip + "&max_trades=" + String(self.maxTrades)
         
         if (self.location.coordinate.latitude != 0 && self.location.coordinate.longitude != 0){
            str = str + "&lat=\(self.location.coordinate.latitude)&lng=\(self.location.coordinate.longitude)&location_name=" + self.userLocationName
@@ -209,7 +210,7 @@ class HulaUser: NSObject {
         if let tmp = with.object(forKey: "trades_closed") as? Float { trades_closed = tmp }
         
         if let tmp = with.object(forKey: "deviceId") as? String { deviceId = tmp }
-        if let tmp = with.object(forKey: "maxTrades") as? Int { maxTrades = tmp }
+        if let tmp = with.object(forKey: "max_trades") as? Int { maxTrades = tmp }
         
         
         

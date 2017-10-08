@@ -45,6 +45,8 @@ class HLSwappViewController: UIViewController {
     var prevUser: String = ""
     var tradeMode = "current"
     var last_index_setup:Int = 0
+    var trade_id_closed : String = ""
+    var user_id_closed : String = ""
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -236,6 +238,13 @@ class HLSwappViewController: UIViewController {
             //print("tradeStatus: \(tradeStatus)")
             let trade_id = tradeStatus.tradeId
             let turn_id = tradeStatus.turn_user_id
+            self.trade_id_closed = trade_id!
+            if (tradeStatus.owner_id != HulaUser.sharedInstance.userId){
+                self.user_id_closed = tradeStatus.owner_id
+            } else {
+                self.user_id_closed = tradeStatus.other_id
+            }
+            
             //print(tradeStatus.owner_products)
             if (turn_id != HulaUser.sharedInstance.userId){
                 print("This is not your turn!!!")
@@ -262,7 +271,8 @@ class HLSwappViewController: UIViewController {
                             viewController.isCancelVisible = false
                             
                             if (sender as? UIButton)!.tag == 91053 {
-                                viewController.message = "Your offer has been closed. Contact with the user to exchange the selected products.\nIn order to free up this trading room, this trade will be moved to your trade history, on your profile area."
+                                viewController.message = "Your offer has been closed. Contact with the user to exchange the selected products.\nIn order to free up this trading room, this trade will be moved to your past trades tab."
+                                viewController.trigger = "deal_closed"
                             } else {
                                 viewController.message = "Your offer has been sent with your changes.\nPlease allow 72 hours for the user to reply."
                             }
@@ -454,6 +464,18 @@ class HLSwappViewController: UIViewController {
             }
         }
     }
+    @IBAction func addTradeRoomAction(_ sender: Any) {
+        let viewController = self.storyboard?.instantiateViewController(withIdentifier: "alertView") as! AlertViewController
+        
+        viewController.delegate = self as AlertDelegate
+        viewController.isCancelVisible = true
+        viewController.message = "In order to get more trading rooms you have to help us spreading the word. Please share Hula with your friends and you will have up to five trading rooms."
+        viewController.okButtonText = "Share Hula"
+        viewController.trigger = "share"
+        self.present(viewController, animated: true)
+
+        
+    }
 }
 
 extension HLSwappViewController: SwappPageViewControllerDelegate {
@@ -482,13 +504,80 @@ protocol HLBarterScreenDelegate: class {
 }
 
 extension HLSwappViewController: AlertDelegate{
-    func alertResponded(response: String) {
+    func alertResponded(response: String, trigger:String) {
         print("Response: \(response)")
         
         DispatchQueue.main.async {
+            
+            if trigger == "share" && response == "ok"{
+                self.shareHula()
+            }
+            if trigger == "deal_closed" && response == "ok"{
+                self.feedback()
+            }
+            if trigger == "feedback_sent"{
+                self.feedback_sent(response:response)
+            }
+            
             if let swappPageVC = self.childViewControllers.first as? HLSwappPageViewController {
                 swappPageVC.goTo(page: 0)
             }
+            
+            
+        }
+    }
+    
+    
+    func shareHula(){
+        let text = "Hey! I'm usig Hula, so I can get what I want and give what I don't. https://hula.trading"
+        
+        // set up activity view controller
+        let textToShare = [ text ]
+        let activityViewController = UIActivityViewController(activityItems: textToShare, applicationActivities: nil)
+        activityViewController.popoverPresentationController?.sourceView = self.view // so that iPads won't crash
+        
+        // exclude some activity types from the list (optional)
+        activityViewController.excludedActivityTypes = [ UIActivityType.airDrop, UIActivityType.addToReadingList, UIActivityType.assignToContact ]
+        
+        // present the view controller
+        self.present(activityViewController, animated: true, completion: nil)
+        
+        if (HulaUser.sharedInstance.maxTrades<5){
+            HulaUser.sharedInstance.maxTrades += 1
+            HulaUser.sharedInstance.updateServerData()
+            HLDataManager.sharedInstance.writeUserData()
+        }
+    }
+    
+    func feedback(){
+        print("Deal closed. Requesting feedback")
+        let viewController = self.storyboard?.instantiateViewController(withIdentifier: "alertView") as! AlertViewController
+        
+        viewController.delegate = self as AlertDelegate
+        viewController.isCancelVisible = true
+        viewController.message = "We would love to hear how your trade was. Please rate it from one to five stars:"
+        viewController.okButtonText = "Send"
+        viewController.starsVisible = true
+        viewController.trigger = "feedback_sent"
+        self.present(viewController, animated: true)
+        
+    }
+    
+    func feedback_sent(response:String){
+        print("Feedback received. \(response)")
+        
+        if response != "ok" && response != "cancel"{
+            let queryURL = HulaConstants.apiURL + "feedback"
+            let comments = "Deal closed. Thank you"
+            let dataString:String = "trade_id=\(self.trade_id_closed)&user_id=\(self.user_id_closed)&comments=\(comments)&val=\(response)"
+            //print(dataString)
+            HLDataManager.sharedInstance.httpPost(urlstr: queryURL, postString: dataString, isPut: false, taskCallback: { (ok, json) in
+                if (ok){
+                    print(json!)
+                    DispatchQueue.main.async {
+                    }
+                }
+            })
         }
     }
 }

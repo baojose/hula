@@ -224,7 +224,7 @@ class HLDashboardViewController: BaseViewController {
 }
 
 extension HLDashboardViewController: AlertDelegate{
-    func alertResponded(response: String) {
+    func alertResponded(response: String, trigger:String) {
         //print("Response: \(response)")
         self.refreshCollectionViewData()
     }

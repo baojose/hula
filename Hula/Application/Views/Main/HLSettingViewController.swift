@@ -209,7 +209,7 @@ class HLSettingViewController: BaseViewController {
 }
 
 extension HLSettingViewController: AlertDelegate{
-    func alertResponded(response: String) {
+    func alertResponded(response: String, trigger:String) {
         print("Response: \(response)")
         
         if (response == "ok"){
