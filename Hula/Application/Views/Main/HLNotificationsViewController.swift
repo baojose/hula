@@ -54,11 +54,12 @@ class HLNotificationsViewController: BaseViewController, UITableViewDelegate, UI
         if let is_read = notification.object(forKey: "is_read") as? Bool{
         
             if !is_read {
-                cell.NotificationsText.font = UIFont(name:"HelveticaNeue-Regular", size: 15.0)
+                cell.NotificationsText.font = UIFont(name:"HelveticaNeue-Regular", size: 14.0)
+                cell.unreadIcon.isHidden = false
             } else {
-                cell.NotificationsText.font = UIFont(name:"HelveticaNeue-Light", size: 15.0)
+                cell.NotificationsText.font = UIFont(name:"HelveticaNeue-Light", size: 16.0)
+                cell.unreadIcon.isHidden = true
             }
- 
         }
         cell.NotificationsText.text = notification.object(forKey: "text") as? String
         commonUtils.circleImageView(cell.NotificationImageView)
@@ -92,6 +93,18 @@ class HLNotificationsViewController: BaseViewController, UITableViewDelegate, UI
                 myModalViewController.modalTransitionStyle = UIModalTransitionStyle.coverVertical
                 self.present(myModalViewController, animated: true, completion: nil)
             }
+        }
+        
+        if let notification_id = notification.object(forKey: "_id") as? String{
+        
+            let queryURL = HulaConstants.apiURL + "notifications/" + notification_id
+            HLDataManager.sharedInstance.httpGet(urlstr: queryURL, taskCallback: { (ok, json) in
+                //print(ok)
+                if (ok){
+                    HLDataManager.sharedInstance.loadUserNotifications()
+                    tableView.reloadData()
+                }
+            })
         }
         
     }

@@ -88,6 +88,18 @@ class HLSwappViewController: UIViewController {
         controlSetupBottomBar(index:0);
     }
     override func viewWillAppear(_ animated: Bool) {
+        //print(UIDevice.current.orientation)
+        var hasToDismiss = true
+        if UIDeviceOrientationIsPortrait(UIDevice.current.orientation) {
+            print("portrait!!!!")
+            hasToDismiss = false
+        }
+        if UIDeviceOrientationIsLandscape(UIDevice.current.orientation) {
+            print("landscape!!!!")
+            hasToDismiss = false
+        }
+        
+        
         
         // rotation effect
         //self.portraitView.frame.origin.y = 0
@@ -100,6 +112,12 @@ class HLSwappViewController: UIViewController {
                     self.portraitView.transform = CGAffineTransform(rotationAngle: 0.8)
                 }
             }
+        }
+        
+        
+        if hasToDismiss{
+            self.view.isHidden = true
+            self.dismiss(animated: true)
         }
     }
     override func viewDidAppear(_ animated: Bool) {
@@ -344,7 +362,7 @@ class HLSwappViewController: UIViewController {
                         formatter.allowedUnits = [.hour]
                         formatter.unitsStyle = .short
                         var str_hours = formatter.string(from: Date(), to: date!)!
-                        str_hours = (str_hours.replacingOccurrences(of: " hr", with: ""))
+                        str_hours = (str_hours.replacingOccurrences(of: " hr", with: " h"))
                         if (str_hours[0] == "-"){
                             str_hours = "0";
                         }

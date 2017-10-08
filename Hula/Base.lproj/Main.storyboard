@@ -1874,6 +1874,10 @@ Log In</string>
                                                             <rect key="frame" x="14" y="35" width="42" height="41"/>
                                                             <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                                         </imageView>
+                                                        <imageView opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" misplaced="YES" image="icon_alert_thumbnails" id="K1a-Eg-HOv">
+                                                            <rect key="frame" x="49" y="31" width="16" height="16"/>
+                                                            <autoresizingMask key="autoresizingMask"/>
+                                                        </imageView>
                                                     </subviews>
                                                 </tableViewCellContentView>
                                                 <inset key="separatorInset" minX="0.0" minY="0.0" maxX="0.0" maxY="0.0"/>
@@ -1881,6 +1885,7 @@ Log In</string>
                                                     <outlet property="NotificationImageView" destination="qUv-mB-hOF" id="nh2-8M-atI"/>
                                                     <outlet property="NotificationsDate" destination="ODt-f7-Y70" id="M9i-iG-uUE"/>
                                                     <outlet property="NotificationsText" destination="O5A-0A-owp" id="7qE-oP-DBC"/>
+                                                    <outlet property="unreadIcon" destination="K1a-Eg-HOv" id="GU6-GJ-T3j"/>
                                                 </connections>
                                             </tableViewCell>
                                         </prototypes>
