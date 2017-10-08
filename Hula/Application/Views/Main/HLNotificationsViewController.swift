@@ -51,9 +51,16 @@ class HLNotificationsViewController: BaseViewController, UITableViewDelegate, UI
         let cell = tableView.dequeueReusableCell(withIdentifier: "NotificationsCategoryCell") as! HLHomeNotificationsTableViewCell
         let notification : NSDictionary = dataManager.arrNotifications.object(at: indexPath.row) as! NSDictionary
         
-        //print(notification)
-        cell.NotificationsText.text = notification.object(forKey: "text") as? String
+        if let is_read = notification.object(forKey: "is_read") as? Bool{
         
+            if !is_read {
+                cell.NotificationsText.font = UIFont(name:"HelveticaNeue-Regular", size: 15.0)
+            } else {
+                cell.NotificationsText.font = UIFont(name:"HelveticaNeue-Light", size: 15.0)
+            }
+ 
+        }
+        cell.NotificationsText.text = notification.object(forKey: "text") as? String
         commonUtils.circleImageView(cell.NotificationImageView)
         
         let date = commonUtils.isoDateToNSDate(date: (notification.object(forKey: "date") as? String)!)
@@ -65,6 +72,29 @@ class HLNotificationsViewController: BaseViewController, UITableViewDelegate, UI
         return cell
     }
     
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        let notification : NSDictionary = dataManager.arrNotifications.object(at: indexPath.row) as! NSDictionary
+        
+        if let type = notification.object(forKey: "type") as? String{
+            if (type == "trade"){
+                let storyboard = UIStoryboard(name: "Main", bundle: nil)
+                let myModalViewController = storyboard.instantiateViewController(withIdentifier: "swappView")
+                myModalViewController.modalPresentationStyle = UIModalPresentationStyle.fullScreen
+                myModalViewController.modalTransitionStyle = UIModalTransitionStyle.coverVertical
+                self.present(myModalViewController, animated: true, completion: nil)
+            }
+            
+            if (type == "chat"){
+                let storyboard = UIStoryboard(name: "Main", bundle: nil)
+                let myModalViewController = storyboard.instantiateViewController(withIdentifier: "swappView") as! HLSwappViewController
+                myModalViewController.redirect = notification.object(forKey: "from_id") as! String
+                myModalViewController.modalPresentationStyle = UIModalPresentationStyle.fullScreen
+                myModalViewController.modalTransitionStyle = UIModalTransitionStyle.coverVertical
+                self.present(myModalViewController, animated: true, completion: nil)
+            }
+        }
+        
+    }
     // IB Actions
     
     // Custom functions for ViewController

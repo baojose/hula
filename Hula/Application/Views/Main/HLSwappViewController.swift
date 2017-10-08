@@ -47,6 +47,7 @@ class HLSwappViewController: UIViewController {
     var last_index_setup:Int = 0
     var trade_id_closed : String = ""
     var user_id_closed : String = ""
+    var redirect: String = ""
     
     override func viewDidLoad() {
         super.viewDidLoad()
