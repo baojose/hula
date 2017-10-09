@@ -13,6 +13,8 @@
 		271533421F07C15600E5F319 /* KDDragAndDropCollectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 271533401F07C15600E5F319 /* KDDragAndDropCollectionView.swift */; };
 		271533431F07C15600E5F319 /* KDDragAndDropManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 271533411F07C15600E5F319 /* KDDragAndDropManager.swift */; };
 		271533451F07C85200E5F319 /* HLProductCollectionViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 271533441F07C85200E5F319 /* HLProductCollectionViewCell.swift */; };
+		2715CA881F8C3338006AAD0B /* slide_3.atlas in Resources */ = {isa = PBXBuildFile; fileRef = 2715CA871F8C3267006AAD0B /* slide_3.atlas */; };
+		2715CA8A1F8C34C5006AAD0B /* slide_2.atlas in Resources */ = {isa = PBXBuildFile; fileRef = 2715CA891F8C34B5006AAD0B /* slide_2.atlas */; };
 		271F5C5A1EDAD90C00A7B1C1 /* HulaTrade.swift in Sources */ = {isa = PBXBuildFile; fileRef = 271F5C591EDAD90C00A7B1C1 /* HulaTrade.swift */; };
 		272720431EBA9BE90084CF3C /* HLWelcomeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 272720421EBA9BE90084CF3C /* HLWelcomeViewController.swift */; };
 		2728141D1EDCA6D000984562 /* HLTradesCollectionViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2728141C1EDCA6D000984562 /* HLTradesCollectionViewCell.swift */; };
@@ -128,6 +130,8 @@
 		271533401F07C15600E5F319 /* KDDragAndDropCollectionView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = KDDragAndDropCollectionView.swift; sourceTree = "<group>"; };
 		271533411F07C15600E5F319 /* KDDragAndDropManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = KDDragAndDropManager.swift; sourceTree = "<group>"; };
 		271533441F07C85200E5F319 /* HLProductCollectionViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HLProductCollectionViewCell.swift; sourceTree = "<group>"; };
+		2715CA871F8C3267006AAD0B /* slide_3.atlas */ = {isa = PBXFileReference; lastKnownFileType = folder.skatlas; path = slide_3.atlas; sourceTree = "<group>"; };
+		2715CA891F8C34B5006AAD0B /* slide_2.atlas */ = {isa = PBXFileReference; lastKnownFileType = folder.skatlas; path = slide_2.atlas; sourceTree = "<group>"; };
 		271F5C591EDAD90C00A7B1C1 /* HulaTrade.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HulaTrade.swift; sourceTree = "<group>"; };
 		272720421EBA9BE90084CF3C /* HLWelcomeViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HLWelcomeViewController.swift; sourceTree = "<group>"; };
 		2728141C1EDCA6D000984562 /* HLTradesCollectionViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HLTradesCollectionViewCell.swift; sourceTree = "<group>"; };
@@ -441,7 +445,9 @@
 		F86698A61E703A80002129E1 /* Medias */ = {
 			isa = PBXGroup;
 			children = (
+				2715CA891F8C34B5006AAD0B /* slide_2.atlas */,
 				27AD31631F5047460047952A /* slide_1_2.atlas */,
+				2715CA871F8C3267006AAD0B /* slide_3.atlas */,
 				F890E4931E709378008719B9 /* splash_intro.mp4 */,
 			);
 			path = Medias;
@@ -732,6 +738,8 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				2715CA8A1F8C34C5006AAD0B /* slide_2.atlas in Resources */,
+				2715CA881F8C3338006AAD0B /* slide_3.atlas in Resources */,
 				27AD31641F5047460047952A /* slide_1_2.atlas in Resources */,
 				F8BE7C431E7237A100FAE07D /* BebasNeue Regular.otf in Resources */,
 				F8BE7C421E7237A100FAE07D /* BebasNeue Light.otf in Resources */,

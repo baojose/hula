@@ -17,6 +17,7 @@ class HLSwappViewController: UIViewController {
     @IBOutlet weak var dashMask: UIView!
     @IBOutlet weak var dashImage: UIImageView!
     @IBOutlet weak var mobileImage: UIView!
+    
     @IBOutlet weak var portraitView: UIView!
     @IBOutlet weak var mainContainer: UIView!
     //@IBOutlet weak var swappPageControl: HLPageControl!
@@ -62,8 +63,6 @@ class HLSwappViewController: UIViewController {
         self.addTradeRoomBtn.alpha = 1;
         self.mainCentralLabel.alpha = 0;
         
-        self.dashImage.alpha = 0
-        self.dashMask.alpha = 0
         
         self.currentTradesBtn.alpha = 1;
         self.pastTradesBtn.alpha = 1
@@ -72,6 +71,8 @@ class HLSwappViewController: UIViewController {
         HLDataManager.sharedInstance.tradeMode = "current"
         
         
+        self.dashImage.alpha = 0
+        self.dashMask.alpha = 0
         self.mobileImage.alpha = 0
         self.mobileImage.transform = CGAffineTransform(rotationAngle: CGFloat(Double.pi/2));
         self.tradeModeLabel.transform = CGAffineTransform(rotationAngle: CGFloat(Double.pi));
