@@ -161,7 +161,8 @@ class HulaUser: NSObject {
         }
     }
     func getPostString() -> String {
-        var str = "email=" + self.userEmail + "&name=" + self.userName + "&bio=" + self.userBio + "&nick=" + self.userNick + "&image=" + self.userPhotoURL + "&twtoken=" + self.twToken
+        var str = "email=" + self.userEmail + "&name=" + self.userName + "&bio=" + self.userBio
+        str = str + "&nick=" + self.userNick + "&image=" + self.userPhotoURL + "&twtoken=" + self.twToken
         str = str + "&litoken=" + self.liToken + "&fbtoken=" + self.fbToken + "&push_device_id=" + self.deviceId
         str = str + "&zip=" + self.zip + "&max_trades=" + String(self.maxTrades)
         
