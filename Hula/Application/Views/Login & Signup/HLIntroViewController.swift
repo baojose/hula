@@ -19,6 +19,16 @@ class HLIntroViewController: UserBaseViewController, UIScrollViewDelegate {
     @IBOutlet var introView5: UIView!
     @IBOutlet var pageCtrl: UIPageControl!
     @IBOutlet var mainScrollView: UIScrollView!
+    
+    
+    @IBOutlet weak var tradeModeLabel: UILabel!
+    @IBOutlet weak var dashMask: UIView!
+    @IBOutlet weak var dashImage: UIImageView!
+    @IBOutlet weak var mobileImage: UIView!
+    var initialFrame:CGRect = CGRect(x:0, y:0, width: 191, height: 108)
+    var rotating:Bool = false
+    
+    
     var jump_just_once = true
     var scene: [HulaVideoTransp] = []
     
@@ -69,19 +79,37 @@ class HLIntroViewController: UserBaseViewController, UIScrollViewDelegate {
         skView.backgroundColor = UIColor(red: 0, green: 0, blue: 0, alpha: 0)
         skView.showsNodeCount = false
         skView.ignoresSiblingOrder = true
-         skView.presentScene(scene[0])
-         introView1.addSubview(skView)
+        skView.presentScene(scene[0])
+        introView1.addSubview(skView)
  
         
-        scene.append(HulaVideoTransp(size: animation_frame.size, textureName:"slide_1_2.atlas"))
+        scene.append(HulaVideoTransp(size: animation_frame.size, textureName:"slide_2.atlas"))
         let skView2 = SKView(frame: animation_frame)
         skView2.showsFPS = false
         skView2.backgroundColor = UIColor(red: 0, green: 0, blue: 0, alpha: 0)
         skView2.showsNodeCount = false
         skView2.ignoresSiblingOrder = true
         skView2.presentScene(scene[1])
-        
         introView2.addSubview(skView2)
+        
+        
+        
+        scene.append(HulaVideoTransp(size: animation_frame.size, textureName:"slide_3.atlas"))
+        let skView3 = SKView(frame: animation_frame)
+        skView3.showsFPS = false
+        skView3.backgroundColor = UIColor(red: 0, green: 0, blue: 0, alpha: 0)
+        skView3.showsNodeCount = false
+        skView3.ignoresSiblingOrder = true
+        skView3.presentScene(scene[2])
+        introView3.addSubview(skView3)
+        
+        
+        
+        self.dashImage.alpha = 0
+        self.dashMask.alpha = 0
+        self.mobileImage.alpha = 0
+        self.mobileImage.transform = CGAffineTransform(rotationAngle: CGFloat(Double.pi/2));
+        self.tradeModeLabel.transform = CGAffineTransform(rotationAngle: CGFloat(Double.pi));
     }
     func initData(){
         pageCtrl.currentPage = 0
@@ -100,28 +128,85 @@ class HLIntroViewController: UserBaseViewController, UIScrollViewDelegate {
         mainScrollView.contentOffset = CGPoint(x: 0.0, y: 0.0)
     }
     
+    
+    func rotateAnimation(){
+        if (rotating){
+            return
+        }
+        rotating = true
+        print("Rotating intro animation...")
+        if pageCtrl.currentPage == 3 {
+            self.mobileImage.alpha = 0
+            self.mobileImage.transform = CGAffineTransform(rotationAngle: CGFloat(-Double.pi/2));
+            
+            self.dashImage.alpha = 0
+            self.dashMask.alpha = 0
+            self.dashMask.transform = .identity
+            self.dashMask.frame = self.initialFrame
+            
+            UIView.animate(withDuration: 0.5, animations: {
+                self.mobileImage.alpha = 1
+            }, completion: { (success) in
+                UIView.animate(withDuration: 1.0, animations: {
+                    self.mobileImage.transform = CGAffineTransform(rotationAngle: CGFloat(Double.pi));
+                    self.dashMask.alpha = 1
+                    self.dashImage.alpha = 1
+                }, completion: { (success) in
+                    
+                    
+                    
+                    UIView.animate(withDuration: 2.0, animations: {
+                        self.mobileImage.alpha = 0
+                    }, completion: { (success) in
+                        self.mobileImage.transform = .identity
+                        let when = DispatchTime.now() + 0.5
+                        DispatchQueue.main.asyncAfter(deadline: when) {
+                            self.rotating = false
+                            self.rotateAnimation()
+                        }
+                    })
+                })
+                
+                UIView.animate( withDuration: 0.7, delay:0.4, animations: {
+                    self.dashMask.frame.origin.x = 0
+                    self.dashMask.frame.origin.y = -200
+                    self.dashMask.transform = CGAffineTransform(rotationAngle: 0.8)
+                })
+            })
+        }
+    }
+    
     //#MARK - ScrollView Delegate
     func scrollViewDidScroll(_ scrollView: UIScrollView){
         let posX: Int! = Int(round( mainScrollView.contentOffset.x / mainScrollView.frame.size.width) )
         pageCtrl.currentPage = posX
         
-        if (posX == 0 && mainScrollView.contentOffset.x / mainScrollView.frame.size.width == 0){
+        scene[0].stop()
+        scene[0].isPaused = true
+        scene[1].stop()
+        scene[1].isPaused = true
+        scene[2].stop()
+        scene[2].isPaused = true
+        
+        if (posX == 0 ){
             scene[0].isPaused = false
             scene[0].play()
-        } else {
-            scene[0].stop()
-            scene[0].isPaused = true
         }
         
         
-        if (posX == 1 && mainScrollView.contentOffset.x / mainScrollView.frame.size.width == 1){
+        if (posX == 1){
             scene[1].isPaused = false
             scene[1].play()
-        } else {
-            scene[1].stop()
-            scene[1].isPaused = true
         }
         
+        if (posX == 2){
+            scene[2].isPaused = false
+            scene[2].play()
+        }
+        
+        if (posX == 3){
+            self.rotateAnimation()
+        }
         if (mainScrollView.contentOffset.x > 3.0 * mainScrollView.frame.size.width) {
             if (jump_just_once){
                 jump_just_once = false;

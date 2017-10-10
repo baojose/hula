@@ -17,6 +17,7 @@ class HLSwappViewController: UIViewController {
     @IBOutlet weak var dashMask: UIView!
     @IBOutlet weak var dashImage: UIImageView!
     @IBOutlet weak var mobileImage: UIView!
+    
     @IBOutlet weak var portraitView: UIView!
     @IBOutlet weak var mainContainer: UIView!
     //@IBOutlet weak var swappPageControl: HLPageControl!
@@ -44,6 +45,10 @@ class HLSwappViewController: UIViewController {
     var initialFrame:CGRect = CGRect(x:0, y:0, width: 191, height: 108)
     var prevUser: String = ""
     var tradeMode = "current"
+    var last_index_setup:Int = 0
+    var trade_id_closed : String = ""
+    var user_id_closed : String = ""
+    var redirect: String = ""
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -53,15 +58,11 @@ class HLSwappViewController: UIViewController {
         
         
         CommonUtils.sharedInstance.circleImageView(otherUserImage)
-        self.myUserView.isHidden = true;
-        self.otherUserView.isHidden = true;
         self.sendOfferBtn.alpha = 0;
         self.remainingTimeLabel.alpha = 0;
         self.addTradeRoomBtn.alpha = 1;
         self.mainCentralLabel.alpha = 0;
         
-        self.dashImage.alpha = 0
-        self.dashMask.alpha = 0
         
         self.currentTradesBtn.alpha = 1;
         self.pastTradesBtn.alpha = 1
@@ -70,6 +71,8 @@ class HLSwappViewController: UIViewController {
         HLDataManager.sharedInstance.tradeMode = "current"
         
         
+        self.dashImage.alpha = 0
+        self.dashMask.alpha = 0
         self.mobileImage.alpha = 0
         self.mobileImage.transform = CGAffineTransform(rotationAngle: CGFloat(Double.pi/2));
         self.tradeModeLabel.transform = CGAffineTransform(rotationAngle: CGFloat(Double.pi));
@@ -86,6 +89,18 @@ class HLSwappViewController: UIViewController {
         controlSetupBottomBar(index:0);
     }
     override func viewWillAppear(_ animated: Bool) {
+        //print(UIDevice.current.orientation)
+        var hasToDismiss = true
+        if UIDeviceOrientationIsPortrait(UIDevice.current.orientation) {
+            print("portrait!!!!")
+            hasToDismiss = false
+        }
+        if UIDeviceOrientationIsLandscape(UIDevice.current.orientation) {
+            print("landscape!!!!")
+            hasToDismiss = false
+        }
+        
+        
         
         // rotation effect
         //self.portraitView.frame.origin.y = 0
@@ -99,20 +114,19 @@ class HLSwappViewController: UIViewController {
                 }
             }
         }
+        
+        
+        if hasToDismiss{
+            self.view.isHidden = true
+            self.dismiss(animated: true)
+        }
     }
     override func viewDidAppear(_ animated: Bool) {
-        initialOtherUserX = self.view.frame.width - self.otherUserView.frame.width
-        self.myUserView.frame.origin.x = -500
-        self.otherUserView.frame.origin.x = self.view.frame.width + 500
-        self.myUserView.isHidden = false;
-        self.otherUserView.isHidden = false;
-        
-        self.addTradeRoomBtn.alpha = 1;
-        self.mainCentralLabel.alpha = 0;
-        self.dashImage.alpha = 0
-        self.dashMask.alpha = 0
         
         
+        
+        
+        controlSetupBottomBar(index:last_index_setup);
         self.rotateAnimation()
     }
 
@@ -244,6 +258,13 @@ class HLSwappViewController: UIViewController {
             //print("tradeStatus: \(tradeStatus)")
             let trade_id = tradeStatus.tradeId
             let turn_id = tradeStatus.turn_user_id
+            self.trade_id_closed = trade_id!
+            if (tradeStatus.owner_id != HulaUser.sharedInstance.userId){
+                self.user_id_closed = tradeStatus.owner_id
+            } else {
+                self.user_id_closed = tradeStatus.other_id
+            }
+            
             //print(tradeStatus.owner_products)
             if (turn_id != HulaUser.sharedInstance.userId){
                 print("This is not your turn!!!")
@@ -251,11 +272,13 @@ class HLSwappViewController: UIViewController {
                 let queryURL = HulaConstants.apiURL + "trades/\(trade_id!)"
                 let owner_products = tradeStatus.owner_products.joined(separator: ",")
                 let other_products = tradeStatus.other_products.joined(separator: ",")
+                let owner_money:Int = Int(tradeStatus.owner_money)
+                let other_money:Int = Int(tradeStatus.other_money)
                 var status = HulaConstants.sent_status
                 if (sender as? UIButton)!.tag == 91053 {
                     status = HulaConstants.end_status
                 }
-                let dataString:String = "status=\(status)&owner_products=\(owner_products)&other_products=\(other_products)"
+                let dataString:String = "status=\(status)&owner_products=\(owner_products)&other_products=\(other_products)&owner_money=\(owner_money)&other_money=\(other_money)"
                 //print(dataString)
                 HLDataManager.sharedInstance.httpPost(urlstr: queryURL, postString: dataString, isPut: true, taskCallback: { (ok, json) in
                     if (ok){
@@ -268,7 +291,8 @@ class HLSwappViewController: UIViewController {
                             viewController.isCancelVisible = false
                             
                             if (sender as? UIButton)!.tag == 91053 {
-                                viewController.message = "Your offer has been closed. Contact with the user to exchange the selected products.\nIn order to free up this trading room, this trade will be moved to your trade history, on your profile area."
+                                viewController.message = "Your offer has been closed. Contact with the user to exchange the selected products.\nIn order to free up this trading room, this trade will be moved to your past trades tab."
+                                viewController.trigger = "deal_closed"
                             } else {
                                 viewController.message = "Your offer has been sent with your changes.\nPlease allow 72 hours for the user to reply."
                             }
@@ -286,8 +310,13 @@ class HLSwappViewController: UIViewController {
             print("No trade/barter delegato vc found!")
         }
     }
+    
+    
+    
     func controlSetupBottomBar(index:Int){
-        //print("seting up bottom bar with index: \(index)")
+        print("setting up bottom bar with index: \(index)")
+        
+        initialOtherUserX = self.view.frame.width - self.otherUserView.frame.width
         
         if (index != 0){
             UIView.animate(withDuration: 0.3) {
@@ -310,6 +339,7 @@ class HLSwappViewController: UIViewController {
             self.threeDotsView.isHidden = true;
             
             if let swappPageVC = self.childViewControllers.first as? HLSwappPageViewController {
+                last_index_setup = swappPageVC.currentIndex
                 let thisTrade: NSDictionary = swappPageVC.arrTrades[swappPageVC.currentIndex]
                 
                 var other_user_id = ""
@@ -333,7 +363,7 @@ class HLSwappViewController: UIViewController {
                         formatter.allowedUnits = [.hour]
                         formatter.unitsStyle = .short
                         var str_hours = formatter.string(from: Date(), to: date!)!
-                        str_hours = (str_hours.replacingOccurrences(of: " hr", with: ""))
+                        str_hours = (str_hours.replacingOccurrences(of: " hr", with: " h"))
                         if (str_hours[0] == "-"){
                             str_hours = "0";
                         }
@@ -392,6 +422,7 @@ class HLSwappViewController: UIViewController {
             
             
         } else {
+            last_index_setup = 0
             UIView.animate(withDuration: 0.3) {
                 /*
                 self.extraRoomBtn.alpha = 1
@@ -430,26 +461,40 @@ class HLSwappViewController: UIViewController {
     
     @IBAction func showCurrentTrades(_ sender: Any) {
         self.tradeMode = "current"
-        HLDataManager.sharedInstance.tradeMode = self.tradeMode
         UIView.animate(withDuration: 0.3) {
             self.tradeModeLine.frame.origin.x = self.currentTradesBtn.frame.origin.x
             self.tradeModeLine.frame.size.width = self.currentTradesBtn.frame.size.width
         }
-        if let db = self.childViewControllers.first?.childViewControllers.first as? HLDashboardViewController{
-            db.refreshCollectionViewData()
-        }
+        updateTradesList()
     }
     @IBAction func showPastTrades(_ sender: Any) {
         self.tradeMode = "past"
-        HLDataManager.sharedInstance.tradeMode = self.tradeMode
         UIView.animate(withDuration: 0.3) {
             self.tradeModeLine.frame.origin.x = self.pastTradesBtn.frame.origin.x
             self.tradeModeLine.frame.size.width = self.pastTradesBtn.frame.size.width
         }
-        
-        if let db = self.childViewControllers.first?.childViewControllers.first as? HLDashboardViewController{
-            db.refreshCollectionViewData()
+        updateTradesList()
+    }
+    
+    func updateTradesList(){
+        HLDataManager.sharedInstance.tradeMode = self.tradeMode
+        for vc in (self.childViewControllers.first?.childViewControllers)! {
+            if let db = vc as? HLDashboardViewController{
+                db.refreshCollectionViewData()
+            }
         }
+    }
+    @IBAction func addTradeRoomAction(_ sender: Any) {
+        let viewController = self.storyboard?.instantiateViewController(withIdentifier: "alertView") as! AlertViewController
+        
+        viewController.delegate = self as AlertDelegate
+        viewController.isCancelVisible = true
+        viewController.message = "In order to get more trading rooms you have to help us spreading the word. Please share Hula with your friends and you will have up to five trading rooms."
+        viewController.okButtonText = "Share Hula"
+        viewController.trigger = "share"
+        self.present(viewController, animated: true)
+
+        
     }
 }
 
@@ -463,7 +508,9 @@ extension HLSwappViewController: SwappPageViewControllerDelegate {
     func swappPageViewController(swappPageViewController: HLSwappPageViewController,
                                     didUpdatePageIndex index: Int) {
         //swappPageControl.currentPage = index
-        
+        if (index == 0){
+            barterDelegate?.reloadTrade()
+        }
         controlSetupBottomBar(index: index)
     }
     
@@ -473,16 +520,84 @@ extension HLSwappViewController: SwappPageViewControllerDelegate {
 protocol HLBarterScreenDelegate: class {
     func getCurrentTradeStatus() -> HulaTrade
     func isTradeMutated() -> Bool!
+    func reloadTrade()
 }
 
 extension HLSwappViewController: AlertDelegate{
-    func alertResponded(response: String) {
+    func alertResponded(response: String, trigger:String) {
         print("Response: \(response)")
         
         DispatchQueue.main.async {
+            
+            if trigger == "share" && response == "ok"{
+                self.shareHula()
+            }
+            if trigger == "deal_closed" && response == "ok"{
+                self.feedback()
+            }
+            if trigger == "feedback_sent"{
+                self.feedback_sent(response:response)
+            }
+            
             if let swappPageVC = self.childViewControllers.first as? HLSwappPageViewController {
                 swappPageVC.goTo(page: 0)
             }
+            
+            
+        }
+    }
+    
+    
+    func shareHula(){
+        let text = "Hey! I'm usig Hula, so I can get what I want and give what I don't. https://hula.trading"
+        
+        // set up activity view controller
+        let textToShare = [ text ]
+        let activityViewController = UIActivityViewController(activityItems: textToShare, applicationActivities: nil)
+        activityViewController.popoverPresentationController?.sourceView = self.view // so that iPads won't crash
+        
+        // exclude some activity types from the list (optional)
+        activityViewController.excludedActivityTypes = [ UIActivityType.airDrop, UIActivityType.addToReadingList, UIActivityType.assignToContact ]
+        
+        // present the view controller
+        self.present(activityViewController, animated: true, completion: nil)
+        
+        if (HulaUser.sharedInstance.maxTrades<5){
+            HulaUser.sharedInstance.maxTrades += 1
+            HulaUser.sharedInstance.updateServerData()
+            HLDataManager.sharedInstance.writeUserData()
+        }
+    }
+    
+    func feedback(){
+        print("Deal closed. Requesting feedback")
+        let viewController = self.storyboard?.instantiateViewController(withIdentifier: "alertView") as! AlertViewController
+        
+        viewController.delegate = self as AlertDelegate
+        viewController.isCancelVisible = true
+        viewController.message = "We would love to hear how your trade was. Please rate it from one to five stars:"
+        viewController.okButtonText = "Send"
+        viewController.starsVisible = true
+        viewController.trigger = "feedback_sent"
+        self.present(viewController, animated: true)
+        
+    }
+    
+    func feedback_sent(response:String){
+        print("Feedback received. \(response)")
+        
+        if response != "ok" && response != "cancel"{
+            let queryURL = HulaConstants.apiURL + "feedback"
+            let comments = "Deal closed. Thank you"
+            let dataString:String = "trade_id=\(self.trade_id_closed)&user_id=\(self.user_id_closed)&comments=\(comments)&val=\(response)"
+            //print(dataString)
+            HLDataManager.sharedInstance.httpPost(urlstr: queryURL, postString: dataString, isPut: false, taskCallback: { (ok, json) in
+                if (ok){
+                    print(json!)
+                    DispatchQueue.main.async {
+                    }
+                }
+            })
         }
     }
 }

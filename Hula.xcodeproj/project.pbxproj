@@ -13,6 +13,8 @@
 		271533421F07C15600E5F319 /* KDDragAndDropCollectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 271533401F07C15600E5F319 /* KDDragAndDropCollectionView.swift */; };
 		271533431F07C15600E5F319 /* KDDragAndDropManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 271533411F07C15600E5F319 /* KDDragAndDropManager.swift */; };
 		271533451F07C85200E5F319 /* HLProductCollectionViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 271533441F07C85200E5F319 /* HLProductCollectionViewCell.swift */; };
+		2715CA881F8C3338006AAD0B /* slide_3.atlas in Resources */ = {isa = PBXBuildFile; fileRef = 2715CA871F8C3267006AAD0B /* slide_3.atlas */; };
+		2715CA8A1F8C34C5006AAD0B /* slide_2.atlas in Resources */ = {isa = PBXBuildFile; fileRef = 2715CA891F8C34B5006AAD0B /* slide_2.atlas */; };
 		271F5C5A1EDAD90C00A7B1C1 /* HulaTrade.swift in Sources */ = {isa = PBXBuildFile; fileRef = 271F5C591EDAD90C00A7B1C1 /* HulaTrade.swift */; };
 		272720431EBA9BE90084CF3C /* HLWelcomeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 272720421EBA9BE90084CF3C /* HLWelcomeViewController.swift */; };
 		2728141D1EDCA6D000984562 /* HLTradesCollectionViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2728141C1EDCA6D000984562 /* HLTradesCollectionViewCell.swift */; };
@@ -128,6 +130,8 @@
 		271533401F07C15600E5F319 /* KDDragAndDropCollectionView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = KDDragAndDropCollectionView.swift; sourceTree = "<group>"; };
 		271533411F07C15600E5F319 /* KDDragAndDropManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = KDDragAndDropManager.swift; sourceTree = "<group>"; };
 		271533441F07C85200E5F319 /* HLProductCollectionViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HLProductCollectionViewCell.swift; sourceTree = "<group>"; };
+		2715CA871F8C3267006AAD0B /* slide_3.atlas */ = {isa = PBXFileReference; lastKnownFileType = folder.skatlas; path = slide_3.atlas; sourceTree = "<group>"; };
+		2715CA891F8C34B5006AAD0B /* slide_2.atlas */ = {isa = PBXFileReference; lastKnownFileType = folder.skatlas; path = slide_2.atlas; sourceTree = "<group>"; };
 		271F5C591EDAD90C00A7B1C1 /* HulaTrade.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HulaTrade.swift; sourceTree = "<group>"; };
 		272720421EBA9BE90084CF3C /* HLWelcomeViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HLWelcomeViewController.swift; sourceTree = "<group>"; };
 		2728141C1EDCA6D000984562 /* HLTradesCollectionViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HLTradesCollectionViewCell.swift; sourceTree = "<group>"; };
@@ -441,7 +445,9 @@
 		F86698A61E703A80002129E1 /* Medias */ = {
 			isa = PBXGroup;
 			children = (
+				2715CA891F8C34B5006AAD0B /* slide_2.atlas */,
 				27AD31631F5047460047952A /* slide_1_2.atlas */,
+				2715CA871F8C3267006AAD0B /* slide_3.atlas */,
 				F890E4931E709378008719B9 /* splash_intro.mp4 */,
 			);
 			path = Medias;
@@ -679,7 +685,7 @@
 			isa = PBXProject;
 			attributes = {
 				LastSwiftUpdateCheck = 0820;
-				LastUpgradeCheck = 0820;
+				LastUpgradeCheck = 0900;
 				ORGANIZATIONNAME = star;
 				TargetAttributes = {
 					F831860F1E6FABB900DD61FA = {
@@ -694,11 +700,13 @@
 					};
 					F83186261E6FABBA00DD61FA = {
 						CreatedOnToolsVersion = 8.2;
+						LastSwiftMigration = 0900;
 						ProvisioningStyle = Automatic;
 						TestTargetID = F831860F1E6FABB900DD61FA;
 					};
 					F83186311E6FABBA00DD61FA = {
 						CreatedOnToolsVersion = 8.2;
+						LastSwiftMigration = 0900;
 						ProvisioningStyle = Automatic;
 						TestTargetID = F831860F1E6FABB900DD61FA;
 					};
@@ -729,6 +737,8 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				2715CA8A1F8C34C5006AAD0B /* slide_2.atlas in Resources */,
+				2715CA881F8C3338006AAD0B /* slide_3.atlas in Resources */,
 				27AD31641F5047460047952A /* slide_1_2.atlas in Resources */,
 				F8BE7C431E7237A100FAE07D /* BebasNeue Regular.otf in Resources */,
 				F8BE7C421E7237A100FAE07D /* BebasNeue Light.otf in Resources */,
@@ -791,7 +801,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n";
 			showEnvVarsInLog = 0;
 		};
 		27E7E3621ECD150300666A65 /* ShellScript */ = {
@@ -822,7 +832,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n";
 			showEnvVarsInLog = 0;
 		};
 		583DF2E3BCF34E1CE12214B7 /* [CP] Embed Pods Frameworks */ = {
@@ -878,7 +888,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n";
 			showEnvVarsInLog = 0;
 		};
 		BA09F20F64235A499D2D4D28 /* [CP] Copy Pods Resources */ = {
@@ -1090,7 +1100,9 @@
 				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
 				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
 				CLANG_WARN_CONSTANT_CONVERSION = YES;
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
 				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
@@ -1098,7 +1110,11 @@
 				CLANG_WARN_ENUM_CONVERSION = YES;
 				CLANG_WARN_INFINITE_RECURSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
@@ -1139,7 +1155,9 @@
 				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
 				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
 				CLANG_WARN_CONSTANT_CONVERSION = YES;
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
 				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
@@ -1147,7 +1165,11 @@
 				CLANG_WARN_ENUM_CONVERSION = YES;
 				CLANG_WARN_INFINITE_RECURSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;

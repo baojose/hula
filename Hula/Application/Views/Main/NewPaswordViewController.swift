@@ -91,7 +91,7 @@ class NewPaswordViewController: UIViewController {
     
 }
 extension NewPaswordViewController: AlertDelegate{
-    func alertResponded(response: String) {
+    func alertResponded(response: String, trigger:String) {
         print("Response: \(response)")
         
     }

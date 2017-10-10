@@ -15,6 +15,7 @@ class HLHomeNotificationsTableViewCell: UITableViewCell {
     @IBOutlet weak var NotificationsText: UILabel!
     @IBOutlet var NotificationImageView: UIImageView!
     @IBOutlet var NotificationsDate: UILabel!
+    @IBOutlet weak var unreadIcon: UIImageView!
 
     override func awakeFromNib() {
         super.awakeFromNib()

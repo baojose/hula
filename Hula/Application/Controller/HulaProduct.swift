@@ -111,8 +111,8 @@ class HulaProduct: NSObject {
     func getPostString() -> String {
         var str = "title=" + self.productName +
             "&description=" + self.productDescription +
-            "&condition=" + self.productCondition +
-            "&category_name=" + self.productCategory +
+            "&condition=" + self.productCondition
+        str = str + "&category_name=" + self.productCategory +
             "&category_id=" + self.productCategoryId +
             "&image_url=" + self.productImage
         str = str + "&owner_id=" + self.productOwner +

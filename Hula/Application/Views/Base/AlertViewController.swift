@@ -15,10 +15,15 @@ class AlertViewController: UIViewController {
     @IBOutlet weak var messageLabel: UILabel!
     @IBOutlet weak var okButton: UIButton!
     
+    @IBOutlet weak var starView: UIView!
+    
     var message:String = ""
     var delegate:AlertDelegate?
     var isCancelVisible = true
     var okButtonText = "OK"
+    var trigger:String = ""
+    var starsVisible:Bool = false
+    var points:Int = 0;
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -28,11 +33,21 @@ class AlertViewController: UIViewController {
         alertBackground.clipsToBounds = true
         messageLabel.text = message
         okButton.setTitle(okButtonText, for: .normal)
+        
         if (isCancelVisible){
             cancelButton.isHidden = false;
         } else {
             cancelButton.isHidden = true;
         }
+        
+        
+        if starsVisible {
+            starView.isHidden = false
+        } else {
+            starView.isHidden = true
+        }
+        
+        
     }
 
     override func didReceiveMemoryWarning() {
@@ -53,16 +68,35 @@ class AlertViewController: UIViewController {
 
     @IBAction func okButtonAction(_ sender: Any) {
         self.dismiss(animated: true, completion: {
-            self.delegate?.alertResponded(response:"ok")
+            var response = "ok"
+            if self.points > 0 {
+                response = "\(self.points)"
+            }
+            self.delegate?.alertResponded(response:response, trigger: self.trigger)
         })
     }
     @IBAction func canceButtonAction(_ sender: Any) {
         self.dismiss(animated: true, completion: {
-            self.delegate?.alertResponded(response:"cancel")
+            self.delegate?.alertResponded(response:"cancel", trigger: self.trigger)
         })
     }
+    
+    @IBAction func starButtonTapped(_ sender: Any) {
+        let index = (sender as! UIButton).tag - 10
+        self.points = index
+        for i in 1 ... 5 {
+            let star = self.view.viewWithTag(i) as! UIImageView
+            if i <= index {
+                star.image = UIImage(named: "star-fill")
+                star.bouncer()
+            } else {
+                star.image = UIImage(named: "star-empty")
+            }
+        }
+    }
+    
 }
 
 protocol AlertDelegate {
-    func alertResponded(response:String)
+    func alertResponded(response:String, trigger:String)
 }

@@ -411,6 +411,7 @@ class HLDataManager: NSObject {
         dict.setObject(user.userNick, forKey: "userNick" as NSCopying)
         dict.setObject(user.userName, forKey: "userName" as NSCopying)
         dict.setObject(user.userEmail, forKey: "userEmail" as NSCopying)
+        dict.setObject(user.maxTrades, forKey: "max_trades" as NSCopying)
         dict.setObject(user.userLocationName, forKey: "userLocationName" as NSCopying)
         dict.setObject(self.onboardingTutorials, forKey: "onboardingTutorials" as NSCopying)
         dict.setObject([CGFloat(user.location.coordinate.latitude), CGFloat(user.location.coordinate.longitude)] as [CGFloat], forKey: "userLocation" as NSCopying)
@@ -535,6 +536,9 @@ class HLDataManager: NSObject {
         }
         if dict.object(forKey: "location_name") as? String != nil {
             user.userLocationName = dict.object(forKey: "location_name")! as! String
+        }
+        if dict.object(forKey: "max_trades") as? Int != nil {
+            user.maxTrades = dict.object(forKey: "max_trades")! as! Int
         }
         if let loc = dict.object(forKey: "userLocation") as? [CGFloat] {
             user.location = CLLocation(latitude: CLLocationDegrees(loc[0]), longitude: CLLocationDegrees(loc[1]))

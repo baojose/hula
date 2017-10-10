@@ -19,9 +19,10 @@ class HulaVideoTransp: SKScene {
         self.scaleMode = .aspectFit
         
         self.backgroundColor = UIColor(red: 0, green: 0, blue: 0, alpha: 0);
-        //print("loading texture...")
-        
+        print("loading texture...")
+        print(textureName)
         let numImages = textureAtlas.textureNames.count
+        print(numImages)
         for i in 0 ..< numImages {
             let n = String(format: "%03d", i)
             let tx = "slide\(n)"
