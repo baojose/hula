@@ -1202,6 +1202,7 @@
 				CODE_SIGN_ENTITLEMENTS = Hula/Hula.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Distribution";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Distribution";
+				CODE_SIGN_STYLE = Manual;
 				DEVELOPMENT_TEAM = 95QS8DAJ8Q;
 				INFOPLIST_FILE = Hula/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
@@ -1223,6 +1224,7 @@
 				CODE_SIGN_ENTITLEMENTS = Hula/Hula.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Distribution";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Distribution";
+				CODE_SIGN_STYLE = Manual;
 				DEVELOPMENT_TEAM = 95QS8DAJ8Q;
 				INFOPLIST_FILE = Hula/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;

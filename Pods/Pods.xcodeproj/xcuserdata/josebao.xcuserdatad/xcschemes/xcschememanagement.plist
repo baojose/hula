@@ -9,6 +9,11 @@
 			<key>orderHint</key>
 			<integer>11</integer>
 		</dict>
+		<key>BRYXBanner.xcscheme</key>
+		<dict>
+			<key>orderHint</key>
+			<integer>15</integer>
+		</dict>
 		<key>Bolts.xcscheme</key>
 		<dict>
 			<key>orderHint</key>
