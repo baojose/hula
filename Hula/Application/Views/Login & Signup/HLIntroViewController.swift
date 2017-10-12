@@ -29,9 +29,12 @@ class HLIntroViewController: UserBaseViewController, UIScrollViewDelegate {
     var initialFrame:CGRect = CGRect(x:0, y:0, width: 191, height: 108)
     var rotating:Bool = false
     
+    var player1:AVPlayer!
+    var player2:AVPlayer!
+    var player3:AVPlayer!
     
     var jump_just_once = true
-    var scene: [HulaVideoTransp] = []
+    //var scene: [HulaVideoTransp] = []
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -45,33 +48,61 @@ class HLIntroViewController: UserBaseViewController, UIScrollViewDelegate {
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         jump_just_once = true
-        scene[0].play()
+        //scene[0].play()
     }
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
     }
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
+        player1 = nil
+        player2 = nil
+        player3 = nil
     }
     override var preferredStatusBarStyle: UIStatusBarStyle {
         return .lightContent
     }
     func initUI(){
-        /*
-        guard let path = Bundle.main.path(forResource: "slide_1_2", ofType:"mov") else {
+        
+        guard let path1 = Bundle.main.path(forResource: "slide 1", ofType:"mp4") else {
             debugPrint("Video file not found")
             return
         }
-        let player = AVPlayer(url: URL(fileURLWithPath: path))
-        let playerLayer = AVPlayerLayer(player: player)
-        playerLayer.frame = introView1.bounds
-        introView1.layer.addSublayer(playerLayer)
-        //NotificationCenter.default.addObserver(self, selector: #selector(HLMainViewController.playerEnded(notification:)), name:NSNotification.Name.AVPlayerItemDidPlayToEndTime, object: player.currentItem)
-        player.play()
-        */
+         player1 = AVPlayer(url: URL(fileURLWithPath: path1))
+        let playerLayer1 = AVPlayerLayer(player: player1)
+        playerLayer1.frame = introView1.bounds
+        //introView1.layer.addSublayer(playerLayer1)
+        introView1.layer.insertSublayer(playerLayer1, at: 0)
+
+        player1.play()
+        
+        
+        guard let path2 = Bundle.main.path(forResource: "slide 2", ofType:"mp4") else {
+            debugPrint("Video file not found")
+            return
+        }
+         player2 = AVPlayer(url: URL(fileURLWithPath: path2))
+        let playerLayer2 = AVPlayerLayer(player: player2)
+        playerLayer2.frame = introView1.bounds
+        //introView2.layer.addSublayer(playerLayer2)
+        introView2.layer.insertSublayer(playerLayer2, at: 0)
+        //player2.play()
+        
+        
+        guard let path3 = Bundle.main.path(forResource: "slide 3", ofType:"mp4") else {
+            debugPrint("Video file not found")
+            return
+        }
+         player3 = AVPlayer(url: URL(fileURLWithPath: path3))
+        let playerLayer3 = AVPlayerLayer(player: player3)
+        playerLayer3.frame = introView1.bounds
+        //introView3.layer.addSublayer(playerLayer3)
+        introView3.layer.insertSublayer(playerLayer3, at: 0)
+        //player3.play()
+        
+        /*
         let margin = CGFloat(20)
         let animation_frame = CGRect(origin: CGPoint(x:margin, y:100), size: CGSize(width: self.view.frame.width-margin*2, height: self.view.frame.width-margin*2))
-        
         
         
         scene.append(HulaVideoTransp(size: animation_frame.size, textureName:"slide_1_2.atlas"))
@@ -104,7 +135,7 @@ class HLIntroViewController: UserBaseViewController, UIScrollViewDelegate {
         skView3.presentScene(scene[2])
         introView3.addSubview(skView3)
         
-        
+        */
         
         self.dashImage.alpha = 0
         self.dashMask.alpha = 0
@@ -180,7 +211,7 @@ class HLIntroViewController: UserBaseViewController, UIScrollViewDelegate {
     func scrollViewDidScroll(_ scrollView: UIScrollView){
         let posX: Int! = Int(round( mainScrollView.contentOffset.x / mainScrollView.frame.size.width) )
         pageCtrl.currentPage = posX
-        
+        /*
         scene[0].stop()
         scene[0].isPaused = true
         scene[1].stop()
@@ -203,14 +234,31 @@ class HLIntroViewController: UserBaseViewController, UIScrollViewDelegate {
             scene[2].isPaused = false
             scene[2].play()
         }
+ */
+        if (posX == 0 ){
+            player1.play()
+        }
         
+        
+        if (posX == 1){
+            player2.play()
+        }
+        
+        if (posX == 2){
+            player3.play()
+        }
         if (posX == 3){
             self.rotateAnimation()
         }
+ 
+ 
         if (mainScrollView.contentOffset.x > 3.0 * mainScrollView.frame.size.width) {
             if (jump_just_once){
                 jump_just_once = false;
                 self.navToMainView()
+                player1 = nil
+                player2 = nil
+                player3 = nil
             }
         }
     }
