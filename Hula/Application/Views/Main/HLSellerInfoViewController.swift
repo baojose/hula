@@ -132,8 +132,10 @@ class HLSellerInfoViewController: BaseViewController, UITableViewDelegate, UITab
             
             let viewController = self.storyboard?.instantiateViewController(withIdentifier: "alertView") as! AlertViewController
             
-            viewController.isCancelVisible = false
-            viewController.message = "Go to your stock section to upload something you don't need so you can start trading."
+            viewController.isCancelVisible = true
+            viewController.cancelButtonText = "Add stuff"
+            viewController.trigger = "noproduct"
+            viewController.message = "Sorry! If you want to trade, you have to upload your stuff."
             self.present(viewController, animated: true)
             
         } else {
@@ -180,6 +182,9 @@ extension HLSellerInfoViewController: AlertDelegate{
                     })
                 }
             }
+        }
+        if trigger == "noproduct" && response == "cancel" {
+            self.tabBarController?.selectedIndex = 2
         }
     }
 }

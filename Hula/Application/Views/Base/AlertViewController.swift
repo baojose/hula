@@ -21,6 +21,7 @@ class AlertViewController: UIViewController {
     var delegate:AlertDelegate?
     var isCancelVisible = true
     var okButtonText = "OK"
+    var cancelButtonText = "Cancel"
     var trigger:String = ""
     var starsVisible:Bool = false
     var points:Int = 0;
@@ -33,7 +34,7 @@ class AlertViewController: UIViewController {
         alertBackground.clipsToBounds = true
         messageLabel.text = message
         okButton.setTitle(okButtonText, for: .normal)
-        
+        cancelButton.setTitle(cancelButtonText, for: .normal)
         if (isCancelVisible){
             cancelButton.isHidden = false;
         } else {
