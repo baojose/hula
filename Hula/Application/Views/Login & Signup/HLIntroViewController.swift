@@ -20,6 +20,7 @@ class HLIntroViewController: UserBaseViewController, UIScrollViewDelegate {
     @IBOutlet var pageCtrl: UIPageControl!
     @IBOutlet var mainScrollView: UIScrollView!
     
+
     
     @IBOutlet weak var tradeModeLabel: UILabel!
     @IBOutlet weak var dashMask: UIView!
@@ -134,7 +135,6 @@ class HLIntroViewController: UserBaseViewController, UIScrollViewDelegate {
             return
         }
         rotating = true
-        print("Rotating intro animation...")
         if pageCtrl.currentPage == 3 {
             self.mobileImage.alpha = 0
             self.mobileImage.transform = CGAffineTransform(rotationAngle: CGFloat(-Double.pi/2));

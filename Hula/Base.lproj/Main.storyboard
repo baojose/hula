@@ -291,7 +291,7 @@ Log In</string>
                                         </connections>
                                     </button>
                                     <button opaque="NO" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" hasAttributedTitle="YES" id="M3t-DB-N6j">
-                                        <rect key="frame" x="24" y="620" width="217" height="31"/>
+                                        <rect key="frame" x="24" y="622" width="231" height="31"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                         <state key="normal">
                                             <attributedString key="attributedTitle">
@@ -299,7 +299,7 @@ Log In</string>
                                                     <attributes>
                                                         <color key="NSColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                                         <font key="NSFont" size="16" name="HelveticaNeue-Light"/>
-                                                        <paragraphStyle key="NSParagraphStyle" alignment="right" lineBreakMode="wordWrapping" baseWritingDirection="natural" tighteningFactorForTruncation="0.0"/>
+                                                        <paragraphStyle key="NSParagraphStyle" alignment="left" lineBreakMode="wordWrapping" baseWritingDirection="natural" tighteningFactorForTruncation="0.0"/>
                                                     </attributes>
                                                 </fragment>
                                                 <fragment content="? ">
@@ -307,14 +307,14 @@ Log In</string>
                                                         <color key="NSColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                                         <font key="NSFont" size="16" name="HelveticaNeue-Light"/>
                                                         <font key="NSOriginalFont" size="16" name="HelveticaNeue-Light"/>
-                                                        <paragraphStyle key="NSParagraphStyle" alignment="right" lineBreakMode="wordWrapping" baseWritingDirection="natural" tighteningFactorForTruncation="0.0"/>
+                                                        <paragraphStyle key="NSParagraphStyle" alignment="left" lineBreakMode="wordWrapping" baseWritingDirection="natural" tighteningFactorForTruncation="0.0"/>
                                                     </attributes>
                                                 </fragment>
                                                 <fragment content="Reset it">
                                                     <attributes>
                                                         <color key="NSColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                                         <font key="NSFont" size="16" name="HelveticaNeue-Light"/>
-                                                        <paragraphStyle key="NSParagraphStyle" alignment="right" lineBreakMode="wordWrapping" baseWritingDirection="natural" tighteningFactorForTruncation="0.0"/>
+                                                        <paragraphStyle key="NSParagraphStyle" alignment="left" lineBreakMode="wordWrapping" baseWritingDirection="natural" tighteningFactorForTruncation="0.0"/>
                                                         <integer key="NSUnderline" value="1"/>
                                                     </attributes>
                                                 </fragment>
@@ -354,6 +354,7 @@ Log In</string>
                     <connections>
                         <outlet property="emailField" destination="euj-cn-G6L" id="JpZ-vM-cb5"/>
                         <outlet property="errorMessageLabel" destination="Wco-SF-ZeB" id="sqt-HA-kKl"/>
+                        <outlet property="forgotPasswordBtn" destination="M3t-DB-N6j" id="fPh-OK-0ww"/>
                         <outlet property="greenBackgroundImage" destination="aeR-BW-0j4" id="uBK-gb-3yZ"/>
                         <outlet property="inputElements" destination="3xK-Ol-bDy" id="llW-cC-kR0"/>
                         <outlet property="loginErrorView" destination="GTM-GM-OwE" id="xeW-S5-yFo"/>
@@ -1914,7 +1915,7 @@ Log In</string>
                                                             <nil key="highlightedColor"/>
                                                         </label>
                                                         <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" image="icon_forward" translatesAutoresizingMaskIntoConstraints="NO" id="7n8-km-83N">
-                                                            <rect key="frame" x="346" y="42" width="8" height="12"/>
+                                                            <rect key="frame" x="346" y="41" width="8" height="12"/>
                                                             <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
                                                         </imageView>
                                                         <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" image="s_05" translatesAutoresizingMaskIntoConstraints="NO" id="qUv-mB-hOF">
@@ -7541,6 +7542,6 @@ Log In</string>
     </resources>
     <inferredMetricsTieBreakers>
         <segue reference="8X8-bg-W6f"/>
-        <segue reference="E8M-XX-yCt"/>
+        <segue reference="wT5-4p-lNl"/>
     </inferredMetricsTieBreakers>
 </document>

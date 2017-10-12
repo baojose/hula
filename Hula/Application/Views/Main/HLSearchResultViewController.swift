@@ -35,6 +35,7 @@ class HLSearchResultViewController: BaseViewController, UITableViewDataSource, U
         self.view.addSubview(spinner)
         spinner.show(inView: self.view)
         
+        initView()
     }
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
@@ -45,6 +46,15 @@ class HLSearchResultViewController: BaseViewController, UITableViewDataSource, U
     }
     func initView(){
         noResultAlertView.isHidden = true
+        if self.searchByCategory {
+            var category_name = categoryToSearch.object(forKey: "name") as? String
+            if (category_name == nil){
+                category_name = "Category search"
+            }
+            screenTitle.text = category_name
+        } else {
+            screenTitle.text = keywordToSearch
+        }
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -52,6 +62,7 @@ class HLSearchResultViewController: BaseViewController, UITableViewDataSource, U
     }
     
     //#MARK: - TableViewDelegate
+    /*
     func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat{
         return 48.0
     }
@@ -76,6 +87,7 @@ class HLSearchResultViewController: BaseViewController, UITableViewDataSource, U
         
         return view
     }
+ */
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return filteredList.count
     }
