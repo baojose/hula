@@ -15,7 +15,6 @@ class HLNotificationsViewController: BaseViewController, UITableViewDelegate, UI
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        UIApplication.shared.applicationIconBadgeNumber = 0
         
     }
     override func viewDidAppear(_ animated: Bool) {
@@ -32,7 +31,6 @@ class HLNotificationsViewController: BaseViewController, UITableViewDelegate, UI
             notificationsView.isHidden = false
             noNotificatiosnFoundView.isHidden = true
         }
-        UIApplication.shared.applicationIconBadgeNumber = 0
     }
     
     override func didReceiveMemoryWarning() {
@@ -56,9 +54,11 @@ class HLNotificationsViewController: BaseViewController, UITableViewDelegate, UI
             if !is_read {
                 cell.NotificationsText.font = UIFont(name:"HelveticaNeue-Regular", size: 14.0)
                 cell.unreadIcon.isHidden = false
+                cell.backgroundColor = UIColor(red: 0, green: 0, blue: 0, alpha: 0.1)
             } else {
                 cell.NotificationsText.font = UIFont(name:"HelveticaNeue-Light", size: 16.0)
                 cell.unreadIcon.isHidden = true
+                cell.backgroundColor = UIColor(red: 1, green: 1, blue: 1, alpha: 1)
             }
         }
         cell.NotificationsText.text = notification.object(forKey: "text") as? String
@@ -102,6 +102,11 @@ class HLNotificationsViewController: BaseViewController, UITableViewDelegate, UI
                 //print(ok)
                 if (ok){
                     HLDataManager.sharedInstance.loadUserNotifications()
+                    if ( HLDataManager.sharedInstance.numNotificationsPending > 0 ){
+                        self.tabBarController?.tabBar.items?[1].badgeValue = "\(HLDataManager.sharedInstance.numNotificationsPending)"
+                    } else {
+                        self.tabBarController?.tabBar.items?[1].badgeValue = nil
+                    }
                     tableView.reloadData()
                 }
             })

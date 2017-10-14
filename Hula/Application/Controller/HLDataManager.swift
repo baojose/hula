@@ -28,6 +28,7 @@ class HLDataManager: NSObject {
     var uploadMode: Bool!
     var onboardingTutorials: NSMutableDictionary!
     var tradeMode:String = "current"
+    var numNotificationsPending: Int = 0
     
     let categoriesLoaded = Notification.Name("categoriesLoaded")
     let loginRecieved = Notification.Name("loginRecieved")
@@ -47,7 +48,7 @@ class HLDataManager: NSObject {
         uploadMode = false
         currentUser = HulaUser.init()
         newProduct = HulaProduct.init()
-        
+        numNotificationsPending = 0
         
         arrCategories = []
         arrNotifications = []
@@ -553,14 +554,29 @@ class HLDataManager: NSObject {
         let queryURL = HulaConstants.apiURL + "notifications"
         httpGet(urlstr: queryURL, taskCallback: { (ok, json) in
             //print(ok)
+            var num_pending = 0
             if (ok){
                 self.arrNotifications=[];
                 if let array = json as? [Any] {
                     for not in array {
                         // access all objects in array
-                        self.arrNotifications.add(not)
+                        if let dict = not as? [String: Any]{
+                            if let status = dict["status"] as? String{
+                                if (status != "deleted"){
+                                    self.arrNotifications.add(not)
+                                }
+                            }
+                            if let isread = dict["is_read"] as? Int{
+                                if isread == 0{
+                                    num_pending += 1
+                                }
+                            }
+                        }
                     }
+                    
                 }
+                HLDataManager.sharedInstance.numNotificationsPending = num_pending
+                UIApplication.shared.applicationIconBadgeNumber = num_pending
             }
         })
     }

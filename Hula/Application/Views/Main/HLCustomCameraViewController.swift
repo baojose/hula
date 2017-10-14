@@ -76,12 +76,18 @@ class HLCustomCameraViewController: BaseViewController, UIImagePickerControllerD
         commonUtils.setRoundedRectBorderImageView(imageView4, 1.0, UIColor.init(white: 1, alpha: 0.9), 0.0)
         
         
-        let recognizer = UITapGestureRecognizer()
-        recognizer.addTarget(self, action: #selector(selectedImageTapped))
-        imageView1.addGestureRecognizer(recognizer)
-        imageView2.addGestureRecognizer(recognizer)
-        imageView3.addGestureRecognizer(recognizer)
-        imageView4.addGestureRecognizer(recognizer)
+        let recognizer1 = UITapGestureRecognizer()
+        recognizer1.addTarget(self, action: #selector(selectedImageTapped))
+        let recognizer2 = UITapGestureRecognizer()
+        recognizer2.addTarget(self, action: #selector(selectedImageTapped))
+        let recognizer3 = UITapGestureRecognizer()
+        recognizer3.addTarget(self, action: #selector(selectedImageTapped))
+        let recognizer4 = UITapGestureRecognizer()
+        recognizer4.addTarget(self, action: #selector(selectedImageTapped))
+        imageView1.addGestureRecognizer(recognizer1)
+        imageView2.addGestureRecognizer(recognizer2)
+        imageView3.addGestureRecognizer(recognizer3)
+        imageView4.addGestureRecognizer(recognizer4)
     }
     func initData(){
         arrAlbumPhotos = NSMutableArray.init()
@@ -115,9 +121,9 @@ class HLCustomCameraViewController: BaseViewController, UIImagePickerControllerD
     
     
     func selectedImageTapped(_ sender: UITapGestureRecognizer){
-        print("Touches began")
+        //print("Touches began")
         let tappedIndex: Int = (sender.view?.tag)!
-        print(dataManager.newProduct.arrProductPhotos)
+        //print(dataManager.newProduct.arrProductPhotos)
         if (dataManager.newProduct.arrProductPhotos.count > tappedIndex){
             print(dataManager.newProduct.arrProductPhotos[tappedIndex])
             if let imageView = dataManager.newProduct.arrProductPhotos[tappedIndex] as? UIImage {
