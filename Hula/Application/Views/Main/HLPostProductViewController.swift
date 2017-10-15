@@ -254,7 +254,7 @@ class HLPostProductViewController: BaseViewController, UITextFieldDelegate {
         
         
         if (self.currentEditingIndex != 0){
-            let setDefaultButton = UIAlertAction(title: "Set image as default", style: .default, handler: { (action) -> Void in
+            let setDefaultButton = UIAlertAction(title: "Set as featured image", style: .default, handler: { (action) -> Void in
                 swap(&self.dataManager.newProduct.arrProductPhotos[0], &self.dataManager.newProduct.arrProductPhotos[self.currentEditingIndex])
                 self.dismissFullscreenImageDirect( )
                 self.setupImagesBoxes()

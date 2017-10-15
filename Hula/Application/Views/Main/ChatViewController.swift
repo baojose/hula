@@ -263,7 +263,7 @@ extension ChatViewController: UITableViewDelegate, UITableViewDataSource{
                 cell.leftUserImage.isHidden = false
                 cell.rightUserImage.isHidden = true
                 cell.leftUserImage.loadImageFromURL(urlString: CommonUtils.sharedInstance.userImageURL(userId: user_id))
-                cell.mainHolder.frame.origin.x = cell.frame.size.width - cell.mainHolder.frame.size.width - 150
+                cell.mainHolder.frame.origin.x = cell.frame.size.width - cell.mainHolder.frame.size.width - 182
                 //print(user_id)
             } else {
                 // other's message
@@ -276,7 +276,7 @@ extension ChatViewController: UITableViewDelegate, UITableViewDataSource{
                 cell.rightUserImage.loadImageFromURL(urlString: CommonUtils.sharedInstance.userImageURL(userId: user_id))
                 
                 
-                cell.mainHolder.frame.origin.x = 150
+                cell.mainHolder.frame.origin.x = 182
                 
             }
         }
