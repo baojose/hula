@@ -164,12 +164,16 @@ class HLSignUpViewController: UserBaseViewController, UITextFieldDelegate  {
     func signupDataRecieved(notification: NSNotification) {
         //print("Signup received. Closing VC")
         let signupOk = notification.object as! Bool
+        print("signupOk")
         print(signupOk)
         if (signupOk){
-            let storyBoard : UIStoryboard = UIStoryboard(name: "Main", bundle:nil)
-            let nextViewController = storyBoard.instantiateViewController(withIdentifier: "welcome") as! HLWelcomeViewController
-            //self.present(nextViewController, animated:true, completion:nil)
-            self.navigationController?.pushViewController(nextViewController, animated: true)
+            DispatchQueue.main.async {
+                let storyBoard : UIStoryboard = UIStoryboard(name: "Main", bundle:nil)
+                let nextViewController = storyBoard.instantiateViewController(withIdentifier: "welcome") as! HLWelcomeViewController
+                //self.present(nextViewController, animated:true, completion:nil)
+                print("navigationController?.pushViewController")
+                self.navigationController?.pushViewController(nextViewController, animated: true)
+            }
         } else {
             DispatchQueue.main.async {
                 UIView.animate(withDuration: 0.5, animations: {

@@ -48,7 +48,7 @@ class HLSettingViewController: BaseViewController {
     }
     func initView() {
         commonUtils.circleImageView(profileImageView)
-        mainScrollView.contentSize = CGSize(width: 0, height: contentView.frame.size.height)
+        mainScrollView.contentSize = CGSize(width: 0, height: 650)
         //print(userData.userPhotoURL)
         if (userData.userPhotoURL.characters.count>1){
             self.removeAlertIcon(fromView: self.pictureView)

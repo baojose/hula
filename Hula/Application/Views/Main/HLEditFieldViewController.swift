@@ -50,6 +50,9 @@ class HLEditFieldViewController: BaseViewController, UITextFieldDelegate, UIText
             currentValueLabel.text = "CURRENT ZIP CODE: \(field_previous_val)"
             newValueTextView.keyboardType = UIKeyboardType.numberPad
             
+            if field_previous_val.characters.count == 0{
+                useMyLocationAction(useMyLocationBtn)
+            }
         } else {
             if (field_key == "userEmail"){
                 useMyLocationBtn.isHidden = true
@@ -71,9 +74,6 @@ class HLEditFieldViewController: BaseViewController, UITextFieldDelegate, UIText
         newValueTextView.isScrollEnabled = false
         textViewDidChange(newValueTextView)
         
-        if newValueTextView.text.characters.count == 0{
-            useMyLocationAction(useMyLocationBtn)
-        }
     }
     override func viewDidAppear(_ animated: Bool) {
         newValueTextView.becomeFirstResponder()
