@@ -28,6 +28,9 @@ class HLDataManager: NSObject {
     var uploadMode: Bool!
     var onboardingTutorials: NSMutableDictionary!
     var tradeMode:String = "current"
+    var numNotificationsPending: Int = 0
+    var lastServerMessage:String = ""
+    var isLoadingNotifications:Bool = false
     
     let categoriesLoaded = Notification.Name("categoriesLoaded")
     let loginRecieved = Notification.Name("loginRecieved")
@@ -47,7 +50,7 @@ class HLDataManager: NSObject {
         uploadMode = false
         currentUser = HulaUser.init()
         newProduct = HulaProduct.init()
-        
+        numNotificationsPending = 0
         
         arrCategories = []
         arrNotifications = []
@@ -153,7 +156,7 @@ class HLDataManager: NSObject {
                     user.token = ""
                     loginSuccess = "Incorrect login. Please try again.";
                 }
-                
+                self.lastServerMessage = loginSuccess
                 NotificationCenter.default.post(name: self.loginRecieved, object: loginSuccess)
             }
         })
@@ -168,6 +171,7 @@ class HLDataManager: NSObject {
             //print("done")
             //print(ok)
             //print(json!)
+            self.lastServerMessage = "Facebook login error"
             if (ok){
                 let user = HulaUser.sharedInstance
                 if let dictionary = json as? [String: Any] {
@@ -177,6 +181,8 @@ class HLDataManager: NSObject {
                         //print(token)
                         loginSuccess = true;
                         self.writeUserData()
+                        
+                        self.lastServerMessage = "ok"
                     }
                 } else {
                     user.token = ""
@@ -190,12 +196,11 @@ class HLDataManager: NSObject {
 
     
     func logout() {
-        var user = HulaUser.sharedInstance
-        user.token = ""
-        user.userId = ""
+        //var user = HulaUser.sharedInstance
+        HulaUser.sharedInstance.token = ""
+        HulaUser.sharedInstance.userId = ""
         
-        user = HulaUser.init()
-        user.logout();
+        HulaUser.sharedInstance.logout();
         self.writeUserData()
         
     }
@@ -214,14 +219,24 @@ class HLDataManager: NSObject {
                 let user = HulaUser.sharedInstance
                 if let dictionary = json as? [String: Any] {
                     // access individual value in dictionary
-                    self.updateUserFromDict(dict: dictionary as NSDictionary)
-                    //print(token)
-                    signupSuccess = true;
-                    self.writeUserData()
+                    if let token = dictionary["token"] as? String {
+                        if (token != ""){
+                            self.updateUserFromDict(dict: dictionary as NSDictionary)
+                            //print(token)
+                            signupSuccess = true;
+                            self.writeUserData()
+                            self.lastServerMessage = "ok"
+                        } else {
+                            
+                            self.lastServerMessage = "User email already exists! Please use the login form."
+                            
+                        }
+                        
+                    }
                 } else {
                     user.token = ""
+                    self.lastServerMessage = "Server response unexpected"
                 }
-                
                 NotificationCenter.default.post(name: self.signupRecieved, object: signupSuccess)
             }
         })
@@ -550,17 +565,35 @@ class HLDataManager: NSObject {
     
     func loadUserNotifications(){
         //print("loading notifications...")
+        isLoadingNotifications = true
         let queryURL = HulaConstants.apiURL + "notifications"
         httpGet(urlstr: queryURL, taskCallback: { (ok, json) in
             //print(ok)
+            var num_pending = 0
             if (ok){
                 self.arrNotifications=[];
                 if let array = json as? [Any] {
                     for not in array {
                         // access all objects in array
-                        self.arrNotifications.add(not)
+                        if let dict = not as? [String: Any]{
+                            if let status = dict["status"] as? String{
+                                if (status != "deleted"){
+                                    self.arrNotifications.add(not)
+                                }
+                            }
+                            if let isread = dict["is_read"] as? Int{
+                                if isread == 0{
+                                    num_pending += 1
+                                }
+                            }
+                        }
                     }
+                    
                 }
+                HLDataManager.sharedInstance.numNotificationsPending = num_pending
+                UIApplication.shared.applicationIconBadgeNumber = num_pending
+                
+                self.isLoadingNotifications = false
             }
         })
     }

@@ -16,6 +16,7 @@ class HLSignUpViewController: UserBaseViewController, UITextFieldDelegate  {
     @IBOutlet weak var signupErrorView: UIView!
     @IBOutlet weak var nextButton: HLRoundedNextButton!
     @IBOutlet weak var inputFieldsView: UIView!
+    @IBOutlet weak var signupErrorLabel: UILabel!
     
     let descriptions = ["What is your name?", "What is your email address?", "Set a password for your account"]
     let hints = ["This is your public identification", "We wont bother you with nonsense emails", "Use a non-obvious password with more than 5 characters"]
@@ -81,6 +82,7 @@ class HLSignUpViewController: UserBaseViewController, UITextFieldDelegate  {
                     self.signupErrorView.frame.origin.y = self.view.frame.height
                     self.greenBackgroundImage.alpha = 1
                 })
+                self.view.endEditing(true)
             }
         } else {
             UIView.animate(withDuration: 0.5, animations: {
@@ -92,7 +94,7 @@ class HLSignUpViewController: UserBaseViewController, UITextFieldDelegate  {
     
     func checkUsernick(nick:String){
         let queryURL = HulaConstants.apiURL + "users/validatenick/\(nick)"
-        print(queryURL)
+        //print(queryURL)
         
         HLDataManager.sharedInstance.httpGet(urlstr: queryURL, taskCallback: { (ok, json) in
             //print(ok)
@@ -160,20 +162,25 @@ class HLSignUpViewController: UserBaseViewController, UITextFieldDelegate  {
     }
     
     func signupDataRecieved(notification: NSNotification) {
-        print("Signup received. Closing VC")
+        //print("Signup received. Closing VC")
         let signupOk = notification.object as! Bool
+        print("signupOk")
         print(signupOk)
         if (signupOk){
-            let storyBoard : UIStoryboard = UIStoryboard(name: "Main", bundle:nil)
-            let nextViewController = storyBoard.instantiateViewController(withIdentifier: "welcome") as! HLWelcomeViewController
-            //self.present(nextViewController, animated:true, completion:nil)
-            self.navigationController?.pushViewController(nextViewController, animated: true)
+            DispatchQueue.main.async {
+                let storyBoard : UIStoryboard = UIStoryboard(name: "Main", bundle:nil)
+                let nextViewController = storyBoard.instantiateViewController(withIdentifier: "welcome") as! HLWelcomeViewController
+                //self.present(nextViewController, animated:true, completion:nil)
+                print("navigationController?.pushViewController")
+                self.navigationController?.pushViewController(nextViewController, animated: true)
+            }
         } else {
             DispatchQueue.main.async {
                 UIView.animate(withDuration: 0.5, animations: {
                     self.signupErrorView.frame.origin.y = self.view.frame.height - self.signupErrorView.frame.height
                     self.greenBackgroundImage.alpha = 0
                 })
+                self.signupErrorLabel.text = HLDataManager.sharedInstance.lastServerMessage
             }
         }
         self.view.setNeedsDisplay()

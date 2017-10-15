@@ -117,8 +117,14 @@ class HLSearchResultViewController: BaseViewController, UITableViewDataSource, U
             } else {
                 cell.productTradeRate.text = "-"
             }
+            
+            if let loc = user.object(forKey: "location") as? [Float]{
+                let userloc = CLLocation(latitude: Double( loc[0]), longitude:  Double(loc[1]) )
+                cell.productDistance.text = "(" + commonUtils.getDistanceFrom(loc: userloc) + ")"
+            } else {
+                cell.productDistance.text = "-"
+            }
         }
-        cell.productDistance.text = "(" + commonUtils.getDistanceFrom(loc: product.productLocation) + ")"
         
         commonUtils.circleImageView(cell.productOwnerImage)
         return cell

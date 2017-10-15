@@ -137,7 +137,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     func application(_ application: UIApplication, didReceiveRemoteNotification userInfo: [AnyHashable : Any]) {
         //print(userInfo)
         
-        HLDataManager.sharedInstance.loadUserNotifications()
         
         if let aps = userInfo["aps"] as? NSDictionary{
             //print("aps")
@@ -155,6 +154,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                     
                 }
                 banner.show(duration: 5.0)
+                HLDataManager.sharedInstance.loadUserNotifications()
             }
         } else {
             print("error")

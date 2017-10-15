@@ -97,6 +97,12 @@ class CommonUtils: NSObject, EasyTipViewDelegate {
     func getDistanceFrom(loc:CLLocation) -> String{
         let coordinate₀ = loc
         
+        if loc.coordinate.latitude == 0 && loc.coordinate.longitude == 0 {
+            return "-"
+        }
+        if HulaUser.sharedInstance.location.coordinate.latitude == 0 && HulaUser.sharedInstance.location.coordinate.longitude == 0 {
+            return "-"
+        }
         if let userLocation = HulaUser.sharedInstance.location {
             let distanceInMeters = coordinate₀.distance(from: userLocation) // result is in meters
             
@@ -104,9 +110,10 @@ class CommonUtils: NSObject, EasyTipViewDelegate {
             if (distance<1){
                 distance = round( distanceInMeters / 161 ) / 10
             } else {
-                if (distance>100){
-                    distance = 999
-                    return "Too far"
+                if (distance>1000){
+                    //distance = distance
+                    //return "Too far"
+                    return "\(distance) miles"
                 }
             }
             return "\(distance) miles"

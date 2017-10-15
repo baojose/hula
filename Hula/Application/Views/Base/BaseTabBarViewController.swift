@@ -68,6 +68,11 @@ class BaseTabBarViewController: UITabBarController, UITabBarControllerDelegate{
                 self.selectedIndex = 0;
             }
         }
+        if ( HLDataManager.sharedInstance.numNotificationsPending > 0 ){
+            tabBar.items?[1].badgeValue = "\(HLDataManager.sharedInstance.numNotificationsPending)"
+        } else {
+            tabBar.items?[1].badgeValue = nil
+        }
     }
     func tabBarController(_ tabBarController: UITabBarController, shouldSelect viewController: UIViewController) -> Bool {
         //print("Tapp")

@@ -43,27 +43,32 @@ class HLProfileViewController: BaseViewController {
     var spinner: HLSpinnerUIView!
     var image_dismissing:Bool = false
     var current_image_url:String = ""
+    var last_logged_user:String = ""
+    
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        self.initData()
-        self.initView()
-        
-        self.getUserProfile()
-        
-        //self.expiredTokenAlert()
         
         
         let recognizer = UITapGestureRecognizer()
         recognizer.addTarget(self, action: #selector(selectedImageTapped))
         profileImageView.addGestureRecognizer(recognizer)
         
+        spinner = HLSpinnerUIView()
+        self.view.addSubview(spinner)
+        spinner.show(inView: self.view)
         
+        
+        setupView()
     }
     override func viewWillAppear(_ animated: Bool) {
         if !HulaUser.sharedInstance.isUserLoggedIn() {
             self.tabBarController?.selectedIndex = 0
         } else {
+            if last_logged_user != HulaUser.sharedInstance.userId {
+                last_logged_user = HulaUser.sharedInstance.userId
+                setupView()
+            }
             self.profileImageView.loadImageFromURL(urlString: HulaUser.sharedInstance.userPhotoURL)
         }
         
@@ -101,6 +106,15 @@ class HLProfileViewController: BaseViewController {
         }
         
     }
+    
+    func setupView(){
+        self.initData()
+        self.initView()
+        
+        self.getUserProfile()
+        
+        
+    }
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
     }
@@ -127,9 +141,6 @@ class HLProfileViewController: BaseViewController {
         
         
         
-        spinner = HLSpinnerUIView()
-        self.view.addSubview(spinner)
-        spinner.show(inView: self.view)
     }
     
     // IB Actions
@@ -258,7 +269,7 @@ class HLProfileViewController: BaseViewController {
         
         //print("Getting user info...")
         let queryURL = HulaConstants.apiURL + "me"
-        //print(queryURL)
+        print(queryURL)
         HLDataManager.sharedInstance.httpGet(urlstr: queryURL, taskCallback: { (ok, json) in
             
             

@@ -72,7 +72,7 @@ class HLIntroViewController: UserBaseViewController, UIScrollViewDelegate {
         let playerLayer1 = AVPlayerLayer(player: player1)
         playerLayer1.frame = introView1.bounds
         //introView1.layer.addSublayer(playerLayer1)
-        introView1.layer.insertSublayer(playerLayer1, at: 0)
+        introView1.layer.insertSublayer(playerLayer1, at: 1)
 
         player1.play()
         

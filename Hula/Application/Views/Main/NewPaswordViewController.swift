@@ -69,13 +69,23 @@ class NewPaswordViewController: UIViewController {
             self.present(viewController, animated: true)
             return
         }
-        print(queryURL)
         HLDataManager.sharedInstance.httpPost(urlstr: queryURL, postString: "current_pass=\(current_pass)&new_pass=\(new_pass)", isPut: false, taskCallback: { (ok, json) in
             
             if (ok){
-                //print(json)
-                DispatchQueue.main.async {
-                    let _ = self.navigationController?.popViewController(animated: true)
+                if let dict = json as? [String:Any]{
+                    DispatchQueue.main.async {
+                        if let message = dict["message"] as? String{
+                            if (message == "ok"){
+                                let _ = self.navigationController?.popViewController(animated: true)
+                            } else {
+                                let viewController = self.storyboard?.instantiateViewController(withIdentifier: "alertView") as! AlertViewController
+                                viewController.delegate = self as AlertDelegate
+                                viewController.isCancelVisible = false
+                                viewController.message = message
+                                self.present(viewController, animated: true)
+                            }
+                        }
+                    }
                 }
             }
         })

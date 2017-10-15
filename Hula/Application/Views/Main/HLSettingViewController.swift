@@ -30,6 +30,7 @@ class HLSettingViewController: BaseViewController {
     @IBOutlet weak var locationView: UIView!
     @IBOutlet weak var fullNameView: UIView!
     
+    var image_dismissing:Bool = false
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -48,8 +49,8 @@ class HLSettingViewController: BaseViewController {
     }
     func initView() {
         commonUtils.circleImageView(profileImageView)
-        mainScrollView.contentSize = CGSize(width: 0, height: contentView.frame.size.height)
-        
+        mainScrollView.contentSize = CGSize(width: 0, height: 650)
+        //print(userData.userPhotoURL)
         if (userData.userPhotoURL.characters.count>1){
             self.removeAlertIcon(fromView: self.pictureView)
             self.smallProfileImage.loadImageFromURL(urlString: HulaUser.sharedInstance.userPhotoURL)
@@ -118,9 +119,7 @@ class HLSettingViewController: BaseViewController {
         switch (sender as! UIButton).tag {
         case 0:
             // image update
-            let cameraViewController = self.storyboard?.instantiateViewController(withIdentifier: "selectPictureGeneral") as! HLPictureSelectViewController
-            self.present(cameraViewController, animated: true)
-
+            selectedImageTapped()
         case 1:
             // Name
             title = "Change your nickname"
@@ -214,8 +213,104 @@ extension HLSettingViewController: AlertDelegate{
         
         if (response == "ok"){
             HLDataManager.sharedInstance.logout()
+            //self.view.window!.rootViewController?.dismiss(animated: true, completion: nil)
             self.goBackToPreviousPage("")
             
         }
+    }
+}
+
+extension HLSettingViewController{
+    
+    // image management...
+    
+    
+    func selectedImageTapped(){
+        fullScreenImage(image: self.smallProfileImage.image!, index: 1)
+    }
+    
+    
+    func fullScreenImage(image: UIImage, index: Int) {
+        let newImageView = UIImageView(image: image)
+        
+        newImageView.frame = CGRect(x: self.view.frame.width/2, y: self.view.frame.height/2, width: 10, height:10)
+        newImageView.backgroundColor = .black
+        newImageView.contentMode = .scaleAspectFit
+        newImageView.alpha = 0.0
+        newImageView.tag = 10001
+        newImageView.isUserInteractionEnabled = true
+        
+        
+        newImageView.loadImageFromURL(urlString: HulaUser.sharedInstance.userPhotoURL)
+        
+        
+        let tap = UITapGestureRecognizer(target: self, action: #selector(optionsFullscreenImage))
+        newImageView.addGestureRecognizer(tap)
+        let swipe = UIPanGestureRecognizer(target: self, action: #selector(dismissFullscreenImage))
+        newImageView.addGestureRecognizer(swipe)
+        self.view.addSubview(newImageView)
+        image_dismissing = false
+        UIView.animate(withDuration: 0.3, animations: {
+            newImageView.frame = UIScreen.main.bounds
+            newImageView.alpha = 1
+        }) { (success) in
+            self.tabBarController?.tabBar.isHidden = true
+        }
+    }
+    
+    func dismissFullscreenImage(_ sender: UIGestureRecognizer) {
+        if (!image_dismissing){
+            guard let panRecognizer = sender as? UIPanGestureRecognizer else {
+                return
+            }
+            let velocity = panRecognizer.velocity(in: self.view)
+            
+            self.tabBarController?.tabBar.isHidden = false
+            
+            UIView.animate(withDuration: 0.3, animations: {
+                sender.view?.frame = CGRect(x: self.view.frame.width/2 + velocity.x/2, y: self.view.frame.height/2 + velocity.y/2, width: 30, height:30)
+                sender.view?.alpha = 0
+                sender.view?.transform.rotated(by: CGFloat( arc4random_uniform(100)))
+            }) { (success) in
+                sender.view?.removeFromSuperview()
+            }
+            image_dismissing = true
+        }
+    }
+    func dismissFullscreenImageDirect() {
+        
+        
+        self.tabBarController?.tabBar.isHidden = false
+        
+        if let imageView = self.view.viewWithTag(10001) as? UIImageView {
+            UIView.animate(withDuration: 0.3, animations: {
+                imageView.frame = CGRect(x: self.view.frame.width/2 , y: self.view.frame.height/2, width: 30, height:30)
+                imageView.alpha = 0
+                imageView.transform.rotated(by: CGFloat( arc4random_uniform(100)/12))
+            }) { (success) in
+                imageView.removeFromSuperview()
+            }
+        }
+        image_dismissing = true
+    }
+    func optionsFullscreenImage(_ sender: UIGestureRecognizer) {
+        let alertController = UIAlertController(title: "Do you wanna change your profile picture?", message: nil, preferredStyle: .actionSheet)
+        
+        
+        let  editButton = UIAlertAction(title: "Change image", style: .destructive, handler: { (action) -> Void in
+            let cameraViewController = self.storyboard?.instantiateViewController(withIdentifier: "selectPictureGeneral") as! HLPictureSelectViewController
+            self.present(cameraViewController, animated: true)
+            self.dismissFullscreenImageDirect()
+            
+        })
+        alertController.addAction(editButton)
+        
+        let cancelButton = UIAlertAction(title: "Close", style: .cancel, handler: { (action) -> Void in
+            //print("Cancel button tapped")
+            self.dismissFullscreenImageDirect()
+        })
+        alertController.addAction(cancelButton)
+        
+        self.present(alertController, animated: true)
     }
 }

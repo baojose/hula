@@ -47,7 +47,12 @@ class HLEditFieldViewController: BaseViewController, UITextFieldDelegate, UIText
             grayLocationLabel.isHidden = false
             
             grayLocationLabel.text = HulaUser.sharedInstance.userLocationName
+            currentValueLabel.text = "CURRENT ZIP CODE: \(field_previous_val)"
+            newValueTextView.keyboardType = UIKeyboardType.numberPad
             
+            if field_previous_val.characters.count == 0{
+                useMyLocationAction(useMyLocationBtn)
+            }
         } else {
             if (field_key == "userEmail"){
                 useMyLocationBtn.isHidden = true
@@ -60,14 +65,14 @@ class HLEditFieldViewController: BaseViewController, UITextFieldDelegate, UIText
                 remainigLabel.isHidden = false
                 grayLocationLabel.isHidden = true
             }
+            currentValueLabel.text = "CURRENT: \(field_previous_val)"
+            newValueTextView.keyboardType = UIKeyboardType.default
         }
         
         titleLabel.text = field_title
-        currentValueLabel.text = "CURRENT: \(field_previous_val)"
         newValueTextView.text = field_previous_val
         newValueTextView.isScrollEnabled = false
         textViewDidChange(newValueTextView)
-        
         
     }
     override func viewDidAppear(_ animated: Bool) {
