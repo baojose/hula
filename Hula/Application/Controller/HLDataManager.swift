@@ -30,6 +30,7 @@ class HLDataManager: NSObject {
     var tradeMode:String = "current"
     var numNotificationsPending: Int = 0
     var lastServerMessage:String = ""
+    var isLoadingNotifications:Bool = false
     
     let categoriesLoaded = Notification.Name("categoriesLoaded")
     let loginRecieved = Notification.Name("loginRecieved")
@@ -195,12 +196,11 @@ class HLDataManager: NSObject {
 
     
     func logout() {
-        var user = HulaUser.sharedInstance
-        user.token = ""
-        user.userId = ""
+        //var user = HulaUser.sharedInstance
+        HulaUser.sharedInstance.token = ""
+        HulaUser.sharedInstance.userId = ""
         
-        user = HulaUser.init()
-        user.logout();
+        HulaUser.sharedInstance.logout();
         self.writeUserData()
         
     }
@@ -228,7 +228,7 @@ class HLDataManager: NSObject {
                             self.lastServerMessage = "ok"
                         } else {
                             
-                            self.lastServerMessage = "User email already exists! Please use the loogin form."
+                            self.lastServerMessage = "User email already exists! Please use the login form."
                             
                         }
                         
@@ -565,6 +565,7 @@ class HLDataManager: NSObject {
     
     func loadUserNotifications(){
         //print("loading notifications...")
+        isLoadingNotifications = true
         let queryURL = HulaConstants.apiURL + "notifications"
         httpGet(urlstr: queryURL, taskCallback: { (ok, json) in
             //print(ok)
@@ -591,6 +592,8 @@ class HLDataManager: NSObject {
                 }
                 HLDataManager.sharedInstance.numNotificationsPending = num_pending
                 UIApplication.shared.applicationIconBadgeNumber = num_pending
+                
+                self.isLoadingNotifications = false
             }
         })
     }

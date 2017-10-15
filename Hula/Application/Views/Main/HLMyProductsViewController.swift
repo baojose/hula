@@ -15,24 +15,26 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
     var arrayProducts: [HulaProduct] = []
     var arrayImagesURL = ["","","",""] as Array
     var spinner: HLSpinnerUIView!
-    
+    var last_logged_user:String = ""
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        self.initData()
-        self.initView()
-        
-        
-        //self.getUserProducts()
+        NotificationCenter.default.addObserver(self, selector: #selector(HLMyProductsViewController.newPostModeDesign(_:)), name: NSNotification.Name(rawValue: "uploadModeUpdateDesign"), object: nil)
         
         spinner = HLSpinnerUIView()
         self.view.addSubview(spinner)
         spinner.show(inView: self.view)
         
+        setupView()
     }
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
+        
+        if last_logged_user != HulaUser.sharedInstance.userId {
+            last_logged_user = HulaUser.sharedInstance.userId
+            setupView()
+        }
         
         self.getUserProducts()
         
@@ -46,21 +48,19 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
     }
     
     override func viewDidAppear(_ animated: Bool) {
-        
         super.viewDidAppear(animated)
-        
-        
         let appDelegate = UIApplication.shared.delegate as! AppDelegate
         appDelegate.allowRotation = true
     }
-    func initData(){
+    
+    func setupView(){
+        noProductsView.isHidden = true
+        
+        //self.getUserProducts()
         
     }
     
-    
     func initView(){
-        NotificationCenter.default.addObserver(self, selector: #selector(HLMyProductsViewController.newPostModeDesign(_:)), name: NSNotification.Name(rawValue: "uploadModeUpdateDesign"), object: nil)
-        noProductsView.isHidden = true
     }
     
     
@@ -195,6 +195,8 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
                 //print(json)
                 if (ok){
                     DispatchQueue.main.async {
+                        self.spinner.hide()
+                        
                         if let dictionary = json as? [Any] {
                             print(dictionary)
                             let products_arr = dictionary
@@ -210,7 +212,6 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
                             HulaUser.sharedInstance.numProducts = self.arrayProducts.count
                             
                             
-                            self.spinner.hide()
                             HulaUser.sharedInstance.arrayProducts = dictionary
                             if (self.arrayProducts.count != 0){
                                 self.noProductsView.isHidden = true

@@ -49,7 +49,7 @@ class HLSettingViewController: BaseViewController {
     func initView() {
         commonUtils.circleImageView(profileImageView)
         mainScrollView.contentSize = CGSize(width: 0, height: contentView.frame.size.height)
-        print(userData.userPhotoURL)
+        //print(userData.userPhotoURL)
         if (userData.userPhotoURL.characters.count>1){
             self.removeAlertIcon(fromView: self.pictureView)
             self.smallProfileImage.loadImageFromURL(urlString: HulaUser.sharedInstance.userPhotoURL)
@@ -214,6 +214,7 @@ extension HLSettingViewController: AlertDelegate{
         
         if (response == "ok"){
             HLDataManager.sharedInstance.logout()
+            //self.view.window!.rootViewController?.dismiss(animated: true, completion: nil)
             self.goBackToPreviousPage("")
             
         }
