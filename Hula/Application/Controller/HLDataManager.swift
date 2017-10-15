@@ -29,6 +29,7 @@ class HLDataManager: NSObject {
     var onboardingTutorials: NSMutableDictionary!
     var tradeMode:String = "current"
     var numNotificationsPending: Int = 0
+    var lastServerMessage:String = ""
     
     let categoriesLoaded = Notification.Name("categoriesLoaded")
     let loginRecieved = Notification.Name("loginRecieved")
@@ -154,7 +155,7 @@ class HLDataManager: NSObject {
                     user.token = ""
                     loginSuccess = "Incorrect login. Please try again.";
                 }
-                
+                self.lastServerMessage = loginSuccess
                 NotificationCenter.default.post(name: self.loginRecieved, object: loginSuccess)
             }
         })
@@ -169,6 +170,7 @@ class HLDataManager: NSObject {
             //print("done")
             //print(ok)
             //print(json!)
+            self.lastServerMessage = "Facebook login error"
             if (ok){
                 let user = HulaUser.sharedInstance
                 if let dictionary = json as? [String: Any] {
@@ -178,6 +180,8 @@ class HLDataManager: NSObject {
                         //print(token)
                         loginSuccess = true;
                         self.writeUserData()
+                        
+                        self.lastServerMessage = "ok"
                     }
                 } else {
                     user.token = ""
@@ -215,14 +219,24 @@ class HLDataManager: NSObject {
                 let user = HulaUser.sharedInstance
                 if let dictionary = json as? [String: Any] {
                     // access individual value in dictionary
-                    self.updateUserFromDict(dict: dictionary as NSDictionary)
-                    //print(token)
-                    signupSuccess = true;
-                    self.writeUserData()
+                    if let token = dictionary["token"] as? String {
+                        if (token != ""){
+                            self.updateUserFromDict(dict: dictionary as NSDictionary)
+                            //print(token)
+                            signupSuccess = true;
+                            self.writeUserData()
+                            self.lastServerMessage = "ok"
+                        } else {
+                            
+                            self.lastServerMessage = "User email already exists! Please use the loogin form."
+                            
+                        }
+                        
+                    }
                 } else {
                     user.token = ""
+                    self.lastServerMessage = "Server response unexpected"
                 }
-                
                 NotificationCenter.default.post(name: self.signupRecieved, object: signupSuccess)
             }
         })
