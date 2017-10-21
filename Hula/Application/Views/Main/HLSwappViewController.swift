@@ -8,6 +8,7 @@
 
 import UIKit
 import SpriteKit
+import FacebookShare
 
 class HLSwappViewController: UIViewController {
     
@@ -307,7 +308,7 @@ class HLSwappViewController: UIViewController {
                 })
             }
         } else {
-            print("No trade/barter delegato vc found!")
+            print("No trade/barter delegate vc found!")
         }
     }
     
@@ -489,7 +490,7 @@ class HLSwappViewController: UIViewController {
         
         viewController.delegate = self as AlertDelegate
         viewController.isCancelVisible = true
-        viewController.message = "In order to get more trading rooms you have to help us spreading the word. Please share Hula with your friends and you will have up to five trading rooms."
+        viewController.message = "Do you need more rooms? Spread the word! Share HULA with your friends and get up to 5 trade rooms."
         viewController.okButtonText = "Share Hula"
         viewController.trigger = "share"
         self.present(viewController, animated: true)
@@ -547,9 +548,40 @@ extension HLSwappViewController: AlertDelegate{
         }
     }
     
-    
     func shareHula(){
-        let text = "Hey! I'm usig Hula, so I can get what I want and give what I don't. https://hula.trading"
+        
+        let alert = UIAlertController(title: "Sharing", message: "Please choose a sharing method", preferredStyle: UIAlertControllerStyle.alert)
+        alert.addAction(UIAlertAction(title: "Facebook", style: UIAlertActionStyle.default){
+            UIAlertAction in
+            self.shareHulaFB()
+        })
+        alert.addAction(UIAlertAction(title: "Other", style: UIAlertActionStyle.default){
+            UIAlertAction in
+            self.shareHulaStandard()
+        })
+        self.present(alert, animated: true, completion: nil)
+    }
+    
+    func shareHulaFB(){
+        let appInvite = AppInvite(appLink: URL(string: "https://fb.me/128854257665971")!,
+                                  deliveryMethod: .facebook,
+                                  previewImageURL: URL(string: "https://hula.trading/img/logo-big.png"))
+        do {
+            try AppInvite.Dialog.show(from: self, invite: appInvite) { result in
+                switch result {
+                case .success(let result):
+                    print("App Invite Sent with result \(result)")
+                case .failed(let error):
+                    print("Failed to send app invite with error \(error)")
+                }
+            }
+        } catch let error {
+            print("Failed to show app invite dialog with error \(error)")
+        }
+        self.addExtraRoom()
+    }
+    func shareHulaStandard(){
+        let text = "Hey, I trade on HULA! I get what I want and give what I don't. https://hula.trading"
         
         // set up activity view controller
         let textToShare = [ text ]
@@ -558,10 +590,13 @@ extension HLSwappViewController: AlertDelegate{
         
         // exclude some activity types from the list (optional)
         activityViewController.excludedActivityTypes = [ UIActivityType.airDrop, UIActivityType.addToReadingList, UIActivityType.assignToContact ]
-        
         // present the view controller
         self.present(activityViewController, animated: true, completion: nil)
+        self.addExtraRoom()
         
+    }
+    
+    func addExtraRoom(){
         if (HulaUser.sharedInstance.maxTrades<5){
             HulaUser.sharedInstance.maxTrades += 1
             HulaUser.sharedInstance.updateServerData()

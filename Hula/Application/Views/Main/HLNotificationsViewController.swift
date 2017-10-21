@@ -82,6 +82,16 @@ class HLNotificationsViewController: BaseViewController, UITableViewDelegate, UI
                 cell.backgroundColor = UIColor(red: 1, green: 1, blue: 1, alpha: 1)
             }
         }
+        
+        if let type = notification.object(forKey: "type") as? String{
+            if (type == "start"){
+                cell.rotationIcon.isHidden = true
+                cell.forwardIcon.isHidden = false
+            } else {
+                cell.rotationIcon.isHidden = false
+                cell.forwardIcon.isHidden = true
+            }
+        }
         cell.NotificationsText.text = notification.object(forKey: "text") as? String
         commonUtils.circleImageView(cell.NotificationImageView)
         
@@ -114,10 +124,21 @@ class HLNotificationsViewController: BaseViewController, UITableViewDelegate, UI
                 myModalViewController.modalTransitionStyle = UIModalTransitionStyle.coverVertical
                 self.present(myModalViewController, animated: true, completion: nil)
             }
+            
+            if (type == "start"){
+                let user_id = notification.object(forKey: "from_id") as! String
+                HLDataManager.sharedInstance.getUserProfile(userId: user_id, taskCallback: {(user, prods) in
+                    let storyboard = UIStoryboard(name: "Main", bundle: nil)
+                    let myModalViewController = storyboard.instantiateViewController(withIdentifier: "sellerInfoPage") as! HLSellerInfoViewController
+                    myModalViewController.user = user
+                    myModalViewController.modalPresentationStyle = UIModalPresentationStyle.fullScreen
+                    myModalViewController.modalTransitionStyle = UIModalTransitionStyle.coverVertical
+                    self.navigationController?.pushViewController(myModalViewController, animated: true)
+                })
+            }
         }
         
         if let notification_id = notification.object(forKey: "_id") as? String{
-        
             let queryURL = HulaConstants.apiURL + "notifications/" + notification_id
             HLDataManager.sharedInstance.httpGet(urlstr: queryURL, taskCallback: { (ok, json) in
                 //print(ok)

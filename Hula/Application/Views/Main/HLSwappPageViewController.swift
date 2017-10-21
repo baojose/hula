@@ -15,13 +15,11 @@ class HLSwappPageViewController: UIPageViewController {
     var arrTrades: [NSDictionary] = []
     var currentIndex: Int = 0
     
-    private(set) lazy var orderedViewControllers: [UIViewController] = {
-        return [UIStoryboard(name: "Main", bundle: nil) .
+    var orderedViewControllers: [UIViewController] = [UIStoryboard(name: "Main", bundle: nil) .
             instantiateViewController(withIdentifier: "dashboard"),
                 UIStoryboard(name: "Main", bundle: nil) .
-                    instantiateViewController(withIdentifier: "barterRoom")]
-        //HulaUser.sharedInstance.maxTrades
-    }()
+                    instantiateViewController(withIdentifier: "barterRoom")
+                ]
     
     
     override func viewDidLoad() {

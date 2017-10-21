@@ -23,6 +23,7 @@ class HLDashboardViewController: BaseViewController {
     
     
     let sectionInsets = UIEdgeInsets(top: 4, left: 0, bottom: 30, right: 0)
+    var lastTradeInteracted:String = ""
     
     
     override func viewDidLoad() {
@@ -154,45 +155,17 @@ class HLDashboardViewController: BaseViewController {
     
     
     func closeTrade(_ tradeId: String){
-        if (tradeId != ""){
-            let queryURL = HulaConstants.apiURL + "trades/\(tradeId)"
-            let status = HulaConstants.end_status
-            let dataString:String = "status=\(status)"
-            //print(dataString)
-            HLDataManager.sharedInstance.httpPost(urlstr: queryURL, postString: dataString, isPut: true, taskCallback: { (ok, json) in
-                if (ok){
-                    //print(json!)
-                    DispatchQueue.main.async {
-                        /*
-                        let alert = UIAlertController(title: "Your trade has been canceled",
-                                                      message: "We have moved it to your trade history page, inside your profile section.",
-                                                      preferredStyle: .alert )
-                        let reportAction = UIAlertAction(title: "OK", style: .default, handler: { action -> Void in
-                            
-                        })
-                        alert.addAction(reportAction)
-                        */
-                        
-                        
-                        let viewController = self.storyboard?.instantiateViewController(withIdentifier: "alertView") as! AlertViewController
-                        
-                        viewController.delegate = self
-                        viewController.isCancelVisible = false
-                        viewController.message = "Your trade is canceled.\nWe've moved it to your trade history section inside your profile."
-                        
-                        self.present(viewController, animated: true)
-                        
-                        
-                        
-                        
-                        self.refreshCollectionViewData()
-                    }
-                } else {
-                    // connection error
-                    print("Connection error")
-                }
-            })
-        }
+        
+        lastTradeInteracted = tradeId
+        let viewController = self.storyboard?.instantiateViewController(withIdentifier: "alertView") as! AlertViewController
+        viewController.delegate = self
+        viewController.isCancelVisible = true
+        viewController.cancelButtonText = "Don't cancel"
+        viewController.okButtonText = "Cancel trade"
+        viewController.trigger = "cancelconfirm"
+        viewController.message = "Cancel this trade?"
+        self.present(viewController, animated: true)
+        
     }
     
     func reportUser(_ userId:String){
@@ -227,6 +200,36 @@ extension HLDashboardViewController: AlertDelegate{
     func alertResponded(response: String, trigger:String) {
         //print("Response: \(response)")
         self.refreshCollectionViewData()
+        
+        
+        if (trigger == "cancelconfirm"){
+            let tradeId = lastTradeInteracted
+            if (tradeId != ""){
+                let queryURL = HulaConstants.apiURL + "trades/\(tradeId)"
+                let status = HulaConstants.end_status
+                let dataString:String = "status=\(status)"
+                //print(dataString)
+                HLDataManager.sharedInstance.httpPost(urlstr: queryURL, postString: dataString, isPut: true, taskCallback: { (ok, json) in
+                    if (ok){
+                        //print(json!)
+                        DispatchQueue.main.async {
+                            
+                            let alert = UIAlertController(title: "Trade cancelled", message: "Help us to improve, tell us why:", preferredStyle: UIAlertControllerStyle.actionSheet)
+                            alert.addAction(UIAlertAction(title: "Not interested anymore", style: UIAlertActionStyle.default, handler: nil))
+                            alert.addAction(UIAlertAction(title: "Unhappy with trader", style: UIAlertActionStyle.default, handler: nil))
+                            alert.addAction(UIAlertAction(title: "Product deleted", style: UIAlertActionStyle.default, handler: nil))
+                            alert.addAction(UIAlertAction(title: "Other", style: UIAlertActionStyle.default, handler: nil))
+                            self.present(alert, animated: true, completion: nil)
+                            
+                            self.refreshCollectionViewData()
+                        }
+                    } else {
+                        // connection error
+                        print("Connection error")
+                    }
+                })
+            }
+        }
     }
 }
 
@@ -383,11 +386,17 @@ extension HLDashboardViewController: UICollectionViewDelegate, UICollectionViewD
                         self.swappPageVC?.goTo(page: 1)
                     } else {
                         let vc = (self.storyboard?.instantiateViewController( withIdentifier: "pastTrade")) as! HLPastTradeViewController
+                        vc.currTrade = thisTrade
+                        self.swappPageVC?.orderedViewControllers.insert(vc, at: 1)
+                        self.swappPageVC?.goTo(page: 1)
+                        
+                        /*
+                        let vc = (self.storyboard?.instantiateViewController( withIdentifier: "pastTrade")) as! HLPastTradeViewController
                         vc.modalTransitionStyle = .coverVertical
                         //print(thisTrade)
                         vc.currTrade = thisTrade
                         swappPageVC.present(vc, animated: true, completion: nil)
-                        
+                        */
                        
                     }
                 }

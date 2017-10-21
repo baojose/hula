@@ -96,7 +96,7 @@ class HLTradesCollectionViewCell: UICollectionViewCell {
                 alert.addAction(reportAction)
                 
                 
-                let removeAction = UIAlertAction(title: "Delete this trade", style: .destructive, handler: { action -> Void in
+                let removeAction = UIAlertAction(title: "Cancel this trade", style: .destructive, handler: { action -> Void in
                     self.closeTrade()
                 })
                 alert.addAction(removeAction)

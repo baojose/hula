@@ -1888,6 +1888,10 @@ Log In</string>
                                                     <rect key="frame" x="0.0" y="0.0" width="375" height="99.5"/>
                                                     <autoresizingMask key="autoresizingMask"/>
                                                     <subviews>
+                                                        <imageView opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" misplaced="YES" insetsLayoutMarginsFromSafeArea="NO" image="icon_shape" id="FEq-ii-lbL">
+                                                            <rect key="frame" x="338" y="36" width="19" height="20"/>
+                                                            <autoresizingMask key="autoresizingMask"/>
+                                                        </imageView>
                                                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" misplaced="YES" text="5 hours ago" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="ODt-f7-Y70">
                                                             <rect key="frame" x="75" y="70" width="231" height="21"/>
                                                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
@@ -1902,8 +1906,8 @@ Log In</string>
                                                             <nil key="textColor"/>
                                                             <nil key="highlightedColor"/>
                                                         </label>
-                                                        <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" image="icon_forward" translatesAutoresizingMaskIntoConstraints="NO" id="7n8-km-83N">
-                                                            <rect key="frame" x="346" y="35" width="7" height="11"/>
+                                                        <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" misplaced="YES" image="icon_forward" translatesAutoresizingMaskIntoConstraints="NO" id="7n8-km-83N">
+                                                            <rect key="frame" x="345" y="32" width="7" height="11"/>
                                                             <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
                                                         </imageView>
                                                         <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" image="s_05" translatesAutoresizingMaskIntoConstraints="NO" id="qUv-mB-hOF">
@@ -1921,6 +1925,8 @@ Log In</string>
                                                     <outlet property="NotificationImageView" destination="qUv-mB-hOF" id="nh2-8M-atI"/>
                                                     <outlet property="NotificationsDate" destination="ODt-f7-Y70" id="M9i-iG-uUE"/>
                                                     <outlet property="NotificationsText" destination="O5A-0A-owp" id="7qE-oP-DBC"/>
+                                                    <outlet property="forwardIcon" destination="7n8-km-83N" id="lC4-u1-lQH"/>
+                                                    <outlet property="rotationIcon" destination="FEq-ii-lbL" id="ub8-h8-MeP"/>
                                                     <outlet property="unreadIcon" destination="K1a-Eg-HOv" id="GU6-GJ-T3j"/>
                                                 </connections>
                                             </tableViewCell>
@@ -7446,7 +7452,7 @@ Log In</string>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="Ndn-e1-x9c" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="-165.5" y="4713.5"/>
+            <point key="canvasLocation" x="-900" y="4229"/>
         </scene>
     </scenes>
     <resources>
@@ -7497,6 +7503,7 @@ Log In</string>
         <image name="icon_profile" width="22" height="23"/>
         <image name="icon_search" width="27" height="27"/>
         <image name="icon_setting" width="21" height="21"/>
+        <image name="icon_shape" width="19" height="20"/>
         <image name="icon_tabbar_home_off" width="17" height="23"/>
         <image name="icon_tabbar_home_on" width="17" height="46"/>
         <image name="icon_tabbar_notification" width="23" height="27"/>
