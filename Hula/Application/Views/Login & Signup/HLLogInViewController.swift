@@ -110,6 +110,7 @@ class HLLogInViewController: UserBaseViewController, UITextFieldDelegate {
                 let nextViewController = storyBoard.instantiateViewController(withIdentifier: "welcome") as! HLWelcomeViewController
                 //self.present(nextViewController, animated:true, completion:nil)
                 self.navigationController?.pushViewController(nextViewController, animated: true)
+                self.view.setNeedsDisplay()
             }
             
         } else {
@@ -121,9 +122,9 @@ class HLLogInViewController: UserBaseViewController, UITextFieldDelegate {
                     self.greenBackgroundImage.alpha = 0
                     self.forgotPasswordBtn.frame.origin.y = self.inputElements.frame.height - 40 - self.loginErrorView.frame.height
                 })
+                self.view.setNeedsDisplay()
             }
         }
-        self.view.setNeedsDisplay()
     }
     
     func dismissKeyboard(){

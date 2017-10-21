@@ -22,6 +22,7 @@ class ChatViewController: UIViewController {
     var sectionKeys:[String] = []
     
     var keyboardHeight:CGFloat = 150
+    var timer: Timer!
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -42,6 +43,10 @@ class ChatViewController: UIViewController {
         
         let appDelegate = UIApplication.shared.delegate as! AppDelegate
         appDelegate.allowRotation = true
+        
+        
+        
+        timer = Timer.scheduledTimer(timeInterval: 10, target: self, selector: #selector(self.refreshChat), userInfo: nil, repeats: true)
     }
 
     override func didReceiveMemoryWarning() {
@@ -54,11 +59,16 @@ class ChatViewController: UIViewController {
         super.viewWillAppear(animated)
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow), name: NSNotification.Name.UIKeyboardWillShow, object: nil)
         
+        timer.invalidate()
+        timer = Timer.scheduledTimer(timeInterval: 10, target: self, selector: #selector(self.refreshChat), userInfo: nil, repeats: true)
     }
     
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
         NotificationCenter.default.removeObserver(self, name: NSNotification.Name.UIKeyboardWillShow, object: self.view.window)
+        
+        
+        timer.invalidate()
     }
 
     /*

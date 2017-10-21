@@ -34,6 +34,7 @@ class HLSellerInfoViewController: BaseViewController, UITableViewDelegate, UITab
     @IBOutlet weak var tradesEndedLabel: UILabel!
     @IBOutlet weak var tradesClosedLabel: UILabel!
     
+    @IBOutlet weak var sellerBioTextView: UITextView!
     
     var user = HulaUser();
     var userProducts: NSArray = []
@@ -77,7 +78,11 @@ class HLSellerInfoViewController: BaseViewController, UITableViewDelegate, UITab
         if (user.status == "verified"){
             emIcon.image = UIImage(named: "icon_mail_on")
         }
-        
+        if (user.userBio.characters.count>1){
+            sellerBioTextView.text = user.userBio
+        } else {
+            sellerBioTextView.text = "..."
+        }
         sellerFeedbackLabel.text = user.getFeedback()
     }
     func initView(){

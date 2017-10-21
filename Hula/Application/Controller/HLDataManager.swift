@@ -113,7 +113,9 @@ class HLDataManager: NSObject {
                             if st != HulaConstants.end_status && st != HulaConstants.cancel_status {
                                 self.arrCurrentTrades.append(trade)
                             } else {
-                                self.arrPastTrades.append(trade)
+                                if st == HulaConstants.end_status {
+                                    self.arrPastTrades.append(trade)
+                                }
                             }
                         }
                         self.arrTrades.append(trade)
@@ -176,6 +178,9 @@ class HLDataManager: NSObject {
                 let user = HulaUser.sharedInstance
                 if let dictionary = json as? [String: Any] {
                     if (dictionary["token"] as? String) != nil {
+                        
+                        HulaUser.sharedInstance.logout();
+                        
                         // access individual value in dictionary
                         self.updateUserFromDict(dict: dictionary as NSDictionary)
                         //print(token)
@@ -590,10 +595,11 @@ class HLDataManager: NSObject {
                     }
                     
                 }
-                HLDataManager.sharedInstance.numNotificationsPending = num_pending
-                UIApplication.shared.applicationIconBadgeNumber = num_pending
-                
-                self.isLoadingNotifications = false
+                DispatchQueue.main.async { // Correct
+                    HLDataManager.sharedInstance.numNotificationsPending = num_pending
+                    UIApplication.shared.applicationIconBadgeNumber = num_pending
+                    self.isLoadingNotifications = false
+                }
             }
         })
     }

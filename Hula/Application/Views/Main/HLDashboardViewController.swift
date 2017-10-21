@@ -115,30 +115,30 @@ class HLDashboardViewController: BaseViewController {
                         }
                         self.mainCollectionView.reloadData()
                         self.mainCollectionView.scrollToItem(at: IndexPath(row: 0, section: 0) , at: .top, animated: true)
-                    }
                     
                     
                     
-                    // TUTORIAL
-                    if let cell = self.mainCollectionView.cellForItem(at: IndexPath(item: 0, section: 0)) as? HLTradesCollectionViewCell{
-                        
-                        if (HLDataManager.sharedInstance.tradeMode == "current"){
-                            if (HLDataManager.sharedInstance.arrCurrentTrades.count == 0){
-                                // show empty rooms tutorial
-                                if let _ = HLDataManager.sharedInstance.onboardingTutorials.object(forKey: "dashboard_empty") as? String{
-                                    CommonUtils.sharedInstance.showTutorial(arrayTips: [
-                                        HulaTip(delay: 1, view: cell.left_side, text: "You're in the Trade Room!\nto start trading, start exchanging."),
-                                        HulaTip(delay: 0.5, view: self.mainCollectionView, text: "Need more trading rooms? tap here to add more spaces!")
-                                    ])
-                                    HLDataManager.sharedInstance.onboardingTutorials.setValue("done", forKey: "dashboard_empty")
-                                }
-                            } else {
-                                // show full rooms tutorial
-                                if let _ = HLDataManager.sharedInstance.onboardingTutorials.object(forKey: "dashboard_full") as? String{
-                                    CommonUtils.sharedInstance.showTutorial(arrayTips: [
-                                        HulaTip(delay: 1, view: cell.left_side, text: "Welcome to your first trade! Get some advice. Click on the Trade Room you used.")
+                        // TUTORIAL
+                        if let cell = self.mainCollectionView.cellForItem(at: IndexPath(item: 0, section: 0)) as? HLTradesCollectionViewCell{
+                            
+                            if (HLDataManager.sharedInstance.tradeMode == "current"){
+                                if (HLDataManager.sharedInstance.arrCurrentTrades.count == 0){
+                                    // show empty rooms tutorial
+                                    if let _ = HLDataManager.sharedInstance.onboardingTutorials.object(forKey: "dashboard_empty") as? String{
+                                        CommonUtils.sharedInstance.showTutorial(arrayTips: [
+                                            HulaTip(delay: 1, view: cell.left_side, text: "You're in the Trade Room!\nto start trading, start exchanging."),
+                                            HulaTip(delay: 0.5, view: self.mainCollectionView, text: "Need more trading rooms? tap here to add more spaces!")
                                         ])
-                                    HLDataManager.sharedInstance.onboardingTutorials.setValue("done", forKey: "dashboard_full")
+                                        HLDataManager.sharedInstance.onboardingTutorials.setValue("done", forKey: "dashboard_empty")
+                                    }
+                                } else {
+                                    // show full rooms tutorial
+                                    if let _ = HLDataManager.sharedInstance.onboardingTutorials.object(forKey: "dashboard_full") as? String{
+                                        CommonUtils.sharedInstance.showTutorial(arrayTips: [
+                                            HulaTip(delay: 1, view: cell.left_side, text: "Welcome to your first trade! Get some advice. Click on the Trade Room you used.")
+                                            ])
+                                        HLDataManager.sharedInstance.onboardingTutorials.setValue("done", forKey: "dashboard_full")
+                                    }
                                 }
                             }
                         }
