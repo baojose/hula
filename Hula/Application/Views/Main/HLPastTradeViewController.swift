@@ -14,8 +14,6 @@ class HLPastTradeViewController: UIViewController, UICollectionViewDelegate, UIC
     @IBOutlet weak var mainLabel: UILabel!
     @IBOutlet weak var otherSelectedProductsCollection: UICollectionView!
     @IBOutlet weak var mySelectedProductsCollection: UICollectionView!
-    @IBOutlet weak var otherUserImage: UIImageView!
-    @IBOutlet weak var userNameLabel: UILabel!
     
     var currTrade: NSDictionary!
     var thisTrade: HulaTrade = HulaTrade()
@@ -31,8 +29,6 @@ class HLPastTradeViewController: UIViewController, UICollectionViewDelegate, UIC
 
         // Do any additional setup after loading the view.
         
-        
-        CommonUtils.sharedInstance.circleImageView(otherUserImage)
     }
 
     override func didReceiveMemoryWarning() {
@@ -108,12 +104,6 @@ class HLPastTradeViewController: UIViewController, UICollectionViewDelegate, UIC
         return cell
 
     }
-
-    @IBAction func closeButtonAction(_ sender: Any) {
-        self.dismiss(animated: true) { 
-            //nada
-        }
-    }
     
     
     func loadProductsArrays(){
@@ -136,24 +126,6 @@ class HLPastTradeViewController: UIViewController, UICollectionViewDelegate, UIC
         
         self.populateTradedProducts(list:otp, type:"other")
         self.populateTradedProducts(list:mtp, type:"owner")
-        
-        
-            otherUserImage.loadImageFromURL(urlString: CommonUtils.sharedInstance.userImageURL(userId: otherUserId))
-            
-            let queryURL = HulaConstants.apiURL + "users/\(otherUserId)/nick"
-            HLDataManager.sharedInstance.httpGet(urlstr: queryURL, taskCallback: { (result, json) in
-                
-                if let dict = json as? [String:String]{
-                    //print(dict)
-                    if let nick = dict["nick"] {
-                        //print(nick)
-                        DispatchQueue.main.async {
-                            self.userNameLabel.text = nick
-                        }
-                    }
-                }
-            })
-            
 
     }
     
