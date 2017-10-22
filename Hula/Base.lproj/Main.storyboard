@@ -1890,7 +1890,7 @@ Log In</string>
                                                     <subviews>
                                                         <imageView opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" misplaced="YES" insetsLayoutMarginsFromSafeArea="NO" image="icon_shape" id="FEq-ii-lbL">
                                                             <rect key="frame" x="338" y="36" width="19" height="20"/>
-                                                            <autoresizingMask key="autoresizingMask"/>
+                                                            <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
                                                         </imageView>
                                                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" misplaced="YES" text="5 hours ago" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="ODt-f7-Y70">
                                                             <rect key="frame" x="75" y="70" width="231" height="21"/>
@@ -2429,6 +2429,14 @@ Log In</string>
                                     <segue destination="mx5-tX-dRS" kind="modal" id="6RJ-Xb-e8z"/>
                                 </connections>
                             </button>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" text="1" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="gLf-ca-UfV">
+                                <rect key="frame" x="509" y="334" width="13" height="13"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMinY="YES"/>
+                                <color key="backgroundColor" red="0.85370534659999997" green="0.3613253287" blue="0.36410396550000002" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="11"/>
+                                <color key="textColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                <nil key="highlightedColor"/>
+                            </label>
                             <button opaque="NO" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" id="Pqo-Ld-tKY" customClass="HLRoundedButton" customModule="Hula" customModuleProvider="target">
                                 <rect key="frame" x="235" y="334" width="196" height="32"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES"/>
@@ -2560,6 +2568,7 @@ Log In</string>
                         <outlet property="addTradeRoomBtn" destination="Pqo-Ld-tKY" id="cQV-h0-sH4"/>
                         <outlet property="bottomBarView" destination="7ru-Zz-6rA" id="O7r-db-COh"/>
                         <outlet property="chatButton" destination="wOQ-jY-BBX" id="C5F-Nc-R38"/>
+                        <outlet property="chatCountLbl" destination="gLf-ca-UfV" id="Xdv-XM-fsV"/>
                         <outlet property="currentTradesBtn" destination="84T-um-7hx" id="eFI-GJ-Oil"/>
                         <outlet property="dashImage" destination="YJg-z1-JQ1" id="YcF-q5-inH"/>
                         <outlet property="dashMask" destination="UKr-7t-t3Y" id="Na0-Pl-BYZ"/>
@@ -2724,10 +2733,19 @@ Log In</string>
                                                                 <action selector="tradeOptionsAction:" destination="nbs-oj-FY2" eventType="touchUpInside" id="1jN-kz-hIn"/>
                                                             </connections>
                                                         </button>
+                                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" text="1" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="u9Y-rQ-HH0">
+                                                            <rect key="frame" x="571" y="20" width="15" height="15"/>
+                                                            <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxY="YES"/>
+                                                            <color key="backgroundColor" red="0.85370534658432007" green="0.36132532872917728" blue="0.36410396551393903" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                                            <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="11"/>
+                                                            <color key="textColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                                            <nil key="highlightedColor"/>
+                                                        </label>
                                                     </subviews>
                                                 </view>
                                                 <connections>
                                                     <outlet property="boxView" destination="4c5-z6-5Bl" id="tfy-yk-paw"/>
+                                                    <outlet property="chatCountLabel" destination="u9Y-rQ-HH0" id="Czv-cW-pIC"/>
                                                     <outlet property="emptyRoomLabel" destination="VMG-ma-DBN" id="8ba-np-acD"/>
                                                     <outlet property="left_side" destination="Ejm-j2-xzG" id="FQl-PO-xIY"/>
                                                     <outlet property="middleArrows" destination="JM8-6Q-JCz" id="NRx-w3-aVy"/>
@@ -7402,33 +7420,10 @@ Log In</string>
                                         <color key="textColor" red="0.27450980390000002" green="0.27450980390000002" blue="0.27450980390000002" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                         <nil key="highlightedColor"/>
                                     </label>
-                                    <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" image="s_05" id="mk3-YV-VqS">
-                                        <rect key="frame" x="614" y="4" width="38" height="38"/>
-                                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxY="YES"/>
-                                    </imageView>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" text="date" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="ua9-Wd-tsE">
                                         <rect key="frame" x="0.0" y="19" width="668" height="30"/>
                                         <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxY="YES"/>
                                         <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="11"/>
-                                        <color key="textColor" red="0.27450980390000002" green="0.27450980390000002" blue="0.27450980390000002" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-                                        <nil key="highlightedColor"/>
-                                    </label>
-                                    <button opaque="NO" tag="1" contentMode="scaleAspectFit" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" id="nyb-5o-gI6">
-                                        <rect key="frame" x="7" y="7" width="32" height="32"/>
-                                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                        <fontDescription key="fontDescription" name="HelveticaNeue-Light" family="Helvetica Neue" pointSize="24"/>
-                                        <state key="normal" image="close-cross">
-                                            <color key="titleColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-                                        </state>
-                                        <connections>
-                                            <action selector="closeButtonAction:" destination="c36-Dh-9FO" eventType="touchUpInside" id="slP-8r-XQ6"/>
-                                            <action selector="closeCalculatorAction:" destination="UdN-LB-3En" eventType="touchUpInside" id="Zns-GS-4lq"/>
-                                        </connections>
-                                    </button>
-                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" text="Username" textAlignment="right" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="Jhp-17-nzR">
-                                        <rect key="frame" x="443" y="14" width="160" height="21"/>
-                                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxY="YES"/>
-                                        <fontDescription key="fontDescription" name="HelveticaNeue-Light" family="Helvetica Neue" pointSize="13"/>
                                         <color key="textColor" red="0.27450980390000002" green="0.27450980390000002" blue="0.27450980390000002" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                         <nil key="highlightedColor"/>
                                     </label>
@@ -7446,8 +7441,6 @@ Log In</string>
                         <outlet property="mainLabel" destination="MOB-x6-Zw2" id="SwR-x0-O11"/>
                         <outlet property="mySelectedProductsCollection" destination="Ubx-Ay-Ahy" id="bXU-Qb-MLt"/>
                         <outlet property="otherSelectedProductsCollection" destination="jdB-Ay-QXN" id="3fF-mz-Urn"/>
-                        <outlet property="otherUserImage" destination="mk3-YV-VqS" id="E2a-cP-lh7"/>
-                        <outlet property="userNameLabel" destination="Jhp-17-nzR" id="oU8-LD-PBs"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="Ndn-e1-x9c" userLabel="First Responder" sceneMemberID="firstResponder"/>

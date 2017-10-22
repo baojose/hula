@@ -278,8 +278,8 @@ extension HLDashboardViewController: UICollectionViewDelegate, UICollectionViewD
                 cell.userImage.loadImageFromURL(urlString: CommonUtils.sharedInstance.userImageURL(userId: otherUserId!) )
                 
             }
-            
             cell.userId = otherUserId!;
+            cell.chatCountLabel.isHidden = true
             
             if (HulaUser.sharedInstance.userId == thisTrade.object(forKey: "other_id") as? String ){
                 // i am the other of the trade
@@ -289,12 +289,25 @@ extension HLDashboardViewController: UICollectionViewDelegate, UICollectionViewD
                 if let owner_products_arr = thisTrade.object(forKey: "owner_products") as? [String]{
                     drawProducts(inCell: cell, fromArr: owner_products_arr, side: "right")
                 }
+                
+                if let chat_count = thisTrade.object(forKey: "other_unread") as? Int{
+                    if chat_count > 0 {
+                        cell.chatCountLabel.text = "\(chat_count)"
+                        cell.chatCountLabel.isHidden = false
+                    }
+                }
             } else {
                 if let other_products_arr = thisTrade.object(forKey: "other_products") as? [String]{
                     drawProducts(inCell: cell, fromArr: other_products_arr, side: "right")
                 }
                 if let owner_products_arr = thisTrade.object(forKey: "owner_products") as? [String]{
                     drawProducts(inCell: cell, fromArr: owner_products_arr, side: "left")
+                }
+                if let chat_count = thisTrade.object(forKey: "owner_unread") as? Int{
+                    if chat_count > 0 {
+                        cell.chatCountLabel.text = "\(chat_count)"
+                        cell.chatCountLabel.isHidden = false
+                    }
                 }
             }
             
@@ -353,6 +366,7 @@ extension HLDashboardViewController: UICollectionViewDelegate, UICollectionViewD
             cell.boxView.layer.shadowOpacity = 0
             cell.boxView.layer.shadowRadius = 0
             cell.optionsDotsImage.alpha = 0.2
+            cell.chatCountLabel.isHidden = true
         }
         
         return cell

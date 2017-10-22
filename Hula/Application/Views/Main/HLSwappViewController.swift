@@ -34,6 +34,7 @@ class HLSwappViewController: UIViewController {
     @IBOutlet weak var sendOfferBtn: HLRoundedButton!
     @IBOutlet weak var remainingTimeLabel: UILabel!
     
+    @IBOutlet weak var chatCountLbl: UILabel!
     @IBOutlet weak var tradeModeLine: UIView!
     @IBOutlet weak var currentTradesBtn: UIButton!
     @IBOutlet weak var pastTradesBtn: UIButton!
@@ -50,6 +51,7 @@ class HLSwappViewController: UIViewController {
     var trade_id_closed : String = ""
     var user_id_closed : String = ""
     var redirect: String = ""
+    var backFromChat: Bool = false
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -63,6 +65,9 @@ class HLSwappViewController: UIViewController {
         self.remainingTimeLabel.alpha = 0;
         self.addTradeRoomBtn.alpha = 1;
         self.mainCentralLabel.alpha = 0;
+        
+        self.chatCountLbl.layer.cornerRadius = 6.5
+        self.chatCountLbl.clipsToBounds = true
         
         
         self.currentTradesBtn.alpha = 1;
@@ -93,11 +98,11 @@ class HLSwappViewController: UIViewController {
         //print(UIDevice.current.orientation)
         var hasToDismiss = true
         if UIDeviceOrientationIsPortrait(UIDevice.current.orientation) {
-            print("portrait!!!!")
+            //print("portrait!!!!")
             hasToDismiss = false
         }
         if UIDeviceOrientationIsLandscape(UIDevice.current.orientation) {
-            print("landscape!!!!")
+            //print("landscape!!!!")
             hasToDismiss = false
         }
         
@@ -126,8 +131,10 @@ class HLSwappViewController: UIViewController {
         
         
         
-        
-        controlSetupBottomBar(index:last_index_setup);
+        if !self.backFromChat {
+            controlSetupBottomBar(index:last_index_setup);
+        }
+        self.backFromChat = false
         self.rotateAnimation()
     }
 
@@ -149,6 +156,8 @@ class HLSwappViewController: UIViewController {
                     chatVC.chat = chat
                     chatVC.trade_id = (thisTrade.object(forKey: "_id") as? String)!
                     //print(chat)
+                    self.backFromChat = true
+                    self.chatCountLbl.isHidden = true
                 }
             }
         }
@@ -344,12 +353,19 @@ class HLSwappViewController: UIViewController {
                 let thisTrade: NSDictionary = swappPageVC.arrTrades[swappPageVC.currentIndex]
                 
                 var other_user_id = ""
-                
+                var chat_count = 0
                 if (HulaUser.sharedInstance.userId == thisTrade.object(forKey: "owner_id") as! String){
                     // I am the owner
                     other_user_id = thisTrade.object(forKey: "other_id") as! String
+                    if let ch_c = thisTrade.object(forKey: "owner_unread") as? Int{
+                        chat_count = ch_c
+                    }
+                    
                 } else {
                     other_user_id = thisTrade.object(forKey: "owner_id") as! String
+                    if let ch_c = thisTrade.object(forKey: "other_unread") as? Int{
+                        chat_count = ch_c
+                    }
                 }
                 if let current_user_turn = thisTrade.object(forKey: "turn_user_id") as? String{
                     if current_user_turn != HulaUser.sharedInstance.userId {
@@ -387,6 +403,13 @@ class HLSwappViewController: UIViewController {
                         }
                     }
                     
+                }
+                
+                if chat_count > 0 {
+                    self.chatCountLbl.text = "\(chat_count)"
+                    self.chatCountLbl.isHidden = false
+                } else {
+                    self.chatCountLbl.isHidden = true
                 }
                 
                 if let bids = thisTrade.object(forKey: "bids") as? [Any] {
@@ -443,6 +466,7 @@ class HLSwappViewController: UIViewController {
                 self.pastTradesBtn.alpha = 1
                 self.tradeModeLine.alpha = 1
             }
+            self.chatCountLbl.isHidden = true
         }
     }
     

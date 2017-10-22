@@ -21,6 +21,7 @@ class HLTradesCollectionViewCell: UICollectionViewCell {
     @IBOutlet weak var otherTurnView: UIView!
     @IBOutlet weak var boxView: UIView!
     
+    @IBOutlet weak var chatCountLabel: UILabel!
     
     var dbDelegate: HLDashboardViewController?
     var tradeId: String = ""
@@ -44,7 +45,8 @@ class HLTradesCollectionViewCell: UICollectionViewCell {
         boxView.layer.borderWidth = 1
         boxView.layer.cornerRadius = 4.0
         boxView.layer.borderColor = UIColor(red:0.9, green:0.9, blue:0.9, alpha: 1.0).cgColor
-        
+        chatCountLabel.layer.cornerRadius = 7.5
+        chatCountLabel.clipsToBounds = true
         //boxView.clipsToBounds = true
         if (!isEmptyRoom){
             boxView.layer.shadowColor = UIColor.black.cgColor
