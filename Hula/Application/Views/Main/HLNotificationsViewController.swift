@@ -15,9 +15,17 @@ class HLNotificationsViewController: BaseViewController, UITableViewDelegate, UI
     
     @IBOutlet weak var notificationsTable: UITableView!
     var last_logged_user:String = ""
+    var timer:Timer!
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        timer = Timer.scheduledTimer(timeInterval: 15, target: self, selector: #selector(self.refreshNotifications), userInfo: nil, repeats: true)
+        
+        
+        
+    }
+    override func viewWillDisappear(_ animated: Bool) {
+        timer.invalidate()
     }
     override func viewDidAppear(_ animated: Bool) {
         /*
@@ -26,6 +34,9 @@ class HLNotificationsViewController: BaseViewController, UITableViewDelegate, UI
             openUserIdentification()
         }
  */
+        
+        timer.invalidate()
+        timer = Timer.scheduledTimer(timeInterval: 15, target: self, selector: #selector(self.refreshNotifications), userInfo: nil, repeats: true)
         
         if last_logged_user != HulaUser.sharedInstance.userId {
             last_logged_user = HulaUser.sharedInstance.userId
@@ -40,7 +51,8 @@ class HLNotificationsViewController: BaseViewController, UITableViewDelegate, UI
             noNotificatiosnFoundView.isHidden = true
         }
         notificationsTable.reloadData()
-    }
+        
+        }
     
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
@@ -68,6 +80,16 @@ class HLNotificationsViewController: BaseViewController, UITableViewDelegate, UI
                 cell.NotificationsText.font = UIFont(name:"HelveticaNeue-Light", size: 16.0)
                 cell.unreadIcon.isHidden = true
                 cell.backgroundColor = UIColor(red: 1, green: 1, blue: 1, alpha: 1)
+            }
+        }
+        
+        if let type = notification.object(forKey: "type") as? String{
+            if (type == "start"){
+                cell.rotationIcon.isHidden = true
+                cell.forwardIcon.isHidden = false
+            } else {
+                cell.rotationIcon.isHidden = false
+                cell.forwardIcon.isHidden = true
             }
         }
         cell.NotificationsText.text = notification.object(forKey: "text") as? String
@@ -102,22 +124,29 @@ class HLNotificationsViewController: BaseViewController, UITableViewDelegate, UI
                 myModalViewController.modalTransitionStyle = UIModalTransitionStyle.coverVertical
                 self.present(myModalViewController, animated: true, completion: nil)
             }
+            
+            if (type == "start"){
+                let user_id = notification.object(forKey: "from_id") as! String
+                HLDataManager.sharedInstance.getUserProfile(userId: user_id, taskCallback: {(user, prods) in
+                    let storyboard = UIStoryboard(name: "Main", bundle: nil)
+                    let myModalViewController = storyboard.instantiateViewController(withIdentifier: "sellerInfoPage") as! HLSellerInfoViewController
+                    myModalViewController.user = user
+                    myModalViewController.modalPresentationStyle = UIModalPresentationStyle.fullScreen
+                    myModalViewController.modalTransitionStyle = UIModalTransitionStyle.coverVertical
+                    self.navigationController?.pushViewController(myModalViewController, animated: true)
+                })
+            }
         }
         
         if let notification_id = notification.object(forKey: "_id") as? String{
-        
             let queryURL = HulaConstants.apiURL + "notifications/" + notification_id
             HLDataManager.sharedInstance.httpGet(urlstr: queryURL, taskCallback: { (ok, json) in
                 //print(ok)
                 if (ok){
                     DispatchQueue.main.async {
                         HLDataManager.sharedInstance.loadUserNotifications()
-                        if ( HLDataManager.sharedInstance.numNotificationsPending > 0 ){
-                            self.tabBarController?.tabBar.items?[1].badgeValue = "\(HLDataManager.sharedInstance.numNotificationsPending)"
-                        } else {
-                            self.tabBarController?.tabBar.items?[1].badgeValue = nil
-                        }
                         tableView.reloadData()
+                        self.updateTabBarCounter()
                     }
                 }
             })
@@ -138,15 +167,11 @@ class HLNotificationsViewController: BaseViewController, UITableViewDelegate, UI
                     //print(ok)
                     if (ok){
                         DispatchQueue.main.async {
-                            if ( HLDataManager.sharedInstance.numNotificationsPending > 0 ){
-                                self.tabBarController?.tabBar.items?[1].badgeValue = "\(HLDataManager.sharedInstance.numNotificationsPending)"
-                            } else {
-                                self.tabBarController?.tabBar.items?[1].badgeValue = nil
-                            }
                             
                             //tableView.deleteRows(at: [indexPath], with: .fade)
                             HLDataManager.sharedInstance.loadUserNotifications()
                             self.checkIfNotificationsLoaded()
+                            self.updateTabBarCounter()
                         }
                     }
                 })
@@ -160,6 +185,10 @@ class HLNotificationsViewController: BaseViewController, UITableViewDelegate, UI
         }
     }
     // IB Actions
+    func refreshNotifications(){
+        HLDataManager.sharedInstance.loadUserNotifications()
+        self.checkIfNotificationsLoaded()
+    }
     
     // Custom functions for ViewController
     func checkIfNotificationsLoaded(){
@@ -167,6 +196,8 @@ class HLNotificationsViewController: BaseViewController, UITableViewDelegate, UI
         if (HLDataManager.sharedInstance.isLoadingNotifications == false){
             //tableView.deleteRows(at: [indexPath], with: .fade)
             notificationsTable.reloadData()
+            self.updateTabBarCounter()
+            UIApplication.shared.applicationIconBadgeNumber = HLDataManager.sharedInstance.numNotificationsPending
         } else {
             let when = DispatchTime.now() + 0.5 // change 2 to desired number of seconds
             DispatchQueue.main.asyncAfter(deadline: when) {
@@ -175,6 +206,13 @@ class HLNotificationsViewController: BaseViewController, UITableViewDelegate, UI
             }
         }
     }
-    
+    func updateTabBarCounter(){
+        
+        if ( HLDataManager.sharedInstance.numNotificationsPending > 0 ){
+            self.tabBarController?.tabBar.items?[1].badgeValue = "\(HLDataManager.sharedInstance.numNotificationsPending)"
+        } else {
+            self.tabBarController?.tabBar.items?[1].badgeValue = nil
+        }
+    }
 }
 

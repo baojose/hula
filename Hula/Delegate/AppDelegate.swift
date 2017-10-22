@@ -145,7 +145,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 let banner = Banner(title: "Notification", subtitle: text, backgroundColor: HulaConstants.appMainColor)
                 banner.dismissesOnTap = true
                 banner.didTapBlock = {
-                    print("tapped")
+                    //print("tapped")
                     let storyboard = UIStoryboard(name: "Main", bundle: nil)
                     let myModalViewController = storyboard.instantiateViewController(withIdentifier: "swappView")
                     myModalViewController.modalPresentationStyle = UIModalPresentationStyle.fullScreen

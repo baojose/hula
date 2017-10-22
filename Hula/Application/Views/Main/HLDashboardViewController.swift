@@ -23,6 +23,7 @@ class HLDashboardViewController: BaseViewController {
     
     
     let sectionInsets = UIEdgeInsets(top: 4, left: 0, bottom: 30, right: 0)
+    var lastTradeInteracted:String = ""
     
     
     override func viewDidLoad() {
@@ -115,30 +116,30 @@ class HLDashboardViewController: BaseViewController {
                         }
                         self.mainCollectionView.reloadData()
                         self.mainCollectionView.scrollToItem(at: IndexPath(row: 0, section: 0) , at: .top, animated: true)
-                    }
                     
                     
                     
-                    // TUTORIAL
-                    if let cell = self.mainCollectionView.cellForItem(at: IndexPath(item: 0, section: 0)) as? HLTradesCollectionViewCell{
-                        
-                        if (HLDataManager.sharedInstance.tradeMode == "current"){
-                            if (HLDataManager.sharedInstance.arrCurrentTrades.count == 0){
-                                // show empty rooms tutorial
-                                if let _ = HLDataManager.sharedInstance.onboardingTutorials.object(forKey: "dashboard_empty") as? String{
-                                    CommonUtils.sharedInstance.showTutorial(arrayTips: [
-                                        HulaTip(delay: 1, view: cell.left_side, text: "You're in the Trade Room!\nto start trading, start exchanging."),
-                                        HulaTip(delay: 0.5, view: self.mainCollectionView, text: "Need more trading rooms? tap here to add more spaces!")
-                                    ])
-                                    HLDataManager.sharedInstance.onboardingTutorials.setValue("done", forKey: "dashboard_empty")
-                                }
-                            } else {
-                                // show full rooms tutorial
-                                if let _ = HLDataManager.sharedInstance.onboardingTutorials.object(forKey: "dashboard_full") as? String{
-                                    CommonUtils.sharedInstance.showTutorial(arrayTips: [
-                                        HulaTip(delay: 1, view: cell.left_side, text: "Welcome to your first trade! Get some advice. Click on the Trade Room you used.")
+                        // TUTORIAL
+                        if let cell = self.mainCollectionView.cellForItem(at: IndexPath(item: 0, section: 0)) as? HLTradesCollectionViewCell{
+                            
+                            if (HLDataManager.sharedInstance.tradeMode == "current"){
+                                if (HLDataManager.sharedInstance.arrCurrentTrades.count == 0){
+                                    // show empty rooms tutorial
+                                    if let _ = HLDataManager.sharedInstance.onboardingTutorials.object(forKey: "dashboard_empty") as? String{
+                                        CommonUtils.sharedInstance.showTutorial(arrayTips: [
+                                            HulaTip(delay: 1, view: cell.left_side, text: "You're in the Trade Room!\nto start trading, start exchanging."),
+                                            HulaTip(delay: 0.5, view: self.mainCollectionView, text: "Need more trading rooms? tap here to add more spaces!")
                                         ])
-                                    HLDataManager.sharedInstance.onboardingTutorials.setValue("done", forKey: "dashboard_full")
+                                        HLDataManager.sharedInstance.onboardingTutorials.setValue("done", forKey: "dashboard_empty")
+                                    }
+                                } else {
+                                    // show full rooms tutorial
+                                    if let _ = HLDataManager.sharedInstance.onboardingTutorials.object(forKey: "dashboard_full") as? String{
+                                        CommonUtils.sharedInstance.showTutorial(arrayTips: [
+                                            HulaTip(delay: 1, view: cell.left_side, text: "Welcome to your first trade! Get some advice. Click on the Trade Room you used.")
+                                            ])
+                                        HLDataManager.sharedInstance.onboardingTutorials.setValue("done", forKey: "dashboard_full")
+                                    }
                                 }
                             }
                         }
@@ -154,45 +155,17 @@ class HLDashboardViewController: BaseViewController {
     
     
     func closeTrade(_ tradeId: String){
-        if (tradeId != ""){
-            let queryURL = HulaConstants.apiURL + "trades/\(tradeId)"
-            let status = HulaConstants.end_status
-            let dataString:String = "status=\(status)"
-            //print(dataString)
-            HLDataManager.sharedInstance.httpPost(urlstr: queryURL, postString: dataString, isPut: true, taskCallback: { (ok, json) in
-                if (ok){
-                    //print(json!)
-                    DispatchQueue.main.async {
-                        /*
-                        let alert = UIAlertController(title: "Your trade has been canceled",
-                                                      message: "We have moved it to your trade history page, inside your profile section.",
-                                                      preferredStyle: .alert )
-                        let reportAction = UIAlertAction(title: "OK", style: .default, handler: { action -> Void in
-                            
-                        })
-                        alert.addAction(reportAction)
-                        */
-                        
-                        
-                        let viewController = self.storyboard?.instantiateViewController(withIdentifier: "alertView") as! AlertViewController
-                        
-                        viewController.delegate = self
-                        viewController.isCancelVisible = false
-                        viewController.message = "Your trade is canceled.\nWe've moved it to your trade history section inside your profile."
-                        
-                        self.present(viewController, animated: true)
-                        
-                        
-                        
-                        
-                        self.refreshCollectionViewData()
-                    }
-                } else {
-                    // connection error
-                    print("Connection error")
-                }
-            })
-        }
+        
+        lastTradeInteracted = tradeId
+        let viewController = self.storyboard?.instantiateViewController(withIdentifier: "alertView") as! AlertViewController
+        viewController.delegate = self
+        viewController.isCancelVisible = true
+        viewController.cancelButtonText = "Don't cancel"
+        viewController.okButtonText = "Cancel trade"
+        viewController.trigger = "cancelconfirm"
+        viewController.message = "Cancel this trade?"
+        self.present(viewController, animated: true)
+        
     }
     
     func reportUser(_ userId:String){
@@ -227,6 +200,36 @@ extension HLDashboardViewController: AlertDelegate{
     func alertResponded(response: String, trigger:String) {
         //print("Response: \(response)")
         self.refreshCollectionViewData()
+        
+        
+        if (trigger == "cancelconfirm"){
+            let tradeId = lastTradeInteracted
+            if (tradeId != ""){
+                let queryURL = HulaConstants.apiURL + "trades/\(tradeId)"
+                let status = HulaConstants.end_status
+                let dataString:String = "status=\(status)"
+                //print(dataString)
+                HLDataManager.sharedInstance.httpPost(urlstr: queryURL, postString: dataString, isPut: true, taskCallback: { (ok, json) in
+                    if (ok){
+                        //print(json!)
+                        DispatchQueue.main.async {
+                            
+                            let alert = UIAlertController(title: "Trade cancelled", message: "Help us to improve, tell us why:", preferredStyle: UIAlertControllerStyle.actionSheet)
+                            alert.addAction(UIAlertAction(title: "Not interested anymore", style: UIAlertActionStyle.default, handler: nil))
+                            alert.addAction(UIAlertAction(title: "Unhappy with trader", style: UIAlertActionStyle.default, handler: nil))
+                            alert.addAction(UIAlertAction(title: "Product deleted", style: UIAlertActionStyle.default, handler: nil))
+                            alert.addAction(UIAlertAction(title: "Other", style: UIAlertActionStyle.default, handler: nil))
+                            self.present(alert, animated: true, completion: nil)
+                            
+                            self.refreshCollectionViewData()
+                        }
+                    } else {
+                        // connection error
+                        print("Connection error")
+                    }
+                })
+            }
+        }
     }
 }
 
@@ -257,7 +260,8 @@ extension HLDashboardViewController: UICollectionViewDelegate, UICollectionViewD
             cell.emptyRoomLabel.text = ""
             //print(thisTrade)
             
-            var status =  (thisTrade.object(forKey: "status") as? String)!
+            let trade_status =  (thisTrade.object(forKey: "status") as? String)!
+            var status = trade_status
             if status == HulaConstants.end_status || status == HulaConstants.cancel_status {
                 status = "past"
             } else {
@@ -275,8 +279,8 @@ extension HLDashboardViewController: UICollectionViewDelegate, UICollectionViewD
                 cell.userImage.loadImageFromURL(urlString: CommonUtils.sharedInstance.userImageURL(userId: otherUserId!) )
                 
             }
-            
             cell.userId = otherUserId!;
+            cell.chatCountLabel.isHidden = true
             
             if (HulaUser.sharedInstance.userId == thisTrade.object(forKey: "other_id") as? String ){
                 // i am the other of the trade
@@ -286,12 +290,25 @@ extension HLDashboardViewController: UICollectionViewDelegate, UICollectionViewD
                 if let owner_products_arr = thisTrade.object(forKey: "owner_products") as? [String]{
                     drawProducts(inCell: cell, fromArr: owner_products_arr, side: "right")
                 }
+                
+                if let chat_count = thisTrade.object(forKey: "other_unread") as? Int{
+                    if chat_count > 0 {
+                        cell.chatCountLabel.text = "\(chat_count)"
+                        cell.chatCountLabel.isHidden = false
+                    }
+                }
             } else {
                 if let other_products_arr = thisTrade.object(forKey: "other_products") as? [String]{
                     drawProducts(inCell: cell, fromArr: other_products_arr, side: "right")
                 }
                 if let owner_products_arr = thisTrade.object(forKey: "owner_products") as? [String]{
                     drawProducts(inCell: cell, fromArr: owner_products_arr, side: "left")
+                }
+                if let chat_count = thisTrade.object(forKey: "owner_unread") as? Int{
+                    if chat_count > 0 {
+                        cell.chatCountLabel.text = "\(chat_count)"
+                        cell.chatCountLabel.isHidden = false
+                    }
                 }
             }
             
@@ -301,15 +318,22 @@ extension HLDashboardViewController: UICollectionViewDelegate, UICollectionViewD
             cell.tradeNumber.textColor = HulaConstants.appMainColor
             
             
+            cell.dealClosedLbl.isHidden = true
             if status == "current"{
                 // current trades
                 if let turnUser = thisTrade.object(forKey: "turn_user_id") as? String{
-                    if turnUser != HulaUser.sharedInstance.userId {
+                    if trade_status == HulaConstants.review_status {
+                        cell.dealClosedLbl.isHidden = false
                         cell.myTurnView.isHidden = true
-                        cell.otherTurnView.isHidden = false
-                    } else {
-                        cell.myTurnView.isHidden = false
                         cell.otherTurnView.isHidden = true
+                    } else {
+                        if turnUser != HulaUser.sharedInstance.userId {
+                            cell.myTurnView.isHidden = true
+                            cell.otherTurnView.isHidden = false
+                        } else {
+                            cell.myTurnView.isHidden = false
+                            cell.otherTurnView.isHidden = true
+                        }
                     }
                 } else {
                     cell.myTurnView.isHidden = false
@@ -350,6 +374,8 @@ extension HLDashboardViewController: UICollectionViewDelegate, UICollectionViewD
             cell.boxView.layer.shadowOpacity = 0
             cell.boxView.layer.shadowRadius = 0
             cell.optionsDotsImage.alpha = 0.2
+            cell.chatCountLabel.isHidden = true
+            cell.dealClosedLbl.isHidden = true
         }
         
         return cell
@@ -377,19 +403,17 @@ extension HLDashboardViewController: UICollectionViewDelegate, UICollectionViewD
                     self.swappPageVC?.currentIndex = indexPath.row
                     //print(swappPageVC.currentTrade!)
                     
-                    //always number 1
-                    if HLDataManager.sharedInstance.tradeMode == "current"{
-                        
-                        self.swappPageVC?.goTo(page: 1)
+                    let tradeStatus = thisTrade.object(forKey: "status") as! String
+                    if HLDataManager.sharedInstance.tradeMode == "current" && tradeStatus != HulaConstants.review_status {
+                        let vc = (self.storyboard?.instantiateViewController( withIdentifier: "barterRoom")) as! HLBarterScreenViewController
+                        self.swappPageVC?.orderedViewControllers[1] = vc
                     } else {
                         let vc = (self.storyboard?.instantiateViewController( withIdentifier: "pastTrade")) as! HLPastTradeViewController
-                        vc.modalTransitionStyle = .coverVertical
-                        //print(thisTrade)
                         vc.currTrade = thisTrade
-                        swappPageVC.present(vc, animated: true, completion: nil)
-                        
-                       
+                        self.swappPageVC?.orderedViewControllers[1] = vc
                     }
+                    
+                    self.swappPageVC?.goTo(page: 1)
                 }
                 //print(self.parent!)
             }

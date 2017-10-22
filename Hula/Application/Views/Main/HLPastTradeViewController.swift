@@ -14,8 +14,10 @@ class HLPastTradeViewController: UIViewController, UICollectionViewDelegate, UIC
     @IBOutlet weak var mainLabel: UILabel!
     @IBOutlet weak var otherSelectedProductsCollection: UICollectionView!
     @IBOutlet weak var mySelectedProductsCollection: UICollectionView!
-    @IBOutlet weak var otherUserImage: UIImageView!
-    @IBOutlet weak var userNameLabel: UILabel!
+    
+    @IBOutlet weak var myClosedView: UIImageView!
+    @IBOutlet weak var otherClosedView: UIImageView!
+    
     
     var currTrade: NSDictionary!
     var thisTrade: HulaTrade = HulaTrade()
@@ -31,8 +33,6 @@ class HLPastTradeViewController: UIViewController, UICollectionViewDelegate, UIC
 
         // Do any additional setup after loading the view.
         
-        
-        CommonUtils.sharedInstance.circleImageView(otherUserImage)
     }
 
     override func didReceiveMemoryWarning() {
@@ -46,16 +46,47 @@ class HLPastTradeViewController: UIViewController, UICollectionViewDelegate, UIC
         //print (thisTrade)
         let lastUpdate = thisTrade.last_update as NSDate
         dateLabel.text = CommonUtils.sharedInstance.timeAgoSinceDate(date: lastUpdate, numericDates: false)
-        var tradeStatus = "Trade closed"
+        var tradeStatus = "Exchange completed"
         //print(thisTrade.status)
         if (thisTrade.status == HulaConstants.cancel_status){
             tradeStatus = "Trade canceled"
         }
+        if (thisTrade.status == HulaConstants.review_status){
+            tradeStatus = "Close the deal"
+            dateLabel.text = "We recommend confirming this trade only after exchanging stuff"
+        }
         mainLabel.text = tradeStatus
         
+        // hide both check views
+        myClosedView.isHidden = true
+        otherClosedView.isHidden = true
+        
+        if (thisTrade.owner_id == HulaUser.sharedInstance.userId){
+            // i am the trade owner
+            if thisTrade.owner_accepted {
+                myClosedView.isHidden = false
+            }
+            if thisTrade.other_accepted {
+                otherClosedView.isHidden = false
+            }
+        } else {
+            // i am NOT the trade owner
+            if thisTrade.owner_accepted {
+                otherClosedView.isHidden = false
+            }
+            if thisTrade.other_accepted {
+                myClosedView.isHidden = false
+            }
+        }
         
         
         
+        
+        if let swappPageVC = self.parent as? HLSwappPageViewController{
+            if let thisHolderScreen = swappPageVC.parent as? HLSwappViewController {
+                thisHolderScreen.barterDelegate = self
+            }
+        }
     }
 
     /*
@@ -108,12 +139,6 @@ class HLPastTradeViewController: UIViewController, UICollectionViewDelegate, UIC
         return cell
 
     }
-
-    @IBAction func closeButtonAction(_ sender: Any) {
-        self.dismiss(animated: true) { 
-            //nada
-        }
-    }
     
     
     func loadProductsArrays(){
@@ -133,27 +158,10 @@ class HLPastTradeViewController: UIViewController, UICollectionViewDelegate, UIC
             otherUserId = thisTrade.owner_id
         }
         
-        
+        self.myTradedProducts = []
+        self.otherTradedProducts = []
         self.populateTradedProducts(list:otp, type:"other")
         self.populateTradedProducts(list:mtp, type:"owner")
-        
-        
-            otherUserImage.loadImageFromURL(urlString: CommonUtils.sharedInstance.userImageURL(userId: otherUserId))
-            
-            let queryURL = HulaConstants.apiURL + "users/\(otherUserId)/nick"
-            HLDataManager.sharedInstance.httpGet(urlstr: queryURL, taskCallback: { (result, json) in
-                
-                if let dict = json as? [String:String]{
-                    //print(dict)
-                    if let nick = dict["nick"] {
-                        //print(nick)
-                        DispatchQueue.main.async {
-                            self.userNameLabel.text = nick
-                        }
-                    }
-                }
-            })
-            
 
     }
     
@@ -217,5 +225,19 @@ class HLPastTradeViewController: UIViewController, UICollectionViewDelegate, UIC
                 }
             })
         }
+    }
+}
+
+extension HLPastTradeViewController: HLBarterScreenDelegate{
+    func getCurrentTradeStatus() -> HulaTrade{
+        return self.thisTrade
+    }
+    
+    func isTradeMutated() -> Bool!{
+        return false
+    }
+    
+    func reloadTrade(){
+        
     }
 }

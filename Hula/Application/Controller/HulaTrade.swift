@@ -19,6 +19,10 @@ class HulaTrade: NSObject {
     var other_products = [] as [String]
     var owner_money : Float = 0.0
     var other_money : Float = 0.0
+    var owner_unread : Int = 0
+    var other_unread : Int = 0
+    var owner_accepted : Bool = false
+    var other_accepted : Bool = false
     var next_bid: String!
     var status: String!
     var turn_user_id: String!
@@ -46,6 +50,10 @@ class HulaTrade: NSObject {
         self.other_products = []
         self.owner_money = 0.0
         self.other_money = 0.0
+        self.owner_unread = 0
+        self.other_unread = 0
+        self.owner_accepted = false
+        self.other_accepted = false
         self.next_bid = ""
         self.turn_user_id = ""
         self.status = "pending"
@@ -128,8 +136,28 @@ class HulaTrade: NSObject {
             self.turn_user_id = dict["turn_user_id"] as? String
         }
         if (dict["last_update"] as? String) != nil {
-            let str_date = dict["last_update"] as? String
-            self.last_update = (str_date?.dateFromISO8601)!
+            let str_date = dict["last_update"] as! String
+            self.last_update = (str_date.dateFromISO8601)!
+        }
+        if (dict["owner_unread"] as? Int) != nil {
+            self.owner_unread = dict["owner_unread"] as! Int
+        } else {
+            self.owner_unread = 0
+        }
+        if (dict["other_unread"] as? Int) != nil {
+            self.other_unread = dict["other_unread"] as! Int
+        } else {
+            self.other_unread = 0
+        }
+        if (dict["owner_accepted"] as? Bool) != nil {
+            self.owner_accepted = dict["owner_accepted"] as! Bool
+        } else {
+            self.owner_accepted = false
+        }
+        if (dict["other_accepted"] as? Bool) != nil {
+            self.other_accepted = dict["other_accepted"] as! Bool
+        } else {
+            self.other_accepted = false
         }
         
         //print(dict)

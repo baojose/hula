@@ -111,7 +111,7 @@ class HulaUser: NSObject {
         self.trades_started = 0.0
         self.trades_finished = 0.0
         self.trades_closed = 0.0
-        self.location = CLLocation(latitude: 0, longitude: 0)
+        //self.location = CLLocation(latitude: 0, longitude: 0)
         self.arrayProducts = []
         self.numProducts = 0
     }

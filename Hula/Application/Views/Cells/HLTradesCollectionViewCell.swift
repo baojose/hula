@@ -20,7 +20,9 @@ class HLTradesCollectionViewCell: UICollectionViewCell {
     @IBOutlet weak var myTurnView: UIView!
     @IBOutlet weak var otherTurnView: UIView!
     @IBOutlet weak var boxView: UIView!
+    @IBOutlet weak var dealClosedLbl: UILabel!
     
+    @IBOutlet weak var chatCountLabel: UILabel!
     
     var dbDelegate: HLDashboardViewController?
     var tradeId: String = ""
@@ -44,7 +46,8 @@ class HLTradesCollectionViewCell: UICollectionViewCell {
         boxView.layer.borderWidth = 1
         boxView.layer.cornerRadius = 4.0
         boxView.layer.borderColor = UIColor(red:0.9, green:0.9, blue:0.9, alpha: 1.0).cgColor
-        
+        chatCountLabel.layer.cornerRadius = 7.5
+        chatCountLabel.clipsToBounds = true
         //boxView.clipsToBounds = true
         if (!isEmptyRoom){
             boxView.layer.shadowColor = UIColor.black.cgColor
@@ -96,7 +99,7 @@ class HLTradesCollectionViewCell: UICollectionViewCell {
                 alert.addAction(reportAction)
                 
                 
-                let removeAction = UIAlertAction(title: "Delete this trade", style: .destructive, handler: { action -> Void in
+                let removeAction = UIAlertAction(title: "Cancel this trade", style: .destructive, handler: { action -> Void in
                     self.closeTrade()
                 })
                 alert.addAction(removeAction)

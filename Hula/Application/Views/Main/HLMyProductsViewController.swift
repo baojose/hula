@@ -256,6 +256,7 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
                         
                         if (self.arrayProducts.count > 0){
                             self.noProductsView.isHidden = true
+                            self.productTableView.reloadData()
                         }
                     }
                 } else {
@@ -282,6 +283,8 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
                         if (self.arrayProducts.count > 0){
                             self.noProductsView.isHidden = true
                         }
+                        HLDataManager.sharedInstance.getCategories()
+                        self.productTableView.reloadData()
                     }
                 } else {
                     // connection error

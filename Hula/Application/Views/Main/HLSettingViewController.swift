@@ -226,7 +226,11 @@ extension HLSettingViewController{
     
     
     func selectedImageTapped(){
-        fullScreenImage(image: self.smallProfileImage.image!, index: 1)
+        if (self.smallProfileImage.image != nil){
+            fullScreenImage(image: self.smallProfileImage.image!, index: 1)
+        } else {
+            self.openCameraVC();
+        }
     }
     
     
@@ -298,9 +302,7 @@ extension HLSettingViewController{
         
         
         let  editButton = UIAlertAction(title: "Change image", style: .destructive, handler: { (action) -> Void in
-            let cameraViewController = self.storyboard?.instantiateViewController(withIdentifier: "selectPictureGeneral") as! HLPictureSelectViewController
-            self.present(cameraViewController, animated: true)
-            self.dismissFullscreenImageDirect()
+            self.openCameraVC();
             
         })
         alertController.addAction(editButton)
@@ -312,5 +314,13 @@ extension HLSettingViewController{
         alertController.addAction(cancelButton)
         
         self.present(alertController, animated: true)
+    }
+    
+    
+    func openCameraVC() {
+        let cameraViewController = self.storyboard?.instantiateViewController(withIdentifier: "selectPictureGeneral") as! HLPictureSelectViewController
+        cameraViewController.originalSettingsVC = self
+        self.present(cameraViewController, animated: true)
+        self.dismissFullscreenImageDirect()
     }
 }

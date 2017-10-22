@@ -66,7 +66,6 @@ class HLProfileViewController: BaseViewController {
             self.tabBarController?.selectedIndex = 0
         } else {
             if last_logged_user != HulaUser.sharedInstance.userId {
-                last_logged_user = HulaUser.sharedInstance.userId
                 setupView()
             }
             self.profileImageView.loadImageFromURL(urlString: HulaUser.sharedInstance.userPhotoURL)
@@ -112,6 +111,7 @@ class HLProfileViewController: BaseViewController {
         self.initView()
         
         self.getUserProfile()
+        last_logged_user = HulaUser.sharedInstance.userId
         
         
     }
@@ -440,6 +440,7 @@ class HLProfileViewController: BaseViewController {
         let  editButton = UIAlertAction(title: "Change image", style: .destructive, handler: { (action) -> Void in
             //print("Delete button tapped")
             let cameraViewController = self.storyboard?.instantiateViewController(withIdentifier: "selectPictureGeneral") as! HLPictureSelectViewController
+            cameraViewController.originalProfileVC = self
             self.present(cameraViewController, animated: true)
             self.dismissFullscreenImageDirect()
             

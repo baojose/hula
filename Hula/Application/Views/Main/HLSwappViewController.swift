@@ -8,6 +8,7 @@
 
 import UIKit
 import SpriteKit
+import FacebookShare
 
 class HLSwappViewController: UIViewController {
     
@@ -33,6 +34,7 @@ class HLSwappViewController: UIViewController {
     @IBOutlet weak var sendOfferBtn: HLRoundedButton!
     @IBOutlet weak var remainingTimeLabel: UILabel!
     
+    @IBOutlet weak var chatCountLbl: UILabel!
     @IBOutlet weak var tradeModeLine: UIView!
     @IBOutlet weak var currentTradesBtn: UIButton!
     @IBOutlet weak var pastTradesBtn: UIButton!
@@ -49,6 +51,7 @@ class HLSwappViewController: UIViewController {
     var trade_id_closed : String = ""
     var user_id_closed : String = ""
     var redirect: String = ""
+    var backFromChat: Bool = false
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -62,6 +65,9 @@ class HLSwappViewController: UIViewController {
         self.remainingTimeLabel.alpha = 0;
         self.addTradeRoomBtn.alpha = 1;
         self.mainCentralLabel.alpha = 0;
+        
+        self.chatCountLbl.layer.cornerRadius = 6.5
+        self.chatCountLbl.clipsToBounds = true
         
         
         self.currentTradesBtn.alpha = 1;
@@ -92,11 +98,11 @@ class HLSwappViewController: UIViewController {
         //print(UIDevice.current.orientation)
         var hasToDismiss = true
         if UIDeviceOrientationIsPortrait(UIDevice.current.orientation) {
-            print("portrait!!!!")
+            //print("portrait!!!!")
             hasToDismiss = false
         }
         if UIDeviceOrientationIsLandscape(UIDevice.current.orientation) {
-            print("landscape!!!!")
+            //print("landscape!!!!")
             hasToDismiss = false
         }
         
@@ -125,8 +131,10 @@ class HLSwappViewController: UIViewController {
         
         
         
-        
-        controlSetupBottomBar(index:last_index_setup);
+        if !self.backFromChat {
+            controlSetupBottomBar(index:last_index_setup);
+        }
+        self.backFromChat = false
         self.rotateAnimation()
     }
 
@@ -148,6 +156,8 @@ class HLSwappViewController: UIViewController {
                     chatVC.chat = chat
                     chatVC.trade_id = (thisTrade.object(forKey: "_id") as? String)!
                     //print(chat)
+                    self.backFromChat = true
+                    self.chatCountLbl.isHidden = true
                 }
             }
         }
@@ -265,8 +275,9 @@ class HLSwappViewController: UIViewController {
                 self.user_id_closed = tradeStatus.other_id
             }
             
+            let buttonTag = (sender as? UIButton)!.tag
             //print(tradeStatus.owner_products)
-            if (turn_id != HulaUser.sharedInstance.userId){
+            if (turn_id != HulaUser.sharedInstance.userId) && buttonTag != 90441{
                 print("This is not your turn!!!")
             } else {
                 let queryURL = HulaConstants.apiURL + "trades/\(trade_id!)"
@@ -275,10 +286,15 @@ class HLSwappViewController: UIViewController {
                 let owner_money:Int = Int(tradeStatus.owner_money)
                 let other_money:Int = Int(tradeStatus.other_money)
                 var status = HulaConstants.sent_status
-                if (sender as? UIButton)!.tag == 91053 {
-                    status = HulaConstants.end_status
+                var acceptedTrade: String = "false"
+                if buttonTag == 91053 || buttonTag == 90441 {
+                    // offer sent or product received
+                    status = HulaConstants.review_status
                 }
-                let dataString:String = "status=\(status)&owner_products=\(owner_products)&other_products=\(other_products)&owner_money=\(owner_money)&other_money=\(other_money)"
+                if buttonTag == 90441 {
+                    acceptedTrade = "true"
+                }
+                let dataString:String = "status=\(status)&owner_products=\(owner_products)&other_products=\(other_products)&owner_money=\(owner_money)&other_money=\(other_money)&accepted=\(acceptedTrade)"
                 //print(dataString)
                 HLDataManager.sharedInstance.httpPost(urlstr: queryURL, postString: dataString, isPut: true, taskCallback: { (ok, json) in
                     if (ok){
@@ -290,11 +306,16 @@ class HLSwappViewController: UIViewController {
                             viewController.delegate = self as AlertDelegate
                             viewController.isCancelVisible = false
                             
-                            if (sender as? UIButton)!.tag == 91053 {
-                                viewController.message = "Your offer has been closed. Contact with the user to exchange the selected products.\nIn order to free up this trading room, this trade will be moved to your past trades tab."
-                                viewController.trigger = "deal_closed"
+                            if buttonTag == 91053 {
+                                viewController.message = "Your deal has been closed.\n\nContact with the user to exchange the selected products."
+                                viewController.trigger = "deal_review"
                             } else {
-                                viewController.message = "Your offer has been sent with your changes.\nPlease allow 72 hours for the user to reply."
+                                if buttonTag == 90441 {
+                                    viewController.message = "Great! Enjoy your stuff and many thanks for using HULA.\nIn order to free up this trading room, this trade will be moved to your past trades tab."
+                                    viewController.trigger = "deal_closed"
+                                } else {
+                                    viewController.message = "Your offer has been sent with your changes.\nPlease allow 72 hours for the user to reply."
+                                }
                             }
                             
                             
@@ -307,10 +328,20 @@ class HLSwappViewController: UIViewController {
                 })
             }
         } else {
-            print("No trade/barter delegato vc found!")
+            print("No trade/barter delegate vc found!")
         }
     }
     
+    @IBAction func showUserAction(_ sender: Any) {
+        //print (prevUser)
+        HLDataManager.sharedInstance.getUserProfile(userId: prevUser, taskCallback: {(user, prods) in
+            let viewController = self.storyboard?.instantiateViewController(withIdentifier: "sellerHorizontal") as! HLSellerHorizontalViewController
+            
+            viewController.user = user
+            self.present(viewController, animated: true)
+            self.backFromChat = true
+        })
+    }
     
     
     func controlSetupBottomBar(index:Int){
@@ -319,12 +350,8 @@ class HLSwappViewController: UIViewController {
         initialOtherUserX = self.view.frame.width - self.otherUserView.frame.width
         
         if (index != 0){
+            // hide/show elements on the bottom bar
             UIView.animate(withDuration: 0.3) {
-                /*
-                self.extraRoomBtn.alpha = 0
-                self.extraRoomImage.alpha = 0
-                self.nextTradeBtn.alpha = 0
- */
                 self.mainCentralLabel.alpha=0;
                 self.myUserView.frame.origin.x = 0
                 self.otherUserView.frame.origin.x = self.view.frame.width - self.otherUserView.frame.width
@@ -341,51 +368,92 @@ class HLSwappViewController: UIViewController {
             if let swappPageVC = self.childViewControllers.first as? HLSwappPageViewController {
                 last_index_setup = swappPageVC.currentIndex
                 let thisTrade: NSDictionary = swappPageVC.arrTrades[swappPageVC.currentIndex]
-                
                 var other_user_id = ""
+                var chat_count = 0
                 
+                // check chat counter
                 if (HulaUser.sharedInstance.userId == thisTrade.object(forKey: "owner_id") as! String){
                     // I am the owner
                     other_user_id = thisTrade.object(forKey: "other_id") as! String
+                    if let ch_c = thisTrade.object(forKey: "owner_unread") as? Int{
+                        chat_count = ch_c
+                    }
                 } else {
                     other_user_id = thisTrade.object(forKey: "owner_id") as! String
+                    if let ch_c = thisTrade.object(forKey: "other_unread") as? Int{
+                        chat_count = ch_c
+                    }
                 }
-                if let current_user_turn = thisTrade.object(forKey: "turn_user_id") as? String{
-                    if current_user_turn != HulaUser.sharedInstance.userId {
-                        self.sendOfferBtn.alpha = 0
-                        self.mainCentralLabel.alpha=1;
-                        self.mainCentralLabel.text = "Waiting for user reply"
-                        let h_str = thisTrade.object(forKey: "last_update") as! String
-                        let date = h_str.dateFromISO8601?.addingTimeInterval(HulaConstants.courtesyTime * 60.0 * 60.0)
-                        //print(date)
+                
+                
+                let currentStatus = thisTrade.object(forKey: "status") as! String
+                if currentStatus == HulaConstants.cancel_status || currentStatus == HulaConstants.end_status {
+                    // closed or removed trade!
+                    
+                    self.sendOfferBtn.alpha = 0
+                    self.mainCentralLabel.alpha = 0
+                    self.remainingTimeLabel.alpha = 0
+                    self.threeDotsView.isHidden = true
+                    
+                } else {
+                    if currentStatus == HulaConstants.review_status {
+                        // pending exchange
                         
-                        let formatter = DateComponentsFormatter()
-                        formatter.allowedUnits = [.hour]
-                        formatter.unitsStyle = .short
-                        var str_hours = formatter.string(from: Date(), to: date!)!
-                        str_hours = (str_hours.replacingOccurrences(of: " hr", with: " h"))
-                        if (str_hours[0] == "-"){
-                            str_hours = "0";
-                        }
+                        self.mainCentralLabel.alpha = 0
+                        self.remainingTimeLabel.alpha = 0
+                        self.threeDotsView.isHidden = true
                         
-                        self.remainingTimeLabel.alpha = 1
-                        self.remainingTimeLabel.text = "Remaining time for response: \(str_hours)"
-                        self.threeDotsView.isHidden = false;
-                        
+                        self.sendOfferBtn.setTitle( "I received my stuff", for: .normal)
+                        self.sendOfferBtn.tag = 90441
                     } else {
-                        self.remainingTimeLabel.alpha = 0;
-                        self.threeDotsView.isHidden = true;
-                        if self.tradeCanBeClosed(thisTrade) {
-                            // can be closed
-                            self.sendOfferBtn.setTitle( "Accept trade", for: .normal)
-                            self.sendOfferBtn.tag = 91053
-                            
-                        } else {
-                            self.sendOfferBtn.setTitle( "Send offer", for: .normal)
-                            self.sendOfferBtn.tag = 1
+                        // still bartering
+                        
+                        if let current_user_turn = thisTrade.object(forKey: "turn_user_id") as? String{
+                            if current_user_turn != HulaUser.sharedInstance.userId {
+                                // other user turn
+                                
+                                self.sendOfferBtn.alpha = 0
+                                self.mainCentralLabel.alpha=1;
+                                self.mainCentralLabel.text = "Waiting for user reply"
+                                let h_str = thisTrade.object(forKey: "last_update") as! String
+                                let date = h_str.dateFromISO8601?.addingTimeInterval(HulaConstants.courtesyTime * 60.0 * 60.0)
+                                //print(date)
+                                
+                                let formatter = DateComponentsFormatter()
+                                formatter.allowedUnits = [.hour]
+                                formatter.unitsStyle = .short
+                                var str_hours = formatter.string(from: Date(), to: date!)!
+                                str_hours = (str_hours.replacingOccurrences(of: " hr", with: " h"))
+                                if (str_hours[0] == "-"){
+                                    str_hours = "0";
+                                }
+                                
+                                self.remainingTimeLabel.alpha = 1
+                                self.remainingTimeLabel.text = "Remaining time for response: \(str_hours)"
+                                self.threeDotsView.isHidden = false;
+                                
+                            } else {
+                                // my turn!
+                                self.remainingTimeLabel.alpha = 0;
+                                self.threeDotsView.isHidden = true;
+                                if self.tradeCanBeClosed(thisTrade) {
+                                    // can be closed
+                                    self.sendOfferBtn.setTitle( "Accept trade", for: .normal)
+                                    self.sendOfferBtn.tag = 91053
+                                    
+                                } else {
+                                    self.sendOfferBtn.setTitle( "Send offer", for: .normal)
+                                    self.sendOfferBtn.tag = 1
+                                }
+                            }
                         }
                     }
-                    
+                }
+                if chat_count > 0 {
+                    self.chatCountLbl.text = "\(chat_count)"
+                    self.chatCountLbl.isHidden = false
+                } else {
+                    self.chatCountLbl.isHidden = true
                 }
                 
                 if let bids = thisTrade.object(forKey: "bids") as? [Any] {
@@ -442,6 +510,7 @@ class HLSwappViewController: UIViewController {
                 self.pastTradesBtn.alpha = 1
                 self.tradeModeLine.alpha = 1
             }
+            self.chatCountLbl.isHidden = true
         }
     }
     
@@ -489,7 +558,7 @@ class HLSwappViewController: UIViewController {
         
         viewController.delegate = self as AlertDelegate
         viewController.isCancelVisible = true
-        viewController.message = "In order to get more trading rooms you have to help us spreading the word. Please share Hula with your friends and you will have up to five trading rooms."
+        viewController.message = "Do you need more rooms? Spread the word! Share HULA with your friends and get up to 5 trade rooms."
         viewController.okButtonText = "Share Hula"
         viewController.trigger = "share"
         self.present(viewController, animated: true)
@@ -547,9 +616,40 @@ extension HLSwappViewController: AlertDelegate{
         }
     }
     
-    
     func shareHula(){
-        let text = "Hey! I'm usig Hula, so I can get what I want and give what I don't. https://hula.trading"
+        
+        let alert = UIAlertController(title: "Sharing", message: "Please choose a sharing method", preferredStyle: UIAlertControllerStyle.alert)
+        alert.addAction(UIAlertAction(title: "Facebook", style: UIAlertActionStyle.default){
+            UIAlertAction in
+            self.shareHulaFB()
+        })
+        alert.addAction(UIAlertAction(title: "Other", style: UIAlertActionStyle.default){
+            UIAlertAction in
+            self.shareHulaStandard()
+        })
+        self.present(alert, animated: true, completion: nil)
+    }
+    
+    func shareHulaFB(){
+        let appInvite = AppInvite(appLink: URL(string: "https://fb.me/128854257665971")!,
+                                  deliveryMethod: .facebook,
+                                  previewImageURL: URL(string: "https://hula.trading/img/logo-big.png"))
+        do {
+            try AppInvite.Dialog.show(from: self, invite: appInvite) { result in
+                switch result {
+                case .success(let result):
+                    print("App Invite Sent with result \(result)")
+                case .failed(let error):
+                    print("Failed to send app invite with error \(error)")
+                }
+            }
+        } catch let error {
+            print("Failed to show app invite dialog with error \(error)")
+        }
+        self.addExtraRoom()
+    }
+    func shareHulaStandard(){
+        let text = "Hey, I trade on HULA! I get what I want and give what I don't. https://hula.trading"
         
         // set up activity view controller
         let textToShare = [ text ]
@@ -558,10 +658,13 @@ extension HLSwappViewController: AlertDelegate{
         
         // exclude some activity types from the list (optional)
         activityViewController.excludedActivityTypes = [ UIActivityType.airDrop, UIActivityType.addToReadingList, UIActivityType.assignToContact ]
-        
         // present the view controller
         self.present(activityViewController, animated: true, completion: nil)
+        self.addExtraRoom()
         
+    }
+    
+    func addExtraRoom(){
         if (HulaUser.sharedInstance.maxTrades<5){
             HulaUser.sharedInstance.maxTrades += 1
             HulaUser.sharedInstance.updateServerData()
