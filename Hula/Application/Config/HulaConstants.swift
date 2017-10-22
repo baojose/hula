@@ -30,6 +30,7 @@ struct HulaConstants {
     static let sent_status:String = "offer_sent"
     static let end_status:String = "ended"
     static let cancel_status:String = "closed"
+    static let review_status:String = "review"
     
     
     

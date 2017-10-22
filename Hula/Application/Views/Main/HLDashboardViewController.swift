@@ -260,7 +260,8 @@ extension HLDashboardViewController: UICollectionViewDelegate, UICollectionViewD
             cell.emptyRoomLabel.text = ""
             //print(thisTrade)
             
-            var status =  (thisTrade.object(forKey: "status") as? String)!
+            let trade_status =  (thisTrade.object(forKey: "status") as? String)!
+            var status = trade_status
             if status == HulaConstants.end_status || status == HulaConstants.cancel_status {
                 status = "past"
             } else {
@@ -317,15 +318,22 @@ extension HLDashboardViewController: UICollectionViewDelegate, UICollectionViewD
             cell.tradeNumber.textColor = HulaConstants.appMainColor
             
             
+            cell.dealClosedLbl.isHidden = true
             if status == "current"{
                 // current trades
                 if let turnUser = thisTrade.object(forKey: "turn_user_id") as? String{
-                    if turnUser != HulaUser.sharedInstance.userId {
+                    if trade_status == HulaConstants.review_status {
+                        cell.dealClosedLbl.isHidden = false
                         cell.myTurnView.isHidden = true
-                        cell.otherTurnView.isHidden = false
-                    } else {
-                        cell.myTurnView.isHidden = false
                         cell.otherTurnView.isHidden = true
+                    } else {
+                        if turnUser != HulaUser.sharedInstance.userId {
+                            cell.myTurnView.isHidden = true
+                            cell.otherTurnView.isHidden = false
+                        } else {
+                            cell.myTurnView.isHidden = false
+                            cell.otherTurnView.isHidden = true
+                        }
                     }
                 } else {
                     cell.myTurnView.isHidden = false
@@ -367,6 +375,7 @@ extension HLDashboardViewController: UICollectionViewDelegate, UICollectionViewD
             cell.boxView.layer.shadowRadius = 0
             cell.optionsDotsImage.alpha = 0.2
             cell.chatCountLabel.isHidden = true
+            cell.dealClosedLbl.isHidden = true
         }
         
         return cell
@@ -394,25 +403,17 @@ extension HLDashboardViewController: UICollectionViewDelegate, UICollectionViewD
                     self.swappPageVC?.currentIndex = indexPath.row
                     //print(swappPageVC.currentTrade!)
                     
-                    //always number 1
-                    if HLDataManager.sharedInstance.tradeMode == "current"{
-                        
-                        self.swappPageVC?.goTo(page: 1)
+                    let tradeStatus = thisTrade.object(forKey: "status") as! String
+                    if HLDataManager.sharedInstance.tradeMode == "current" && tradeStatus != HulaConstants.review_status {
+                        let vc = (self.storyboard?.instantiateViewController( withIdentifier: "barterRoom")) as! HLBarterScreenViewController
+                        self.swappPageVC?.orderedViewControllers[1] = vc
                     } else {
                         let vc = (self.storyboard?.instantiateViewController( withIdentifier: "pastTrade")) as! HLPastTradeViewController
                         vc.currTrade = thisTrade
-                        self.swappPageVC?.orderedViewControllers.insert(vc, at: 1)
-                        self.swappPageVC?.goTo(page: 1)
-                        
-                        /*
-                        let vc = (self.storyboard?.instantiateViewController( withIdentifier: "pastTrade")) as! HLPastTradeViewController
-                        vc.modalTransitionStyle = .coverVertical
-                        //print(thisTrade)
-                        vc.currTrade = thisTrade
-                        swappPageVC.present(vc, animated: true, completion: nil)
-                        */
-                       
+                        self.swappPageVC?.orderedViewControllers[1] = vc
                     }
+                    
+                    self.swappPageVC?.goTo(page: 1)
                 }
                 //print(self.parent!)
             }

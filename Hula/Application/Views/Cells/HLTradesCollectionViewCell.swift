@@ -20,6 +20,7 @@ class HLTradesCollectionViewCell: UICollectionViewCell {
     @IBOutlet weak var myTurnView: UIView!
     @IBOutlet weak var otherTurnView: UIView!
     @IBOutlet weak var boxView: UIView!
+    @IBOutlet weak var dealClosedLbl: UILabel!
     
     @IBOutlet weak var chatCountLabel: UILabel!
     

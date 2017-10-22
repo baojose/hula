@@ -15,6 +15,10 @@ class HLPastTradeViewController: UIViewController, UICollectionViewDelegate, UIC
     @IBOutlet weak var otherSelectedProductsCollection: UICollectionView!
     @IBOutlet weak var mySelectedProductsCollection: UICollectionView!
     
+    @IBOutlet weak var myClosedView: UIImageView!
+    @IBOutlet weak var otherClosedView: UIImageView!
+    
+    
     var currTrade: NSDictionary!
     var thisTrade: HulaTrade = HulaTrade()
     var otherProducts: [HulaProduct] = []
@@ -42,16 +46,47 @@ class HLPastTradeViewController: UIViewController, UICollectionViewDelegate, UIC
         //print (thisTrade)
         let lastUpdate = thisTrade.last_update as NSDate
         dateLabel.text = CommonUtils.sharedInstance.timeAgoSinceDate(date: lastUpdate, numericDates: false)
-        var tradeStatus = "Trade closed"
+        var tradeStatus = "Exchange completed"
         //print(thisTrade.status)
         if (thisTrade.status == HulaConstants.cancel_status){
             tradeStatus = "Trade canceled"
         }
+        if (thisTrade.status == HulaConstants.review_status){
+            tradeStatus = "Close the deal"
+            dateLabel.text = "We recommend confirming this trade only after exchanging stuff"
+        }
         mainLabel.text = tradeStatus
         
+        // hide both check views
+        myClosedView.isHidden = true
+        otherClosedView.isHidden = true
+        
+        if (thisTrade.owner_id == HulaUser.sharedInstance.userId){
+            // i am the trade owner
+            if thisTrade.owner_accepted {
+                myClosedView.isHidden = false
+            }
+            if thisTrade.other_accepted {
+                otherClosedView.isHidden = false
+            }
+        } else {
+            // i am NOT the trade owner
+            if thisTrade.owner_accepted {
+                otherClosedView.isHidden = false
+            }
+            if thisTrade.other_accepted {
+                myClosedView.isHidden = false
+            }
+        }
         
         
         
+        
+        if let swappPageVC = self.parent as? HLSwappPageViewController{
+            if let thisHolderScreen = swappPageVC.parent as? HLSwappViewController {
+                thisHolderScreen.barterDelegate = self
+            }
+        }
     }
 
     /*
@@ -123,7 +158,8 @@ class HLPastTradeViewController: UIViewController, UICollectionViewDelegate, UIC
             otherUserId = thisTrade.owner_id
         }
         
-        
+        self.myTradedProducts = []
+        self.otherTradedProducts = []
         self.populateTradedProducts(list:otp, type:"other")
         self.populateTradedProducts(list:mtp, type:"owner")
 
@@ -189,5 +225,19 @@ class HLPastTradeViewController: UIViewController, UICollectionViewDelegate, UIC
                 }
             })
         }
+    }
+}
+
+extension HLPastTradeViewController: HLBarterScreenDelegate{
+    func getCurrentTradeStatus() -> HulaTrade{
+        return self.thisTrade
+    }
+    
+    func isTradeMutated() -> Bool!{
+        return false
+    }
+    
+    func reloadTrade(){
+        
     }
 }

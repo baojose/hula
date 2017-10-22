@@ -1561,10 +1561,10 @@ Log In</string>
                                                 <nil key="highlightedColor"/>
                                             </label>
                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" usesAttributedText="YES" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="WNK-gv-Pmb">
-                                                <rect key="frame" x="250" y="40" width="117" height="14"/>
+                                                <rect key="frame" x="250" y="40" width="117" height="15"/>
                                                 <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxY="YES"/>
                                                 <attributedString key="attributedText">
-                                                    <fragment content="C L O S E D">
+                                                    <fragment content="C A N C E L E D">
                                                         <attributes>
                                                             <color key="NSColor" red="0.5490196078431373" green="0.5490196078431373" blue="0.5490196078431373" alpha="1" colorSpace="calibratedRGB"/>
                                                             <font key="NSFont" size="12" name="HelveticaNeue-Light"/>
@@ -2722,6 +2722,13 @@ Log In</string>
                                                             <color key="textColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
                                                             <nil key="highlightedColor"/>
                                                         </label>
+                                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" text="Deal closed. Waiting for stuff exchange" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="3OZ-Hk-aP5">
+                                                            <rect key="frame" x="232" y="53" width="203" height="13"/>
+                                                            <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                                            <fontDescription key="fontDescription" name="HelveticaNeue-Light" family="Helvetica Neue" pointSize="11"/>
+                                                            <color key="textColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
+                                                            <nil key="highlightedColor"/>
+                                                        </label>
                                                         <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" image="barter_icon_trade" id="JM8-6Q-JCz">
                                                             <rect key="frame" x="319" y="29" width="14" height="16"/>
                                                             <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMaxY="YES"/>
@@ -2746,6 +2753,7 @@ Log In</string>
                                                 <connections>
                                                     <outlet property="boxView" destination="4c5-z6-5Bl" id="tfy-yk-paw"/>
                                                     <outlet property="chatCountLabel" destination="u9Y-rQ-HH0" id="Czv-cW-pIC"/>
+                                                    <outlet property="dealClosedLbl" destination="3OZ-Hk-aP5" id="VeK-tc-dZ7"/>
                                                     <outlet property="emptyRoomLabel" destination="VMG-ma-DBN" id="8ba-np-acD"/>
                                                     <outlet property="left_side" destination="Ejm-j2-xzG" id="FQl-PO-xIY"/>
                                                     <outlet property="middleArrows" destination="JM8-6Q-JCz" id="NRx-w3-aVy"/>
@@ -6629,10 +6637,10 @@ Log In</string>
                                                                 <nil key="highlightedColor"/>
                                                             </label>
                                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" usesAttributedText="YES" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="AKw-uk-knb">
-                                                                <rect key="frame" x="250" y="40" width="117" height="14"/>
+                                                                <rect key="frame" x="250" y="40" width="117" height="15"/>
                                                                 <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxY="YES"/>
                                                                 <attributedString key="attributedText">
-                                                                    <fragment content="C L O S E D">
+                                                                    <fragment content="C A N C E L E D">
                                                                         <attributes>
                                                                             <color key="NSColor" red="0.5490196078431373" green="0.5490196078431373" blue="0.5490196078431373" alpha="1" colorSpace="calibratedRGB"/>
                                                                             <font key="NSFont" size="12" name="HelveticaNeue-Light"/>
@@ -7352,6 +7360,10 @@ Log In</string>
                                         </subviews>
                                         <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                     </view>
+                                    <imageView opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleAspectFit" misplaced="YES" insetsLayoutMarginsFromSafeArea="NO" image="check_icon_l" id="mnc-Oz-TR7">
+                                        <rect key="frame" x="476" y="185" width="50" height="50"/>
+                                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
+                                    </imageView>
                                     <view contentMode="scaleToFill" misplaced="YES" id="TQA-F2-5yd">
                                         <rect key="frame" x="0.0" y="46" width="335" height="329"/>
                                         <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxX="YES" heightSizable="YES"/>
@@ -7406,6 +7418,10 @@ Log In</string>
                                                     <outlet property="delegate" destination="c36-Dh-9FO" id="nPW-Gh-rMb"/>
                                                 </connections>
                                             </collectionView>
+                                            <imageView opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleAspectFit" misplaced="YES" insetsLayoutMarginsFromSafeArea="NO" image="check_icon_l" id="0JM-uc-h8j">
+                                                <rect key="frame" x="142" y="139" width="50" height="50"/>
+                                                <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
+                                            </imageView>
                                         </subviews>
                                         <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                     </view>
@@ -7427,6 +7443,10 @@ Log In</string>
                                         <color key="textColor" red="0.27450980390000002" green="0.27450980390000002" blue="0.27450980390000002" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                         <nil key="highlightedColor"/>
                                     </label>
+                                    <imageView opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleAspectFit" misplaced="YES" insetsLayoutMarginsFromSafeArea="NO" image="barter_icon_trade" id="Ioh-FD-Z1L">
+                                        <rect key="frame" x="326" y="177" width="17" height="20"/>
+                                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
+                                    </imageView>
                                 </subviews>
                                 <color key="backgroundColor" white="0.97011718749999998" alpha="1" colorSpace="calibratedWhite"/>
                             </view>
@@ -7439,13 +7459,15 @@ Log In</string>
                     <connections>
                         <outlet property="dateLabel" destination="ua9-Wd-tsE" id="5uk-1a-ijA"/>
                         <outlet property="mainLabel" destination="MOB-x6-Zw2" id="SwR-x0-O11"/>
+                        <outlet property="myClosedView" destination="0JM-uc-h8j" id="hhF-Ci-hOf"/>
                         <outlet property="mySelectedProductsCollection" destination="Ubx-Ay-Ahy" id="bXU-Qb-MLt"/>
+                        <outlet property="otherClosedView" destination="mnc-Oz-TR7" id="L5H-pX-8FJ"/>
                         <outlet property="otherSelectedProductsCollection" destination="jdB-Ay-QXN" id="3fF-mz-Urn"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="Ndn-e1-x9c" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="-900" y="4229"/>
+            <point key="canvasLocation" x="-900.5" y="4228.5"/>
         </scene>
     </scenes>
     <resources>
@@ -7460,6 +7482,7 @@ Log In</string>
         <image name="calculator-layout" width="865" height="681"/>
         <image name="cash_button_trade_interface" width="25" height="25"/>
         <image name="chat-icon" width="20" height="20"/>
+        <image name="check_icon_l" width="38" height="38"/>
         <image name="close-cross" width="44" height="47"/>
         <image name="close_alert_button" width="32" height="32"/>
         <image name="dash-page" width="1134" height="639"/>
