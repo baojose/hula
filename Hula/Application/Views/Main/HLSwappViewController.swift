@@ -332,6 +332,16 @@ class HLSwappViewController: UIViewController {
         }
     }
     
+    @IBAction func showUserAction(_ sender: Any) {
+        //print (prevUser)
+        HLDataManager.sharedInstance.getUserProfile(userId: prevUser, taskCallback: {(user, prods) in
+            let viewController = self.storyboard?.instantiateViewController(withIdentifier: "sellerHorizontal") as! HLSellerHorizontalViewController
+            
+            viewController.user = user
+            self.present(viewController, animated: true)
+            self.backFromChat = true
+        })
+    }
     
     
     func controlSetupBottomBar(index:Int){
