@@ -7050,7 +7050,7 @@ Log In</string>
                                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
                                             </view>
                                             <button opaque="NO" tag="1" contentMode="scaleAspectFit" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" id="ely-ww-eaw">
-                                                <rect key="frame" x="345" y="10" width="22" height="20"/>
+                                                <rect key="frame" x="341" y="4" width="31" height="32"/>
                                                 <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxY="YES"/>
                                                 <fontDescription key="fontDescription" name="HelveticaNeue-Light" family="Helvetica Neue" pointSize="24"/>
                                                 <state key="normal" image="close-cross">
@@ -7421,7 +7421,7 @@ Log In</string>
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <view contentMode="scaleToFill" misplaced="YES" id="cDS-cV-pwJ">
+                            <view clipsSubviews="YES" contentMode="scaleToFill" misplaced="YES" id="cDS-cV-pwJ">
                                 <rect key="frame" x="0.0" y="11" width="375" height="649"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" heightSizable="YES"/>
                                 <subviews>
@@ -7493,23 +7493,17 @@ Log In</string>
                                                 </subviews>
                                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                             </view>
-                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="TopLeft" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" usesAttributedText="YES" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="NaZ-aN-QO1">
-                                                <rect key="frame" x="35" y="288" width="313" height="162"/>
-                                                <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxY="YES"/>
-                                                <attributedString key="attributedText">
-                                                    <fragment content="Loading description...">
-                                                        <attributes>
-                                                            <font key="NSFont" size="12" name="Helvetica"/>
-                                                            <paragraphStyle key="NSParagraphStyle" alignment="left" lineBreakMode="wordWrapping" baseWritingDirection="natural" tighteningFactorForTruncation="0.0"/>
-                                                        </attributes>
-                                                    </fragment>
-                                                </attributedString>
-                                                <nil key="highlightedColor"/>
-                                            </label>
+                                            <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" misplaced="YES" text="Loading..." textAlignment="natural" id="mM6-lz-4Hn">
+                                                <rect key="frame" x="27" y="295" width="321" height="98"/>
+                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                                <color key="textColor" red="0.1181983739" green="0.1193686548" blue="0.1193686548" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                                <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="15"/>
+                                                <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
+                                            </textView>
                                         </subviews>
                                     </scrollView>
                                     <button opaque="NO" tag="1" contentMode="scaleAspectFit" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" id="dNo-3C-kO5">
-                                        <rect key="frame" x="348" y="6" width="22" height="20"/>
+                                        <rect key="frame" x="338" y="5" width="31" height="32"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxY="YES"/>
                                         <fontDescription key="fontDescription" name="HelveticaNeue-Light" family="Helvetica Neue" pointSize="24"/>
                                         <state key="normal" image="close-cross">
@@ -7520,6 +7514,33 @@ Log In</string>
                                             <action selector="closeModalAction:" destination="jhk-Ly-g60" eventType="touchUpInside" id="ulx-ga-MKm"/>
                                         </connections>
                                     </button>
+                                    <imageView userInteractionEnabled="NO" contentMode="center" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" image="video-requested-red" id="orG-QZ-WWL">
+                                        <rect key="frame" x="4" y="6" width="33" height="31"/>
+                                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                    </imageView>
+                                    <view contentMode="scaleToFill" misplaced="YES" id="X2E-HR-iOV">
+                                        <rect key="frame" x="0.0" y="589" width="375" height="60"/>
+                                        <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
+                                        <subviews>
+                                            <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="img_footer_bg" id="fr9-AX-EPQ">
+                                                <rect key="frame" x="0.0" y="0.0" width="375" height="60"/>
+                                                <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                            </imageView>
+                                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" id="BJg-hV-1B4">
+                                                <rect key="frame" x="84" y="8" width="207" height="44"/>
+                                                <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
+                                                <state key="normal" title=" Request video" image="video-white-icon">
+                                                    <color key="titleColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                                </state>
+                                                <state key="highlighted">
+                                                    <color key="titleColor" red="0.27450980390000002" green="0.27450980390000002" blue="0.27450980390000002" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                                </state>
+                                                <connections>
+                                                    <action selector="videoAction:" destination="jhk-Ly-g60" eventType="touchUpInside" id="K6G-K0-NOi"/>
+                                                </connections>
+                                            </button>
+                                        </subviews>
+                                    </view>
                                 </subviews>
                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                             </view>
@@ -7532,10 +7553,12 @@ Log In</string>
                         <outlet property="pageControl" destination="wpO-Yp-mi9" id="ugy-Cf-Fhf"/>
                         <outlet property="productCategory" destination="MYV-eb-pJw" id="0yk-o8-xVo"/>
                         <outlet property="productCondition" destination="C9e-pL-HOU" id="apY-UP-ExC"/>
-                        <outlet property="productDescriptionLabel" destination="NaZ-aN-QO1" id="ueO-Wj-dBr"/>
+                        <outlet property="productDescriptionLabel" destination="mM6-lz-4Hn" id="z8w-af-dN5"/>
                         <outlet property="productDistance" destination="dGO-OM-OLo" id="g6Z-eF-scF"/>
                         <outlet property="productsScrollView" destination="Uct-MC-vpH" id="9M2-KI-9Rp"/>
                         <outlet property="titleLabel" destination="X1Y-CU-lWP" id="TKG-gF-5Op"/>
+                        <outlet property="videoBtn" destination="BJg-hV-1B4" id="a4c-dR-xzA"/>
+                        <outlet property="videoStatusImg" destination="orG-QZ-WWL" id="1hm-Fo-Jce"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="jGy-S8-bDS" userLabel="First Responder" sceneMemberID="firstResponder"/>
@@ -7813,6 +7836,8 @@ Log In</string>
         <image name="temp_user" width="210" height="210"/>
         <image name="transparent_background_button_L" width="51" height="50"/>
         <image name="type_line_login" width="321" height="32"/>
+        <image name="video-requested-red" width="19" height="19"/>
+        <image name="video-white-icon" width="24" height="24"/>
         <image name="welcome_screen_bg" width="369" height="628"/>
         <image name="your-turn-label" width="77" height="24"/>
     </resources>

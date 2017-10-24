@@ -7,8 +7,9 @@
 //
 
 import UIKit
+import MobileCoreServices
 
-class HLProductModalViewController: UIViewController {
+class HLProductModalViewController: UIViewController, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
 
     var product: HulaProduct!
     
@@ -18,10 +19,18 @@ class HLProductModalViewController: UIViewController {
     @IBOutlet weak var productDistance: UILabel!
     @IBOutlet weak var productCategory: UILabel!
     @IBOutlet weak var productCondition: UILabel!
+    @IBOutlet weak var videoBtn: UIButton!
     
+    @IBOutlet weak var productDescriptionLabel: UITextView!
     @IBOutlet var productsScrollView: UIScrollView!
-    @IBOutlet var productDescriptionLabel: UILabel!
+    
     @IBOutlet var pageControl: UIPageControl!
+    
+    @IBOutlet weak var videoStatusImg: UIImageView!
+    
+    let imagePicker = UIImagePickerController()
+    var videoPath: NSURL? = nil
+    
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -34,6 +43,15 @@ class HLProductModalViewController: UIViewController {
         productCondition.text = product.productCondition
         productDescriptionLabel.text = product.productDescription
         
+        if (product.video_requested){
+            videoStatusImg.image = UIImage(named: "video-requested-red")
+            videoBtn.setTitle(" Recording pending...", for: .normal)
+            videoBtn.tag = 43904
+        } else {
+            videoStatusImg.image = nil
+            videoBtn.tag = 1
+        }
+        
         
         // item height and position reset
         let h = CommonUtils.sharedInstance.heightString(width: productDescriptionLabel.frame.width, font: productDescriptionLabel.font! , string: productDescriptionLabel.text!) + 30
@@ -44,6 +62,10 @@ class HLProductModalViewController: UIViewController {
         // seta product images
         self.setUpProductImagesScrollView()
         
+        
+        
+        let appDelegate = UIApplication.shared.delegate as! AppDelegate
+        appDelegate.allowRotation = false
     }
 
     override func didReceiveMemoryWarning() {
@@ -78,4 +100,105 @@ class HLProductModalViewController: UIViewController {
         productsScrollView.contentOffset = CGPoint(x: 0.0, y: 0.0)
     }
     
+    @IBAction func videoAction(_ sender: Any) {
+        let tag = (sender as! UIButton).tag
+        if (tag == 43904){
+            recordVideo()
+        } else {
+            let queryURL = HulaConstants.apiURL + "products/\(product.productId!)/requestvideo"
+            HLDataManager.sharedInstance.httpGet(urlstr: queryURL, taskCallback: { (ok, json) in
+                if (ok){
+                    if let _ = json as? [NSDictionary] {
+                        
+                        DispatchQueue.main.async {
+                            let alert = self.storyboard?.instantiateViewController(withIdentifier: "alertView") as! AlertViewController
+                            alert.delegate = self as AlertDelegate
+                            alert.isCancelVisible = false
+                            alert.message = "You have requested a video for this product. You will receive a notification when the user upload it."
+                            alert.trigger = "video_request"
+                            self.present(alert, animated: true)
+                        }
+                    } else {
+                       print("Error connecting")
+                    }
+                }
+            })
+        }
+    }
+    
+ func recordVideo() {
+    if (UIImagePickerController.isSourceTypeAvailable(.camera)) {
+        if UIImagePickerController.availableCaptureModes(for: .rear) != nil {
+                
+            imagePicker.sourceType = .camera
+            imagePicker.mediaTypes = [ kUTTypeMovie as String ]
+            imagePicker.allowsEditing = false
+            imagePicker.videoQuality = .typeMedium
+            imagePicker.delegate = self
+                
+            present(imagePicker, animated: true, completion: {})
+            } else {
+                print("Rear camera doesn't exist. Application cannot access the camera.")
+            }
+        } else {
+            print("Camera inaccessable. Application cannot access the camera.")
+        }
+    }
+
+    func imagePickerController(_ picker:UIImagePickerController, didFinishPickingMediaWithInfo info: [String:Any]) {
+        print("Got a video")
+        
+        if let pickedVideo:NSURL = (info[UIImagePickerControllerMediaURL] as? NSURL) {
+            // Save video to the main photo album
+            //print(pickedVideo.relativePath)
+            /*
+            let selectorToCall = #selector(HLProductModalViewController.videoWasSavedSuccessfully)
+            UISaveVideoAtPathToSavedPhotosAlbum(pickedVideo.relativePath!, self, selectorToCall, nil)
+            
+             */
+            // Save the video to the app directory so we can play it later
+            let videoData = NSData(contentsOf: pickedVideo as URL)
+            
+            
+            
+            let paths = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true) as NSArray
+            let documentsDirectory = paths[0] as! NSString
+            let path = documentsDirectory.appendingPathComponent("testvideo.mov")
+            videoPath = NSURL(string: path )
+            videoData?.write(toFile: path, atomically: false)
+            //self.dismiss(animated: true, completion: nil)
+            
+            
+            HLDataManager.sharedInstance.uploadVideo(path, productId: product.productId, taskCallback: { (success, json) in
+                print(json)
+            })
+        }
+        
+        imagePicker.dismiss(animated: true, completion: {
+            // Anything you want to happen when the user saves an video
+            
+            
+        })
+    }
+    
+    func videoWasSavedSuccessfully(_ data:Any){
+        print(data)
+        
+    }
+    
+    func uploadMedia(){
+        if videoPath == nil {
+            return
+        }
+        
+        
+    }
+}
+
+extension HLProductModalViewController: AlertDelegate{
+    
+    func alertResponded(response: String, trigger: String) {
+        
+    }
+
 }

@@ -386,10 +386,56 @@ class HLDataManager: NSObject {
             task.resume()
             
         }
-        
-        
-        
     }
+    
+    func uploadVideo(_ videoPath: String, productId:String, taskCallback: @escaping (Bool, Any?) -> ()){
+        let videoData = NSData(contentsOfFile: videoPath)
+        
+        if videoData != nil{
+            let queryURL = HulaConstants.apiURL + "upload/video"
+            var request = URLRequest(url: URL(string:queryURL)!)
+            let session:URLSession = URLSession.shared
+            
+            request.httpMethod = "POST"
+            
+            
+            let boundary = "Boundary-\(UUID().uuidString)"
+            request.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
+            
+            let user = HulaUser.sharedInstance
+            if (user.token.characters.count>10){
+                request.setValue(user.token, forHTTPHeaderField: "x-access-token")
+            }
+            let body = createBody(parameters: ["product_id": "\(productId)"],
+                                  boundary: boundary,
+                                  data: videoData! as Data,
+                                  mimeType: "video/mp4",
+                                  filename: "video.mp4")
+            
+            
+            request.httpBody = body as Data
+            
+            
+            let task = session.dataTask(with: request) { data, response, error in
+                guard let data = data, error == nil else {                                                 // check for fundamental networking error
+                    print(error!)
+                    return
+                }
+                
+                if let httpStatus = response as? HTTPURLResponse, httpStatus.statusCode != 200 {           // check for http errors
+                    print("statusCode should be 200, but is \(httpStatus.statusCode)")
+                    print(response ?? "No response")
+                } else {
+                    
+                    let json = try! JSONSerialization.jsonObject(with: data, options: [])
+                    taskCallback(true, json as AnyObject?)
+                }
+            }
+            task.resume()
+            
+        }
+    }
+    
     func createBody(parameters: [String: String],
                     boundary: String,
                     data: Data,
