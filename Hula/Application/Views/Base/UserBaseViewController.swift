@@ -23,6 +23,7 @@ class UserBaseViewController: UIViewController {
         
         DispatchQueue.main.async {
             let viewController = self.storyboard?.instantiateViewController(withIdentifier: "baseTabBarPage") as! BaseTabBarViewController
+            //self.navigationController?.viewControllers = []
             self.navigationController?.pushViewController(viewController, animated: true)
         }
         

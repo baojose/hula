@@ -29,9 +29,12 @@ class HLIntroViewController: UserBaseViewController, UIScrollViewDelegate {
     var initialFrame:CGRect = CGRect(x:0, y:0, width: 191, height: 108)
     var rotating:Bool = false
     
-    var player1:AVPlayer!
-    var player2:AVPlayer!
-    var player3:AVPlayer!
+    var player1:AVPlayer?
+    var player2:AVPlayer?
+    var player3:AVPlayer?
+    var playerLayer1: AVPlayerLayer!
+    var playerLayer2: AVPlayerLayer!
+    var playerLayer3: AVPlayerLayer!
     
     var jump_just_once = true
     //var scene: [HulaVideoTransp] = []
@@ -55,9 +58,17 @@ class HLIntroViewController: UserBaseViewController, UIScrollViewDelegate {
     }
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
+        
+        player1?.pause()
         player1 = nil
+        player2?.pause()
         player2 = nil
+        player3?.pause()
         player3 = nil
+        
+        playerLayer1.removeFromSuperlayer()
+        playerLayer2.removeFromSuperlayer()
+        playerLayer3.removeFromSuperlayer()
     }
     override var preferredStatusBarStyle: UIStatusBarStyle {
         return .lightContent
@@ -68,21 +79,21 @@ class HLIntroViewController: UserBaseViewController, UIScrollViewDelegate {
             debugPrint("Video file not found")
             return
         }
-         player1 = AVPlayer(url: URL(fileURLWithPath: path1))
-        let playerLayer1 = AVPlayerLayer(player: player1)
+        player1 = AVPlayer(url: URL(fileURLWithPath: path1))
+        playerLayer1 = AVPlayerLayer(player: player1)
         playerLayer1.frame = introView1.bounds
         //introView1.layer.addSublayer(playerLayer1)
         introView1.layer.insertSublayer(playerLayer1, at: 1)
 
-        player1.play()
+        player1!.play()
         
         
         guard let path2 = Bundle.main.path(forResource: "slide 2", ofType:"mp4") else {
             debugPrint("Video file not found")
             return
         }
-         player2 = AVPlayer(url: URL(fileURLWithPath: path2))
-        let playerLayer2 = AVPlayerLayer(player: player2)
+        player2 = AVPlayer(url: URL(fileURLWithPath: path2))
+        playerLayer2 = AVPlayerLayer(player: player2)
         playerLayer2.frame = introView1.bounds
         //introView2.layer.addSublayer(playerLayer2)
         introView2.layer.insertSublayer(playerLayer2, at: 0)
@@ -93,8 +104,8 @@ class HLIntroViewController: UserBaseViewController, UIScrollViewDelegate {
             debugPrint("Video file not found")
             return
         }
-         player3 = AVPlayer(url: URL(fileURLWithPath: path3))
-        let playerLayer3 = AVPlayerLayer(player: player3)
+        player3 = AVPlayer(url: URL(fileURLWithPath: path3))
+        playerLayer3 = AVPlayerLayer(player: player3)
         playerLayer3.frame = introView1.bounds
         //introView3.layer.addSublayer(playerLayer3)
         introView3.layer.insertSublayer(playerLayer3, at: 0)
@@ -236,29 +247,36 @@ class HLIntroViewController: UserBaseViewController, UIScrollViewDelegate {
         }
  */
         if (posX == 0 ){
-            player1.play()
+            player1?.play()
         }
         
         
         if (posX == 1){
-            player2.play()
+            player1?.pause()
+            player1 = nil
+            
+            player2?.play()
         }
         
         if (posX == 2){
-            player3.play()
+            player2?.pause()
+            player2 = nil
+            player3?.play()
         }
         if (posX == 3){
+            player3?.pause()
+            player3 = nil
             self.rotateAnimation()
         }
  
  
         if (mainScrollView.contentOffset.x > 3.0 * mainScrollView.frame.size.width) {
             if (jump_just_once){
+                playerLayer1.removeFromSuperlayer()
+                playerLayer2.removeFromSuperlayer()
+                playerLayer3.removeFromSuperlayer()
                 jump_just_once = false;
                 self.navToMainView()
-                player1 = nil
-                player2 = nil
-                player3 = nil
             }
         }
     }

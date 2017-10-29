@@ -380,7 +380,7 @@ Log In</string>
                                 <subviews>
                                     <view contentMode="scaleToFill" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="lbj-8u-xMX">
                                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
-                                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                         <subviews>
                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" misplaced="YES" text="Upload your stuff to your stock section" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="xOA-oW-HUV">
                                                 <rect key="frame" x="21" y="480" width="333" height="61"/>
@@ -394,7 +394,7 @@ Log In</string>
                                     </view>
                                     <view contentMode="scaleToFill" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="81s-if-gPn">
                                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
-                                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                         <subviews>
                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" misplaced="YES" text="Negotiate back and forth until you get a deal" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="2pI-GL-9jd">
                                                 <rect key="frame" x="48" y="484" width="279" height="81"/>
@@ -408,7 +408,7 @@ Log In</string>
                                     </view>
                                     <view contentMode="scaleToFill" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Zdr-wv-Eas">
                                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
-                                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                         <subviews>
                                             <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" image="img_intro_bg1" translatesAutoresizingMaskIntoConstraints="NO" id="X35-EP-y8q">
                                                 <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
@@ -472,7 +472,7 @@ Log In</string>
                                     </view>
                                     <view contentMode="scaleToFill" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="fE0-Yo-NDi">
                                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
-                                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                         <subviews>
                                             <imageView opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" misplaced="YES" insetsLayoutMarginsFromSafeArea="NO" image="img_intro_bg4" id="KgS-H7-x5B">
                                                 <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>

@@ -88,28 +88,28 @@ class HLEditProductMainViewController: BaseViewController, ProductPictureDelegat
     @IBAction func changeImageAction(_ sender: Any) {
         
         currentEditingIndex = (sender as! UIButton).tag - 1
-        var im : UIImage
+        var im : UIImage?
         switch currentEditingIndex {
         case 0:
-            im = prodImg1.image!
+            im = prodImg1.image
         case 1:
-            im = prodImg2.image!
+            im = prodImg2.image
         case 2:
-            im = prodImg3.image!
+            im = prodImg3.image
         case 3:
-            im = prodImg4.image!
+            im = prodImg4.image
         default:
-            im = UIImage(named: "")!
+            im = nil
+        }
+        if im != nil{
+            fullScreenImage(image: im!, index: currentEditingIndex)
+        } else {
+            let cameraViewController = self.storyboard?.instantiateViewController(withIdentifier: "productPictureEdit") as! HLProductPictureEditViewController
+            cameraViewController.positionToReplace = (sender as! UIButton).tag
+            cameraViewController.prodDelegate = self
+            self.present(cameraViewController, animated: true)
         }
         
-        fullScreenImage(image: im, index: currentEditingIndex)
-        
-        /*
-        let cameraViewController = self.storyboard?.instantiateViewController(withIdentifier: "productPictureEdit") as! HLProductPictureEditViewController
-        cameraViewController.positionToReplace = (sender as! UIButton).tag
-        cameraViewController.prodDelegate = self
-        self.present(cameraViewController, animated: true)
- */
     }
     
     @IBAction func editItemAction(_ sender: Any) {

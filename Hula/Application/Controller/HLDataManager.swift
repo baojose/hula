@@ -180,14 +180,17 @@ class HLDataManager: NSObject {
                 if let dictionary = json as? [String: Any] {
                     if (dictionary["token"] as? String) != nil {
                         
-                        HulaUser.sharedInstance.logout();
-                        
-                        // access individual value in dictionary
-                        self.updateUserFromDict(dict: dictionary as NSDictionary)
-                        //print(token)
+                        if let us = dictionary["allUser"] as? NSDictionary {
+                            HulaUser.sharedInstance.logout();
+                            //print(us)
+                            // access individual value in dictionary
+                            
+                            self.updateUserFromDict(dict: dictionary as NSDictionary)
+                            self.updateUserFromDict(dict: us as NSDictionary)
+                            //print(token)
+                            self.writeUserData()
+                        }
                         loginSuccess = true;
-                        self.writeUserData()
-                        
                         self.lastServerMessage = "ok"
                     }
                 } else {
@@ -208,6 +211,7 @@ class HLDataManager: NSObject {
         
         HulaUser.sharedInstance.logout();
         self.writeUserData()
+        
         
     }
     
@@ -566,8 +570,12 @@ class HLDataManager: NSObject {
     
     func updateUserFromDict(dict: NSDictionary){
         let user = HulaUser.sharedInstance
-        user.token = dict.object(forKey: "token")! as! String
-        user.userId = dict.object(forKey: "userId")! as! String
+        if dict.object(forKey: "token") as? String != nil {
+            user.token = dict.object(forKey: "token")! as! String
+        }
+        if dict.object(forKey: "userId") as? String != nil {
+            user.userId = dict.object(forKey: "userId")! as! String
+        }
         if dict.object(forKey: "userNick") as? String != nil {
             user.userNick = dict.object(forKey: "userNick")! as! String
         }
