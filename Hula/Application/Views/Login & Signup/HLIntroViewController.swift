@@ -55,9 +55,22 @@ class HLIntroViewController: UserBaseViewController, UIScrollViewDelegate {
     }
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
+        print("will disappear")
+        removeVideos()
     }
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
+        
+        print("Memory warning")
+        removeVideos()
+    }
+    override var preferredStatusBarStyle: UIStatusBarStyle {
+        return .lightContent
+    }
+    
+    func removeVideos(){
+        
+        print("removing videos")
         
         player1?.pause()
         player1 = nil
@@ -65,14 +78,11 @@ class HLIntroViewController: UserBaseViewController, UIScrollViewDelegate {
         player2 = nil
         player3?.pause()
         player3 = nil
-        
         playerLayer1.removeFromSuperlayer()
         playerLayer2.removeFromSuperlayer()
         playerLayer3.removeFromSuperlayer()
     }
-    override var preferredStatusBarStyle: UIStatusBarStyle {
-        return .lightContent
-    }
+    
     func initUI(){
         
         guard let path1 = Bundle.main.path(forResource: "slide 1", ofType:"mp4") else {
