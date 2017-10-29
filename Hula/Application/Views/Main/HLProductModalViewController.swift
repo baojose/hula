@@ -170,7 +170,7 @@ class HLProductModalViewController: UIViewController, UIImagePickerControllerDel
             
             
             HLDataManager.sharedInstance.uploadVideo(path, productId: product.productId, taskCallback: { (success, json) in
-                print(json)
+                //print(json)
             })
         }
         

@@ -238,7 +238,7 @@ class HLProfileViewController: BaseViewController {
     func emailValidate(){
         
         HulaUser.sharedInstance.resendValidationMail()
-        let alert = UIAlertController(title: "Email validation", message: "We have just sent you an email to \(HulaUser.sharedInstance.userEmail!). Please follow the instructions provided on that message.",
+        let alert = UIAlertController(title: "Email validation", message: "If you're a real person with a real email, open your email and follow the instructions.",
             preferredStyle: UIAlertControllerStyle.alert
         )
         alert.addAction(UIAlertAction(title: "OK", style: UIAlertActionStyle.default, handler: nil))

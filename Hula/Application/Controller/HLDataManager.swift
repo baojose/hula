@@ -36,6 +36,7 @@ class HLDataManager: NSObject {
     let loginRecieved = Notification.Name("loginRecieved")
     let fbLoginRecieved = Notification.Name("fbLoginRecieved")
     let signupRecieved = Notification.Name("signupRecieved")
+    let notificationsRecieved = Notification.Name("notificationsRecieved")
     
     class var sharedInstance: HLDataManager {
         struct Static {
@@ -645,6 +646,8 @@ class HLDataManager: NSObject {
                     HLDataManager.sharedInstance.numNotificationsPending = num_pending
                     UIApplication.shared.applicationIconBadgeNumber = num_pending
                     self.isLoadingNotifications = false
+                    
+                    NotificationCenter.default.post(name: self.notificationsRecieved, object: nil)
                 }
             }
         })
