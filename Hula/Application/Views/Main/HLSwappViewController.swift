@@ -320,7 +320,7 @@ class HLSwappViewController: UIViewController {
                             viewController.isCancelVisible = false
                             
                             if buttonTag == 91053 {
-                                viewController.message = "Your deal has been closed.\n\nContact with the user to exchange the selected products."
+                                viewController.message = "You accepted the deal. Now meet the trader and exchange your stuff."
                                 viewController.trigger = "deal_review"
                             } else {
                                 if buttonTag == 90441 {
@@ -358,7 +358,7 @@ class HLSwappViewController: UIViewController {
     
     
     func controlSetupBottomBar(index:Int){
-        print("setting up bottom bar with index: \(index)")
+        //print("setting up bottom bar with index: \(index)")
         
         initialOtherUserX = self.view.frame.width - self.otherUserView.frame.width
         
