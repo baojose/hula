@@ -34,7 +34,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         Fabric.with([Twitter.self, Crashlytics.self])
 
         
-        
         return FBSDKApplicationDelegate.sharedInstance().application(application, didFinishLaunchingWithOptions: launchOptions)
     }
     func applicationWillResignActive(_ application: UIApplication) {
@@ -74,20 +73,20 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
 
     func application(_ app: UIApplication, open url: URL, options: [UIApplicationOpenURLOptionsKey : Any] = [:]) -> Bool {
-        if #available(iOS 9.0, *) {
-            let isHandled = FBSDKApplicationDelegate.sharedInstance().application(app, open: url, sourceApplication: options[.sourceApplication] as! String!, annotation: options[.annotation])
-            return isHandled
-        }
         
         if LinkedinSwiftHelper.shouldHandle(url) {
+            print("YYEEEEPPPAAA")
             if #available(iOS 9.0, *) {
                 return LinkedinSwiftHelper.application(app, open: url, sourceApplication: options[UIApplicationOpenURLOptionsKey.sourceApplication] as? String, annotation: options[UIApplicationOpenURLOptionsKey.annotation])
             }
         }
         
+        if #available(iOS 9.0, *) {
+            let isHandled = FBSDKApplicationDelegate.sharedInstance().application(app, open: url, sourceApplication: options[.sourceApplication] as! String!, annotation: options[.annotation])
+            return isHandled
+        }
         return false
     }
-    
     func registerForPushNotifications() {
         if #available(iOS 10.0, *) {
             UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge]) {
@@ -107,8 +106,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         if #available(iOS 10.0, *) {
             UNUserNotificationCenter.current().getNotificationSettings { (settings) in
                 print("Notification settings: \(settings)")
-                guard settings.authorizationStatus == .authorized else { return }
-                UIApplication.shared.registerForRemoteNotifications()
+                DispatchQueue.main.async {
+                    guard settings.authorizationStatus == .authorized else { return }
+                    UIApplication.shared.registerForRemoteNotifications()
+                }
             }
         } else {
             // Fallback on earlier versions

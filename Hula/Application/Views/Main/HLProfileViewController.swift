@@ -220,12 +220,11 @@ class HLProfileViewController: BaseViewController {
     
     
     func twitterValidate(){
-        print("Validating twitter...")
         Twitter.sharedInstance().logIn(completion: { (session, error) in
-            print("Session open...")
+            //print("Session open...")
             
             if let unwrappedSession = session {
-                print("Twitter ok!")
+                //print("Twitter ok!")
                 //print(unwrappedSession);
                 self.verTwitterIcon.image = UIImage(named: "icon_twitter_on")
                 self.verTwitterIcon.bouncer()
@@ -250,9 +249,10 @@ class HLProfileViewController: BaseViewController {
     }
     
     func linkedinValidate(){
+        print("Validating linkedin...")
         linkedinHelper.authorizeSuccess({ (token) in
             
-            //print(token)
+            print(token)
             self.verLinkedinIcon.image = UIImage(named: "icon_linkedin_on")
             self.verLinkedinIcon.bouncer()
             HulaUser.sharedInstance.liToken = token.accessToken
