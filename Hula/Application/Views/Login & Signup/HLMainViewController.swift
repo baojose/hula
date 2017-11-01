@@ -27,7 +27,7 @@ class HLMainViewController: UserBaseViewController {
             player!.pause();
             player = nil
         }
-        playerLayer.removeFromSuperlayer()
+        playerLayer?.removeFromSuperlayer()
     }
     override var preferredStatusBarStyle: UIStatusBarStyle {
         return .lightContent

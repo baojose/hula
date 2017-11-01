@@ -120,20 +120,12 @@ class HLBarterScreenViewController: BaseViewController {
             if self.thisTrade.turn_user_id == HulaUser.sharedInstance.userId{
                 // my turn
                 self.sectionCover.isHidden = true
-                self.myProductsCollection.isUserInteractionEnabled = true
-                self.mySelectedProductsCollection.isUserInteractionEnabled = true
-                self.otherProductsCollection.isUserInteractionEnabled = true
-                self.otherSelectedProductsCollection.isUserInteractionEnabled = true
                 self.addMoneyBtn1.isUserInteractionEnabled = true
                 self.addMoneyBtn2.isUserInteractionEnabled = true
                 
                 
             } else {
-                self.sectionCover.isHidden = false
-                self.myProductsCollection.isUserInteractionEnabled = false
-                self.mySelectedProductsCollection.isUserInteractionEnabled = false
-                self.otherProductsCollection.isUserInteractionEnabled = false
-                self.otherSelectedProductsCollection.isUserInteractionEnabled = false
+                self.sectionCover.isHidden = true // provisional
                 self.addMoneyBtn1.isUserInteractionEnabled = false
                 self.addMoneyBtn2.isUserInteractionEnabled = false
                 
@@ -170,8 +162,6 @@ class HLBarterScreenViewController: BaseViewController {
                 // first turn
                 self.addMoneyBtn1.alpha = 0
                 self.addMoneyBtn2.alpha = 0
-                self.myProductsCollection.isUserInteractionEnabled = false
-                self.mySelectedProductsCollection.isUserInteractionEnabled = false
             } else {
                 self.addMoneyBtn1.alpha = 1
                 self.addMoneyBtn2.alpha = 1
@@ -493,16 +483,20 @@ extension HLBarterScreenViewController: KDDragAndDropCollectionViewDataSource, U
         cell.image.loadImageFromURL(urlString: thumb)
         //print(product.tradeStatus)
         if (product.tradeStatus != 0){
-            
-            
-            //cell.statusImage.image = UIImage.init(named: arrowImagesName[product.tradeStatus])
-            
             if (product.tradeStatus == 1){
                 cell.is_added()
             } else {
                 cell.is_removed()
             }
-            
+        }
+        print(product.video_requested)
+        print(product.video_url)
+        if (product.video_requested){
+            if product.video_url.characters.count > 0 {
+                cell.statusImage.image = UIImage(named: "video-player-icon-red")
+            } else {
+                cell.statusImage.image = UIImage(named: "video-requested-red")
+            }
         } else {
             cell.statusImage.image = nil
         }
