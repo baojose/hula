@@ -23,8 +23,10 @@ class HLMainViewController: UserBaseViewController {
     }
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
-        player!.pause();
-        player = nil
+        if player != nil {
+            player!.pause();
+            player = nil
+        }
         playerLayer.removeFromSuperlayer()
     }
     override var preferredStatusBarStyle: UIStatusBarStyle {
