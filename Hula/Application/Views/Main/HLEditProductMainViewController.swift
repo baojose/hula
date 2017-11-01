@@ -239,7 +239,7 @@ extension HLEditProductMainViewController {
             }
             let velocity = panRecognizer.velocity(in: self.view)
             
-            self.navigationController?.isNavigationBarHidden = false
+            self.navigationController?.isNavigationBarHidden = true
             self.tabBarController?.tabBar.isHidden = false
             
             UIView.animate(withDuration: 0.3, animations: {
@@ -254,7 +254,7 @@ extension HLEditProductMainViewController {
     }
     func dismissFullscreenImageDirect() {
         
-        self.navigationController?.isNavigationBarHidden = false
+        self.navigationController?.isNavigationBarHidden = true
         self.tabBarController?.tabBar.isHidden = false
         if let imageView = self.view.viewWithTag(10001) as? UIImageView {
             UIView.animate(withDuration: 0.3, animations: {

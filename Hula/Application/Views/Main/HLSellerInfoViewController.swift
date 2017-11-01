@@ -137,31 +137,38 @@ class HLSellerInfoViewController: BaseViewController, UITableViewDelegate, UITab
     }
     
     @IBAction func addToTradeAction(_ sender: Any) {
-        //print(productId)
+        let viewController = self.storyboard?.instantiateViewController(withIdentifier: "alertView") as! AlertViewController
+        viewController.delegate = self
         if (HulaUser.sharedInstance.numProducts == 0){
-            
-            let viewController = self.storyboard?.instantiateViewController(withIdentifier: "alertView") as! AlertViewController
-            
             viewController.isCancelVisible = true
             viewController.cancelButtonText = "Add stuff"
             viewController.trigger = "noproduct"
             viewController.message = "Sorry! If you want to trade, you have to upload your stuff."
-            self.present(viewController, animated: true)
-            
         } else {
-            let viewController = self.storyboard?.instantiateViewController(withIdentifier: "alertView") as! AlertViewController
-            viewController.isCancelVisible = true
-            viewController.okButtonText = "Accept"
-            viewController.delegate = self
-            viewController.message = "You're about to start a trade. One room will be reserved for this negotiation until it's finished."
-            self.present(viewController, animated: true)
-            
+            if HLDataManager.sharedInstance.myRoomsFull() {
+                viewController.isCancelVisible = false
+                viewController.trigger = "fullrooms"
+                viewController.message = "Sorry! your Trade Rooms are busy. Turn your phone, get in the Trade Room and request a new one."
+            } else {
+                viewController.isCancelVisible = true
+                viewController.okButtonText = "Accept"
+                viewController.trigger = ""
+                viewController.message = "You're about to start a trade. One room will be reserved for this negotiation until it's finished."
+            }
         }
+        self.present(viewController, animated: true)
     }
 }
 
 extension HLSellerInfoViewController: AlertDelegate{
     func alertResponded(response: String, trigger: String) {
+        if trigger == "noproduct" && response == "ok" {
+            self.tabBarController?.selectedIndex = 2
+            return
+        }
+        if trigger == "fullrooms" {
+            return
+        }
         if response == "ok" {
             let otherId = user.userId
             if(HulaUser.sharedInstance.userId != otherId){

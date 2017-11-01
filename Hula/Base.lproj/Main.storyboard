@@ -1145,7 +1145,6 @@ Log In</string>
                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
                                         <connections>
-                                            <action selector="goBackToPreviousPage:" destination="E7c-9K-Thg" eventType="touchUpInside" id="VvQ-us-RDr"/>
                                             <action selector="goBackToPreviousPage:" destination="enk-yS-6h7" eventType="touchUpInside" id="nia-gE-j9X"/>
                                         </connections>
                                     </button>
@@ -5708,7 +5707,7 @@ Log In</string>
                                         <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxY="YES"/>
                                         <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
                                         <connections>
-                                            <action selector="dismissToPreviousPage:" destination="nK1-j0-3vr" eventType="touchUpInside" id="lao-zi-B25"/>
+                                            <action selector="dismissCameraNoproduct:" destination="nK1-j0-3vr" eventType="touchUpInside" id="XAj-tt-w76"/>
                                         </connections>
                                     </button>
                                 </subviews>
