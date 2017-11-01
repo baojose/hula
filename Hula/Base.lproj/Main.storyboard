@@ -4438,8 +4438,8 @@ Log In</string>
                                         <rect key="frame" x="0.0" y="0.0" width="375" height="60"/>
                                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                     </imageView>
-                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" id="rhF-WE-8jz">
-                                        <rect key="frame" x="76" y="11" width="222" height="38"/>
+                                    <button opaque="NO" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" id="rhF-WE-8jz">
+                                        <rect key="frame" x="34" y="11" width="307" height="38"/>
                                         <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
                                         <fontDescription key="fontDescription" name="HelveticaNeue-Light" family="Helvetica Neue" pointSize="16"/>
                                         <state key="normal" title="Trade with User">
@@ -6814,8 +6814,8 @@ Log In</string>
                                         <rect key="frame" x="0.0" y="0.0" width="375" height="60"/>
                                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                     </imageView>
-                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" id="SYf-Ny-aMh">
-                                        <rect key="frame" x="76" y="11" width="222" height="38"/>
+                                    <button opaque="NO" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" id="SYf-Ny-aMh">
+                                        <rect key="frame" x="34" y="11" width="307" height="38"/>
                                         <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
                                         <fontDescription key="fontDescription" name="HelveticaNeue-Light" family="Helvetica Neue" pointSize="16"/>
                                         <state key="normal" title="Trade with User">
@@ -7852,7 +7852,7 @@ Log In</string>
         <image name="your-turn-label" width="77" height="24"/>
     </resources>
     <inferredMetricsTieBreakers>
-        <segue reference="8X8-bg-W6f"/>
+        <segue reference="UoL-AY-aB4"/>
         <segue reference="wT5-4p-lNl"/>
     </inferredMetricsTieBreakers>
 </document>

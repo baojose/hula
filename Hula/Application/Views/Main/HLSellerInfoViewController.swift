@@ -61,6 +61,11 @@ class HLSellerInfoViewController: BaseViewController, UITableViewDelegate, UITab
         let thumb = CommonUtils.sharedInstance.getThumbFor(url: user.userPhotoURL)
         profileImage.loadImageFromURL(urlString: thumb)
         sellerNameLabel.text = user.userNick
+        if HLDataManager.sharedInstance.amITradingWith(user.userId){
+            self.tradeWithUserButton.setTitle("Currently trading with \(user.userNick!)", for: .normal)
+        } else {
+            self.tradeWithUserButton.setTitle("Trade with \(user.userNick!)", for: .normal)
+        }
         sellerLocationLabel.text = user.userLocationName
         tradeWithUserButton.layer.cornerRadius = 19
         tradeWithUserButton.layer.borderColor = UIColor.white.cgColor

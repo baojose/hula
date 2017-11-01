@@ -22,6 +22,8 @@ class HLNotificationsViewController: BaseViewController, UITableViewDelegate, UI
         timer = Timer.scheduledTimer(timeInterval: 15, target: self, selector: #selector(self.refreshNotifications), userInfo: nil, repeats: true)
         
         
+        let notificationsRecieved = Notification.Name("notificationsRecieved")
+        NotificationCenter.default.addObserver(self, selector: #selector(self.checkIfNotificationsLoaded), name: notificationsRecieved, object: nil)
         
     }
     override func viewWillDisappear(_ animated: Bool) {

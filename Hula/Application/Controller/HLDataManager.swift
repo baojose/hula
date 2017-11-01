@@ -215,6 +215,22 @@ class HLDataManager: NSObject {
         
     }
     
+    func amITradingWith(_ user_id: String) -> Bool{
+        for tr in arrCurrentTrades{
+            if let trade = tr as? [String:Any] {
+                //print(trade["owner_id"] as! String)
+                if trade["owner_id"] as! String == user_id {
+                    return true
+                }
+                if trade["other_id"] as! String == user_id {
+                    return true
+                }
+            }
+        }
+        
+        return false
+    }
+    
     func signupUser(email:String, nick: String, pass:String) {
         
         //print("Login in progress...")

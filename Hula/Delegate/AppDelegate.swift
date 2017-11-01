@@ -155,6 +155,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 }
                 banner.show(duration: 5.0)
                 HLDataManager.sharedInstance.loadUserNotifications()
+                
             }
         } else {
             print("error")

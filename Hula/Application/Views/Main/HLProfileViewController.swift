@@ -220,9 +220,12 @@ class HLProfileViewController: BaseViewController {
     
     
     func twitterValidate(){
-        
+        print("Validating twitter...")
         Twitter.sharedInstance().logIn(completion: { (session, error) in
+            print("Session open...")
+            
             if let unwrappedSession = session {
+                print("Twitter ok!")
                 //print(unwrappedSession);
                 self.verTwitterIcon.image = UIImage(named: "icon_twitter_on")
                 self.verTwitterIcon.bouncer()
@@ -232,6 +235,7 @@ class HLProfileViewController: BaseViewController {
                 NSLog("Login error: %@", error!.localizedDescription);
             }
         })
+        
     }
     
     
@@ -330,9 +334,10 @@ class HLProfileViewController: BaseViewController {
                             if let feedback = dictionary["feedback"] as? NSArray {
                                 self.arrFeedback = feedback
                             }
-                            
-                            let app = UIApplication.shared.delegate as! AppDelegate
-                            app.registerForPushNotifications()
+                            DispatchQueue.main.async {
+                                let app = UIApplication.shared.delegate as! AppDelegate
+                                app.registerForPushNotifications()
+                            }
                         } else {
                             self.expiredTokenAlert()
                         }

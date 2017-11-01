@@ -120,6 +120,11 @@ class HLProductDetailViewController: BaseViewController, UIScrollViewDelegate, U
         HLDataManager.sharedInstance.getUserProfile(userId: currentProduct.productOwner, taskCallback: {(user, prods) in
             self.sellerUser = user
             self.sellerNameLabel.text = user.userNick;
+            if HLDataManager.sharedInstance.amITradingWith(user.userId){
+                self.tradeWithUserButton.setTitle("Currently trading with \(user.userNick!)", for: .normal)
+            } else {
+                self.tradeWithUserButton.setTitle("Trade with \(user.userNick!)", for: .normal)
+            }
             self.sellerFeedbackLabel.text = user.userLocationName;
             self.sellerProducts = prods
             var newFrame: CGRect! = self.productTableView.frame
