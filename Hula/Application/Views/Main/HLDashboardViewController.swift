@@ -161,7 +161,7 @@ class HLDashboardViewController: BaseViewController {
         viewController.delegate = self
         viewController.isCancelVisible = true
         viewController.cancelButtonText = "Don't cancel"
-        viewController.okButtonText = "Cancel trade"
+        viewController.okButtonText = "Cancel"
         viewController.trigger = "cancelconfirm"
         viewController.message = "Cancel this trade?"
         self.present(viewController, animated: true)
@@ -206,7 +206,7 @@ extension HLDashboardViewController: AlertDelegate{
             let tradeId = lastTradeInteracted
             if (tradeId != ""){
                 let queryURL = HulaConstants.apiURL + "trades/\(tradeId)"
-                let status = HulaConstants.end_status
+                let status = HulaConstants.cancel_status
                 let dataString:String = "status=\(status)"
                 //print(dataString)
                 HLDataManager.sharedInstance.httpPost(urlstr: queryURL, postString: dataString, isPut: true, taskCallback: { (ok, json) in
@@ -356,6 +356,7 @@ extension HLDashboardViewController: UICollectionViewDelegate, UICollectionViewD
                 cell.optionsDotsImage.alpha = 0.2
                 
             }
+            cell.userImage.isHidden = false
         } else {
             //print("Empty row \(indexPath.row)")
             cell.isEmptyRoom = true
@@ -363,6 +364,7 @@ extension HLDashboardViewController: UICollectionViewDelegate, UICollectionViewD
             cell.emptyRoomLabel.text = "Empty Trade Room"
             cell.myImage.isHidden = true
             cell.userImage.image = nil
+            cell.userImage.isHidden = true
             cell.middleArrows.isHidden = true
             cell.left_side.subviews.forEach({ $0.removeFromSuperview() })
             cell.right_side.subviews.forEach({ $0.removeFromSuperview() })

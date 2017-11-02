@@ -36,6 +36,7 @@ class HLDataManager: NSObject {
     let loginRecieved = Notification.Name("loginRecieved")
     let fbLoginRecieved = Notification.Name("fbLoginRecieved")
     let signupRecieved = Notification.Name("signupRecieved")
+    let notificationsRecieved = Notification.Name("notificationsRecieved")
     
     class var sharedInstance: HLDataManager {
         struct Static {
@@ -179,14 +180,17 @@ class HLDataManager: NSObject {
                 if let dictionary = json as? [String: Any] {
                     if (dictionary["token"] as? String) != nil {
                         
-                        HulaUser.sharedInstance.logout();
-                        
-                        // access individual value in dictionary
-                        self.updateUserFromDict(dict: dictionary as NSDictionary)
-                        //print(token)
+                        if let us = dictionary["allUser"] as? NSDictionary {
+                            HulaUser.sharedInstance.logout();
+                            //print(us)
+                            // access individual value in dictionary
+                            
+                            self.updateUserFromDict(dict: dictionary as NSDictionary)
+                            self.updateUserFromDict(dict: us as NSDictionary)
+                            //print(token)
+                            self.writeUserData()
+                        }
                         loginSuccess = true;
-                        self.writeUserData()
-                        
                         self.lastServerMessage = "ok"
                     }
                 } else {
@@ -208,6 +212,29 @@ class HLDataManager: NSObject {
         HulaUser.sharedInstance.logout();
         self.writeUserData()
         
+        
+    }
+    
+    func amITradingWith(_ user_id: String) -> Bool{
+        for tr in arrCurrentTrades{
+            if let trade = tr as? [String:Any] {
+                //print(trade["owner_id"] as! String)
+                if trade["owner_id"] as! String == user_id {
+                    return true
+                }
+                if trade["other_id"] as! String == user_id {
+                    return true
+                }
+            }
+        }
+        
+        return false
+    }
+    func myRoomsFull() -> Bool{
+        if (arrCurrentTrades.count >= HulaUser.sharedInstance.maxTrades){
+            return true
+        }
+        return false
     }
     
     func signupUser(email:String, nick: String, pass:String) {
@@ -565,8 +592,12 @@ class HLDataManager: NSObject {
     
     func updateUserFromDict(dict: NSDictionary){
         let user = HulaUser.sharedInstance
-        user.token = dict.object(forKey: "token")! as! String
-        user.userId = dict.object(forKey: "userId")! as! String
+        if dict.object(forKey: "token") as? String != nil {
+            user.token = dict.object(forKey: "token")! as! String
+        }
+        if dict.object(forKey: "userId") as? String != nil {
+            user.userId = dict.object(forKey: "userId")! as! String
+        }
         if dict.object(forKey: "userNick") as? String != nil {
             user.userNick = dict.object(forKey: "userNick")! as! String
         }
@@ -645,6 +676,8 @@ class HLDataManager: NSObject {
                     HLDataManager.sharedInstance.numNotificationsPending = num_pending
                     UIApplication.shared.applicationIconBadgeNumber = num_pending
                     self.isLoadingNotifications = false
+                    
+                    NotificationCenter.default.post(name: self.notificationsRecieved, object: nil)
                 }
             }
         })

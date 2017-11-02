@@ -220,9 +220,11 @@ class HLProfileViewController: BaseViewController {
     
     
     func twitterValidate(){
-        
         Twitter.sharedInstance().logIn(completion: { (session, error) in
+            //print("Session open...")
+            
             if let unwrappedSession = session {
+                //print("Twitter ok!")
                 //print(unwrappedSession);
                 self.verTwitterIcon.image = UIImage(named: "icon_twitter_on")
                 self.verTwitterIcon.bouncer()
@@ -232,13 +234,14 @@ class HLProfileViewController: BaseViewController {
                 NSLog("Login error: %@", error!.localizedDescription);
             }
         })
+        
     }
     
     
     func emailValidate(){
         
         HulaUser.sharedInstance.resendValidationMail()
-        let alert = UIAlertController(title: "Email validation", message: "We have just sent you an email to \(HulaUser.sharedInstance.userEmail!). Please follow the instructions provided on that message.",
+        let alert = UIAlertController(title: "Email validation", message: "If you're a real person with a real email, open your email and follow the instructions.",
             preferredStyle: UIAlertControllerStyle.alert
         )
         alert.addAction(UIAlertAction(title: "OK", style: UIAlertActionStyle.default, handler: nil))
@@ -246,9 +249,10 @@ class HLProfileViewController: BaseViewController {
     }
     
     func linkedinValidate(){
+        print("Validating linkedin...")
         linkedinHelper.authorizeSuccess({ (token) in
             
-            //print(token)
+            print(token)
             self.verLinkedinIcon.image = UIImage(named: "icon_linkedin_on")
             self.verLinkedinIcon.bouncer()
             HulaUser.sharedInstance.liToken = token.accessToken
@@ -330,9 +334,10 @@ class HLProfileViewController: BaseViewController {
                             if let feedback = dictionary["feedback"] as? NSArray {
                                 self.arrFeedback = feedback
                             }
-                            
-                            let app = UIApplication.shared.delegate as! AppDelegate
-                            app.registerForPushNotifications()
+                            DispatchQueue.main.async {
+                                let app = UIApplication.shared.delegate as! AppDelegate
+                                app.registerForPushNotifications()
+                            }
                         } else {
                             self.expiredTokenAlert()
                         }

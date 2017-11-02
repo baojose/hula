@@ -209,10 +209,13 @@ class HLSettingViewController: BaseViewController {
 
 extension HLSettingViewController: AlertDelegate{
     func alertResponded(response: String, trigger:String) {
-        print("Response: \(response)")
+        //print("Response: \(response)")
         
         if (response == "ok"){
             HLDataManager.sharedInstance.logout()
+            DispatchQueue.main.async {
+                self.navigationController?.popViewController(animated: true)
+            }
             //self.view.window!.rootViewController?.dismiss(animated: true, completion: nil)
             self.goBackToPreviousPage("")
             

@@ -113,7 +113,7 @@ class CommonUtils: NSObject, EasyTipViewDelegate {
                 if (distance>1000){
                     //distance = distance
                     //return "Too far"
-                    return "\(distance) miles"
+                    return "\(Int(distance)) miles"
                 }
             }
             return "\(distance) miles"

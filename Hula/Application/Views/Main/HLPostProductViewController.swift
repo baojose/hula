@@ -325,6 +325,7 @@ class HLPostProductViewController: BaseViewController, UITextFieldDelegate {
         return textField.resignFirstResponder()
     }
     @IBAction func dismissToProductPage(_ sender: Any) {
+        HLDataManager.sharedInstance.uploadMode = false
         self.presentingViewController?.presentingViewController?.dismiss(animated: true, completion: nil)
     }
     @IBAction func publishNewProduct(_ sender: Any) {

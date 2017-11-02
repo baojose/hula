@@ -120,20 +120,12 @@ class HLBarterScreenViewController: BaseViewController {
             if self.thisTrade.turn_user_id == HulaUser.sharedInstance.userId{
                 // my turn
                 self.sectionCover.isHidden = true
-                self.myProductsCollection.isUserInteractionEnabled = true
-                self.mySelectedProductsCollection.isUserInteractionEnabled = true
-                self.otherProductsCollection.isUserInteractionEnabled = true
-                self.otherSelectedProductsCollection.isUserInteractionEnabled = true
                 self.addMoneyBtn1.isUserInteractionEnabled = true
                 self.addMoneyBtn2.isUserInteractionEnabled = true
                 
                 
             } else {
-                self.sectionCover.isHidden = false
-                self.myProductsCollection.isUserInteractionEnabled = false
-                self.mySelectedProductsCollection.isUserInteractionEnabled = false
-                self.otherProductsCollection.isUserInteractionEnabled = false
-                self.otherSelectedProductsCollection.isUserInteractionEnabled = false
+                self.sectionCover.isHidden = true // provisional
                 self.addMoneyBtn1.isUserInteractionEnabled = false
                 self.addMoneyBtn2.isUserInteractionEnabled = false
                 
@@ -162,16 +154,14 @@ class HLBarterScreenViewController: BaseViewController {
             
             
             
-            print(thisTrade.other_money)
-            print(thisTrade.owner_money)
+            //print(thisTrade.other_money)
+            //print(thisTrade.owner_money)
             
             
             if (self.thisTrade.turn_user_id == HulaUser.sharedInstance.userId && thisTrade.num_bids == 1){
                 // first turn
                 self.addMoneyBtn1.alpha = 0
                 self.addMoneyBtn2.alpha = 0
-                self.myProductsCollection.isUserInteractionEnabled = false
-                self.mySelectedProductsCollection.isUserInteractionEnabled = false
             } else {
                 self.addMoneyBtn1.alpha = 1
                 self.addMoneyBtn2.alpha = 1
@@ -198,7 +188,7 @@ class HLBarterScreenViewController: BaseViewController {
                         HulaTip(delay: 0.4, view: self.myProductsCollection, text: "Here is your stuff."),
                         HulaTip(delay: 0.4, view: self.sendOfferFakeView, text: "Once you select what you want, find out if the other trader interested. Click the button below to send a notification!")
                         ])
-                    print(HLDataManager.sharedInstance.onboardingTutorials)
+                    //print(HLDataManager.sharedInstance.onboardingTutorials)
                     HLDataManager.sharedInstance.onboardingTutorials.setObject("done", forKey: "barter_my_turn" as NSCopying)
                 }
             } else {
@@ -427,7 +417,7 @@ extension HLBarterScreenViewController: KDDragAndDropCollectionViewDataSource, U
     }
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        print("Collection: \(collectionView.tag) item \(indexPath.item)")
+        //print("Collection: \(collectionView.tag) item \(indexPath.item)")
         let product:HulaProduct
         switch collectionView.tag {
         case 1:
@@ -448,7 +438,7 @@ extension HLBarterScreenViewController: KDDragAndDropCollectionViewDataSource, U
         viewController.modalPresentationStyle = .overCurrentContext
         
         self.present(viewController, animated: true)
-        print("presented vc")
+        //print("presented vc")
         
     }
     
@@ -493,16 +483,20 @@ extension HLBarterScreenViewController: KDDragAndDropCollectionViewDataSource, U
         cell.image.loadImageFromURL(urlString: thumb)
         //print(product.tradeStatus)
         if (product.tradeStatus != 0){
-            
-            
-            //cell.statusImage.image = UIImage.init(named: arrowImagesName[product.tradeStatus])
-            
             if (product.tradeStatus == 1){
                 cell.is_added()
             } else {
                 cell.is_removed()
             }
-            
+        }
+        //print(product.video_requested)
+        //print(product.video_url)
+        if (product.video_requested){
+            if product.video_url.characters.count > 0 {
+                cell.statusImage.image = UIImage(named: "video-player-icon-red")
+            } else {
+                cell.statusImage.image = UIImage(named: "video-requested-red")
+            }
         } else {
             cell.statusImage.image = nil
         }
@@ -700,7 +694,7 @@ extension HLBarterScreenViewController: HLBarterScreenDelegate{
 extension HLBarterScreenViewController: CalculatorDelegate{
     
     func amountSelected(amount:Int, side:String){
-        print("Calculator amount: \(amount)")
+        //print("Calculator amount: \(amount)")
         if (amount > 0){
             // amount valid
             let final_amount = Float(amount)

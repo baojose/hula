@@ -57,6 +57,8 @@ class HLHomeViewController: BaseViewController, UIScrollViewDelegate, UITextFiel
         // force allow rotation on this VC
         let appDelegate = UIApplication.shared.delegate as! AppDelegate
         appDelegate.allowRotation = true
+        
+        
     }
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()

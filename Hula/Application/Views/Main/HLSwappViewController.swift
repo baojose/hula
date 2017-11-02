@@ -93,7 +93,10 @@ class HLSwappViewController: UIViewController {
         threeDots.animateDots()
         threeDotsView.isHidden = true
         controlSetupBottomBar(index:0);
+        
     }
+    
+    
     override func viewWillAppear(_ animated: Bool) {
         //print(UIDevice.current.orientation)
         var hasToDismiss = true
@@ -112,7 +115,7 @@ class HLSwappViewController: UIViewController {
         //self.portraitView.frame.origin.y = 0
         self.portraitView.frame = self.view.frame
         self.portraitView.transform = CGAffineTransform(rotationAngle: 0)
-        if !UIDeviceOrientationIsPortrait(UIDevice.current.orientation) {
+        if !UIDeviceOrientationIsPortrait(UIDevice.current.orientation) && !hasToDismiss {
             DispatchQueue.main.async {
                 UIView.animate(withDuration: 0.6) {
                     self.portraitView.frame.origin.y = 1000
@@ -121,11 +124,12 @@ class HLSwappViewController: UIViewController {
             }
         }
         
-        
+        /*
         if hasToDismiss{
             self.view.isHidden = true
             self.dismiss(animated: true)
         }
+ */
     }
     override func viewDidAppear(_ animated: Bool) {
         
@@ -179,7 +183,16 @@ class HLSwappViewController: UIViewController {
     
     
     func rotateAnimation(){
+        var hasToDismiss = true
         if UIDeviceOrientationIsPortrait(UIDevice.current.orientation) {
+            //print("portrait!!!!")
+            hasToDismiss = false
+        }
+        if UIDeviceOrientationIsLandscape(UIDevice.current.orientation) {
+            //print("landscape!!!!")
+            hasToDismiss = false
+        }
+        if UIDeviceOrientationIsPortrait(UIDevice.current.orientation) || hasToDismiss{
             mobileImage.alpha = 0
             self.mobileImage.transform = CGAffineTransform(rotationAngle: CGFloat(-Double.pi/2));
             
@@ -307,7 +320,7 @@ class HLSwappViewController: UIViewController {
                             viewController.isCancelVisible = false
                             
                             if buttonTag == 91053 {
-                                viewController.message = "Your deal has been closed.\n\nContact with the user to exchange the selected products."
+                                viewController.message = "You accepted the deal. Now meet the trader and exchange your stuff."
                                 viewController.trigger = "deal_review"
                             } else {
                                 if buttonTag == 90441 {
@@ -345,7 +358,7 @@ class HLSwappViewController: UIViewController {
     
     
     func controlSetupBottomBar(index:Int){
-        print("setting up bottom bar with index: \(index)")
+        //print("setting up bottom bar with index: \(index)")
         
         initialOtherUserX = self.view.frame.width - self.otherUserView.frame.width
         

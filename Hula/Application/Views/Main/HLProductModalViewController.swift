@@ -8,6 +8,7 @@
 
 import UIKit
 import MobileCoreServices
+import AVKit
 
 class HLProductModalViewController: UIViewController, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
 
@@ -44,10 +45,19 @@ class HLProductModalViewController: UIViewController, UIImagePickerControllerDel
         productDescriptionLabel.text = product.productDescription
         
         if (product.video_requested){
-            videoStatusImg.image = UIImage(named: "video-requested-red")
-            videoBtn.setTitle(" Recording pending...", for: .normal)
-            videoBtn.tag = 43904
+            
+            if (product.video_url.characters.count > 0){
+                videoStatusImg.image = UIImage(named: "video-player-icon-red")
+                videoBtn.setTitle(" Play video", for: .normal)
+                videoBtn.setImage(UIImage(named: "video-player-icon-red"), for: .normal)
+                videoBtn.tag = 43909
+            } else {
+                videoStatusImg.image = UIImage(named: "video-requested-red")
+                videoBtn.setTitle(" Recording pending...", for: .normal)
+                videoBtn.tag = 43904
+            }
         } else {
+            videoBtn.setTitle(" Request video proof", for: .normal)
             videoStatusImg.image = nil
             videoBtn.tag = 1
         }
@@ -103,40 +113,62 @@ class HLProductModalViewController: UIViewController, UIImagePickerControllerDel
     @IBAction func videoAction(_ sender: Any) {
         let tag = (sender as! UIButton).tag
         if (tag == 43904){
-            recordVideo()
+            if product.productOwner == HulaUser.sharedInstance.userId {
+                recordVideo()
+            }
         } else {
-            let queryURL = HulaConstants.apiURL + "products/\(product.productId!)/requestvideo"
-            HLDataManager.sharedInstance.httpGet(urlstr: queryURL, taskCallback: { (ok, json) in
-                if (ok){
-                    if let _ = json as? [NSDictionary] {
-                        
-                        DispatchQueue.main.async {
-                            let alert = self.storyboard?.instantiateViewController(withIdentifier: "alertView") as! AlertViewController
-                            alert.delegate = self as AlertDelegate
-                            alert.isCancelVisible = false
-                            alert.message = "You have requested a video for this product. You will receive a notification when the user upload it."
-                            alert.trigger = "video_request"
-                            self.present(alert, animated: true)
+            if (tag == 43909){
+                playVideo()
+            } else {
+                let queryURL = HulaConstants.apiURL + "products/\(product.productId!)/requestvideo"
+                HLDataManager.sharedInstance.httpGet(urlstr: queryURL, taskCallback: { (ok, json) in
+                    if (ok){
+                        if let _ = json as? [NSDictionary] {
+                            
+                            DispatchQueue.main.async {
+                                let alert = self.storyboard?.instantiateViewController(withIdentifier: "alertView") as! AlertViewController
+                                alert.delegate = self as AlertDelegate
+                                alert.isCancelVisible = false
+                                alert.message = "You have requested a video for this product. You will receive a notification when the user upload it."
+                                alert.trigger = "video_request"
+                                self.present(alert, animated: true)
+                            }
+                        } else {
+                            print("Error connecting")
                         }
-                    } else {
-                       print("Error connecting")
                     }
-                }
-            })
+                })
+            }
         }
     }
-    
- func recordVideo() {
-    if (UIImagePickerController.isSourceTypeAvailable(.camera)) {
-        if UIImagePickerController.availableCaptureModes(for: .rear) != nil {
+    func playVideo(){
+        
+        let appDelegate = UIApplication.shared.delegate as! AppDelegate
+        appDelegate.allowRotation = true
+        
+        let videoURL = URL(string: product.video_url)
+        let player = AVPlayer(url: videoURL!)
+        let playerViewController = AVPlayerViewController()
+        playerViewController.player = player
+        self.present(playerViewController, animated: true) {
+            playerViewController.player!.play()
+        }
+    }
+    func recordVideo() {
+        if (UIImagePickerController.isSourceTypeAvailable(.camera)) {
+            
+            let appDelegate = UIApplication.shared.delegate as! AppDelegate
+            appDelegate.allowRotation = true
+            
+            if UIImagePickerController.availableCaptureModes(for: .rear) != nil {
                 
-            imagePicker.sourceType = .camera
-            imagePicker.mediaTypes = [ kUTTypeMovie as String ]
-            imagePicker.allowsEditing = false
-            imagePicker.videoQuality = .typeMedium
-            imagePicker.delegate = self
+                imagePicker.sourceType = .camera
+                imagePicker.mediaTypes = [ kUTTypeMovie as String ]
+                imagePicker.allowsEditing = false
+                imagePicker.videoQuality = .typeMedium
+                imagePicker.delegate = self
                 
-            present(imagePicker, animated: true, completion: {})
+                present(imagePicker, animated: true, completion: {})
             } else {
                 print("Rear camera doesn't exist. Application cannot access the camera.")
             }
@@ -170,7 +202,7 @@ class HLProductModalViewController: UIViewController, UIImagePickerControllerDel
             
             
             HLDataManager.sharedInstance.uploadVideo(path, productId: product.productId, taskCallback: { (success, json) in
-                print(json)
+                //print(json)
             })
         }
         

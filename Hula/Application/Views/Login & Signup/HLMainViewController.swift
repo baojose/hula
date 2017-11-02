@@ -11,7 +11,8 @@ import AVKit
 import AVFoundation
 
 class HLMainViewController: UserBaseViewController {
-
+    var player : AVPlayer?
+    var playerLayer : AVPlayerLayer!
     override func viewDidLoad() {
         super.viewDidLoad()
     }
@@ -22,6 +23,11 @@ class HLMainViewController: UserBaseViewController {
     }
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
+        if player != nil {
+            player!.pause();
+            player = nil
+        }
+        playerLayer?.removeFromSuperlayer()
     }
     override var preferredStatusBarStyle: UIStatusBarStyle {
         return .lightContent
@@ -41,12 +47,12 @@ class HLMainViewController: UserBaseViewController {
                 debugPrint("splash_intro.mp4 file not found")
                 return
             }
-            let player = AVPlayer(url: URL(fileURLWithPath: path))
-            let playerLayer = AVPlayerLayer(player: player)
+            player = AVPlayer(url: URL(fileURLWithPath: path))
+            playerLayer = AVPlayerLayer(player: player!)
             playerLayer.frame = self.view.bounds
             self.view.layer.addSublayer(playerLayer)
-            NotificationCenter.default.addObserver(self, selector: #selector(HLMainViewController.playerEnded(notification:)), name:NSNotification.Name.AVPlayerItemDidPlayToEndTime, object: player.currentItem)
-            player.play()
+            NotificationCenter.default.addObserver(self, selector: #selector(HLMainViewController.playerEnded(notification:)), name:NSNotification.Name.AVPlayerItemDidPlayToEndTime, object: player!.currentItem)
+            player!.play()
         }
     }
     

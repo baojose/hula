@@ -69,6 +69,9 @@ class HLCustomCameraViewController: BaseViewController, UIImagePickerControllerD
     }
     
     func initView(){
+        
+        dataManager.newProduct = HulaProduct.init()
+        
         pageTitleLabel.attributedText = commonUtils.attributedStringWithTextSpacing(pageTitleLabel.text!, 2.33)
         commonUtils.setRoundedRectBorderImageView(imageView1, 1.0, UIColor.init(white: 1, alpha: 0.9), 0.0)
         commonUtils.setRoundedRectBorderImageView(imageView2, 1.0, UIColor.init(white: 1, alpha: 0.9), 0.0)
@@ -89,6 +92,12 @@ class HLCustomCameraViewController: BaseViewController, UIImagePickerControllerD
         imageView3.addGestureRecognizer(recognizer3)
         imageView4.addGestureRecognizer(recognizer4)
     }
+    
+    @IBAction func dismissCameraNoproduct(_ sender: Any) {
+        HLDataManager.sharedInstance.uploadMode = false
+        self.dismiss(animated: true, completion: nil)
+    }
+    
     func initData(){
         arrAlbumPhotos = NSMutableArray.init()
         arrSelectedIndexs = NSMutableArray.init()
@@ -248,7 +257,7 @@ class HLCustomCameraViewController: BaseViewController, UIImagePickerControllerD
     // IB Actions
     
     @IBAction func goNextPage(_ sender: UIButton) {
-        
+        // images taken. Let's go to the next step
         let viewController = self.storyboard?.instantiateViewController(withIdentifier: "postProductPage") as! HLPostProductViewController
         self.present(viewController, animated: true)
     }

@@ -22,6 +22,8 @@ class HLNotificationsViewController: BaseViewController, UITableViewDelegate, UI
         timer = Timer.scheduledTimer(timeInterval: 15, target: self, selector: #selector(self.refreshNotifications), userInfo: nil, repeats: true)
         
         
+        let notificationsRecieved = Notification.Name("notificationsRecieved")
+        NotificationCenter.default.addObserver(self, selector: #selector(self.checkIfNotificationsLoaded), name: notificationsRecieved, object: nil)
         
     }
     override func viewWillDisappear(_ animated: Bool) {
@@ -61,9 +63,15 @@ class HLNotificationsViewController: BaseViewController, UITableViewDelegate, UI
     //#MARK: - TableViewDelegate
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        
         return HLDataManager.sharedInstance.arrNotifications.count
         
     }
+
+    func numberOfSections(in tableView: UITableView) -> Int {
+        return 1
+    }
+    
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
 
         
@@ -153,7 +161,9 @@ class HLNotificationsViewController: BaseViewController, UITableViewDelegate, UI
         }
         
     }
-    
+    func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool{
+        return true
+    }
     // this method handles row deletion
     func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCellEditingStyle, forRowAt indexPath: IndexPath) {
         
@@ -161,6 +171,13 @@ class HLNotificationsViewController: BaseViewController, UITableViewDelegate, UI
             // remove the item from the data model
             let notification : NSDictionary = HLDataManager.sharedInstance.arrNotifications.object(at: indexPath.row) as! NSDictionary
             
+            
+            
+            /*
+            // delete the table view row
+                HLDataManager.sharedInstance.arrNotifications.remove(at: indexPath.row)
+                tableView.deleteRows(at: [indexPath], with: .fade)
+             */
             if let notification_id = notification.object(forKey: "_id") as? String{
                 let queryURL = HulaConstants.apiURL + "notifications/delete/" + notification_id
                 HLDataManager.sharedInstance.httpGet(urlstr: queryURL, taskCallback: { (ok, json) in
@@ -177,11 +194,6 @@ class HLNotificationsViewController: BaseViewController, UITableViewDelegate, UI
                 })
             }
             
-            
-            //HLDataManager.sharedInstance.arrNotifications.remove(at: indexPath.row)
-            
-            // delete the table view row
-            //tableView.deleteRows(at: [indexPath], with: .fade)
         }
     }
     // IB Actions

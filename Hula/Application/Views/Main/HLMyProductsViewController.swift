@@ -7,15 +7,20 @@
 //
 
 import UIKit
+import BRYXBanner
+import CoreLocation
 
-class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITableViewDataSource {
+class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITableViewDataSource, CLLocationManagerDelegate {
 
     @IBOutlet var productTableView: UITableView!
     @IBOutlet weak var noProductsView: UIView!
+    var locationManager = CLLocationManager()
     var arrayProducts: [HulaProduct] = []
     var arrayImagesURL = ["","","",""] as Array
     var spinner: HLSpinnerUIView!
     var last_logged_user:String = ""
+    var images_to_upload : Int = 0
+    var images_already_uploaded : Int = 0
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -27,6 +32,14 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
         spinner.show(inView: self.view)
         
         setupView()
+        
+        
+        
+        // geolocate product
+        locationManager.requestWhenInUseAuthorization()
+        locationManager.delegate = self
+        locationManager.desiredAccuracy = kCLLocationAccuracyBest
+        locationManager.startUpdatingLocation()
     }
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
@@ -63,6 +76,18 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
     func initView(){
     }
     
+    func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+        let userLocation:CLLocation = locations[0]
+        let long = userLocation.coordinate.longitude;
+        let lat = userLocation.coordinate.latitude;
+        
+        //print(long, lat)
+        HulaUser.sharedInstance.location = CLLocation(latitude:lat, longitude:long);
+        locationManager.stopUpdatingLocation()
+        
+        HLDataManager.sharedInstance.writeUserData()
+        //Do What ever you want with it
+    }
     
     //#MARK: - TableViewDelegate
     
@@ -138,11 +163,11 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
     // IB Actions
     
     @IBAction func presentAddNewProductPage(_ sender: UIButton) {
+        // add new product button presed. Lets open the camera vc
         dataManager.uploadMode = true
         dataManager.newProduct = HulaProduct.init()
         let cameraViewController = self.storyboard?.instantiateViewController(withIdentifier: "customCameraPage") as! HLCustomCameraViewController
         self.present(cameraViewController, animated: true)
-
     }
     
     
@@ -154,28 +179,37 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
         //print(HLDataManager.sharedInstance.newProduct.productId)
         //print(dataManager.uploadMode)
         if dataManager.uploadMode == true {
-            
+            // just if we are coming back from product creation
             if HLDataManager.sharedInstance.newProduct.productId.characters.count > 0 && self.arrayProducts.count > 0{
-                self.arrayProducts[self.arrayProducts.count  - 1] = dataManager.newProduct
+                // item already exists and is being updated
+                // this should not happen
+                self.arrayProducts[self.arrayProducts.count - 1] = dataManager.newProduct
                 updateProduct()
             } else {
+                
+                
                 self.arrayProducts.append(HLDataManager.sharedInstance.newProduct)
-                //self.arrayProducts.insert(HLDataManager.sharedInstance.newProduct, at: 0)
+                //start of uploading and saving product
                 uploadImages()
                 uploadProduct()
-                let when = DispatchTime.now() + 2 // change 2 to desired number of seconds
+                
+                // wait 2 seconds and open the category selector
+                let when = DispatchTime.now() + 2
                 DispatchQueue.main.asyncAfter(deadline: when) {
                     let viewController = self.storyboard?.instantiateViewController(withIdentifier: "completeProductProfilePage") as! HLCompleteProductProfileViewController
                     viewController.productImage = self.dataManager.newProduct.arrProductPhotos[0] as! UIImage
                     self.present(viewController, animated: true)
                     
+                    // next time coming to this VC, go straight to the update process
                     HLDataManager.sharedInstance.uploadMode = false
                 }
             }
+            
+            // refresh table
             productTableView.reloadData()
             productTableView.setContentOffset(CGPoint(x: 0.0, y: 0.0), animated: false)
             
-            if let newCell = productTableView.cellForRow(at: IndexPath(item: 0, section: 0)) as? HLMyProductTableViewCell{
+            if let newCell = productTableView.cellForRow(at: IndexPath(row: 0, section: 0)) as? HLMyProductTableViewCell{
                 newCell.alpha = 0
                 let when = DispatchTime.now() + 0.3 // change 2 to desired number of seconds
                 DispatchQueue.main.asyncAfter(deadline: when) {
@@ -198,7 +232,6 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
                         self.spinner.hide()
                         
                         if let dictionary = json as? [Any] {
-                            print(dictionary)
                             let products_arr = dictionary
                             
                             self.arrayProducts = []
@@ -247,7 +280,7 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
                     DispatchQueue.main.async {
                         //print("Saved")
                         if let dictionary = json as? [String:Any] {
-                            print(dictionary)
+                            //print(dictionary)
                             if let product_id = dictionary["product_id"] as? String {
                                 HLDataManager.sharedInstance.newProduct.productId = product_id
                             }
@@ -296,7 +329,7 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
     
     func updateProductDataString() -> String{
         //print(HLDataManager.sharedInstance.newProduct.arrProductPhotoLink)
-        //print(self.arrayImagesURL)
+        print(dataManager.newProduct.arrProductPhotoLink)
         let product_images_array = dataManager.newProduct.arrProductPhotoLink.joined(separator: ",")
         var dataString:String = "title=" + dataManager.newProduct.productName.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)!
         dataString += "&description=" + dataManager.newProduct.productDescription.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)!
@@ -310,29 +343,36 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
     }
     
     func uploadImages() {
-        //print("Getting user info...")
-        print("Uploading images...")
+        images_to_upload = 0
+        images_already_uploaded = 0
+        dataManager.newProduct.arrProductPhotoLink = ["","","",""]
+        self.arrayImagesURL = ["","","",""]
+        print(dataManager.newProduct.arrProductPhotos)
         if (HulaUser.sharedInstance.userId.characters.count>0){
+            // user is logged in
             for i in 0 ..< 4{
                 if ( dataManager.newProduct.arrProductPhotos.count>i ){
                     if (dataManager.newProduct.arrProductPhotos[i] as? UIImage != nil){
+                        images_to_upload += 1
                         dataManager.uploadImage(dataManager.newProduct.arrProductPhotos[i] as! UIImage, itemPosition:i, taskCallback: { (ok, json) in
                             if (ok){
-                                //print("Uploaded!")
                                 DispatchQueue.main.async {
                                     if let dictionary = json as? [String: Any] {
-                                        //print(dictionary)
                                         if let filePath:String = dictionary["path"] as? String {
-                                            //print(filePath)
                                             if let pos = dictionary["position"] as? String {
-                                                //print(pos)
+                                                print(pos)
+                                                print(filePath)
+                                                self.images_already_uploaded += 1
                                                 self.arrayImagesURL[Int(pos)!] = HulaConstants.staticServerURL + filePath
                                                 HLDataManager.sharedInstance.newProduct.arrProductPhotoLink = self.arrayImagesURL
                                                 if Int(pos) == 0 {
                                                     HLDataManager.sharedInstance.newProduct.productImage = HulaConstants.staticServerURL + filePath
                                                 }
                                                 //print(self.arrayImagesURL[Int(pos)!])
-                                                self.updateProduct()
+                                                if (self.images_already_uploaded == self.images_to_upload){
+                                                    self.updateProduct()
+                                                }
+                                                self.notify("Uploaded image \(self.images_already_uploaded) of \(self.images_to_upload).")
                                             }
                                         }
                                     }
@@ -345,9 +385,14 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
                     }
                 }
             }
+            self.notify("Uploading \(images_to_upload) images...")
         }
     }
-    
+    func notify(_ txt: String){
+        let banner = Banner(title: nil, subtitle: txt, backgroundColor: HulaConstants.appMainColor)
+        banner.dismissesOnTap = true
+        banner.show(duration: 0.7)
+    }
     func goEditProductPage(index: Int){
         //print(sender.tag)
         //let productToDisplay : HulaProduct = self.arrayProducts[index]
