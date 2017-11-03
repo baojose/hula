@@ -382,7 +382,11 @@ class HLBarterScreenViewController: BaseViewController {
         
         viewController.calculatorDelegate = self
         viewController.side = "other"
-        
+        if thisTrade.owner_id == HulaUser.sharedInstance.userId{
+            viewController.amount = Int(thisTrade.other_money)
+        } else {
+            viewController.amount = Int(thisTrade.owner_money)
+        }
         self.present(viewController, animated: true)
         self.didTradeMutate = true
         self.mainSwapViewHolder?.controlSetupBottomBar(index: myTradeIndex + 1)
@@ -393,6 +397,11 @@ class HLBarterScreenViewController: BaseViewController {
         
         viewController.calculatorDelegate = self
         viewController.side = "owner"
+        if thisTrade.owner_id == HulaUser.sharedInstance.userId{
+            viewController.amount = Int(thisTrade.owner_money)
+        } else {
+            viewController.amount = Int(thisTrade.other_money)
+        }
         self.present(viewController, animated: true)
         self.didTradeMutate = true
         self.mainSwapViewHolder?.controlSetupBottomBar(index: myTradeIndex + 1)
@@ -432,14 +441,24 @@ extension HLBarterScreenViewController: KDDragAndDropCollectionViewDataSource, U
             product = HulaProduct(id : "nada", name : "Test product", image: "https://api.hula.trading/v1/products/59400e5ce8825609f281bc68/image")
         }
         //print(product)
-        let viewController = self.storyboard?.instantiateViewController(withIdentifier: "ProductModal") as! HLProductModalViewController
         
-        viewController.product = product
-        viewController.modalPresentationStyle = .overCurrentContext
-        
-        self.present(viewController, animated: true)
-        //print("presented vc")
-        
+        if (product.productId == "xmoney"){
+            if thisTrade.turn_user_id == HulaUser.sharedInstance.userId {
+                if collectionView.tag == 2 {
+                    addMonewToOwner("")
+                } else {
+                    addMoneyToOther("")
+                }
+            }
+        } else {
+            let viewController = self.storyboard?.instantiateViewController(withIdentifier: "ProductModal") as! HLProductModalViewController
+            
+            viewController.product = product
+            viewController.modalPresentationStyle = .overCurrentContext
+            
+            self.present(viewController, animated: true)
+            //print("presented vc")
+        }
     }
     
     // The cell that is returned must be retrieved from a call to -dequeueReusableCellWithReuseIdentifier:forIndexPath:
