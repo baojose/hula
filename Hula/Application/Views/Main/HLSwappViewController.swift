@@ -379,126 +379,140 @@ class HLSwappViewController: UIViewController {
             self.threeDotsView.isHidden = true;
             
             if let swappPageVC = self.childViewControllers.first as? HLSwappPageViewController {
-                last_index_setup = swappPageVC.currentIndex
-                let thisTrade: NSDictionary = swappPageVC.arrTrades[swappPageVC.currentIndex]
-                var other_user_id = ""
-                var chat_count = 0
-                
-                // check chat counter
-                if (HulaUser.sharedInstance.userId == thisTrade.object(forKey: "owner_id") as! String){
-                    // I am the owner
-                    other_user_id = thisTrade.object(forKey: "other_id") as! String
-                    if let ch_c = thisTrade.object(forKey: "owner_unread") as? Int{
-                        chat_count = ch_c
-                    }
-                } else {
-                    other_user_id = thisTrade.object(forKey: "owner_id") as! String
-                    if let ch_c = thisTrade.object(forKey: "other_unread") as? Int{
-                        chat_count = ch_c
-                    }
-                }
-                
-                
-                let currentStatus = thisTrade.object(forKey: "status") as! String
-                if currentStatus == HulaConstants.cancel_status || currentStatus == HulaConstants.end_status {
-                    // closed or removed trade!
+                if swappPageVC.arrTrades.count > 0 {
+                    last_index_setup = swappPageVC.currentIndex
+                    let thisTrade: NSDictionary = swappPageVC.arrTrades[swappPageVC.currentIndex]
+                    var other_user_id = ""
+                    var chat_count = 0
                     
-                    self.sendOfferBtn.alpha = 0
-                    self.mainCentralLabel.alpha = 0
-                    self.remainingTimeLabel.alpha = 0
-                    self.threeDotsView.isHidden = true
+                    // check chat counter
+                    if (HulaUser.sharedInstance.userId == thisTrade.object(forKey: "owner_id") as! String){
+                        // I am the owner
+                        other_user_id = thisTrade.object(forKey: "other_id") as! String
+                        if let ch_c = thisTrade.object(forKey: "owner_unread") as? Int{
+                            chat_count = ch_c
+                        }
+                    } else {
+                        other_user_id = thisTrade.object(forKey: "owner_id") as! String
+                        if let ch_c = thisTrade.object(forKey: "other_unread") as? Int{
+                            chat_count = ch_c
+                        }
+                    }
                     
-                } else {
-                    if currentStatus == HulaConstants.review_status {
-                        // pending exchange
+                    
+                    let currentStatus = thisTrade.object(forKey: "status") as! String
+                    if currentStatus == HulaConstants.cancel_status || currentStatus == HulaConstants.end_status {
+                        // closed or removed trade!
                         
+                        self.sendOfferBtn.alpha = 0
                         self.mainCentralLabel.alpha = 0
                         self.remainingTimeLabel.alpha = 0
                         self.threeDotsView.isHidden = true
                         
-                        self.sendOfferBtn.setTitle( "I received my stuff", for: .normal)
-                        self.sendOfferBtn.tag = 90441
                     } else {
-                        // still bartering
-                        
-                        if let current_user_turn = thisTrade.object(forKey: "turn_user_id") as? String{
-                            if current_user_turn != HulaUser.sharedInstance.userId {
-                                // other user turn
-                                
-                                self.sendOfferBtn.alpha = 0
-                                self.mainCentralLabel.alpha=1;
-                                self.mainCentralLabel.text = "Waiting for user reply"
-                                let h_str = thisTrade.object(forKey: "last_update") as! String
-                                let date = h_str.dateFromISO8601?.addingTimeInterval(HulaConstants.courtesyTime * 60.0 * 60.0)
-                                //print(date)
-                                
-                                let formatter = DateComponentsFormatter()
-                                formatter.allowedUnits = [.hour]
-                                formatter.unitsStyle = .short
-                                var str_hours = formatter.string(from: Date(), to: date!)!
-                                str_hours = (str_hours.replacingOccurrences(of: " hr", with: " h"))
-                                if (str_hours[0] == "-"){
-                                    str_hours = "0";
-                                }
-                                
-                                self.remainingTimeLabel.alpha = 1
-                                self.remainingTimeLabel.text = "Remaining time for response: \(str_hours)"
-                                self.threeDotsView.isHidden = false;
-                                
-                            } else {
-                                // my turn!
-                                self.remainingTimeLabel.alpha = 0;
-                                self.threeDotsView.isHidden = true;
-                                if self.tradeCanBeClosed(thisTrade) {
-                                    // can be closed
-                                    self.sendOfferBtn.setTitle( "Accept trade", for: .normal)
-                                    self.sendOfferBtn.tag = 91053
+                        if currentStatus == HulaConstants.review_status {
+                            // pending exchange
+                            
+                            self.mainCentralLabel.alpha = 0
+                            self.remainingTimeLabel.alpha = 0
+                            self.threeDotsView.isHidden = true
+                            
+                            self.sendOfferBtn.setTitle( "I received my stuff", for: .normal)
+                            self.sendOfferBtn.tag = 90441
+                        } else {
+                            // still bartering
+                            
+                            if let current_user_turn = thisTrade.object(forKey: "turn_user_id") as? String{
+                                if current_user_turn != HulaUser.sharedInstance.userId {
+                                    // other user turn
+                                    
+                                    self.sendOfferBtn.alpha = 0
+                                    self.mainCentralLabel.alpha=1;
+                                    self.mainCentralLabel.text = "Waiting for user reply"
+                                    let h_str = thisTrade.object(forKey: "last_update") as! String
+                                    let date = h_str.dateFromISO8601?.addingTimeInterval(HulaConstants.courtesyTime * 60.0 * 60.0)
+                                    //print(date)
+                                    
+                                    let formatter = DateComponentsFormatter()
+                                    formatter.allowedUnits = [.hour]
+                                    formatter.unitsStyle = .short
+                                    var str_hours = formatter.string(from: Date(), to: date!)!
+                                    str_hours = (str_hours.replacingOccurrences(of: " hr", with: " h"))
+                                    if (str_hours[0] == "-"){
+                                        str_hours = "0";
+                                    }
+                                    
+                                    self.remainingTimeLabel.alpha = 1
+                                    self.remainingTimeLabel.text = "Remaining time for response: \(str_hours)"
+                                    self.threeDotsView.isHidden = false;
                                     
                                 } else {
-                                    self.sendOfferBtn.setTitle( "Send offer", for: .normal)
-                                    self.sendOfferBtn.tag = 1
+                                    // my turn!
+                                    self.remainingTimeLabel.alpha = 0;
+                                    self.threeDotsView.isHidden = true;
+                                    if self.tradeCanBeClosed(thisTrade) {
+                                        // can be closed
+                                        self.sendOfferBtn.setTitle( "Accept trade", for: .normal)
+                                        self.sendOfferBtn.tag = 91053
+                                        
+                                    } else {
+                                        self.sendOfferBtn.setTitle( "Send offer", for: .normal)
+                                        self.sendOfferBtn.tag = 1
+                                    }
                                 }
                             }
                         }
                     }
-                }
-                if chat_count > 0 {
-                    self.chatCountLbl.text = "\(chat_count)"
-                    self.chatCountLbl.isHidden = false
+                    if chat_count > 0 {
+                        self.chatCountLbl.text = "\(chat_count)"
+                        self.chatCountLbl.isHidden = false
+                    } else {
+                        self.chatCountLbl.isHidden = true
+                    }
+                    
+                    if let bids = thisTrade.object(forKey: "bids") as? [Any] {
+                        //print("Bids: \(bids.count)")
+                        if (bids.count == 1 && thisTrade.object(forKey: "turn_user_id") as? String == HulaUser.sharedInstance.userId ){
+                            // first turn
+                            self.chatButton.alpha = 0
+                        } else {
+                            self.chatButton.alpha = 1
+                        }
+                    }
+                    
+                    
+                    if (prevUser != other_user_id) {
+                        prevUser = other_user_id
+                        otherUserImage.loadImageFromURL(urlString: CommonUtils.sharedInstance.userImageURL(userId: other_user_id))
+                        
+                        let queryURL = HulaConstants.apiURL + "users/\(other_user_id)/nick"
+                        HLDataManager.sharedInstance.httpGet(urlstr: queryURL, taskCallback: { (result, json) in
+                            
+                            if let dict = json as? [String:String]{
+                                //print(dict)
+                                if let nick = dict["nick"] {
+                                    //print(nick)
+                                    DispatchQueue.main.async {
+                                        self.otherUserNick.text = nick
+                                    }
+                                }
+                            }
+                        })
+                    }
                 } else {
+                    self.addTradeRoomBtn.alpha = 0
+                    self.mainCentralLabel.alpha = 0
+                    self.myUserView.frame.origin.x = 0
+                    self.otherUserView.frame.origin.x = self.initialOtherUserX + 500
+                    self.sendOfferBtn.alpha = 0
+                    self.chatButton.alpha = 0
+                    self.remainingTimeLabel.alpha = 0;
+                    self.threeDotsView.isHidden = true
+                    self.currentTradesBtn.alpha = 0;
+                    self.pastTradesBtn.alpha = 0
+                    self.tradeModeLine.alpha = 0
                     self.chatCountLbl.isHidden = true
                 }
-                
-                if let bids = thisTrade.object(forKey: "bids") as? [Any] {
-                    //print("Bids: \(bids.count)")
-                    if (bids.count == 1 && thisTrade.object(forKey: "turn_user_id") as? String == HulaUser.sharedInstance.userId ){
-                        // first turn
-                        self.chatButton.alpha = 0
-                    } else {
-                        self.chatButton.alpha = 1
-                    }
-                }
-                
-                
-                if (prevUser != other_user_id) {
-                    prevUser = other_user_id
-                    otherUserImage.loadImageFromURL(urlString: CommonUtils.sharedInstance.userImageURL(userId: other_user_id))
-
-                    let queryURL = HulaConstants.apiURL + "users/\(other_user_id)/nick"
-                    HLDataManager.sharedInstance.httpGet(urlstr: queryURL, taskCallback: { (result, json) in
-                        
-                        if let dict = json as? [String:String]{
-                        //print(dict)
-                            if let nick = dict["nick"] {
-                                //print(nick)
-                                DispatchQueue.main.async {
-                                    self.otherUserNick.text = nick
-                                }
-                            }
-                        }
-                    })
-                }
-                
             }
             
             

@@ -291,12 +291,22 @@ class HLBarterScreenViewController: BaseViewController {
     }
     
     override func viewWillAppear(_ animated: Bool) {
-        if !alreadyLoaded{
-            loadProductsArrays();
-        }
         if let swappPageVC = self.parent as? HLSwappPageViewController{
-            if let thisHolderScreen = swappPageVC.parent as? HLSwappViewController {
-                thisHolderScreen.last_index_setup = 1
+            self.addMoneyBtn1.isHidden = false
+            self.addMoneyBtn2.isHidden = false
+            if ( swappPageVC.arrTrades.count > 0 ){
+                if !alreadyLoaded{
+                    loadProductsArrays();
+                }
+                if let swappPageVC = self.parent as? HLSwappPageViewController{
+                    if let thisHolderScreen = swappPageVC.parent as? HLSwappViewController {
+                        thisHolderScreen.last_index_setup = 1
+                    }
+                }
+            } else {
+                self.addMoneyBtn1.isHidden = true
+                self.addMoneyBtn2.isHidden = true
+                
             }
         }
     }

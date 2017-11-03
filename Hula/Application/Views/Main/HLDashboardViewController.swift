@@ -202,7 +202,7 @@ extension HLDashboardViewController: AlertDelegate{
         self.refreshCollectionViewData()
         
         
-        if (trigger == "cancelconfirm"){
+        if (trigger == "cancelconfirm" && response == "ok"){
             let tradeId = lastTradeInteracted
             if (tradeId != ""){
                 let queryURL = HulaConstants.apiURL + "trades/\(tradeId)"
