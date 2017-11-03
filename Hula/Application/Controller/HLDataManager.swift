@@ -112,7 +112,9 @@ class HLDataManager: NSObject {
                         if let st = trade.object(forKey: "status") as? String{
                             //print(st)
                             if st != HulaConstants.end_status && st != HulaConstants.cancel_status {
-                                self.arrCurrentTrades.append(trade)
+                                if st != HulaConstants.pending_status || trade.object(forKey: "turn_user_id") as! String == HulaUser.sharedInstance.userId {
+                                    self.arrCurrentTrades.append(trade)
+                                }
                             } else {
                                 if st == HulaConstants.end_status {
                                     self.arrPastTrades.append(trade)
