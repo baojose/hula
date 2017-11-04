@@ -12,7 +12,6 @@ import MapKit
 class HLProductDetailViewController: BaseViewController, UIScrollViewDelegate, UITableViewDelegate, UITableViewDataSource {
     
     
-    @IBOutlet var titleLabel: UILabel!
     @IBOutlet var mainScrollView: UIScrollView!
     @IBOutlet var productMainDetailView: UIView!
     @IBOutlet var sellerView: UIView!
@@ -284,6 +283,16 @@ class HLProductDetailViewController: BaseViewController, UIScrollViewDelegate, U
         }
         self.present(viewController, animated: true)
     }
+    
+    
+   /*
+    func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
+        if productsScrollView == scrollView {
+            let page: Int = Int(round(productsScrollView.contentOffset.x / productsScrollView.frame.width))
+            pageControl.currentPage = page
+        }
+    }
+    */
 }
 
 extension HLProductDetailViewController: AlertDelegate{
