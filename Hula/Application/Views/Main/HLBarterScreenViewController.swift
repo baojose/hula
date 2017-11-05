@@ -324,24 +324,30 @@ class HLBarterScreenViewController: BaseViewController {
     
     func animateAddedProducts(_ type : String){
         var array_to_traverse : [HulaProduct]
+        var array_to_traverse2 : [HulaProduct]
         var posx : CGFloat = 0
         let posy : CGFloat = self.view.frame.height / 3
         var destx :CGFloat = 0
         let smallSide :CGFloat = (mySelectedProductsCollection.frame.width - 10)/3 - 8
         var col : KDDragAndDropCollectionView
         var col2 : KDDragAndDropCollectionView
+        var column_x : CGFloat = 5
         if type == "owner" {
             array_to_traverse = myTradedProducts
+            array_to_traverse2 = myProducts
             posx = 20
             destx = 128
             col = mySelectedProductsCollection
             col2 = myProductsCollection
+            column_x = 5
         } else {
             array_to_traverse = otherTradedProducts
+            array_to_traverse2 = otherProducts
             posx = self.view.frame.width - 20
             destx = self.view.frame.width/2
             col = otherSelectedProductsCollection
             col2 = otherProductsCollection
+            column_x = self.view.frame.width - 128
         }
         var counter : Int = 0
         for p in array_to_traverse{
@@ -369,8 +375,9 @@ class HLBarterScreenViewController: BaseViewController {
                     })
                 })
             }
-            
-            
+            counter += 1
+        }
+        for p in array_to_traverse2{
             if p.tradeStatus == 2{
                 // removed product
                 let fakeImg = UIImageView(frame: CGRect(x:destx, y:80, width: smallSide, height:smallSide))
@@ -385,8 +392,8 @@ class HLBarterScreenViewController: BaseViewController {
                     if cell != nil{
                         fakeImg.frame = (cell?.frame)!
                     } else {
-                        fakeImg.frame.origin = CGPoint(x:0, y:200)
-                        fakeImg.frame.size = CGSize(width:120, height:120)
+                        fakeImg.frame.origin = CGPoint(x:column_x, y:5)
+                        fakeImg.frame.size = CGSize(width:120, height:85)
                     }
                 }, completion:  { (success) in
                     UIView.animate(withDuration: 0.3, animations: {
