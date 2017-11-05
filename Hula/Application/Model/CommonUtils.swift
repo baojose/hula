@@ -10,6 +10,7 @@ import UIKit
 import Foundation
 import CoreLocation
 import EasyTipView
+import Kingfisher
 
 class CommonUtils: NSObject, EasyTipViewDelegate {
     
@@ -304,7 +305,7 @@ let imageCache = NSCache<AnyObject, AnyObject>()
 
 extension UIImageView {
     func loadImageFromURL(urlString: String) {
-        self.image = nil
+        
         
         var _urlString = ""
         if (urlString == ""){
@@ -312,11 +313,26 @@ extension UIImageView {
         } else {
             _urlString = urlString
         }
+        
+        let url = URL(string: _urlString)!
+        self.kf.indicatorType = .activity
+        self.kf.setImage(with: url, options: [.transition(.fade(0.5))])
+        
+        
+        
+        /*
+         
+         //old manual way
+         
+        self.image = nil
+        
         // check for cache
         if let cachedImage = imageCache.object(forKey: _urlString as AnyObject) as? UIImage {
             self.image = cachedImage
             return
         }
+        
+        
         if let url = NSURL(string: _urlString) {
         
             URLSession.shared.dataTask(with: url as URL, completionHandler: { (data, response, error) -> Void in
@@ -340,6 +356,7 @@ extension UIImageView {
                 
             }).resume()
         }
+         */
     }
 }
 
