@@ -15,9 +15,10 @@ import Kingfisher
 class CommonUtils: NSObject, EasyTipViewDelegate {
     
     var currentTipArr: [HulaTip] = []
-    var currentTip:Int = 0
+    var currentTip:Int = -1
     var lastTip:EasyTipView = EasyTipView(text: "");
     var startingViewController: UIViewController!
+    var bgViewToRemove : UIView!
     
     class var sharedInstance: CommonUtils {
         struct Static {
@@ -228,11 +229,19 @@ class CommonUtils: NSObject, EasyTipViewDelegate {
     
     
     func showTutorial(arrayTips: [HulaTip]){
-        
-        print(startingViewController)
-        currentTipArr = arrayTips
-        currentTip = -1
-        self.showNextTip(false)
+        if (currentTip == -1){
+            currentTipArr = arrayTips
+            
+            if let vc = currentTipArr[0].view.parentViewController  {
+                if bgViewToRemove != nil{
+                    bgViewToRemove.removeFromSuperview()
+                }
+                bgViewToRemove = UIView(frame: vc.view.frame)
+                bgViewToRemove.backgroundColor = UIColor(red: 0, green: 0, blue: 0, alpha: 0.3)
+                vc.view.addSubview(bgViewToRemove)
+            }
+            self.showNextTip(false)
+        }
     }
     
     func showNextTip(_ direct:Bool){
@@ -253,8 +262,19 @@ class CommonUtils: NSObject, EasyTipViewDelegate {
                     //self.lastTip.show(forView: self.currentTipArr[self.currentTip].view)
                     
                     //self.showNextTip(false)
+                } else {
+                    self.bgViewToRemove.removeFromSuperview()
+                    self.currentTip = -1
                 }
             }
+        }else{
+            self.currentTip = -1
+            UIView.animate(withDuration: 0.5, animations: {
+                self.bgViewToRemove.alpha = 0
+            }, completion: {(success) in
+                self.bgViewToRemove.removeFromSuperview()
+            })
+            
         }
     }
     func easyTipViewDidDismiss(_ tipView: EasyTipView) {
