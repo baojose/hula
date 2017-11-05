@@ -42,7 +42,6 @@ class HLDashboardViewController: BaseViewController {
 
     
     override func viewWillAppear(_ animated: Bool) {
-        mainCollectionView.frame = self.view.frame
         refreshCollectionViewData()
         
         if let swappPageVC = self.parent as? HLSwappPageViewController{
@@ -53,8 +52,9 @@ class HLDashboardViewController: BaseViewController {
     }
     
     override func viewDidAppear(_ animated: Bool) {
+        self.mainCollectionView.frame = self.view.frame
         self.mainCollectionView.scrollToItem(at: IndexPath(row: 0, section: 0) , at: .top, animated: true)
-        mainCollectionView.collectionViewLayout.invalidateLayout()
+        self.mainCollectionView.collectionViewLayout.invalidateLayout()
         
         /*
         self.mainCollectionView.setCollectionViewLayout(HLDashboardNormalViewFlowLayout(), animated: false)
