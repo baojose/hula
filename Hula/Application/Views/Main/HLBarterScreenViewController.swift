@@ -138,7 +138,7 @@ class HLBarterScreenViewController: BaseViewController {
                 self.populateTradedProducts(list:otp, type:"other")
                 self.otherProductsCollection.reloadData()
                 self.otherSelectedProductsCollection.reloadData()
-                
+                self.animateAddedProducts("other")
             })
             
             getUserProducts(user: HulaUser.sharedInstance.userId, taskCallback: {(result) in
@@ -147,6 +147,7 @@ class HLBarterScreenViewController: BaseViewController {
                 self.populateTradedProducts(list:mtp, type:"owner")
                 self.myProductsCollection.reloadData()
                 self.mySelectedProductsCollection.reloadData()
+                self.animateAddedProducts("owner")
             })
             HulaTrade.sharedInstance.owner_products = thisTrade.owner_products
             HulaTrade.sharedInstance.other_products = thisTrade.other_products
@@ -320,6 +321,83 @@ class HLBarterScreenViewController: BaseViewController {
         // Pass the selected object to the new view controller.
     }
     */
+    
+    func animateAddedProducts(_ type : String){
+        var array_to_traverse : [HulaProduct]
+        var posx : CGFloat = 0
+        let posy : CGFloat = self.view.frame.height / 3
+        var destx :CGFloat = 0
+        let smallSide :CGFloat = (mySelectedProductsCollection.frame.width - 10)/3 - 8
+        var col : KDDragAndDropCollectionView
+        var col2 : KDDragAndDropCollectionView
+        if type == "owner" {
+            array_to_traverse = myTradedProducts
+            posx = 20
+            destx = 128
+            col = mySelectedProductsCollection
+            col2 = myProductsCollection
+        } else {
+            array_to_traverse = otherTradedProducts
+            posx = self.view.frame.width - 20
+            destx = self.view.frame.width/2
+            col = otherSelectedProductsCollection
+            col2 = otherProductsCollection
+        }
+        var counter : Int = 0
+        for p in array_to_traverse{
+            if p.tradeStatus == 1{
+                // added product
+                let fakeImg = UIImageView(frame: CGRect(x:posx, y:posy, width: 120, height:120))
+                fakeImg.contentMode = .scaleAspectFill
+                fakeImg.clipsToBounds = true
+                fakeImg.loadImageFromURL(urlString: p.arrProductPhotoLink[0])
+                self.view.addSubview(fakeImg)
+                let cell = col.cellForItem(at: IndexPath(item: counter, section: 0))
+                cell?.alpha = 0
+                UIView.animate(withDuration: 0.3, animations: {
+                    fakeImg.alpha = 1
+                    if cell != nil{
+                        fakeImg.frame = (cell?.frame)!
+                    } else {
+                        fakeImg.frame.origin = CGPoint(x:destx + CGFloat(counter%3) * smallSide + 8, y:7)
+                        fakeImg.frame.size = CGSize(width:smallSide, height:smallSide)
+                    }
+                }, completion:  { (success) in
+                    UIView.animate(withDuration: 0.3, animations: {
+                        fakeImg.alpha = 0
+                        cell?.alpha = 1
+                    })
+                })
+            }
+            
+            
+            if p.tradeStatus == 2{
+                // removed product
+                let fakeImg = UIImageView(frame: CGRect(x:destx, y:80, width: smallSide, height:smallSide))
+                fakeImg.contentMode = .scaleAspectFill
+                fakeImg.clipsToBounds = true
+                fakeImg.loadImageFromURL(urlString: p.arrProductPhotoLink[0])
+                self.view.addSubview(fakeImg)
+                let cell = col2.cellForItem(at: IndexPath(item: counter, section: 0))
+                cell?.alpha = 0
+                UIView.animate(withDuration: 0.3, animations: {
+                    fakeImg.alpha = 1
+                    if cell != nil{
+                        fakeImg.frame = (cell?.frame)!
+                    } else {
+                        fakeImg.frame.origin = CGPoint(x:0, y:200)
+                        fakeImg.frame.size = CGSize(width:120, height:120)
+                    }
+                }, completion:  { (success) in
+                    UIView.animate(withDuration: 0.3, animations: {
+                        fakeImg.alpha = 0
+                        cell?.alpha = 1
+                    })
+                })
+            }
+            counter += 1
+        }
+    }
     
     func getUserProducts(user: String, taskCallback: @escaping ([HulaProduct]) -> ()) {
         //print("Getting user info...")

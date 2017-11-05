@@ -22,6 +22,7 @@ class HLProductCollectionViewCell: UICollectionViewCell {
     
     func is_added() {
         if (!been_added){
+            /*
             let center = image.center
             image.center.y = -100
             if ((side == "left") && (type == "select")) || ((side != "left") && (type != "select")){
@@ -35,12 +36,18 @@ class HLProductCollectionViewCell: UICollectionViewCell {
                 self.image.center = center
                 self.image.alpha = 1
             })
+ */
+            self.alpha = 0
+            UIView.animate(withDuration: 0.6, animations: {
+                self.alpha = 1
+            })
         }
         been_added = true
     }
     
     func is_removed() {
         if (!been_removed){
+            /*
             let center = image.center
             image.center.y = -100
             image.alpha = 0.1
@@ -48,6 +55,7 @@ class HLProductCollectionViewCell: UICollectionViewCell {
                 self.image.center = center
                 self.image.alpha = 1
             })
+ */
         }
         been_removed = true
     }

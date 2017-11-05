@@ -238,7 +238,9 @@ class HLSwappViewController: UIViewController {
             self.portraitView.frame.origin.y = 0
             self.portraitView.transform = CGAffineTransform(rotationAngle: 0)
             portraitView.isHidden = false
+            //print("pre dismiss")
             self.dismiss(animated: true) {
+                //print("post dismiss")
                 // After dismiss
             }
         } else {

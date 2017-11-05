@@ -31,8 +31,9 @@ class HLDashboardViewController: BaseViewController {
         
         NotificationCenter.default.addObserver(self, selector: #selector(self.rotated), name: NSNotification.Name.UIDeviceOrientationDidChange, object: nil)
         
-        mainCollectionView.collectionViewLayout = HLDashboardNormalViewFlowLayout()
+        
         //refreshCollectionViewData()
+        mainCollectionView.collectionViewLayout = HLDashboardNormalViewFlowLayout()
         
         
         let appDelegate = UIApplication.shared.delegate as! AppDelegate
@@ -63,12 +64,8 @@ class HLDashboardViewController: BaseViewController {
         self.mainCollectionView.reloadData()
         */
         
-        
-        
     }
     
- 
-
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
@@ -424,11 +421,15 @@ extension HLDashboardViewController: UICollectionViewDelegate, UICollectionViewD
         }
  
     }
+    
 
     
     override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
-        //mainCollectionView.collectionViewLayout.invalidateLayout()
+        super.viewWillTransition(to:size, with: coordinator)
+        
+        mainCollectionView.collectionViewLayout.invalidateLayout()
     }
+ 
     
     func drawProducts(inCell:HLTradesCollectionViewCell, fromArr: [String], side: String){
         var counter:Int = 0;
