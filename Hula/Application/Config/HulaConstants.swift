@@ -27,6 +27,7 @@ struct HulaConstants {
     static let transparentImg: String = "https://hula.trading/img/transparent.png"
     
     // TRADE STATUSES
+    static let pending_status:String = "pending"
     static let sent_status:String = "offer_sent"
     static let end_status:String = "ended"
     static let cancel_status:String = "closed"

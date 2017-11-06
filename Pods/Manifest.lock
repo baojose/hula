@@ -46,6 +46,7 @@ PODS:
     - FBSDKCoreKit
   - IOSLinkedInAPIFix (2.0.4):
     - AFNetworking (>= 2.0.0)
+  - Kingfisher (3.9.1)
   - LinkedinSwift (1.7.4):
     - AFNetworking (>= 3.1.0)
     - IOSLinkedInAPIFix (>= 2.0.4)
@@ -62,6 +63,7 @@ DEPENDENCIES:
   - FacebookCore
   - FacebookLogin
   - FacebookShare
+  - Kingfisher (~> 3.0)
   - LinkedinSwift (>= 1.6.2)
   - TwitterKit
 
@@ -79,10 +81,11 @@ SPEC CHECKSUMS:
   FBSDKLoginKit: 00cf28916b9f0169763a3d61985d745b579fe304
   FBSDKShareKit: 1cbd0fdc2bb3277dd3522512855dcf1f4088f734
   IOSLinkedInAPIFix: a520fd805a03dade35f42904c7d89ded2a84c752
+  Kingfisher: 6729a0baaa458245bfb8cd5a1296c71c10d6eb6c
   LinkedinSwift: fba071cbbcedf42471f45c0cd2438cba3f6c9c7c
   TwitterCore: e959987be23c767004d29eb7fab8d85d8585a2e5
   TwitterKit: 3b6044a7320340326a4098f3e37aa1dbaeb94942
 
-PODFILE CHECKSUM: 80018fd2115d06558af160e082259130786b2228
+PODFILE CHECKSUM: eef23c2dd829b923a3864b24f21de98965bcd2b1
 
 COCOAPODS: 1.2.1

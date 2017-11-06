@@ -10,7 +10,7 @@ import UIKit
 import MobileCoreServices
 import AVKit
 
-class HLProductModalViewController: UIViewController, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
+class HLProductModalViewController: UIViewController, UIImagePickerControllerDelegate, UINavigationControllerDelegate, UIScrollViewDelegate {
 
     var product: HulaProduct!
     
@@ -31,6 +31,7 @@ class HLProductModalViewController: UIViewController, UIImagePickerControllerDel
     
     let imagePicker = UIImagePickerController()
     var videoPath: NSURL? = nil
+    var image_dismissing : Bool = false
     
     
     override func viewDidLoad() {
@@ -87,6 +88,12 @@ class HLProductModalViewController: UIViewController, UIImagePickerControllerDel
         self.dismiss(animated: true)
     }
     
+    func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
+        if productsScrollView == scrollView {
+            let page: Int = Int(round(productsScrollView.contentOffset.x / productsScrollView.frame.width))
+            pageControl.currentPage = page
+        }
+    }
     
     func setUpProductImagesScrollView() {
         var num_images: CGFloat = 0;
@@ -99,6 +106,8 @@ class HLProductModalViewController: UIViewController, UIImagePickerControllerDel
                 imgView.loadImageFromURL(urlString: img_url)
                 //imgView.image = UIImage(named: "temp_product")
                 imgView.contentMode = .scaleAspectFill
+                imgView.tag = i + 1000
+                
                 productsScrollView.addSubview(imgView)
                 num_images += 1
             }
@@ -225,6 +234,14 @@ class HLProductModalViewController: UIViewController, UIImagePickerControllerDel
         
         
     }
+    
+    @IBAction func fsImageAction(_ sender: Any) {
+        print("Fullingscreening")
+        if let im = productsScrollView.viewWithTag(pageControl.currentPage + 1000) as? UIImageView{
+            fullScreenImage(im.image!)
+        }
+    }
+    
 }
 
 extension HLProductModalViewController: AlertDelegate{
@@ -234,3 +251,80 @@ extension HLProductModalViewController: AlertDelegate{
     }
 
 }
+
+
+extension HLProductModalViewController {
+    func fullScreenImage(_ image: UIImage) {
+        print("Fullingscreening")
+        let newImageView = UIImageView(image: image)
+        
+        newImageView.frame = CGRect(x: self.view.frame.width/2, y: self.view.frame.height/2, width: 10, height:10)
+        newImageView.backgroundColor = .black
+        newImageView.contentMode = .scaleAspectFit
+        newImageView.alpha = 0.0
+        newImageView.tag = 10001
+        newImageView.isUserInteractionEnabled = true
+        let tap = UITapGestureRecognizer(target: self, action: #selector(optionsFullscreenImage))
+        newImageView.addGestureRecognizer(tap)
+        let swipe = UIPanGestureRecognizer(target: self, action: #selector(dismissFullscreenImage))
+        newImageView.addGestureRecognizer(swipe)
+        self.view.addSubview(newImageView)
+        image_dismissing = false
+        UIView.animate(withDuration: 0.3, animations: {
+            newImageView.frame = UIScreen.main.bounds
+            newImageView.alpha = 1
+        }) { (success) in
+            self.navigationController?.isNavigationBarHidden = true
+            self.tabBarController?.tabBar.isHidden = true
+        }
+ 
+    }
+    
+    func dismissFullscreenImage(_ sender: UIGestureRecognizer) {
+        if (!image_dismissing){
+            guard let panRecognizer = sender as? UIPanGestureRecognizer else {
+                return
+            }
+            let velocity = panRecognizer.velocity(in: self.view)
+            
+            self.navigationController?.isNavigationBarHidden = true
+            self.tabBarController?.tabBar.isHidden = false
+            
+            UIView.animate(withDuration: 0.3, animations: {
+                sender.view?.frame = CGRect(x: self.view.frame.width/2 + velocity.x/2, y: self.view.frame.height/2 + velocity.y/2, width: 30, height:30)
+                sender.view?.alpha = 0
+                sender.view?.transform.rotated(by: CGFloat( arc4random_uniform(100)/12))
+            }) { (success) in
+                sender.view?.removeFromSuperview()
+            }
+            image_dismissing = true
+        }
+    }
+    func dismissFullscreenImageDirect() {
+        
+        self.navigationController?.isNavigationBarHidden = true
+        self.tabBarController?.tabBar.isHidden = false
+        if let imageView = self.view.viewWithTag(10001) as? UIImageView {
+            UIView.animate(withDuration: 0.3, animations: {
+                imageView.frame = CGRect(x: self.view.frame.width/2 , y: self.view.frame.height/2, width: 30, height:30)
+                imageView.alpha = 0
+                imageView.transform.rotated(by: CGFloat( arc4random_uniform(100)/12))
+            }) { (success) in
+                imageView.removeFromSuperview()
+            }
+        }
+        image_dismissing = true
+    }
+    func optionsFullscreenImage(_ sender: UIGestureRecognizer) {
+        let alertController = UIAlertController(title: "Image options...", message: nil, preferredStyle: .actionSheet)
+        
+        let cancelButton = UIAlertAction(title: "Close", style: .cancel, handler: { (action) -> Void in
+            //print("Cancel button tapped")
+            self.dismissFullscreenImageDirect( )
+        })
+        alertController.addAction(cancelButton)
+        
+        self.present(alertController, animated: true)
+    }
+}
+

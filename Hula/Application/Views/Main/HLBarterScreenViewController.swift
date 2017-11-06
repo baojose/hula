@@ -138,7 +138,7 @@ class HLBarterScreenViewController: BaseViewController {
                 self.populateTradedProducts(list:otp, type:"other")
                 self.otherProductsCollection.reloadData()
                 self.otherSelectedProductsCollection.reloadData()
-                
+                self.animateAddedProducts("other")
             })
             
             getUserProducts(user: HulaUser.sharedInstance.userId, taskCallback: {(result) in
@@ -147,6 +147,7 @@ class HLBarterScreenViewController: BaseViewController {
                 self.populateTradedProducts(list:mtp, type:"owner")
                 self.myProductsCollection.reloadData()
                 self.mySelectedProductsCollection.reloadData()
+                self.animateAddedProducts("owner")
             })
             HulaTrade.sharedInstance.owner_products = thisTrade.owner_products
             HulaTrade.sharedInstance.other_products = thisTrade.other_products
@@ -291,12 +292,22 @@ class HLBarterScreenViewController: BaseViewController {
     }
     
     override func viewWillAppear(_ animated: Bool) {
-        if !alreadyLoaded{
-            loadProductsArrays();
-        }
         if let swappPageVC = self.parent as? HLSwappPageViewController{
-            if let thisHolderScreen = swappPageVC.parent as? HLSwappViewController {
-                thisHolderScreen.last_index_setup = 1
+            self.addMoneyBtn1.isHidden = false
+            self.addMoneyBtn2.isHidden = false
+            if ( swappPageVC.arrTrades.count > 0 ){
+                if !alreadyLoaded{
+                    loadProductsArrays();
+                }
+                if let swappPageVC = self.parent as? HLSwappPageViewController{
+                    if let thisHolderScreen = swappPageVC.parent as? HLSwappViewController {
+                        thisHolderScreen.last_index_setup = 1
+                    }
+                }
+            } else {
+                self.addMoneyBtn1.isHidden = true
+                self.addMoneyBtn2.isHidden = true
+                
             }
         }
     }
@@ -310,6 +321,90 @@ class HLBarterScreenViewController: BaseViewController {
         // Pass the selected object to the new view controller.
     }
     */
+    
+    func animateAddedProducts(_ type : String){
+        var array_to_traverse : [HulaProduct]
+        var array_to_traverse2 : [HulaProduct]
+        var posx : CGFloat = 0
+        let posy : CGFloat = self.view.frame.height / 3
+        var destx :CGFloat = 0
+        let smallSide :CGFloat = (mySelectedProductsCollection.frame.width - 10)/3 - 8
+        var col : KDDragAndDropCollectionView
+        var col2 : KDDragAndDropCollectionView
+        var column_x : CGFloat = 5
+        if type == "owner" {
+            array_to_traverse = myTradedProducts
+            array_to_traverse2 = myProducts
+            posx = 20
+            destx = 128
+            col = mySelectedProductsCollection
+            col2 = myProductsCollection
+            column_x = 5
+        } else {
+            array_to_traverse = otherTradedProducts
+            array_to_traverse2 = otherProducts
+            posx = self.view.frame.width - 20
+            destx = self.view.frame.width/2
+            col = otherSelectedProductsCollection
+            col2 = otherProductsCollection
+            column_x = self.view.frame.width - 128
+        }
+        var counter : Int = 0
+        for p in array_to_traverse{
+            if p.tradeStatus == 1{
+                // added product
+                let fakeImg = UIImageView(frame: CGRect(x:posx, y:posy, width: 120, height:120))
+                fakeImg.contentMode = .scaleAspectFill
+                fakeImg.clipsToBounds = true
+                fakeImg.loadImageFromURL(urlString: p.arrProductPhotoLink[0])
+                self.view.addSubview(fakeImg)
+                let cell = col.cellForItem(at: IndexPath(item: counter, section: 0))
+                cell?.alpha = 0
+                UIView.animate(withDuration: 0.3, animations: {
+                    fakeImg.alpha = 1
+                    if cell != nil{
+                        fakeImg.frame = (cell?.frame)!
+                    } else {
+                        fakeImg.frame.origin = CGPoint(x:destx + CGFloat(counter%3) * smallSide + 8, y:7)
+                        fakeImg.frame.size = CGSize(width:smallSide, height:smallSide)
+                    }
+                }, completion:  { (success) in
+                    UIView.animate(withDuration: 0.3, animations: {
+                        fakeImg.alpha = 0
+                        cell?.alpha = 1
+                    })
+                })
+            }
+            counter += 1
+        }
+        for p in array_to_traverse2{
+            if p.tradeStatus == 2{
+                // removed product
+                let fakeImg = UIImageView(frame: CGRect(x:destx, y:80, width: smallSide, height:smallSide))
+                fakeImg.contentMode = .scaleAspectFill
+                fakeImg.clipsToBounds = true
+                fakeImg.loadImageFromURL(urlString: p.arrProductPhotoLink[0])
+                self.view.addSubview(fakeImg)
+                let cell = col2.cellForItem(at: IndexPath(item: counter, section: 0))
+                cell?.alpha = 0
+                UIView.animate(withDuration: 0.3, animations: {
+                    fakeImg.alpha = 1
+                    if cell != nil{
+                        fakeImg.frame = (cell?.frame)!
+                    } else {
+                        fakeImg.frame.origin = CGPoint(x:column_x, y:5)
+                        fakeImg.frame.size = CGSize(width:120, height:85)
+                    }
+                }, completion:  { (success) in
+                    UIView.animate(withDuration: 0.3, animations: {
+                        fakeImg.alpha = 0
+                        cell?.alpha = 1
+                    })
+                })
+            }
+            counter += 1
+        }
+    }
     
     func getUserProducts(user: String, taskCallback: @escaping ([HulaProduct]) -> ()) {
         //print("Getting user info...")
@@ -382,7 +477,11 @@ class HLBarterScreenViewController: BaseViewController {
         
         viewController.calculatorDelegate = self
         viewController.side = "other"
-        
+        if thisTrade.owner_id == HulaUser.sharedInstance.userId{
+            viewController.amount = Int(thisTrade.other_money)
+        } else {
+            viewController.amount = Int(thisTrade.owner_money)
+        }
         self.present(viewController, animated: true)
         self.didTradeMutate = true
         self.mainSwapViewHolder?.controlSetupBottomBar(index: myTradeIndex + 1)
@@ -393,6 +492,11 @@ class HLBarterScreenViewController: BaseViewController {
         
         viewController.calculatorDelegate = self
         viewController.side = "owner"
+        if thisTrade.owner_id == HulaUser.sharedInstance.userId{
+            viewController.amount = Int(thisTrade.owner_money)
+        } else {
+            viewController.amount = Int(thisTrade.other_money)
+        }
         self.present(viewController, animated: true)
         self.didTradeMutate = true
         self.mainSwapViewHolder?.controlSetupBottomBar(index: myTradeIndex + 1)
@@ -432,14 +536,24 @@ extension HLBarterScreenViewController: KDDragAndDropCollectionViewDataSource, U
             product = HulaProduct(id : "nada", name : "Test product", image: "https://api.hula.trading/v1/products/59400e5ce8825609f281bc68/image")
         }
         //print(product)
-        let viewController = self.storyboard?.instantiateViewController(withIdentifier: "ProductModal") as! HLProductModalViewController
         
-        viewController.product = product
-        viewController.modalPresentationStyle = .overCurrentContext
-        
-        self.present(viewController, animated: true)
-        //print("presented vc")
-        
+        if (product.productId == "xmoney"){
+            if thisTrade.turn_user_id == HulaUser.sharedInstance.userId {
+                if collectionView.tag == 2 {
+                    addMonewToOwner("")
+                } else {
+                    addMoneyToOther("")
+                }
+            }
+        } else {
+            let viewController = self.storyboard?.instantiateViewController(withIdentifier: "ProductModal") as! HLProductModalViewController
+            
+            viewController.product = product
+            viewController.modalPresentationStyle = .overCurrentContext
+            
+            self.present(viewController, animated: true)
+            //print("presented vc")
+        }
     }
     
     // The cell that is returned must be retrieved from a call to -dequeueReusableCellWithReuseIdentifier:forIndexPath:

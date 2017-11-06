@@ -37,7 +37,9 @@ class HLTradesCollectionViewCell: UICollectionViewCell {
     
     override func awakeFromNib() {
         super.awakeFromNib()
-        
+        if let s = dbDelegate?.view.frame.width {
+            self.frame.size.width = s
+        }
         CommonUtils.sharedInstance.circleImageView(userImage)
         CommonUtils.sharedInstance.circleImageView(myImage)
         boxView.frame = CGRect(x: 8, y: 7, width: self.frame.width - 39, height: 59)

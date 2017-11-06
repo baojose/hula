@@ -31,8 +31,9 @@ class HLDashboardViewController: BaseViewController {
         
         NotificationCenter.default.addObserver(self, selector: #selector(self.rotated), name: NSNotification.Name.UIDeviceOrientationDidChange, object: nil)
         
-        mainCollectionView.collectionViewLayout = HLDashboardNormalViewFlowLayout()
+        
         //refreshCollectionViewData()
+        mainCollectionView.collectionViewLayout = HLDashboardNormalViewFlowLayout()
         
         
         let appDelegate = UIApplication.shared.delegate as! AppDelegate
@@ -41,7 +42,6 @@ class HLDashboardViewController: BaseViewController {
 
     
     override func viewWillAppear(_ animated: Bool) {
-        mainCollectionView.frame = self.view.frame
         refreshCollectionViewData()
         
         if let swappPageVC = self.parent as? HLSwappPageViewController{
@@ -52,8 +52,9 @@ class HLDashboardViewController: BaseViewController {
     }
     
     override func viewDidAppear(_ animated: Bool) {
+        self.mainCollectionView.frame = self.view.frame
         self.mainCollectionView.scrollToItem(at: IndexPath(row: 0, section: 0) , at: .top, animated: true)
-        mainCollectionView.collectionViewLayout.invalidateLayout()
+        self.mainCollectionView.collectionViewLayout.invalidateLayout()
         
         /*
         self.mainCollectionView.setCollectionViewLayout(HLDashboardNormalViewFlowLayout(), animated: false)
@@ -63,12 +64,8 @@ class HLDashboardViewController: BaseViewController {
         self.mainCollectionView.reloadData()
         */
         
-        
-        
     }
     
- 
-
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
@@ -202,7 +199,7 @@ extension HLDashboardViewController: AlertDelegate{
         self.refreshCollectionViewData()
         
         
-        if (trigger == "cancelconfirm"){
+        if (trigger == "cancelconfirm" && response == "ok"){
             let tradeId = lastTradeInteracted
             if (tradeId != ""){
                 let queryURL = HulaConstants.apiURL + "trades/\(tradeId)"
@@ -424,11 +421,15 @@ extension HLDashboardViewController: UICollectionViewDelegate, UICollectionViewD
         }
  
     }
+    
 
     
     override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
-        //mainCollectionView.collectionViewLayout.invalidateLayout()
+        super.viewWillTransition(to:size, with: coordinator)
+        
+        mainCollectionView.collectionViewLayout.invalidateLayout()
     }
+ 
     
     func drawProducts(inCell:HLTradesCollectionViewCell, fromArr: [String], side: String){
         var counter:Int = 0;
