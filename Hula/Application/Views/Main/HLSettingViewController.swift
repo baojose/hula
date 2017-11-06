@@ -233,7 +233,7 @@ extension HLSettingViewController{
             fullScreenImage(image: self.smallProfileImage.image!, index: 1)
         } else {
             self.openCameraVC();
-        }
+         }
     }
     
     
