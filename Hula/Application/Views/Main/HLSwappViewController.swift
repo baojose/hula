@@ -280,6 +280,23 @@ class HLSwappViewController: UIViewController {
     }
     @IBAction func sendOfferAction(_ sender: Any) {
         if let tradeStatus = barterDelegate?.getCurrentTradeStatus() {
+            
+            if tradeStatus.owner_products.count == 0 || tradeStatus.other_products.count == 0{
+                let viewController = self.storyboard?.instantiateViewController(withIdentifier: "alertView") as! AlertViewController
+                
+                viewController.delegate = self as AlertDelegate
+                viewController.isCancelVisible = false
+                
+                viewController.message = "Before sending an offer, both sides of the trade must have at least one item."
+                viewController.trigger = "notrade"
+                self.present(viewController, animated: true)
+                return
+            }
+            
+            
+            
+            
+            
             //print("tradeStatus: \(tradeStatus)")
             let trade_id = tradeStatus.tradeId
             let turn_id = tradeStatus.turn_user_id
@@ -625,7 +642,11 @@ extension HLSwappViewController: AlertDelegate{
     func alertResponded(response: String, trigger:String) {
         print("Response: \(response)")
         
+        
         DispatchQueue.main.async {
+            if trigger == "notrade"{
+                return
+            }
             
             if trigger == "share" && response == "ok"{
                 self.shareHula()
