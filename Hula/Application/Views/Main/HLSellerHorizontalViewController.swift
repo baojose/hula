@@ -75,6 +75,10 @@ class HLSellerHorizontalViewController: BaseViewController {
             sellerBioTextView.text = "..."
         }
         sellerFeedbackLabel.text = user.getFeedback()
+        
+        tradesStartedLabel.text = "\(Int(user.trades_started))"
+        tradesClosedLabel.text = "\(Int(user.trades_closed))"
+        tradesEndedLabel.text = "\(Int(user.trades_finished))"
     }
     func initView(){
         commonUtils.circleImageView(profileImage)
