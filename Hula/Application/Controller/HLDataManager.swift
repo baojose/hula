@@ -31,6 +31,7 @@ class HLDataManager: NSObject {
     var numNotificationsPending: Int = 0
     var lastServerMessage:String = ""
     var isLoadingNotifications:Bool = false
+    var isInSwapVC : Bool = false
     
     let categoriesLoaded = Notification.Name("categoriesLoaded")
     let loginRecieved = Notification.Name("loginRecieved")
@@ -52,6 +53,8 @@ class HLDataManager: NSObject {
         currentUser = HulaUser.init()
         newProduct = HulaProduct.init()
         numNotificationsPending = 0
+        
+        isInSwapVC = false
         
         arrCategories = []
         arrNotifications = []

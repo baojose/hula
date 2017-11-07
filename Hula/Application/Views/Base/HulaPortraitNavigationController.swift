@@ -30,16 +30,23 @@ class HulaPortraitNavigationController: UINavigationController {
         
         let appDelegate = UIApplication.shared.delegate as! AppDelegate
         if UIDeviceOrientationIsLandscape(UIDevice.current.orientation) && appDelegate.allowRotation {
-            let storyboard = UIStoryboard(name: "Main", bundle: nil)
-            let myModalViewController = storyboard.instantiateViewController(withIdentifier: "swappView")
-            myModalViewController.modalPresentationStyle = UIModalPresentationStyle.fullScreen
-            myModalViewController.modalTransitionStyle = UIModalTransitionStyle.crossDissolve
-            self.present(myModalViewController, animated: true, completion: nil)
+            openSwapView()
         }
         /*
          if UIDeviceOrientationIsPortrait(UIDevice.current.orientation) {
          print("Portrait")
          }
          */
+    }
+    
+    func openSwapView(){
+        if !HLDataManager.sharedInstance.isInSwapVC {
+            HLDataManager.sharedInstance.isInSwapVC = true
+            let storyboard = UIStoryboard(name: "Main", bundle: nil)
+            let myModalViewController = storyboard.instantiateViewController(withIdentifier: "swappView")
+            myModalViewController.modalPresentationStyle = UIModalPresentationStyle.fullScreen
+            myModalViewController.modalTransitionStyle = UIModalTransitionStyle.crossDissolve
+            self.present(myModalViewController, animated: true, completion: nil)
+        }
     }
 }

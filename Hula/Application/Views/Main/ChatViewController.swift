@@ -162,10 +162,12 @@ class ChatViewController: UIViewController {
     
     
     func rotated() {
+        /*
         if UIDeviceOrientationIsPortrait(UIDevice.current.orientation) {
             self.presentingViewController?.dismiss(animated: true)
             self.dismiss(animated: true)
         }
+ */
     }
  
 }

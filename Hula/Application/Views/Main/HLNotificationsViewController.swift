@@ -120,20 +120,31 @@ class HLNotificationsViewController: BaseViewController, UITableViewDelegate, UI
         
         if let type = notification.object(forKey: "type") as? String{
             if (type == "trade"){
+                /*
                 let storyboard = UIStoryboard(name: "Main", bundle: nil)
                 let myModalViewController = storyboard.instantiateViewController(withIdentifier: "swappView")
                 myModalViewController.modalPresentationStyle = UIModalPresentationStyle.fullScreen
                 myModalViewController.modalTransitionStyle = UIModalTransitionStyle.coverVertical
                 self.present(myModalViewController, animated: true, completion: nil)
+                */
+                if let portraitNC = self.tabBarController?.navigationController as? HulaPortraitNavigationController {
+                    portraitNC.openSwapView()
+                }
+                
             }
             
             if (type == "chat"){
+/*
                 let storyboard = UIStoryboard(name: "Main", bundle: nil)
                 let myModalViewController = storyboard.instantiateViewController(withIdentifier: "swappView") as! HLSwappViewController
                 myModalViewController.redirect = notification.object(forKey: "from_id") as! String
                 myModalViewController.modalPresentationStyle = UIModalPresentationStyle.fullScreen
                 myModalViewController.modalTransitionStyle = UIModalTransitionStyle.coverVertical
                 self.present(myModalViewController, animated: true, completion: nil)
+ */
+                if let portraitNC = self.tabBarController?.navigationController as? HulaPortraitNavigationController {
+                    portraitNC.openSwapView()
+                }
             }
             
             if (type == "start"){

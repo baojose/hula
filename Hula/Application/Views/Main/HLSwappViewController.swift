@@ -53,6 +53,8 @@ class HLSwappViewController: UIViewController {
     var redirect: String = ""
     var backFromChat: Bool = false
     
+    var firstLoad : Bool = true
+    
     override func viewDidLoad() {
         super.viewDidLoad()
 
@@ -94,42 +96,51 @@ class HLSwappViewController: UIViewController {
         threeDotsView.isHidden = true
         controlSetupBottomBar(index:0);
         
+        
+        firstLoad = true
+        
+        
+        
+        
+        
     }
     
     
     override func viewWillAppear(_ animated: Bool) {
         //print(UIDevice.current.orientation)
-        var hasToDismiss = true
-        if UIDeviceOrientationIsPortrait(UIDevice.current.orientation) {
-            //print("portrait!!!!")
-            hasToDismiss = false
-        }
-        if UIDeviceOrientationIsLandscape(UIDevice.current.orientation) {
-            //print("landscape!!!!")
-            hasToDismiss = false
-        }
-        
-        
-        
-        // rotation effect
-        //self.portraitView.frame.origin.y = 0
-        self.portraitView.frame = self.view.frame
-        self.portraitView.transform = CGAffineTransform(rotationAngle: 0)
-        if !UIDeviceOrientationIsPortrait(UIDevice.current.orientation) && !hasToDismiss {
-            DispatchQueue.main.async {
-                UIView.animate(withDuration: 0.6) {
-                    self.portraitView.frame.origin.y = 1000
-                    self.portraitView.transform = CGAffineTransform(rotationAngle: 0.8)
+        if (firstLoad) {
+            firstLoad = false
+            var isNeutral = true
+            if UIDeviceOrientationIsPortrait(UIDevice.current.orientation) {
+                //print("portrait!!!!")
+                isNeutral = false
+            }
+            if UIDeviceOrientationIsLandscape(UIDevice.current.orientation) {
+                //print("landscape!!!!")
+                isNeutral = false
+            }
+            if isNeutral && self.view.frame.width > self.view.frame.height {
+                isNeutral = false
+                self.portraitView.frame.origin.y = 1000
+                self.portraitView.transform = CGAffineTransform(rotationAngle: 0.8)
+            }
+            
+            
+            // rotation effect
+            //self.portraitView.frame.origin.y = 0
+            self.portraitView.frame = self.view.frame
+            self.portraitView.transform = CGAffineTransform(rotationAngle: 0)
+            if !UIDeviceOrientationIsPortrait(UIDevice.current.orientation) && !isNeutral {
+                DispatchQueue.main.async {
+                    UIView.animate(withDuration: 0.6) {
+                        self.portraitView.frame.origin.y = 1000
+                        self.portraitView.transform = CGAffineTransform(rotationAngle: 0.8)
+                    }
                 }
             }
+        
         }
         
-        /*
-        if hasToDismiss{
-            self.view.isHidden = true
-            self.dismiss(animated: true)
-        }
- */
     }
     override func viewDidAppear(_ animated: Bool) {
         
@@ -168,6 +179,7 @@ class HLSwappViewController: UIViewController {
     }
     
     @IBAction func closeSwappMode(_ sender: Any) {
+        HLDataManager.sharedInstance.isInSwapVC = false
         self.dismiss(animated: true)
     }
 
@@ -239,6 +251,7 @@ class HLSwappViewController: UIViewController {
             self.portraitView.transform = CGAffineTransform(rotationAngle: 0)
             portraitView.isHidden = false
             //print("pre dismiss")
+            HLDataManager.sharedInstance.isInSwapVC = false
             self.dismiss(animated: true) {
                 //print("post dismiss")
                 // After dismiss
