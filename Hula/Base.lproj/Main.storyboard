@@ -3029,11 +3029,11 @@ Be clever, be fast but the most important: be honest! Good luck!</string>
                                         <nil key="highlightedColor"/>
                                     </label>
                                     <button opaque="NO" tag="12" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" id="50Y-zV-O22">
-                                        <rect key="frame" x="221" y="-16" width="98" height="53"/>
+                                        <rect key="frame" x="221" y="-11" width="98" height="53"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                        <fontDescription key="fontDescription" name="HelveticaNeue-Light" family="Helvetica Neue" pointSize="24"/>
-                                        <state key="normal" title="&lt;">
-                                            <color key="titleColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                        <fontDescription key="fontDescription" name="HelveticaNeue-Light" family="Helvetica Neue" pointSize="21"/>
+                                        <state key="normal" title="⌫">
+                                            <color key="titleColor" red="0.0" green="0.0" blue="0.0" alpha="0.58920162671232879" colorSpace="custom" customColorSpace="sRGB"/>
                                         </state>
                                         <connections>
                                             <action selector="clearNumberAction:" destination="UdN-LB-3En" eventType="touchUpInside" id="0kh-PJ-ljr"/>
@@ -3043,8 +3043,8 @@ Be clever, be fast but the most important: be honest! Good luck!</string>
                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                             </view>
                             <button opaque="NO" tag="1" contentMode="scaleAspectFit" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" id="pvh-95-B9H">
-                                <rect key="frame" x="7" y="7" width="31" height="32"/>
-                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <rect key="frame" x="627" y="8" width="31" height="32"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxY="YES"/>
                                 <fontDescription key="fontDescription" name="HelveticaNeue-Light" family="Helvetica Neue" pointSize="24"/>
                                 <state key="normal" image="close-cross">
                                     <color key="titleColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
@@ -3157,7 +3157,6 @@ Be clever, be fast but the most important: be honest! Good luck!</string>
                                     <color key="titleColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 </state>
                                 <connections>
-                                    <action selector="closeCalculatorAction:" destination="UdN-LB-3En" eventType="touchUpInside" id="ovK-9g-ftp"/>
                                     <action selector="closeChatAction:" destination="mx5-tX-dRS" eventType="touchUpInside" id="7fM-x1-EMN"/>
                                 </connections>
                             </button>
@@ -3172,7 +3171,7 @@ Be clever, be fast but the most important: be honest! Good luck!</string>
                                 <color key="tintColor" red="0.27450980390000002" green="0.27450980390000002" blue="0.27450980390000002" alpha="1" colorSpace="calibratedRGB"/>
                                 <color key="textColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="15"/>
-                                <textInputTraits key="textInputTraits"/>
+                                <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
                                 <userDefinedRuntimeAttributes>
                                     <userDefinedRuntimeAttribute type="color" keyPath="_placeholderLabel.textColor">
                                         <color key="value" red="0.99519230769230771" green="0.99038461538461542" blue="1" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
@@ -7563,7 +7562,6 @@ Be clever, be fast but the most important: be honest! Good luck!</string>
                                             <color key="titleColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                         </state>
                                         <connections>
-                                            <action selector="closeCalculatorAction:" destination="UdN-LB-3En" eventType="touchUpInside" id="hEW-LC-yHr"/>
                                             <action selector="closeModalAction:" destination="jhk-Ly-g60" eventType="touchUpInside" id="ulx-ga-MKm"/>
                                         </connections>
                                     </button>

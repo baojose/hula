@@ -52,7 +52,7 @@ class HLDashboardViewController: BaseViewController {
     }
     
     override func viewDidAppear(_ animated: Bool) {
-        self.mainCollectionView.frame = self.view.frame
+        //self.mainCollectionView.frame = self.view.frame
         self.mainCollectionView.scrollToItem(at: IndexPath(row: 0, section: 0) , at: .top, animated: true)
         self.mainCollectionView.collectionViewLayout.invalidateLayout()
         
