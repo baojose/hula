@@ -50,11 +50,11 @@ class HLProductDetailViewController: BaseViewController, UIScrollViewDelegate, U
         super.viewDidLoad()
         self.initData()
         self.initView()
-        self.initialTradeFrame = self.addToTradeViewContainer.frame
+        //self.initialTradeFrame = self.addToTradeViewContainer.frame
     }
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        self.addToTradeViewContainer.frame = self.initialTradeFrame
+        //self.addToTradeViewContainer.frame = getTradeContainerFrame()
     }
     override func viewDidAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
@@ -63,6 +63,11 @@ class HLProductDetailViewController: BaseViewController, UIScrollViewDelegate, U
         super.didReceiveMemoryWarning()
     }
 
+    func getTradeContainerFrame() -> CGRect{
+        let rect = CGRect(x:0, y: self.view.frame.height - 120, width: self.view.frame.width, height: 60)
+        
+        return rect
+    }
     func initData() {
         //print(productData);
         //print(productData);
