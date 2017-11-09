@@ -255,9 +255,6 @@ class HLDataManager: NSObject {
             if let trade = tr as? [String:Any] {
                 let numBids = (trade["bids"] as! [Any]).count
                 //print(numBids)
-                if trade["owner_id"] as! String == user_id && (trade["status"] as! String == HulaConstants.pending_status || numBids <= 2)  {
-                    return true
-                }
                 if trade["other_id"] as! String == user_id && (trade["status"] as! String == HulaConstants.pending_status || numBids <= 2)  {
                     return true
                 }

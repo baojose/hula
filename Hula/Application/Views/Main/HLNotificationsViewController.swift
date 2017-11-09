@@ -238,6 +238,14 @@ class HLNotificationsViewController: BaseViewController, UITableViewDelegate, UI
             notificationsTable.reloadData()
             self.updateTabBarCounter()
             UIApplication.shared.applicationIconBadgeNumber = HLDataManager.sharedInstance.numNotificationsPending
+            
+            if (dataManager.arrNotifications.count == 0){
+                notificationsView.isHidden = true
+                noNotificatiosnFoundView.isHidden = false
+            } else {
+                notificationsView.isHidden = false
+                noNotificatiosnFoundView.isHidden = true
+            }
         } else {
             let when = DispatchTime.now() + 0.5 // change 2 to desired number of seconds
             DispatchQueue.main.asyncAfter(deadline: when) {

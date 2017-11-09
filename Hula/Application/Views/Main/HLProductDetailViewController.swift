@@ -50,24 +50,21 @@ class HLProductDetailViewController: BaseViewController, UIScrollViewDelegate, U
         super.viewDidLoad()
         self.initData()
         self.initView()
-        //self.initialTradeFrame = self.addToTradeViewContainer.frame
     }
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        //self.addToTradeViewContainer.frame = getTradeContainerFrame()
+        //self.addToTradeViewContainer.frame.size.height = 60
     }
     override func viewDidAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
+        UIView.animate(withDuration: 0.3) {
+            self.addToTradeViewContainer.frame = CGRect(x: 0, y: self.view.frame.height - 120, width: self.view.frame.width, height: 60)
+        }
     }
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
     }
 
-    func getTradeContainerFrame() -> CGRect{
-        let rect = CGRect(x:0, y: self.view.frame.height - 120, width: self.view.frame.width, height: 60)
-        
-        return rect
-    }
     func initData() {
         //print(productData);
         //print(productData);
@@ -319,7 +316,10 @@ extension HLProductDetailViewController: AlertDelegate{
                         // user is loggedin
                         DispatchQueue.main.async {
                             UIView.animate(withDuration: 0.5, animations: {
-                                self.addToTradeViewContainer.frame = self.view.frame
+                                self.addToTradeViewContainer.frame.size.height = self.view.frame.height
+                                self.addToTradeViewContainer.frame.origin.y = 0
+                                //print(self.addToTradeViewContainer.frame)
+                                //self.addToTradeViewContainer.layoutIfNeeded()
                             })
                         }
                         let queryURL = HulaConstants.apiURL + "trades/"
@@ -328,11 +328,10 @@ extension HLProductDetailViewController: AlertDelegate{
                             if (ok){
                                 // show barter screen
                                 DispatchQueue.main.async {
-                                    let storyboard = UIStoryboard(name: "Main", bundle: nil)
-                                    let myModalViewController = storyboard.instantiateViewController(withIdentifier: "swappView")
-                                    myModalViewController.modalPresentationStyle = UIModalPresentationStyle.fullScreen
-                                    myModalViewController.modalTransitionStyle = UIModalTransitionStyle.crossDissolve
-                                    self.present(myModalViewController, animated: true, completion: nil)
+                                    
+                                    if let pnc = self.navigationController?.navigationController as? HulaPortraitNavigationController {
+                                        pnc.openSwapView()
+                                    }
                                 }
                             } else {
                                 // connection error

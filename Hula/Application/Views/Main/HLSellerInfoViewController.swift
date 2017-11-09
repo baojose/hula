@@ -55,11 +55,13 @@ class HLSellerInfoViewController: BaseViewController, UITableViewDelegate, UITab
         super.didReceiveMemoryWarning()
     }
     
-    override func viewWillAppear(_ animated: Bool) {
-        super.viewWillAppear(animated)
-        self.addToTradeViewContainer.frame = self.initialTradeFrame
-        
-        //self.addToTradeViewContainer.frame = self.view.frame
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        /*
+        UIView.animate(withDuration: 0.3) {
+            self.addToTradeViewContainer.frame = CGRect(x: 0, y: self.view.frame.height - 120, width: self.view.frame.width, height: 60)
+        }
+ */
     }
     func initData(){
         
@@ -163,26 +165,35 @@ class HLSellerInfoViewController: BaseViewController, UITableViewDelegate, UITab
     }
     
     @IBAction func addToTradeAction(_ sender: Any) {
-        let viewController = self.storyboard?.instantiateViewController(withIdentifier: "alertView") as! AlertViewController
-        viewController.delegate = self
-        if (HulaUser.sharedInstance.numProducts == 0){
-            viewController.isCancelVisible = true
-            viewController.cancelButtonText = "Add stuff"
-            viewController.trigger = "noproduct"
-            viewController.message = "Sorry! If you want to trade, you have to upload your stuff."
-        } else {
-            if HLDataManager.sharedInstance.myRoomsFull() {
-                viewController.isCancelVisible = false
-                viewController.trigger = "fullrooms"
-                viewController.message = "Sorry! your Trade Rooms are busy. Turn your phone, get in the Trade Room and request a new one."
-            } else {
-                viewController.isCancelVisible = true
-                viewController.okButtonText = "Accept"
-                viewController.trigger = ""
-                viewController.message = "You're about to start a trade. One room will be reserved for this negotiation until it's finished."
+        
+        if HLDataManager.sharedInstance.amITradingWith(user.userId){
+            // go directly to the trading room
+            
+            if let pnc = self.navigationController?.navigationController as? HulaPortraitNavigationController {
+                pnc.openSwapView()
             }
+        } else {
+            let viewController = self.storyboard?.instantiateViewController(withIdentifier: "alertView") as! AlertViewController
+            viewController.delegate = self
+            if (HulaUser.sharedInstance.numProducts == 0){
+                viewController.isCancelVisible = true
+                viewController.cancelButtonText = "Add stuff"
+                viewController.trigger = "noproduct"
+                viewController.message = "Sorry! If you want to trade, you have to upload your stuff."
+            } else {
+                if HLDataManager.sharedInstance.myRoomsFull() {
+                    viewController.isCancelVisible = false
+                    viewController.trigger = "fullrooms"
+                    viewController.message = "Sorry! your Trade Rooms are busy. Turn your phone, get in the Trade Room and request a new one."
+                } else {
+                    viewController.isCancelVisible = true
+                    viewController.okButtonText = "Accept"
+                    viewController.trigger = ""
+                    viewController.message = "You're about to start a trade. One room will be reserved for this negotiation until it's finished."
+                }
+            }
+            self.present(viewController, animated: true)
         }
-        self.present(viewController, animated: true)
     }
     
     @IBAction func declineTradeAction(_ sender: Any) {
@@ -238,11 +249,9 @@ extension HLSellerInfoViewController: AlertDelegate{
                         if (ok){
                             // show barter screen
                             DispatchQueue.main.async {
-                                let storyboard = UIStoryboard(name: "Main", bundle: nil)
-                                let myModalViewController = storyboard.instantiateViewController(withIdentifier: "swappView")
-                                myModalViewController.modalPresentationStyle = UIModalPresentationStyle.fullScreen
-                                myModalViewController.modalTransitionStyle = UIModalTransitionStyle.crossDissolve
-                                self.present(myModalViewController, animated: true, completion: nil)
+                                if let pnc = self.navigationController?.navigationController as? HulaPortraitNavigationController {
+                                    pnc.openSwapView()
+                                }
                             }
                         } else {
                             // connection error
