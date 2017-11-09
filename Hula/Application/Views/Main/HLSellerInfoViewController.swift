@@ -38,6 +38,7 @@ class HLSellerInfoViewController: BaseViewController, UITableViewDelegate, UITab
     @IBOutlet weak var declineTradeBtn: UIButton!
     @IBOutlet weak var acceptTradeBtn: UIButton!
     
+    @IBOutlet weak var tradeButtonsHolder: UIView!
     var user = HulaUser();
     var userProducts: NSArray = []
     var userFeedback: NSArray = []
@@ -57,6 +58,8 @@ class HLSellerInfoViewController: BaseViewController, UITableViewDelegate, UITab
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         self.addToTradeViewContainer.frame = self.initialTradeFrame
+        
+        //self.addToTradeViewContainer.frame = self.view.frame
     }
     func initData(){
         
@@ -194,7 +197,7 @@ class HLSellerInfoViewController: BaseViewController, UITableViewDelegate, UITab
                 if (ok){
                     //print(json!)
                     DispatchQueue.main.async {
-                        self.addToTradeViewContainer.isHidden = true
+                        self.tradeButtonsHolder.isHidden = true
                     }
                     HLDataManager.sharedInstance.getTrades(taskCallback: { (success) in
                         // update trade counts

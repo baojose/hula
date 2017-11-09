@@ -6902,6 +6902,7 @@ Be clever, be fast but the most important: be honest! Good luck!</string>
                         <outlet property="sellerLocationLabel" destination="GiZ-AH-Bvx" id="q37-vn-RPm"/>
                         <outlet property="sellerNameLabel" destination="Rec-yy-JOL" id="6H2-xc-QyJ"/>
                         <outlet property="sellerProductTableView" destination="NfK-Ck-Q4B" id="LJt-SZ-ajf"/>
+                        <outlet property="tradeButtonsHolder" destination="G1P-cx-uQ5" id="ieS-01-Hyz"/>
                         <outlet property="tradeWithUserButton" destination="SYf-Ny-aMh" id="8t0-HV-r5i"/>
                         <outlet property="tradesClosedLabel" destination="keu-Yi-47g" id="wkc-5f-ra6"/>
                         <outlet property="tradesEndedLabel" destination="CZ9-WL-I94" id="vOP-HX-5Kd"/>
