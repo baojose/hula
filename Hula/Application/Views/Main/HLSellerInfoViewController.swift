@@ -35,6 +35,8 @@ class HLSellerInfoViewController: BaseViewController, UITableViewDelegate, UITab
     @IBOutlet weak var tradesClosedLabel: UILabel!
     
     @IBOutlet weak var sellerBioTextView: UITextView!
+    @IBOutlet weak var declineTradeBtn: UIButton!
+    @IBOutlet weak var acceptTradeBtn: UIButton!
     
     var user = HulaUser();
     var userProducts: NSArray = []
@@ -61,14 +63,27 @@ class HLSellerInfoViewController: BaseViewController, UITableViewDelegate, UITab
         let thumb = CommonUtils.sharedInstance.getThumbFor(url: user.userPhotoURL)
         profileImage.loadImageFromURL(urlString: thumb)
         sellerNameLabel.text = user.userNick
+        self.declineTradeBtn.isHidden = true
+        self.acceptTradeBtn.isHidden = true
         if HLDataManager.sharedInstance.amITradingWith(user.userId){
-            self.tradeWithUserButton.setTitle("Currently trading with \(user.userNick!)", for: .normal)
-        } else {
             if HLDataManager.sharedInstance.amIOfferedToTradeWith(user.userId){
-                self.tradeWithUserButton.setTitle("Accept trade with \(user.userNick!)", for: .normal)
+                // first offer
+                self.tradeWithUserButton.isHidden = true
+                self.declineTradeBtn.isHidden = false
+                self.acceptTradeBtn.isHidden = false
+                
+                self.declineTradeBtn.layer.cornerRadius = 19
+                self.declineTradeBtn.layer.borderColor = UIColor.white.cgColor
+                self.declineTradeBtn.layer.borderWidth = 1.0
+                
+                self.acceptTradeBtn.layer.cornerRadius = 19
+                self.acceptTradeBtn.layer.borderColor = UIColor.white.cgColor
+                self.acceptTradeBtn.layer.borderWidth = 1.0
             } else {
-                self.tradeWithUserButton.setTitle("Trade with \(user.userNick!)", for: .normal)
+                self.tradeWithUserButton.setTitle("Currently trading with \(user.userNick!)", for: .normal)
             }
+        } else {
+            self.tradeWithUserButton.setTitle("Trade with \(user.userNick!)", for: .normal)
         }
         sellerLocationLabel.text = user.userLocationName
         tradeWithUserButton.layer.cornerRadius = 19
@@ -166,6 +181,32 @@ class HLSellerInfoViewController: BaseViewController, UITableViewDelegate, UITab
         }
         self.present(viewController, animated: true)
     }
+    
+    @IBAction func declineTradeAction(_ sender: Any) {
+        let tradeId = HLDataManager.sharedInstance.getTradeWith(user.userId)
+        if tradeId != "" {
+            // close trade
+            let queryURL = HulaConstants.apiURL + "trades/\(tradeId)"
+            let status = HulaConstants.cancel_status
+            let dataString:String = "status=\(status)"
+            //print(dataString)
+            HLDataManager.sharedInstance.httpPost(urlstr: queryURL, postString: dataString, isPut: true, taskCallback: { (ok, json) in
+                if (ok){
+                    //print(json!)
+                    DispatchQueue.main.async {
+                        self.addToTradeViewContainer.isHidden = true
+                    }
+                    HLDataManager.sharedInstance.getTrades(taskCallback: { (success) in
+                        // update trade counts
+                    })
+                } else {
+                    // connection error
+                    print("Connection error")
+                }
+            })
+        }
+    }
+    
 }
 
 extension HLSellerInfoViewController: AlertDelegate{

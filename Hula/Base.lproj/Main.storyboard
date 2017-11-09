@@ -6858,6 +6858,28 @@ Be clever, be fast but the most important: be honest! Good luck!</string>
                                             <action selector="addToTradeAction:" destination="euT-fj-LZ1" eventType="touchUpInside" id="VKg-kr-cYu"/>
                                         </connections>
                                     </button>
+                                    <button opaque="NO" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" id="6mC-3f-4yX">
+                                        <rect key="frame" x="206" y="11" width="145" height="38"/>
+                                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" widthSizable="YES" flexibleMinY="YES"/>
+                                        <fontDescription key="fontDescription" name="HelveticaNeue-Light" family="Helvetica Neue" pointSize="16"/>
+                                        <state key="normal" title="Accept trade">
+                                            <color key="titleColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                        </state>
+                                        <connections>
+                                            <action selector="addToTradeAction:" destination="euT-fj-LZ1" eventType="touchUpInside" id="1Uf-0f-PF5"/>
+                                        </connections>
+                                    </button>
+                                    <button opaque="NO" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" id="73w-eh-HUY">
+                                        <rect key="frame" x="34" y="11" width="145" height="38"/>
+                                        <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                        <fontDescription key="fontDescription" name="HelveticaNeue-Light" family="Helvetica Neue" pointSize="16"/>
+                                        <state key="normal" title="Decline trade">
+                                            <color key="titleColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                        </state>
+                                        <connections>
+                                            <action selector="declineTradeAction:" destination="euT-fj-LZ1" eventType="touchUpInside" id="ZVh-WR-Oi3"/>
+                                        </connections>
+                                    </button>
                                 </subviews>
                             </view>
                         </subviews>
@@ -6865,8 +6887,10 @@ Be clever, be fast but the most important: be honest! Good luck!</string>
                     </view>
                     <navigationItem key="navigationItem" id="2WP-By-sBg"/>
                     <connections>
+                        <outlet property="acceptTradeBtn" destination="6mC-3f-4yX" id="hJf-y7-O03"/>
                         <outlet property="addToTradeViewContainer" destination="SnR-en-6xi" id="iOd-jW-FbL"/>
                         <outlet property="containerView" destination="7eH-AC-lGg" id="l6I-Ve-xF9"/>
+                        <outlet property="declineTradeBtn" destination="73w-eh-HUY" id="pTQ-Zq-drU"/>
                         <outlet property="emIcon" destination="F5f-MB-ynp" id="e1f-04-1h7"/>
                         <outlet property="fbIcon" destination="B8m-MN-tre" id="1GV-Fg-fG0"/>
                         <outlet property="lblOtherItemInStock" destination="6Va-il-zpr" id="aPy-ku-nb8"/>
@@ -7896,7 +7920,7 @@ Be clever, be fast but the most important: be honest! Good luck!</string>
         <image name="your-turn-label" width="77" height="24"/>
     </resources>
     <inferredMetricsTieBreakers>
-        <segue reference="UoL-AY-aB4"/>
+        <segue reference="8X8-bg-W6f"/>
         <segue reference="wT5-4p-lNl"/>
     </inferredMetricsTieBreakers>
 </document>

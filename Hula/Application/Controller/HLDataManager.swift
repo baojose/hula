@@ -235,15 +235,30 @@ class HLDataManager: NSObject {
         return false
     }
     
-    
-    func amIOfferedToTradeWith(_ user_id: String) -> Bool{
-        for tr in arrTrades{
+    func getTradeWith(_ user_id: String) -> String{
+        
+        for tr in arrCurrentTrades{
             if let trade = tr as? [String:Any] {
                 //print(trade["owner_id"] as! String)
-                if trade["owner_id"] as! String == user_id && trade["status"] as! String == HulaConstants.pending_status {
+                if trade["owner_id"] as! String == user_id {
+                    return trade["_id"] as! String
+                }
+                if trade["other_id"] as! String == user_id {
+                    return trade["_id"] as! String
+                }
+            }
+        }
+        return ""
+    }
+    func amIOfferedToTradeWith(_ user_id: String) -> Bool{
+        for tr in arrCurrentTrades{
+            if let trade = tr as? [String:Any] {
+                let numBids = (trade["bids"] as! [Any]).count
+                //print(numBids)
+                if trade["owner_id"] as! String == user_id && (trade["status"] as! String == HulaConstants.pending_status || numBids <= 2)  {
                     return true
                 }
-                if trade["other_id"] as! String == user_id && trade["status"] as! String == HulaConstants.pending_status  {
+                if trade["other_id"] as! String == user_id && (trade["status"] as! String == HulaConstants.pending_status || numBids <= 2)  {
                     return true
                 }
             }
