@@ -24,7 +24,11 @@ class HLNotificationsViewController: BaseViewController, UITableViewDelegate, UI
         
         let notificationsRecieved = Notification.Name("notificationsRecieved")
         NotificationCenter.default.addObserver(self, selector: #selector(self.checkIfNotificationsLoaded), name: notificationsRecieved, object: nil)
-        
+        HLDataManager.sharedInstance.getTrades(taskCallback: { (success) in
+            // trades loaded
+            print("trades loaded")
+        })
+
     }
     override func viewWillDisappear(_ animated: Bool) {
         timer.invalidate()
@@ -120,13 +124,6 @@ class HLNotificationsViewController: BaseViewController, UITableViewDelegate, UI
         
         if let type = notification.object(forKey: "type") as? String{
             if (type == "trade"){
-                /*
-                let storyboard = UIStoryboard(name: "Main", bundle: nil)
-                let myModalViewController = storyboard.instantiateViewController(withIdentifier: "swappView")
-                myModalViewController.modalPresentationStyle = UIModalPresentationStyle.fullScreen
-                myModalViewController.modalTransitionStyle = UIModalTransitionStyle.coverVertical
-                self.present(myModalViewController, animated: true, completion: nil)
-                */
                 if let portraitNC = self.tabBarController?.navigationController as? HulaPortraitNavigationController {
                     portraitNC.openSwapView()
                 }
@@ -134,14 +131,6 @@ class HLNotificationsViewController: BaseViewController, UITableViewDelegate, UI
             }
             
             if (type == "chat"){
-/*
-                let storyboard = UIStoryboard(name: "Main", bundle: nil)
-                let myModalViewController = storyboard.instantiateViewController(withIdentifier: "swappView") as! HLSwappViewController
-                myModalViewController.redirect = notification.object(forKey: "from_id") as! String
-                myModalViewController.modalPresentationStyle = UIModalPresentationStyle.fullScreen
-                myModalViewController.modalTransitionStyle = UIModalTransitionStyle.coverVertical
-                self.present(myModalViewController, animated: true, completion: nil)
- */
                 if let portraitNC = self.tabBarController?.navigationController as? HulaPortraitNavigationController {
                     portraitNC.openSwapView()
                 }

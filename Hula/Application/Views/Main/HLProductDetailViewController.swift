@@ -129,7 +129,7 @@ class HLProductDetailViewController: BaseViewController, UIScrollViewDelegate, U
             } else {
                 self.tradeWithUserButton.setTitle("Trade with \(user.userNick!)", for: .normal)
             }
-            self.sellerFeedbackLabel.text = user.userLocationName;
+            self.sellerFeedbackLabel.text = user.getFeedback();
             self.sellerProducts = prods
             var newFrame: CGRect! = self.productTableView.frame
             newFrame.size.height = (CGFloat(self.sellerProducts.count) * 129.0);

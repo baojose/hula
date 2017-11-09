@@ -232,9 +232,26 @@ class HLDataManager: NSObject {
                 }
             }
         }
-        
         return false
     }
+    
+    
+    func amIOfferedToTradeWith(_ user_id: String) -> Bool{
+        for tr in arrTrades{
+            if let trade = tr as? [String:Any] {
+                //print(trade["owner_id"] as! String)
+                if trade["owner_id"] as! String == user_id && trade["status"] as! String == HulaConstants.pending_status {
+                    return true
+                }
+                if trade["other_id"] as! String == user_id && trade["status"] as! String == HulaConstants.pending_status  {
+                    return true
+                }
+            }
+        }
+        return false
+    }
+    
+    
     func myRoomsFull() -> Bool{
         if (arrCurrentTrades.count >= HulaUser.sharedInstance.maxTrades){
             return true

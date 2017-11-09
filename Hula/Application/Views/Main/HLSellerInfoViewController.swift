@@ -64,7 +64,11 @@ class HLSellerInfoViewController: BaseViewController, UITableViewDelegate, UITab
         if HLDataManager.sharedInstance.amITradingWith(user.userId){
             self.tradeWithUserButton.setTitle("Currently trading with \(user.userNick!)", for: .normal)
         } else {
-            self.tradeWithUserButton.setTitle("Trade with \(user.userNick!)", for: .normal)
+            if HLDataManager.sharedInstance.amIOfferedToTradeWith(user.userId){
+                self.tradeWithUserButton.setTitle("Accept trade with \(user.userNick!)", for: .normal)
+            } else {
+                self.tradeWithUserButton.setTitle("Trade with \(user.userNick!)", for: .normal)
+            }
         }
         sellerLocationLabel.text = user.userLocationName
         tradeWithUserButton.layer.cornerRadius = 19
