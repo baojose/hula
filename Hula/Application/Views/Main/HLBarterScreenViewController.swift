@@ -168,12 +168,9 @@ class HLBarterScreenViewController: BaseViewController {
                 self.addMoneyBtn2.alpha = 1
             }
             
-            if self.thisTrade.turn_user_id == HulaUser.sharedInstance.userId && thisTrade.num_bids != 1 {
+            if self.thisTrade.turn_user_id == HulaUser.sharedInstance.userId  {
                 // my draganddrop
                 self.dragAndDropManager2 = KDDragAndDropManager(canvas: self.view, collectionViews: [myProductsCollection, mySelectedProductsCollection ])
-            }
-            
-            if self.thisTrade.turn_user_id == HulaUser.sharedInstance.userId {
                 // other draganddrop
                 self.dragAndDropManager1 = KDDragAndDropManager(canvas: self.view, collectionViews: [otherProductsCollection, otherSelectedProductsCollection ])
             }

@@ -31,6 +31,7 @@ class HLDataManager: NSObject {
     var numNotificationsPending: Int = 0
     var lastServerMessage:String = ""
     var isLoadingNotifications:Bool = false
+    var isInSwapVC : Bool = false
     
     let categoriesLoaded = Notification.Name("categoriesLoaded")
     let loginRecieved = Notification.Name("loginRecieved")
@@ -52,6 +53,8 @@ class HLDataManager: NSObject {
         currentUser = HulaUser.init()
         newProduct = HulaProduct.init()
         numNotificationsPending = 0
+        
+        isInSwapVC = false
         
         arrCategories = []
         arrNotifications = []
@@ -229,9 +232,38 @@ class HLDataManager: NSObject {
                 }
             }
         }
-        
         return false
     }
+    
+    func getTradeWith(_ user_id: String) -> String{
+        
+        for tr in arrCurrentTrades{
+            if let trade = tr as? [String:Any] {
+                //print(trade["owner_id"] as! String)
+                if trade["owner_id"] as! String == user_id {
+                    return trade["_id"] as! String
+                }
+                if trade["other_id"] as! String == user_id {
+                    return trade["_id"] as! String
+                }
+            }
+        }
+        return ""
+    }
+    func amIOfferedToTradeWith(_ user_id: String) -> Bool{
+        for tr in arrCurrentTrades{
+            if let trade = tr as? [String:Any] {
+                let numBids = (trade["bids"] as! [Any]).count
+                //print(numBids)
+                if trade["other_id"] as! String == user_id && (trade["status"] as! String == HulaConstants.pending_status || numBids <= 2)  {
+                    return true
+                }
+            }
+        }
+        return false
+    }
+    
+    
     func myRoomsFull() -> Bool{
         if (arrCurrentTrades.count >= HulaUser.sharedInstance.maxTrades){
             return true

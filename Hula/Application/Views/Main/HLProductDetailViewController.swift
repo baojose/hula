@@ -50,14 +50,16 @@ class HLProductDetailViewController: BaseViewController, UIScrollViewDelegate, U
         super.viewDidLoad()
         self.initData()
         self.initView()
-        self.initialTradeFrame = self.addToTradeViewContainer.frame
     }
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        self.addToTradeViewContainer.frame = self.initialTradeFrame
+        //self.addToTradeViewContainer.frame.size.height = 60
     }
     override func viewDidAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
+        UIView.animate(withDuration: 0.3) {
+            self.addToTradeViewContainer.frame = CGRect(x: 0, y: self.view.frame.height - 120, width: self.view.frame.width, height: 60)
+        }
     }
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
@@ -124,7 +126,7 @@ class HLProductDetailViewController: BaseViewController, UIScrollViewDelegate, U
             } else {
                 self.tradeWithUserButton.setTitle("Trade with \(user.userNick!)", for: .normal)
             }
-            self.sellerFeedbackLabel.text = user.userLocationName;
+            self.sellerFeedbackLabel.text = user.getFeedback();
             self.sellerProducts = prods
             var newFrame: CGRect! = self.productTableView.frame
             newFrame.size.height = (CGFloat(self.sellerProducts.count) * 129.0);
@@ -314,7 +316,10 @@ extension HLProductDetailViewController: AlertDelegate{
                         // user is loggedin
                         DispatchQueue.main.async {
                             UIView.animate(withDuration: 0.5, animations: {
-                                self.addToTradeViewContainer.frame = self.view.frame
+                                self.addToTradeViewContainer.frame.size.height = self.view.frame.height
+                                self.addToTradeViewContainer.frame.origin.y = 0
+                                //print(self.addToTradeViewContainer.frame)
+                                //self.addToTradeViewContainer.layoutIfNeeded()
                             })
                         }
                         let queryURL = HulaConstants.apiURL + "trades/"
@@ -323,11 +328,10 @@ extension HLProductDetailViewController: AlertDelegate{
                             if (ok){
                                 // show barter screen
                                 DispatchQueue.main.async {
-                                    let storyboard = UIStoryboard(name: "Main", bundle: nil)
-                                    let myModalViewController = storyboard.instantiateViewController(withIdentifier: "swappView")
-                                    myModalViewController.modalPresentationStyle = UIModalPresentationStyle.fullScreen
-                                    myModalViewController.modalTransitionStyle = UIModalTransitionStyle.crossDissolve
-                                    self.present(myModalViewController, animated: true, completion: nil)
+                                    
+                                    if let pnc = self.navigationController?.navigationController as? HulaPortraitNavigationController {
+                                        pnc.openSwapView()
+                                    }
                                 }
                             } else {
                                 // connection error

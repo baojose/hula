@@ -52,6 +52,9 @@ class HLSwappViewController: UIViewController {
     var user_id_closed : String = ""
     var redirect: String = ""
     var backFromChat: Bool = false
+    var tempTag: Int = 0
+    
+    var firstLoad : Bool = true
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -94,42 +97,51 @@ class HLSwappViewController: UIViewController {
         threeDotsView.isHidden = true
         controlSetupBottomBar(index:0);
         
+        
+        firstLoad = true
+        
+        
+        
+        
+        
     }
     
     
     override func viewWillAppear(_ animated: Bool) {
         //print(UIDevice.current.orientation)
-        var hasToDismiss = true
-        if UIDeviceOrientationIsPortrait(UIDevice.current.orientation) {
-            //print("portrait!!!!")
-            hasToDismiss = false
-        }
-        if UIDeviceOrientationIsLandscape(UIDevice.current.orientation) {
-            //print("landscape!!!!")
-            hasToDismiss = false
-        }
-        
-        
-        
-        // rotation effect
-        //self.portraitView.frame.origin.y = 0
-        self.portraitView.frame = self.view.frame
-        self.portraitView.transform = CGAffineTransform(rotationAngle: 0)
-        if !UIDeviceOrientationIsPortrait(UIDevice.current.orientation) && !hasToDismiss {
-            DispatchQueue.main.async {
-                UIView.animate(withDuration: 0.6) {
-                    self.portraitView.frame.origin.y = 1000
-                    self.portraitView.transform = CGAffineTransform(rotationAngle: 0.8)
+        if (firstLoad) {
+            firstLoad = false
+            var isNeutral = true
+            if UIDeviceOrientationIsPortrait(UIDevice.current.orientation) {
+                //print("portrait!!!!")
+                isNeutral = false
+            }
+            if UIDeviceOrientationIsLandscape(UIDevice.current.orientation) {
+                //print("landscape!!!!")
+                isNeutral = false
+            }
+            if isNeutral && self.view.frame.width > self.view.frame.height {
+                isNeutral = false
+                self.portraitView.frame.origin.y = 1000
+                self.portraitView.transform = CGAffineTransform(rotationAngle: 0.8)
+            }
+            
+            
+            // rotation effect
+            //self.portraitView.frame.origin.y = 0
+            self.portraitView.frame = self.view.frame
+            self.portraitView.transform = CGAffineTransform(rotationAngle: 0)
+            if !UIDeviceOrientationIsPortrait(UIDevice.current.orientation) && !isNeutral {
+                DispatchQueue.main.async {
+                    UIView.animate(withDuration: 0.6) {
+                        self.portraitView.frame.origin.y = 1000
+                        self.portraitView.transform = CGAffineTransform(rotationAngle: 0.8)
+                    }
                 }
             }
+        
         }
         
-        /*
-        if hasToDismiss{
-            self.view.isHidden = true
-            self.dismiss(animated: true)
-        }
- */
     }
     override func viewDidAppear(_ animated: Bool) {
         
@@ -168,6 +180,7 @@ class HLSwappViewController: UIViewController {
     }
     
     @IBAction func closeSwappMode(_ sender: Any) {
+        HLDataManager.sharedInstance.isInSwapVC = false
         self.dismiss(animated: true)
     }
 
@@ -239,6 +252,7 @@ class HLSwappViewController: UIViewController {
             self.portraitView.transform = CGAffineTransform(rotationAngle: 0)
             portraitView.isHidden = false
             //print("pre dismiss")
+            HLDataManager.sharedInstance.isInSwapVC = false
             self.dismiss(animated: true) {
                 //print("post dismiss")
                 // After dismiss
@@ -280,73 +294,109 @@ class HLSwappViewController: UIViewController {
     }
     @IBAction func sendOfferAction(_ sender: Any) {
         if let tradeStatus = barterDelegate?.getCurrentTradeStatus() {
-            //print("tradeStatus: \(tradeStatus)")
-            let trade_id = tradeStatus.tradeId
-            let turn_id = tradeStatus.turn_user_id
-            self.trade_id_closed = trade_id!
-            if (tradeStatus.owner_id != HulaUser.sharedInstance.userId){
-                self.user_id_closed = tradeStatus.owner_id
-            } else {
-                self.user_id_closed = tradeStatus.other_id
-            }
             
-            let buttonTag = (sender as? UIButton)!.tag
-            //print(tradeStatus.owner_products)
-            if (turn_id != HulaUser.sharedInstance.userId) && buttonTag != 90441{
-                print("This is not your turn!!!")
-            } else {
-                let queryURL = HulaConstants.apiURL + "trades/\(trade_id!)"
-                let owner_products = tradeStatus.owner_products.joined(separator: ",")
-                let other_products = tradeStatus.other_products.joined(separator: ",")
-                let owner_money:Int = Int(tradeStatus.owner_money)
-                let other_money:Int = Int(tradeStatus.other_money)
-                var status = HulaConstants.sent_status
-                var acceptedTrade: String = "false"
-                if buttonTag == 91053 || buttonTag == 90441 {
-                    // offer sent or product received
-                    status = HulaConstants.review_status
-                }
-                if buttonTag == 90441 {
-                    acceptedTrade = "true"
-                }
-                let dataString:String = "status=\(status)&owner_products=\(owner_products)&other_products=\(other_products)&owner_money=\(owner_money)&other_money=\(other_money)&accepted=\(acceptedTrade)"
-                //print(dataString)
-                HLDataManager.sharedInstance.httpPost(urlstr: queryURL, postString: dataString, isPut: true, taskCallback: { (ok, json) in
-                    if (ok){
-                        //print(json!)
-                        DispatchQueue.main.async {
-                            
-                            let viewController = self.storyboard?.instantiateViewController(withIdentifier: "alertView") as! AlertViewController
-                            
-                            viewController.delegate = self as AlertDelegate
-                            viewController.isCancelVisible = false
-                            
-                            if buttonTag == 91053 {
-                                viewController.message = "You accepted the deal. Now meet the trader and exchange your stuff."
-                                viewController.trigger = "deal_review"
-                            } else {
-                                if buttonTag == 90441 {
-                                    viewController.message = "Great! Enjoy your stuff and many thanks for using HULA.\nIn order to free up this trading room, this trade will be moved to your past trades tab."
-                                    viewController.trigger = "deal_closed"
-                                } else {
-                                    viewController.message = "Your offer has been sent with your changes.\nPlease allow 72 hours for the user to reply."
-                                }
-                            }
-                            
-                            
-                            self.present(viewController, animated: true)
-                        }
+            self.tempTag = (sender as? UIButton)!.tag
+            if tradeStatus.owner_products.count == 0 || tradeStatus.other_products.count == 0{
+                if tradeStatus.owner_id == HulaUser.sharedInstance.userId {
+                    // i am the owner
+                    if tradeStatus.owner_products.count == 0{
+                        showAlert(message:"No offer without an item. Unless you wanna offer cash...", trigger:"notrade", cancelVisible:false, okText:"Ok")
                     } else {
-                        // connection error
-                        print("Connection error")
+                        showAlert(message:"Are you giving your stuff away for free? If not, choose the item you want to exchange it with.", trigger:"donation", cancelVisible:true, okText:"Ok!")
                     }
-                })
+                } else {
+                    // i am the other
+                    if tradeStatus.other_products.count == 0{
+                        showAlert(message:"Are you giving your stuff away for free? If not, choose something you want to exchange it with.", trigger:"donation", cancelVisible:true, okText:"Ok!")
+                    } else {
+                        showAlert(message:"No offer without an item. Unless you wanna offer cash...", trigger:"notrade", cancelVisible:false, okText:"Ok")
+                    }
+                }
+                return
             }
+            executeOfferOptions(tradeStatus, buttonTag: self.tempTag)
+            
         } else {
             print("No trade/barter delegate vc found!")
         }
     }
     
+    func showAlert(message:String, trigger:String, cancelVisible:Bool,  okText:String){
+    
+        let viewController = self.storyboard?.instantiateViewController(withIdentifier: "alertView") as! AlertViewController
+        
+        viewController.delegate = self as AlertDelegate
+        viewController.isCancelVisible = cancelVisible
+        viewController.okButtonText = okText
+        viewController.message = message
+        viewController.trigger = trigger
+        self.present(viewController, animated: true)
+    }
+    
+    func executeOfferOptions(_ tradeStatus: HulaTrade, buttonTag: Int){
+        
+        //print("tradeStatus: \(tradeStatus)")
+        let trade_id = tradeStatus.tradeId
+        let turn_id = tradeStatus.turn_user_id
+        self.trade_id_closed = trade_id!
+        if (tradeStatus.owner_id != HulaUser.sharedInstance.userId){
+            self.user_id_closed = tradeStatus.owner_id
+        } else {
+            self.user_id_closed = tradeStatus.other_id
+        }
+        
+        //print(tradeStatus.owner_products)
+        if (turn_id != HulaUser.sharedInstance.userId) && buttonTag != 90441{
+            print("This is not your turn!!!")
+        } else {
+            let queryURL = HulaConstants.apiURL + "trades/\(trade_id!)"
+            let owner_products = tradeStatus.owner_products.joined(separator: ",")
+            let other_products = tradeStatus.other_products.joined(separator: ",")
+            let owner_money:Int = Int(tradeStatus.owner_money)
+            let other_money:Int = Int(tradeStatus.other_money)
+            var status = HulaConstants.sent_status
+            var acceptedTrade: String = "false"
+            if buttonTag == 91053 || buttonTag == 90441 {
+                // offer sent or product received
+                status = HulaConstants.review_status
+            }
+            if buttonTag == 90441 {
+                acceptedTrade = "true"
+            }
+            let dataString:String = "status=\(status)&owner_products=\(owner_products)&other_products=\(other_products)&owner_money=\(owner_money)&other_money=\(other_money)&accepted=\(acceptedTrade)"
+            //print(dataString)
+            HLDataManager.sharedInstance.httpPost(urlstr: queryURL, postString: dataString, isPut: true, taskCallback: { (ok, json) in
+                if (ok){
+                    //print(json!)
+                    DispatchQueue.main.async {
+                        
+                        let viewController = self.storyboard?.instantiateViewController(withIdentifier: "alertView") as! AlertViewController
+                        
+                        viewController.delegate = self as AlertDelegate
+                        viewController.isCancelVisible = false
+                        
+                        if buttonTag == 91053 {
+                            viewController.message = "You accepted the deal. Now meet the trader and exchange your stuff."
+                            viewController.trigger = "deal_review"
+                        } else {
+                            if buttonTag == 90441 {
+                                viewController.message = "Great! Enjoy your stuff and many thanks for using HULA.\nIn order to free up this trading room, this trade will be moved to your past trades tab."
+                                viewController.trigger = "deal_closed"
+                            } else {
+                                viewController.message = "Your offer has been sent with your changes.\nPlease allow 72 hours for the user to reply."
+                            }
+                        }
+                        
+                        
+                        self.present(viewController, animated: true)
+                    }
+                } else {
+                    // connection error
+                    print("Connection error")
+                }
+            })
+        }
+    }
     @IBAction func showUserAction(_ sender: Any) {
         //print (prevUser)
         HLDataManager.sharedInstance.getUserProfile(userId: prevUser, taskCallback: {(user, prods) in
@@ -625,8 +675,21 @@ extension HLSwappViewController: AlertDelegate{
     func alertResponded(response: String, trigger:String) {
         print("Response: \(response)")
         
+        
         DispatchQueue.main.async {
+            if trigger == "notrade"{
+                return
+            }
             
+            if trigger == "donation"{
+                if response == "ok"{
+                    if let tradeStatus = self.barterDelegate?.getCurrentTradeStatus() {
+                        self.executeOfferOptions(tradeStatus, buttonTag: self.tempTag)
+                    }
+                } else {
+                    return
+                }
+            }
             if trigger == "share" && response == "ok"{
                 self.shareHula()
             }
