@@ -194,9 +194,8 @@ class HLBarterScreenViewController: BaseViewController {
                 if let _ = HLDataManager.sharedInstance.onboardingTutorials.object(forKey: "barter_other_turn") as? String{
                 } else {
                     CommonUtils.sharedInstance.showTutorial(arrayTips: [
-                        HulaTip(delay: 2, view: self.myProductsCollection, text: "This trading is waiting for the other user to select the items he wants. As soon as the offer is ready you will be notified"),
-                        HulaTip(delay: 0.4, view: self.moneyBtn, text: "Add money here"),
-                        HulaTip(delay: 0.4, view: self.ChatFakeView, text: "Start chat here")
+                        HulaTip(delay: 2, view: self.sendOfferFakeView, text: "This trading is waiting for the other user to select the items he wants or accept your offer. As soon as the offer is ready you will be notified."),
+                        HulaTip(delay: 0.4, view: self.ChatFakeView, text: "Start chat here if you need to talk.")
                         ])
                     HLDataManager.sharedInstance.onboardingTutorials.setValue("done", forKey: "barter_other_turn")
                 }
@@ -354,7 +353,7 @@ class HLBarterScreenViewController: BaseViewController {
                 fakeImg.contentMode = .scaleAspectFill
                 fakeImg.clipsToBounds = true
                 fakeImg.loadImageFromURL(urlString: p.arrProductPhotoLink[0])
-                self.view.addSubview(fakeImg)
+                self.view.insertSubview(fakeImg, at: self.view.subviews.count - 2)
                 let cell = col.cellForItem(at: IndexPath(item: counter, section: 0))
                 cell?.alpha = 0
                 UIView.animate(withDuration: 0.3, animations: {
@@ -381,7 +380,8 @@ class HLBarterScreenViewController: BaseViewController {
                 fakeImg.contentMode = .scaleAspectFill
                 fakeImg.clipsToBounds = true
                 fakeImg.loadImageFromURL(urlString: p.arrProductPhotoLink[0])
-                self.view.addSubview(fakeImg)
+                self.view.insertSubview(fakeImg, at: self.view.subviews.count - 2)
+                //self.view.addSubview(fakeImg)
                 let cell = col2.cellForItem(at: IndexPath(item: counter, section: 0))
                 cell?.alpha = 0
                 UIView.animate(withDuration: 0.3, animations: {
