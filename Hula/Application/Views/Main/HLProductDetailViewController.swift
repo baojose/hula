@@ -32,7 +32,6 @@ class HLProductDetailViewController: BaseViewController, UIScrollViewDelegate, U
     @IBOutlet var sellerImageView: UIImageView!
     @IBOutlet var sellerNameLabel: UILabel!
     @IBOutlet var sellerFeedbackLabel: UILabel!
-    @IBOutlet var sellerVerifiedMethodsView: UIView!
 
     @IBOutlet var sellerLabel: UILabel!
     @IBOutlet var userInventoryLabel: UILabel!
