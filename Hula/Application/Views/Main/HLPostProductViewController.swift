@@ -291,7 +291,7 @@ class HLPostProductViewController: BaseViewController, UITextFieldDelegate {
     }
     func changePublishBtnState(_ string: String){
         self.dataManager.newProduct.productName = string
-        if dataManager.newProduct.arrProductPhotos.count != 0 && string.characters.count != 0  {
+        if dataManager.newProduct.arrProductPhotos.count != 0 && string.count != 0  {
             publishBtn.isEnabled = true
             publishBtn.startAnimation()
         }else{
@@ -329,7 +329,7 @@ class HLPostProductViewController: BaseViewController, UITextFieldDelegate {
         self.presentingViewController?.presentingViewController?.dismiss(animated: true, completion: nil)
     }
     @IBAction func publishNewProduct(_ sender: Any) {
-        if productTitleTxtField.text?.characters.count != 0 {
+        if productTitleTxtField.text?.count != 0 {
             dataManager.newProduct.productName = productTitleTxtField.text
         }
         NotificationCenter.default.post(name: NSNotification.Name(rawValue: "uploadModeUpdateDesign"), object: nil)

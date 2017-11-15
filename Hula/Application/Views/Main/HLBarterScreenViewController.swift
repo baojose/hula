@@ -347,7 +347,7 @@ class HLBarterScreenViewController: BaseViewController {
         }
         var counter : Int = 0
         for p in array_to_traverse{
-            if p.tradeStatus == 1{
+            if p.tradeStatus == 1 {
                 // added product
                 let fakeImg = UIImageView(frame: CGRect(x:posx, y:posy, width: 120, height:120))
                 fakeImg.contentMode = .scaleAspectFill
@@ -356,7 +356,7 @@ class HLBarterScreenViewController: BaseViewController {
                 self.view.insertSubview(fakeImg, at: self.view.subviews.count - 2)
                 let cell = col.cellForItem(at: IndexPath(item: counter, section: 0))
                 cell?.alpha = 0
-                UIView.animate(withDuration: 0.3, animations: {
+                UIView.animate(withDuration: 0.3 + Double(counter)/10 , animations: {
                     fakeImg.alpha = 1
                     if cell != nil{
                         fakeImg.frame = (cell?.frame)!
@@ -384,7 +384,7 @@ class HLBarterScreenViewController: BaseViewController {
                 //self.view.addSubview(fakeImg)
                 let cell = col2.cellForItem(at: IndexPath(item: counter, section: 0))
                 cell?.alpha = 0
-                UIView.animate(withDuration: 0.3, animations: {
+                UIView.animate(withDuration: 0.2, animations: {
                     fakeImg.alpha = 1
                     if cell != nil{
                         fakeImg.frame = (cell?.frame)!
@@ -405,7 +405,7 @@ class HLBarterScreenViewController: BaseViewController {
     
     func getUserProducts(user: String, taskCallback: @escaping ([HulaProduct]) -> ()) {
         //print("Getting user info...")
-        if (HulaUser.sharedInstance.userId.characters.count>0){
+        if (HulaUser.sharedInstance.userId.count>0){
             let queryURL = HulaConstants.apiURL + "products/user/" + user
             //print(queryURL)
             HLDataManager.sharedInstance.httpGet(urlstr: queryURL, taskCallback: { (ok, json) in
@@ -431,7 +431,7 @@ class HLBarterScreenViewController: BaseViewController {
                                     newProd.populate(with: product_data as NSDictionary)
                                     
                                     for difprod in self.thisTrade.last_bid_diff {
-                                        if (difprod == newProd.productId!){
+                                        if (difprod == newProd.productId!) || (self.thisTrade.num_bids < 3) {
                                             // recently added
                                             newProd.tradeStatus = 1
                                         }
@@ -603,7 +603,7 @@ extension HLBarterScreenViewController: KDDragAndDropCollectionViewDataSource, U
         //print(product.video_requested)
         //print(product.video_url)
         if (product.video_requested){
-            if product.video_url.characters.count > 0 {
+            if product.video_url.count > 0 {
                 cell.statusImage.image = UIImage(named: "video-player-icon-red")
             } else {
                 cell.statusImage.image = UIImage(named: "video-requested-red")
@@ -790,6 +790,7 @@ extension HLBarterScreenViewController: HLBarterScreenDelegate{
         trade.other_money = thisTrade.other_money
         trade.owner_id = thisTrade.owner_id
         trade.other_id = thisTrade.other_id
+        trade.num_bids = thisTrade.num_bids
         return trade
     }
     

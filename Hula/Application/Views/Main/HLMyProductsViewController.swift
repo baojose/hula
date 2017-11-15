@@ -113,7 +113,7 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
         //print(product)
         cell.productDescription.text = product.productName
         
-        if (product.productImage.characters.count == 0){
+        if (product.productImage.count == 0){
             if (dataManager.newProduct.arrProductPhotos.count>0){
                 if let img = dataManager.newProduct.arrProductPhotos.object(at: 0) as? UIImage {
                     cell.productImage.image = img
@@ -203,7 +203,7 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
         //print(dataManager.uploadMode)
         if dataManager.uploadMode == true {
             // just if we are coming back from product creation
-            if HLDataManager.sharedInstance.newProduct.productId.characters.count > 0 && self.arrayProducts.count > 0{
+            if HLDataManager.sharedInstance.newProduct.productId.count > 0 && self.arrayProducts.count > 0{
                 // item already exists and is being updated
                 // this should not happen
                 self.arrayProducts[self.arrayProducts.count - 1] = dataManager.newProduct
@@ -245,7 +245,7 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
     
     func getUserProducts() {
         //print("Getting product info...")
-        if (HulaUser.sharedInstance.userId.characters.count>0){
+        if (HulaUser.sharedInstance.userId.count>0){
             let queryURL = HulaConstants.apiURL + "products/user/" + HulaUser.sharedInstance.userId
             //print(queryURL)
             HLDataManager.sharedInstance.httpGet(urlstr: queryURL, taskCallback: { (ok, json) in
@@ -295,7 +295,7 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
     }
     func uploadProduct() {
         //print("Saving product...")
-        if (HulaUser.sharedInstance.userId.characters.count>0){
+        if (HulaUser.sharedInstance.userId.count>0){
             let queryURL = HulaConstants.apiURL + "products/"
             let dataString:String = updateProductDataString()
             HLDataManager.sharedInstance.httpPost(urlstr: queryURL, postString: dataString, isPut: false, taskCallback: { (ok, json) in
@@ -324,7 +324,7 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
     }
     func updateProduct() {
         print("Updating product...")
-        if (HLDataManager.sharedInstance.newProduct.productId.characters.count>0){
+        if (HLDataManager.sharedInstance.newProduct.productId.count>0){
             let queryURL = HulaConstants.apiURL + "products/" + HLDataManager.sharedInstance.newProduct.productId
             let dataString:String = updateProductDataString()
             //print(dataString)
@@ -371,7 +371,7 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
         dataManager.newProduct.arrProductPhotoLink = ["","","",""]
         self.arrayImagesURL = ["","","",""]
         print(dataManager.newProduct.arrProductPhotos)
-        if (HulaUser.sharedInstance.userId.characters.count>0){
+        if (HulaUser.sharedInstance.userId.count>0){
             // user is logged in
             for i in 0 ..< 4{
                 if ( dataManager.newProduct.arrProductPhotos.count>i ){

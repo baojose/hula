@@ -95,19 +95,19 @@ class HLSellerInfoViewController: BaseViewController, UITableViewDelegate, UITab
         tradeWithUserButton.layer.borderColor = UIColor.white.cgColor
         tradeWithUserButton.layer.borderWidth = 1.0
         
-        if (user.twToken.characters.count>1){
+        if (user.twToken.count>1){
             twIcon.image = UIImage(named: "icon_twitter_on")
         }
-        if (user.fbToken.characters.count>1){
+        if (user.fbToken.count>1){
             fbIcon.image = UIImage(named: "icon_facebook_on")
         }
-        if (user.liToken.characters.count>1){
+        if (user.liToken.count>1){
             liIcon.image = UIImage(named: "icon_linkedin_on")
         }
         if (user.status == "verified"){
             emIcon.image = UIImage(named: "icon_mail_on")
         }
-        if (user.userBio.characters.count>1){
+        if (user.userBio.count>1){
             sellerBioTextView.text = user.userBio
         } else {
             sellerBioTextView.text = "..."
@@ -235,7 +235,7 @@ extension HLSellerInfoViewController: AlertDelegate{
         if response == "ok" {
             let otherId = user.userId
             if(HulaUser.sharedInstance.userId != otherId){
-                if (HulaUser.sharedInstance.userId.characters.count>0){
+                if (HulaUser.sharedInstance.userId.count>0){
                     // user is loggedin
                     DispatchQueue.main.async {
                         UIView.animate(withDuration: 0.3, animations: {

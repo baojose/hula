@@ -118,7 +118,7 @@ class HulaUser: NSObject {
     
     func isUserLoggedIn() -> Bool{
         var isLoggedIn = false;
-        if (self.userId.characters.count > 0) && (self.token.characters.count > 0) {
+        if (self.userId.count > 0) && (self.token.count > 0) {
             isLoggedIn = true;
         }
         return isLoggedIn

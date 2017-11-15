@@ -296,7 +296,7 @@ class HLSwappViewController: UIViewController {
         if let tradeStatus = barterDelegate?.getCurrentTradeStatus() {
             
             self.tempTag = (sender as? UIButton)!.tag
-            if tradeStatus.owner_products.count == 0 || tradeStatus.other_products.count == 0{
+            if (tradeStatus.owner_products.count == 0 || tradeStatus.other_products.count == 0) && tradeStatus.num_bids < 2  {
                 if tradeStatus.owner_id == HulaUser.sharedInstance.userId {
                     // i am the owner
                     if tradeStatus.owner_products.count == 0{

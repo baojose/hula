@@ -29,7 +29,7 @@ class HLIdentificationViewController: UserBaseViewController {
     override func viewDidAppear(_ animated: Bool) {
         
         let user = HulaUser.sharedInstance
-        if (user.token.characters.count > 10){
+        if (user.token.count > 10){
             // user not logged in
             self.closeIdentification()
         }

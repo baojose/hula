@@ -174,7 +174,7 @@ class HLHomeViewController: BaseViewController, UIScrollViewDelegate, UITextFiel
         return true
     }
     func textFieldShouldReturn(_ textField: UITextField) -> Bool{
-        if textField.text?.characters.count == 0 {
+        if textField.text?.count == 0 {
             isSearching = false
             self.searchProduct(textField.text!)
         }else{
@@ -262,7 +262,7 @@ class HLHomeViewController: BaseViewController, UIScrollViewDelegate, UITextFiel
     }
     func searchProduct(_ searchString: String) {
         if isSearching == true {
-            if searchString.characters.count == 0 {
+            if searchString.count == 0 {
                 filteredKeywordsArray.removeAllObjects()
             }else{
                 
@@ -276,7 +276,7 @@ class HLHomeViewController: BaseViewController, UIScrollViewDelegate, UITextFiel
     
     func getKeywords(_ kw:String) {
         //print("Getting keywords...")
-        if (kw.characters.count > 1){
+        if (kw.count > 1){
             let encodedKw = kw.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)
             let queryURL = HulaConstants.apiURL + "search/auto/" + encodedKw!   
             //print(queryURL)

@@ -345,7 +345,7 @@ class HLDataManager: NSObject {
         
         let user = HulaUser.sharedInstance
         //print(user.token)
-        if (user.token.characters.count>10){
+        if (user.token.count>10){
             request.setValue(user.token, forHTTPHeaderField: "x-access-token")
         }
         request.httpMethod = "GET"
@@ -380,7 +380,7 @@ class HLDataManager: NSObject {
         request.addValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Content-Type") //Optional
         request.httpBody = postString.data(using: .utf8)
         let user = HulaUser.sharedInstance
-        if (user.token.characters.count>10){
+        if (user.token.count>10){
             request.addValue(user.token, forHTTPHeaderField: "x-access-token")
         }
         //print(request.httpBody!)
@@ -416,7 +416,7 @@ class HLDataManager: NSObject {
             request.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
             
             let user = HulaUser.sharedInstance
-            if (user.token.characters.count>10){
+            if (user.token.count>10){
                 request.setValue(user.token, forHTTPHeaderField: "x-access-token")
             }
             let body = createBody(parameters: ["position": "\(itemPosition)"],
@@ -464,7 +464,7 @@ class HLDataManager: NSObject {
             request.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
             
             let user = HulaUser.sharedInstance
-            if (user.token.characters.count>10){
+            if (user.token.count>10){
                 request.setValue(user.token, forHTTPHeaderField: "x-access-token")
             }
             let body = createBody(parameters: ["product_id": "\(productId)"],
@@ -619,7 +619,7 @@ class HLDataManager: NSObject {
         } else {
             print("WARNING: Couldn't create dictionary from UserData.plist! Default values will be used!")
         }
-        self.onboardingTutorials = ["XInitializerItem": "DoNotEverChangeMe"]
+        //self.onboardingTutorials = ["XInitializerItem": "DoNotEverChangeMe"]
         print (self.onboardingTutorials)
     }//eom
     
