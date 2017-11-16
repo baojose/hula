@@ -171,16 +171,16 @@ class HLEditProductMainViewController: BaseViewController, ProductPictureDelegat
         prodImg4.image = UIImage(named: "icon_camera_small")
         prodImg4.contentMode = .center
         
-        if product.arrProductPhotoLink.count > 0 && product.arrProductPhotoLink[0].characters.count > 0 {
+        if product.arrProductPhotoLink.count > 0 && product.arrProductPhotoLink[0].count > 0 {
             prodImg1.loadImageFromURL(urlString: product.arrProductPhotoLink[0])
         }
-        if product.arrProductPhotoLink.count > 1 && product.arrProductPhotoLink[1].characters.count > 0 {
+        if product.arrProductPhotoLink.count > 1 && product.arrProductPhotoLink[1].count > 0 {
             prodImg2.loadImageFromURL(urlString: product.arrProductPhotoLink[1])
         }
-        if product.arrProductPhotoLink.count > 2 && product.arrProductPhotoLink[2].characters.count > 0 {
+        if product.arrProductPhotoLink.count > 2 && product.arrProductPhotoLink[2].count > 0 {
             prodImg3.loadImageFromURL(urlString: product.arrProductPhotoLink[2])
         }
-        if product.arrProductPhotoLink.count > 3 && product.arrProductPhotoLink[3].characters.count > 0 {
+        if product.arrProductPhotoLink.count > 3 && product.arrProductPhotoLink[3].count > 0 {
             prodImg4.loadImageFromURL(urlString: product.arrProductPhotoLink[3])
             prodImg4.contentMode = .scaleAspectFill
         }

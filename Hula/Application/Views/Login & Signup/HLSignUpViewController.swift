@@ -123,7 +123,7 @@ class HLSignUpViewController: UserBaseViewController, UITextFieldDelegate  {
     }
 
     @IBAction func signupFieldChanged(_ sender: Any) {
-        if (self.signupField.text!.characters.count>4){
+        if (self.signupField.text!.count>4){
             nextButton.startAnimation()
         } else {
             nextButton.stopAnimation()

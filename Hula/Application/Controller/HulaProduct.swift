@@ -87,7 +87,7 @@ class HulaProduct: NSObject {
         if let tmp = with.object(forKey: "images") as? [String] {
             arrProductPhotoLink = []
             for im in tmp {
-                if im.characters.count > 0 {
+                if im.count > 0 {
                     arrProductPhotoLink.append(im)
                 }
             }

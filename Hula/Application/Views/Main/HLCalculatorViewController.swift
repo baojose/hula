@@ -83,10 +83,10 @@ class HLCalculatorViewController: UIViewController {
     }
     @IBAction func clearNumberAction(_ sender: Any) {
         let str_amount = "\(amount)"
-        if(str_amount.characters.count == 1){
+        if(str_amount.count == 1){
             amount = 0
         } else {
-            let index = str_amount.index(str_amount.startIndex, offsetBy: str_amount.characters.count - 1)
+            let index = str_amount.index(str_amount.startIndex, offsetBy: str_amount.count - 1)
             let new_str = str_amount.substring(to: index)
             amount = Int(new_str)!
         }

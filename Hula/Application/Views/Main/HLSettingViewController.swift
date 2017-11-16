@@ -51,7 +51,7 @@ class HLSettingViewController: BaseViewController {
         commonUtils.circleImageView(profileImageView)
         mainScrollView.contentSize = CGSize(width: 0, height: 650)
         //print(userData.userPhotoURL)
-        if (userData.userPhotoURL.characters.count>1){
+        if (userData.userPhotoURL.count>1){
             self.removeAlertIcon(fromView: self.pictureView)
             self.smallProfileImage.loadImageFromURL(urlString: HulaUser.sharedInstance.userPhotoURL)
         } else {
@@ -59,7 +59,7 @@ class HLSettingViewController: BaseViewController {
         }
         
         
-        if (userData.userNick.characters.count>1){
+        if (userData.userNick.count>1){
             userNameLabel.text = userData.userNick
             self.removeAlertIcon(fromView: self.nameView)
         } else {
@@ -67,18 +67,18 @@ class HLSettingViewController: BaseViewController {
             self.addAlertIcon(toView: self.nameView)
         }
         
-        if (userData.userEmail.characters.count>1){
+        if (userData.userEmail.count>1){
             userEmailLabel.text = userData.userEmail
         }
         
-        if (userData.userName.characters.count>1){
+        if (userData.userName.count>1){
             userFullNameLabel.text = userData.userName
             self.removeAlertIcon(fromView: self.fullNameView)
         } else {
             userFullNameLabel.text = "Full name"
             self.addAlertIcon(toView: self.fullNameView)
         }
-        if (userData.userBio.characters.count>1){
+        if (userData.userBio.count>1){
             userBioLabel.text = userData.userBio
             self.removeAlertIcon(fromView: self.bioView)
         } else {
@@ -86,7 +86,7 @@ class HLSettingViewController: BaseViewController {
             self.addAlertIcon(toView: self.bioView)
         }
         
-        if (userData.userLocationName.characters.count>1){
+        if (userData.userLocationName.count>1){
             locationLabel.text = userData.userLocationName
             self.removeAlertIcon(fromView: self.locationView)
         } else {
