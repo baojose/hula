@@ -95,7 +95,7 @@ class BaseTabBarViewController: UITabBarController, UITabBarControllerDelegate{
     
     func checkUserLogin() -> Bool{
         let user = HulaUser.sharedInstance
-        if (user.token.characters.count < 10){
+        if (user.token.count < 10){
             isUserLoggedIn = false
         } else {
             isUserLoggedIn = true

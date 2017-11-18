@@ -47,7 +47,7 @@ class HLProductModalViewController: UIViewController, UIImagePickerControllerDel
         
         if (product.video_requested){
             
-            if (product.video_url.characters.count > 0){
+            if (product.video_url.count > 0){
                 videoStatusImg.image = UIImage(named: "video-player-icon-red")
                 videoBtn.setTitle(" Play video", for: .normal)
                 videoBtn.setImage(UIImage(named: "video-player-icon-red"), for: .normal)
@@ -99,7 +99,7 @@ class HLProductModalViewController: UIViewController, UIImagePickerControllerDel
         var num_images: CGFloat = 0;
         for i in 0 ..< product.arrProductPhotoLink.count {
             let img_url = product.arrProductPhotoLink[i]
-            if (img_url.characters.count > 0){
+            if (img_url.count > 0){
                 let imageFrame = CGRect(x: (CGFloat)(i) * productsScrollView.frame.size.width, y: 0, width: productsScrollView.frame.size.width, height: productsScrollView.frame.size.height)
                 let imgView: UIImageView! = UIImageView.init(frame: imageFrame)
                 //commonUtils.loadImageOnView(imageView: imgView, withURL: img_url)

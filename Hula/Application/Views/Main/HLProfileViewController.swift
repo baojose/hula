@@ -156,14 +156,14 @@ class HLProfileViewController: BaseViewController {
                                        message: nil,
                                        preferredStyle: .actionSheet)
         
-        if HulaUser.sharedInstance.fbToken.characters.count == 0 {
+        if HulaUser.sharedInstance.fbToken.count == 0 {
             let facebookAction = UIAlertAction(title: "Facebook", style: .default, handler: { action -> Void in
                 self.facebookValidate()
             })
             alert.addAction(facebookAction)
         }
         
-        if HulaUser.sharedInstance.liToken.characters.count == 0 {
+        if HulaUser.sharedInstance.liToken.count == 0 {
             let linkedinAction = UIAlertAction(title: "Linkedin", style: .default, handler: { action -> Void in
                 self.linkedinValidate()
             })
@@ -171,7 +171,7 @@ class HLProfileViewController: BaseViewController {
         }
         
         
-        if HulaUser.sharedInstance.twToken.characters.count == 0 {
+        if HulaUser.sharedInstance.twToken.count == 0 {
             let twitterAction = UIAlertAction(title: "Twitter", style: .default, handler: { action -> Void in
                 self.twitterValidate()
             })

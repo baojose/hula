@@ -226,7 +226,7 @@ class HLProductDetailViewController: BaseViewController, UIScrollViewDelegate, U
             //print(img_arr)
             for i in 0 ..< img_arr.count {
                 let img_url = img_arr[i]
-                if (img_url.characters.count > 0){
+                if (img_url.count > 0){
                     let imageFrame = CGRect(x: (CGFloat)(i) * productsScrollView.frame.size.width, y: 0, width: productsScrollView.frame.size.width, height: productsScrollView.frame.size.height)
                     let imgView: UIImageView! = UIImageView.init(frame: imageFrame)
                     //commonUtils.loadImageOnView(imageView: imgView, withURL: img_url)
@@ -311,7 +311,7 @@ extension HLProductDetailViewController: AlertDelegate{
                 if let productId = currentProduct.productId {
                     //print(productId)
                     let otherId = currentProduct.productOwner
-                    if (HulaUser.sharedInstance.userId.characters.count>0){
+                    if (HulaUser.sharedInstance.userId.count>0){
                         // user is loggedin
                         DispatchQueue.main.async {
                             UIView.animate(withDuration: 0.5, animations: {

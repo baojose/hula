@@ -203,7 +203,7 @@ class HLPastTradeViewController: UIViewController, UICollectionViewDelegate, UIC
     
     func getProduct(productId: String, taskCallback: @escaping (HulaProduct) -> ()) {
         //print("Getting user info...")
-        if (HulaUser.sharedInstance.userId.characters.count>0){
+        if (HulaUser.sharedInstance.userId.count>0){
             let product: HulaProduct = HulaProduct()
             let queryURL = HulaConstants.apiURL + "products/" + productId
             //print(queryURL)

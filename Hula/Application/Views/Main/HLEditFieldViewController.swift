@@ -50,7 +50,7 @@ class HLEditFieldViewController: BaseViewController, UITextFieldDelegate, UIText
             currentValueLabel.text = "CURRENT ZIP CODE: \(field_previous_val)"
             newValueTextView.keyboardType = UIKeyboardType.numberPad
             
-            if field_previous_val.characters.count == 0{
+            if field_previous_val.count == 0{
                 useMyLocationAction(useMyLocationBtn)
             }
         } else {
@@ -96,7 +96,7 @@ class HLEditFieldViewController: BaseViewController, UITextFieldDelegate, UIText
             self.useMyLocationBtn.frame.origin.y = self.lineSeparator.frame.origin.y + 30
             self.grayLocationLabel.frame.origin.y = self.lineSeparator.frame.origin.y + 5
         }, completion: nil)
-        var theRemainingChars = self.remainingChars - newValueTextView.text.characters.count
+        var theRemainingChars = self.remainingChars - newValueTextView.text.count
         if (theRemainingChars < 1){
             let index = newValueTextView.text.index(newValueTextView.text.startIndex, offsetBy: self.remainingChars)
             newValueTextView.text = newValueTextView.text.substring(to: index)

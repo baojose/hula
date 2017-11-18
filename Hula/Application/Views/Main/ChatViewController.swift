@@ -133,7 +133,7 @@ class ChatViewController: UIViewController {
         let tx = self.chatTextField.text
         //print("Sending...")
         //print("trade id: \(self.trade_id)")
-        if (tx?.characters.count)! > 0 {
+        if (tx?.count)! > 0 {
             let queryURL = HulaConstants.apiURL + "trades/\(self.trade_id)/chat"
             HLDataManager.sharedInstance.httpPost(urlstr: queryURL, postString: "message=\(tx!)", isPut: false, taskCallback: { (ok, json) in
                 //print("done")
