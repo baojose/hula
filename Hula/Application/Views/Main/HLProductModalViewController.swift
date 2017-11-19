@@ -9,6 +9,7 @@
 import UIKit
 import MobileCoreServices
 import AVKit
+import BRYXBanner
 
 class HLProductModalViewController: UIViewController, UIImagePickerControllerDelegate, UINavigationControllerDelegate, UIScrollViewDelegate {
 
@@ -175,6 +176,7 @@ class HLProductModalViewController: UIViewController, UIImagePickerControllerDel
                 imagePicker.mediaTypes = [ kUTTypeMovie as String ]
                 imagePicker.allowsEditing = false
                 imagePicker.videoQuality = .typeMedium
+                imagePicker.videoMaximumDuration = 10
                 imagePicker.delegate = self
                 
                 present(imagePicker, animated: true, completion: {})
@@ -213,10 +215,11 @@ class HLProductModalViewController: UIViewController, UIImagePickerControllerDel
             videoPath = NSURL(string: path )
             videoData?.write(toFile: path, atomically: false)
             //self.dismiss(animated: true, completion: nil)
-            
+            notify("Uploading video...")
             
             HLDataManager.sharedInstance.uploadVideo(path, productId: product.productId, taskCallback: { (success, json) in
                 //print(json)
+                self.notify("Video uploaded!")
             })
         }
         
@@ -233,14 +236,11 @@ class HLProductModalViewController: UIViewController, UIImagePickerControllerDel
         
     }
     
-    func uploadMedia(){
-        if videoPath == nil {
-            return
-        }
-        
-        
+    func notify(_ txt: String){
+        let banner = Banner(title: nil, subtitle: txt, backgroundColor: HulaConstants.appMainColor)
+        banner.dismissesOnTap = true
+        banner.show(duration: 0.7)
     }
-    
     @IBAction func fsImageAction(_ sender: Any) {
         print("Fullingscreening")
         if let im = productsScrollView.viewWithTag(pageControl.currentPage + 1000) as? UIImageView{

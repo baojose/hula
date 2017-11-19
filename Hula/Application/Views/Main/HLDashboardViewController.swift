@@ -55,7 +55,8 @@ class HLDashboardViewController: BaseViewController {
         //self.mainCollectionView.frame = self.view.frame
         self.mainCollectionView.scrollToItem(at: IndexPath(row: 0, section: 0) , at: .top, animated: true)
         self.mainCollectionView.collectionViewLayout.invalidateLayout()
-        
+        print(self.view.frame)
+        print(self.mainCollectionView.frame)
         /*
         self.mainCollectionView.setCollectionViewLayout(HLDashboardNormalViewFlowLayout(), animated: false)
         self.mainCollectionView.collectionViewLayout.invalidateLayout()
