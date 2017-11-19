@@ -32,6 +32,7 @@ class HLDataManager: NSObject {
     var lastServerMessage:String = ""
     var isLoadingNotifications:Bool = false
     var isInSwapVC : Bool = false
+    var onlyLandscapeView : Bool = false
     
     let categoriesLoaded = Notification.Name("categoriesLoaded")
     let loginRecieved = Notification.Name("loginRecieved")

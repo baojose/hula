@@ -132,13 +132,13 @@ class HLProductModalViewController: UIViewController, UIImagePickerControllerDel
                 let queryURL = HulaConstants.apiURL + "products/\(product.productId!)/requestvideo"
                 HLDataManager.sharedInstance.httpGet(urlstr: queryURL, taskCallback: { (ok, json) in
                     if (ok){
-                        if let _ = json as? [NSDictionary] {
+                        if let _ = json as? NSDictionary {
                             
                             DispatchQueue.main.async {
                                 let alert = self.storyboard?.instantiateViewController(withIdentifier: "alertView") as! AlertViewController
                                 alert.delegate = self as AlertDelegate
                                 alert.isCancelVisible = false
-                                alert.message = "You have requested a video for this product. You will receive a notification when the user upload it."
+                                alert.message = "You have requested a video for this product. You will receive a notification when the user uploads it."
                                 alert.trigger = "video_request"
                                 self.present(alert, animated: true)
                             }
@@ -170,7 +170,7 @@ class HLProductModalViewController: UIViewController, UIImagePickerControllerDel
             appDelegate.allowRotation = true
             
             if UIImagePickerController.availableCaptureModes(for: .rear) != nil {
-                
+                HLDataManager.sharedInstance.onlyLandscapeView = true
                 imagePicker.sourceType = .camera
                 imagePicker.mediaTypes = [ kUTTypeMovie as String ]
                 imagePicker.allowsEditing = false
@@ -185,7 +185,12 @@ class HLProductModalViewController: UIViewController, UIImagePickerControllerDel
             print("Camera inaccessable. Application cannot access the camera.")
         }
     }
-
+    func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
+        HLDataManager.sharedInstance.onlyLandscapeView = false
+        imagePicker.dismiss(animated: true, completion: {
+            
+        })
+    }
     func imagePickerController(_ picker:UIImagePickerController, didFinishPickingMediaWithInfo info: [String:Any]) {
         print("Got a video")
         
@@ -215,6 +220,7 @@ class HLProductModalViewController: UIViewController, UIImagePickerControllerDel
             })
         }
         
+        HLDataManager.sharedInstance.onlyLandscapeView = false
         imagePicker.dismiss(animated: true, completion: {
             // Anything you want to happen when the user saves an video
             
@@ -328,3 +334,11 @@ extension HLProductModalViewController {
     }
 }
 
+extension UIImagePickerController{
+    override open var shouldAutorotate: Bool {
+        return true
+    }
+    override open var supportedInterfaceOrientations : UIInterfaceOrientationMask {
+        return .landscape
+    }
+}
