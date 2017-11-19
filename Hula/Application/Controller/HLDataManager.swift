@@ -264,7 +264,6 @@ class HLDataManager: NSObject {
         return false
     }
     
-    
     func myRoomsFull() -> Bool{
         if (arrCurrentTrades.count >= HulaUser.sharedInstance.maxTrades){
             return true

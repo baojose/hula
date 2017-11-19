@@ -112,7 +112,11 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
         let product : HulaProduct = self.arrayProducts[order_sorted]
         //print(product)
         cell.productDescription.text = product.productName
-        
+        if product.trading_count > 0 {
+            cell.isMultipleTrades.isHidden = false
+        } else {
+            cell.isMultipleTrades.isHidden = true
+        }
         if (product.productImage.count == 0){
             if (dataManager.newProduct.arrProductPhotos.count>0){
                 if let img = dataManager.newProduct.arrProductPhotos.object(at: 0) as? UIImage {

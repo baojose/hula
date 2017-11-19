@@ -22,6 +22,7 @@ class HLProductTableViewCell: UITableViewCell {
     @IBOutlet var productOwnerImage: UIImageView!
     @IBOutlet var productOwnerName: UILabel!
 
+    @IBOutlet weak var isMultipleTrades: UIImageView!
     override func awakeFromNib() {
         super.awakeFromNib()
         

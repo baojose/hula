@@ -22,6 +22,9 @@ class HLProductModalViewController: UIViewController, UIImagePickerControllerDel
     @IBOutlet weak var productCategory: UILabel!
     @IBOutlet weak var productCondition: UILabel!
     @IBOutlet weak var videoBtn: UIButton!
+    @IBOutlet weak var multipleDealsImg: UIImageView!
+    @IBOutlet weak var multipleDealLbl: UILabel!
+    @IBOutlet weak var videoStatusImg2: UIImageView!
     
     @IBOutlet weak var productDescriptionLabel: UITextView!
     @IBOutlet var productsScrollView: UIScrollView!
@@ -30,6 +33,7 @@ class HLProductModalViewController: UIViewController, UIImagePickerControllerDel
     
     @IBOutlet weak var videoStatusImg: UIImageView!
     @IBOutlet weak var videoBtnHolder: UIView!
+    @IBOutlet weak var videoStatusLbl: UILabel!
     
     let imagePicker = UIImagePickerController()
     var videoPath: NSURL? = nil
@@ -53,6 +57,15 @@ class HLProductModalViewController: UIViewController, UIImagePickerControllerDel
         }
         mainScrollView.clipsToBounds = true
         self.setupVideoButtons()
+        
+        self.multipleDealsImg.isHidden = true
+        self.multipleDealLbl.isHidden = true
+        //print(product.trading_count)
+        if product.trading_count > 1 {
+            self.multipleDealsImg.isHidden = false
+            self.multipleDealLbl.isHidden = false
+            self.multipleDealLbl.text = "\(product.trading_count!) trades"
+        }
         
         // item height and position reset
         let h = CommonUtils.sharedInstance.heightString(width: productDescriptionLabel.frame.width, font: productDescriptionLabel.font! , string: productDescriptionLabel.text!) + 30
@@ -120,19 +133,25 @@ class HLProductModalViewController: UIViewController, UIImagePickerControllerDel
                     if (product.video_url.count > 0){
                         // video was requested and is available
                         videoStatusImg.image = UIImage(named: "video-player-icon-red")
+                        videoStatusImg2.image = UIImage(named: "video-player-icon-red")
+                        videoStatusLbl.text = "Video proof available"
                         videoBtn.setTitle(" Play video", for: .normal)
                         videoBtn.setImage(UIImage(named: "video-player-icon-red"), for: .normal)
                         videoBtn.tag = 43909
                     } else {
                         // video is still pending recod
                         videoStatusImg.image = UIImage(named: "video-requested-red")
+                        videoStatusImg2.image = UIImage(named: "video-requested-red")
                         videoBtn.setTitle(" Waiting for video proof...", for: .normal)
+                        videoStatusLbl.text = "Video proof requested"
                         videoBtn.tag = -43904
                     }
                 } else {
                     // video has not been requested
                     videoBtn.setTitle(" Request video proof", for: .normal)
                     videoStatusImg.image = nil
+                    videoStatusImg2.image = nil
+                    videoStatusLbl.text = ""
                     videoBtn.tag = 1
                 }
             } else {
@@ -140,18 +159,23 @@ class HLProductModalViewController: UIViewController, UIImagePickerControllerDel
                 if (product.video_url.count > 0){
                     // I've already recorded a video
                     videoStatusImg.image = UIImage(named: "video-player-icon-red")
+                    videoStatusImg2.image = UIImage(named: "video-player-icon-red")
+                    videoStatusLbl.text = "Video proof available"
                     videoBtn.setTitle(" Play video", for: .normal)
                     videoBtn.setImage(UIImage(named: "video-player-icon-red"), for: .normal)
                     videoBtn.tag = 43909
                 } else {
                     // video is still pending recod
                     videoStatusImg.image = UIImage(named: "video-requested-red")
+                    videoStatusImg2.image = UIImage(named: "video-requested-red")
+                    videoStatusLbl.text = "User waiting for video proof"
                     videoBtn.setTitle(" Record video proof", for: .normal)
                     videoBtn.tag = 43904
                 }
             }
         } else {
             videoBtnHolder.isHidden = true
+            videoStatusLbl.text = ""
         }
     }
     
