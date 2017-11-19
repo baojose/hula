@@ -546,6 +546,13 @@ extension HLBarterScreenViewController: KDDragAndDropCollectionViewDataSource, U
             let viewController = self.storyboard?.instantiateViewController(withIdentifier: "ProductModal") as! HLProductModalViewController
             
             viewController.product = product
+            if collectionView.tag == 2 || collectionView.tag == 3 {
+                // product on the barter table
+                viewController.hideVideoBtn = false
+            } else {
+                // product on the user lists
+                viewController.hideVideoBtn = true
+            }
             viewController.modalPresentationStyle = .overCurrentContext
             
             self.present(viewController, animated: true)

@@ -29,10 +29,12 @@ class HLProductModalViewController: UIViewController, UIImagePickerControllerDel
     @IBOutlet var pageControl: UIPageControl!
     
     @IBOutlet weak var videoStatusImg: UIImageView!
+    @IBOutlet weak var videoBtnHolder: UIView!
     
     let imagePicker = UIImagePickerController()
     var videoPath: NSURL? = nil
     var image_dismissing : Bool = false
+    var hideVideoBtn: Bool = false
     
     
     override func viewDidLoad() {
@@ -44,26 +46,13 @@ class HLProductModalViewController: UIViewController, UIImagePickerControllerDel
         productDistance.text = CommonUtils.sharedInstance.getDistanceFrom(loc: product.productLocation)
         productCategory.text = product.productCategory
         productCondition.text = product.productCondition
-        productDescriptionLabel.text = product.productDescription
-        
-        if (product.video_requested){
-            
-            if (product.video_url.count > 0){
-                videoStatusImg.image = UIImage(named: "video-player-icon-red")
-                videoBtn.setTitle(" Play video", for: .normal)
-                videoBtn.setImage(UIImage(named: "video-player-icon-red"), for: .normal)
-                videoBtn.tag = 43909
-            } else {
-                videoStatusImg.image = UIImage(named: "video-requested-red")
-                videoBtn.setTitle(" Recording pending...", for: .normal)
-                videoBtn.tag = 43904
-            }
+        if product.productDescription.count > 0 {
+            productDescriptionLabel.text = product.productDescription
         } else {
-            videoBtn.setTitle(" Request video proof", for: .normal)
-            videoStatusImg.image = nil
-            videoBtn.tag = 1
+            productDescriptionLabel.text = "No product description provided."
         }
-        
+        mainScrollView.clipsToBounds = true
+        self.setupVideoButtons()
         
         // item height and position reset
         let h = CommonUtils.sharedInstance.heightString(width: productDescriptionLabel.frame.width, font: productDescriptionLabel.font! , string: productDescriptionLabel.text!) + 30
@@ -120,34 +109,91 @@ class HLProductModalViewController: UIViewController, UIImagePickerControllerDel
         productsScrollView.contentOffset = CGPoint(x: 0.0, y: 0.0)
     }
     
-    @IBAction func videoAction(_ sender: Any) {
-        let tag = (sender as! UIButton).tag
-        if (tag == 43904){
-            if product.productOwner == HulaUser.sharedInstance.userId {
-                recordVideo()
+    func setupVideoButtons(){
+        
+        if !hideVideoBtn {
+            videoBtnHolder.isHidden = false
+            if (product.productOwner != HulaUser.sharedInstance.userId){
+                // not my product
+                if (product.video_requested || product.video_url.count  > 0){
+                    // video has been requested
+                    if (product.video_url.count > 0){
+                        // video was requested and is available
+                        videoStatusImg.image = UIImage(named: "video-player-icon-red")
+                        videoBtn.setTitle(" Play video", for: .normal)
+                        videoBtn.setImage(UIImage(named: "video-player-icon-red"), for: .normal)
+                        videoBtn.tag = 43909
+                    } else {
+                        // video is still pending recod
+                        videoStatusImg.image = UIImage(named: "video-requested-red")
+                        videoBtn.setTitle(" Waiting for video proof...", for: .normal)
+                        videoBtn.tag = -43904
+                    }
+                } else {
+                    // video has not been requested
+                    videoBtn.setTitle(" Request video proof", for: .normal)
+                    videoStatusImg.image = nil
+                    videoBtn.tag = 1
+                }
+            } else {
+                // it is my product
+                if (product.video_url.count > 0){
+                    // I've already recorded a video
+                    videoStatusImg.image = UIImage(named: "video-player-icon-red")
+                    videoBtn.setTitle(" Play video", for: .normal)
+                    videoBtn.setImage(UIImage(named: "video-player-icon-red"), for: .normal)
+                    videoBtn.tag = 43909
+                } else {
+                    // video is still pending recod
+                    videoStatusImg.image = UIImage(named: "video-requested-red")
+                    videoBtn.setTitle(" Record video proof", for: .normal)
+                    videoBtn.tag = 43904
+                }
             }
         } else {
-            if (tag == 43909){
-                playVideo()
+            videoBtnHolder.isHidden = true
+        }
+    }
+    
+    @IBAction func videoAction(_ sender: Any) {
+        let tag = (sender as! UIButton).tag
+        if !product.video_requested {
+            if (tag == 43904){
+                if product.productOwner == HulaUser.sharedInstance.userId {
+                    recordVideo()
+                }
             } else {
-                let queryURL = HulaConstants.apiURL + "products/\(product.productId!)/requestvideo"
-                HLDataManager.sharedInstance.httpGet(urlstr: queryURL, taskCallback: { (ok, json) in
-                    if (ok){
-                        if let _ = json as? NSDictionary {
-                            
-                            DispatchQueue.main.async {
-                                let alert = self.storyboard?.instantiateViewController(withIdentifier: "alertView") as! AlertViewController
-                                alert.delegate = self as AlertDelegate
-                                alert.isCancelVisible = false
-                                alert.message = "You have requested a video for this product. You will receive a notification when the user uploads it."
-                                alert.trigger = "video_request"
-                                self.present(alert, animated: true)
+                if (tag == 43909){
+                    playVideo()
+                } else {
+                    let queryURL = HulaConstants.apiURL + "products/\(product.productId!)/requestvideo"
+                    HLDataManager.sharedInstance.httpGet(urlstr: queryURL, taskCallback: { (ok, json) in
+                        if (ok){
+                            if let _ = json as? NSDictionary {
+                                
+                                DispatchQueue.main.async {
+                                    let alert = self.storyboard?.instantiateViewController(withIdentifier: "alertView") as! AlertViewController
+                                    alert.delegate = self as AlertDelegate
+                                    alert.isCancelVisible = false
+                                    alert.message = "You have requested a video for this product. You will receive a notification when the user uploads it."
+                                    alert.trigger = "video_request"
+                                    self.present(alert, animated: true)
+                                }
+                            } else {
+                                print("Error connecting")
                             }
-                        } else {
-                            print("Error connecting")
                         }
-                    }
-                })
+                    })
+                }
+            }
+        } else {
+            DispatchQueue.main.async {
+                let alert = self.storyboard?.instantiateViewController(withIdentifier: "alertView") as! AlertViewController
+                alert.delegate = self as AlertDelegate
+                alert.isCancelVisible = false
+                alert.message = "This product is already waiting for a video proof. The owner will record a video and you will be notified."
+                alert.trigger = "video_request"
+                self.present(alert, animated: true)
             }
         }
     }
@@ -218,8 +264,9 @@ class HLProductModalViewController: UIViewController, UIImagePickerControllerDel
             notify("Uploading video...")
             
             HLDataManager.sharedInstance.uploadVideo(path, productId: product.productId, taskCallback: { (success, json) in
-                //print(json)
+                print(json)
                 self.notify("Video uploaded!")
+                self.setupVideoButtons()
             })
         }
         

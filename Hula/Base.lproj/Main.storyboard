@@ -7493,8 +7493,8 @@ Be clever, be fast but the most important: be honest! Good luck!</string>
                                         <color key="textColor" red="0.27450980390000002" green="0.27450980390000002" blue="0.27450980390000002" alpha="1" colorSpace="calibratedRGB"/>
                                         <nil key="highlightedColor"/>
                                     </label>
-                                    <scrollView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" id="qd0-CW-Nzf">
-                                        <rect key="frame" x="-1" y="42" width="376" height="593"/>
+                                    <scrollView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" misplaced="YES" id="qd0-CW-Nzf">
+                                        <rect key="frame" x="-1" y="42" width="376" height="598"/>
                                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                         <subviews>
                                             <scrollView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleAspectFill" pagingEnabled="YES" showsHorizontalScrollIndicator="NO" showsVerticalScrollIndicator="NO" id="Uct-MC-vpH">
@@ -7593,8 +7593,8 @@ Be clever, be fast but the most important: be honest! Good luck!</string>
                                         <rect key="frame" x="-1" y="596" width="375" height="44"/>
                                         <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
                                         <subviews>
-                                            <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="img_footer_bg" id="fr9-AX-EPQ">
-                                                <rect key="frame" x="0.0" y="0.0" width="375" height="44"/>
+                                            <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" image="img_footer_bg" id="fr9-AX-EPQ">
+                                                <rect key="frame" x="0.0" y="0.0" width="378" height="44"/>
                                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                             </imageView>
                                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" id="BJg-hV-1B4">
@@ -7629,6 +7629,7 @@ Be clever, be fast but the most important: be honest! Good luck!</string>
                         <outlet property="productsScrollView" destination="Uct-MC-vpH" id="9M2-KI-9Rp"/>
                         <outlet property="titleLabel" destination="X1Y-CU-lWP" id="TKG-gF-5Op"/>
                         <outlet property="videoBtn" destination="BJg-hV-1B4" id="a4c-dR-xzA"/>
+                        <outlet property="videoBtnHolder" destination="X2E-HR-iOV" id="qlg-kG-KBt"/>
                         <outlet property="videoStatusImg" destination="orG-QZ-WWL" id="1hm-Fo-Jce"/>
                     </connections>
                 </viewController>
