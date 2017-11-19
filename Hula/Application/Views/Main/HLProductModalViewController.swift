@@ -157,7 +157,6 @@ class HLProductModalViewController: UIViewController, UIImagePickerControllerDel
     
     @IBAction func videoAction(_ sender: Any) {
         let tag = (sender as! UIButton).tag
-        if !product.video_requested {
             if (tag == 43904){
                 if product.productOwner == HulaUser.sharedInstance.userId {
                     recordVideo()
@@ -166,36 +165,38 @@ class HLProductModalViewController: UIViewController, UIImagePickerControllerDel
                 if (tag == 43909){
                     playVideo()
                 } else {
-                    let queryURL = HulaConstants.apiURL + "products/\(product.productId!)/requestvideo"
-                    HLDataManager.sharedInstance.httpGet(urlstr: queryURL, taskCallback: { (ok, json) in
-                        if (ok){
-                            if let _ = json as? NSDictionary {
-                                
-                                DispatchQueue.main.async {
-                                    let alert = self.storyboard?.instantiateViewController(withIdentifier: "alertView") as! AlertViewController
-                                    alert.delegate = self as AlertDelegate
-                                    alert.isCancelVisible = false
-                                    alert.message = "You have requested a video for this product. You will receive a notification when the user uploads it."
-                                    alert.trigger = "video_request"
-                                    self.present(alert, animated: true)
+                    if !product.video_requested {
+                        let queryURL = HulaConstants.apiURL + "products/\(product.productId!)/requestvideo"
+                        HLDataManager.sharedInstance.httpGet(urlstr: queryURL, taskCallback: { (ok, json) in
+                            if (ok){
+                                if let _ = json as? NSDictionary {
+                                    
+                                    DispatchQueue.main.async {
+                                        let alert = self.storyboard?.instantiateViewController(withIdentifier: "alertView") as! AlertViewController
+                                        alert.delegate = self as AlertDelegate
+                                        alert.isCancelVisible = false
+                                        alert.message = "You have requested a video for this product. You will receive a notification when the user uploads it."
+                                        alert.trigger = "video_request"
+                                        self.present(alert, animated: true)
+                                    }
+                                } else {
+                                    print("Error connecting")
                                 }
-                            } else {
-                                print("Error connecting")
                             }
+                        })
+                    } else {
+                        DispatchQueue.main.async {
+                            let alert = self.storyboard?.instantiateViewController(withIdentifier: "alertView") as! AlertViewController
+                            alert.delegate = self as AlertDelegate
+                            alert.isCancelVisible = false
+                            alert.message = "This product is already waiting for a video proof. The owner will record a video and you will be notified."
+                            alert.trigger = "video_request"
+                            self.present(alert, animated: true)
                         }
-                    })
+                    }
                 }
             }
-        } else {
-            DispatchQueue.main.async {
-                let alert = self.storyboard?.instantiateViewController(withIdentifier: "alertView") as! AlertViewController
-                alert.delegate = self as AlertDelegate
-                alert.isCancelVisible = false
-                alert.message = "This product is already waiting for a video proof. The owner will record a video and you will be notified."
-                alert.trigger = "video_request"
-                self.present(alert, animated: true)
-            }
-        }
+        
     }
     func playVideo(){
         
@@ -266,6 +267,8 @@ class HLProductModalViewController: UIViewController, UIImagePickerControllerDel
             HLDataManager.sharedInstance.uploadVideo(path, productId: product.productId, taskCallback: { (success, json) in
                 print(json)
                 self.notify("Video uploaded!")
+                self.product.video_requested = true
+                self.product.video_url = String(path)
                 self.setupVideoButtons()
             })
         }
