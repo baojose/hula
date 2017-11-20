@@ -141,6 +141,7 @@ class HLSwappViewController: UIViewController {
             }
         
         }
+        HLDataManager.sharedInstance.onlyLandscapeView = false
         
     }
     override func viewDidAppear(_ animated: Bool) {
@@ -223,8 +224,6 @@ class HLSwappViewController: UIViewController {
                     self.dashImage.alpha = 1
                 }, completion: { (success) in
                     
-                    
-                    
                     UIView.animate(withDuration: 2.0, animations: {
                         self.mobileImage.alpha = 0
                     }, completion: { (success) in
@@ -247,15 +246,19 @@ class HLSwappViewController: UIViewController {
     }
     
     func rotated() {
-        if UIDeviceOrientationIsPortrait(UIDevice.current.orientation) {
-            self.portraitView.frame.origin.y = 0
+        if UIDeviceOrientationIsPortrait(UIDevice.current.orientation)  {
             self.portraitView.transform = CGAffineTransform(rotationAngle: 0)
+            self.portraitView.frame.origin.y = 0
             portraitView.isHidden = false
+            rotateAnimation()
             //print("pre dismiss")
             HLDataManager.sharedInstance.isInSwapVC = false
-            self.dismiss(animated: true) {
-                //print("post dismiss")
-                // After dismiss
+            if !HLDataManager.sharedInstance.onlyLandscapeView {
+                //print(self.presentingViewController)
+                self.presentingViewController?.dismiss(animated: true) {
+                    //print("post dismiss")
+                    // After dismiss
+                }
             }
         } else {
             DispatchQueue.main.async {
@@ -296,7 +299,7 @@ class HLSwappViewController: UIViewController {
         if let tradeStatus = barterDelegate?.getCurrentTradeStatus() {
             
             self.tempTag = (sender as? UIButton)!.tag
-            if (tradeStatus.owner_products.count == 0 || tradeStatus.other_products.count == 0) && tradeStatus.num_bids < 2  {
+            if (tradeStatus.owner_products.count == 0 || tradeStatus.other_products.count == 0) && tradeStatus.num_bids > 2  {
                 if tradeStatus.owner_id == HulaUser.sharedInstance.userId {
                     // i am the owner
                     if tradeStatus.owner_products.count == 0{

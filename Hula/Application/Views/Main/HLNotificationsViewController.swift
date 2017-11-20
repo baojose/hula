@@ -23,7 +23,7 @@ class HLNotificationsViewController: BaseViewController, UITableViewDelegate, UI
         
         
         let notificationsRecieved = Notification.Name("notificationsRecieved")
-        NotificationCenter.default.addObserver(self, selector: #selector(self.checkIfNotificationsLoaded), name: notificationsRecieved, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(self.notificationsLoadedCallback), name: notificationsRecieved, object: nil)
         HLDataManager.sharedInstance.getTrades(taskCallback: { (success) in
             // trades loaded
             print("trades loaded")
@@ -226,8 +226,14 @@ class HLNotificationsViewController: BaseViewController, UITableViewDelegate, UI
     }
     // IB Actions
     func refreshNotifications(){
+        print("Notifications reloaded and propagated")
         HLDataManager.sharedInstance.loadUserNotifications()
         self.checkIfNotificationsLoaded()
+    }
+    
+    func notificationsLoadedCallback(){
+        notificationsTable.reloadData()
+        checkIfNotificationsLoaded()
     }
     
     // Custom functions for ViewController

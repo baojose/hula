@@ -173,8 +173,8 @@ class HLCompleteProductProfileViewController: BaseViewController, UIScrollViewDe
         return textField.resignFirstResponder()
     }
     func changeDoneBtnState(_ string: String){
-        let charCount = string.characters.count
-        if string.characters.count != 0  {
+        let charCount = string.count
+        if string.count != 0  {
             doneBtn.isEnabled = true
             doneBtn.alpha = 1
             //doneBtn.startAnimation()

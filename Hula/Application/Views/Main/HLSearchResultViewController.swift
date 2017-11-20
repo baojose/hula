@@ -99,6 +99,11 @@ class HLSearchResultViewController: BaseViewController, UITableViewDataSource, U
         //print(product)
         cell.productName.text = product.productName
         
+        if product.trading_count > 0 {
+            cell.isMultipleTrades.isHidden = false
+        } else {
+            cell.isMultipleTrades.isHidden = true
+        }
         let prod_thumb = commonUtils.getThumbFor(url: product.productImage)
         cell.productImage.loadImageFromURL(urlString: prod_thumb)
         let user_id = product.productOwner as String;

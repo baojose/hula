@@ -41,7 +41,7 @@ class HLResetPassViewController: UIViewController, UITextFieldDelegate {
     }
     
     @IBAction func emailFieldChanged(_ sender: Any) {
-        if (self.emailField.text!.characters.count>4){
+        if (self.emailField.text!.count>4){
             nextButton.startAnimation()
         } else {
             nextButton.stopAnimation()

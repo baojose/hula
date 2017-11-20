@@ -57,19 +57,19 @@ class HLSellerHorizontalViewController: BaseViewController {
         sellerNameLabel.text = user.userNick
         sellerLocationLabel.text = user.userLocationName
         
-        if (user.twToken.characters.count>1){
+        if (user.twToken.count>1){
             twIcon.image = UIImage(named: "icon_twitter_on")
         }
-        if (user.fbToken.characters.count>1){
+        if (user.fbToken.count>1){
             fbIcon.image = UIImage(named: "icon_facebook_on")
         }
-        if (user.liToken.characters.count>1){
+        if (user.liToken.count>1){
             liIcon.image = UIImage(named: "icon_linkedin_on")
         }
         if (user.status == "verified"){
             emIcon.image = UIImage(named: "icon_mail_on")
         }
-        if (user.userBio.characters.count>1){
+        if (user.userBio.count>1){
             sellerBioTextView.text = user.userBio
         } else {
             sellerBioTextView.text = "..."

@@ -46,6 +46,15 @@ class HLSwappPageViewController: UIPageViewController {
         // Dispose of any resources that can be recreated.
     }
     
+    override open var shouldAutorotate: Bool {
+        print("Shouldautorotate")
+        return false
+    }
+    override open var supportedInterfaceOrientations : UIInterfaceOrientationMask {
+        print("supportedInterfaceOrientations")
+        return .landscape
+    }
+    
 
     /*
     // MARK: - Navigation

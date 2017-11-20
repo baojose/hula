@@ -87,7 +87,7 @@ class HLLogInViewController: UserBaseViewController, UITextFieldDelegate {
     func checkUserInput(){
         let email_str = emailField.text!
         let pass_str = passwordField.text!
-        if ((pass_str.characters.count>4) && (email_str.characters.count>4)){
+        if ((pass_str.count>4) && (email_str.count>4)){
             nextButton.startAnimation()
         } else {
             nextButton.stopAnimation()

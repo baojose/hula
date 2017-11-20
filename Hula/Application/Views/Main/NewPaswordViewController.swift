@@ -39,7 +39,7 @@ class NewPaswordViewController: UIViewController {
         let current_pass:String = currentPass.text!
         let new_pass:String = pass1.text!
         let new_pass2:String = pass2.text!
-        if (new_pass.characters.count < 5){
+        if (new_pass.count < 5){
             // password too short
             let viewController = self.storyboard?.instantiateViewController(withIdentifier: "alertView") as! AlertViewController
             
@@ -49,7 +49,7 @@ class NewPaswordViewController: UIViewController {
             self.present(viewController, animated: true)
             return
         }
-        if (current_pass.characters.count < 4){
+        if (current_pass.count < 4){
             // old password too short
             let viewController = self.storyboard?.instantiateViewController(withIdentifier: "alertView") as! AlertViewController
             

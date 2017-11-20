@@ -32,6 +32,8 @@ class HLDashboardViewController: BaseViewController {
         NotificationCenter.default.addObserver(self, selector: #selector(self.rotated), name: NSNotification.Name.UIDeviceOrientationDidChange, object: nil)
         
         
+        let notificationsRecieved = Notification.Name("notificationsRecieved")
+        NotificationCenter.default.addObserver(self, selector: #selector(self.notificationsLoadedCallback), name: notificationsRecieved, object: nil)
         //refreshCollectionViewData()
         mainCollectionView.collectionViewLayout = HLDashboardNormalViewFlowLayout()
         
@@ -42,6 +44,8 @@ class HLDashboardViewController: BaseViewController {
 
     
     override func viewWillAppear(_ animated: Bool) {
+        print(self.view.frame)
+        print(self.mainCollectionView.frame)
         refreshCollectionViewData()
         
         if let swappPageVC = self.parent as? HLSwappPageViewController{
@@ -55,7 +59,6 @@ class HLDashboardViewController: BaseViewController {
         //self.mainCollectionView.frame = self.view.frame
         self.mainCollectionView.scrollToItem(at: IndexPath(row: 0, section: 0) , at: .top, animated: true)
         self.mainCollectionView.collectionViewLayout.invalidateLayout()
-        
         /*
         self.mainCollectionView.setCollectionViewLayout(HLDashboardNormalViewFlowLayout(), animated: false)
         self.mainCollectionView.collectionViewLayout.invalidateLayout()
@@ -71,7 +74,10 @@ class HLDashboardViewController: BaseViewController {
         // Dispose of any resources that can be recreated.
     }
     
-    
+    func notificationsLoadedCallback() {
+        //print("Refreshing...")
+        refreshCollectionViewData()
+    }
     
     @IBAction func backButtonAction(_ sender: Any) {
         self.dismiss(animated: true) { 

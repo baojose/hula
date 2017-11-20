@@ -183,7 +183,7 @@ class HulaTrade: NSObject {
 
     func updateServerData(){
         //print("Updating trade...")
-        if(tradeId.characters.count > 0){
+        if(tradeId.count > 0){
             let queryURL = HulaConstants.apiURL + "trades/" + self.tradeId
             let post_string = get_post_string();
             HLDataManager.sharedInstance.httpPost(urlstr: queryURL, postString: post_string, isPut: true, taskCallback: { (ok, json) in

@@ -10,6 +10,7 @@ import UIKit
 
 class HLMyProductTableViewCell: UITableViewCell {
     
+    @IBOutlet weak var isMultipleTrades: UIImageView!
     @IBOutlet var productImage: UIImageView!
     @IBOutlet var productDescription: UILabel!
     @IBOutlet var warningView: UIView!
