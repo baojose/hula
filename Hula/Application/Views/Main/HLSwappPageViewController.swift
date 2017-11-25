@@ -47,11 +47,11 @@ class HLSwappPageViewController: UIPageViewController {
     }
     
     override open var shouldAutorotate: Bool {
-        print("Shouldautorotate")
+        //print("Shouldautorotate")
         return false
     }
     override open var supportedInterfaceOrientations : UIInterfaceOrientationMask {
-        print("supportedInterfaceOrientations")
+        //print("supportedInterfaceOrientations")
         return .landscape
     }
     

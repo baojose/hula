@@ -325,6 +325,7 @@ class HLBarterScreenViewController: BaseViewController {
         let posy : CGFloat = self.view.frame.height / 3
         var destx :CGFloat = 0
         let smallSide :CGFloat = (mySelectedProductsCollection.frame.width - 10)/3 - 8
+        let largeSide :CGFloat =  128
         var col : KDDragAndDropCollectionView
         var col2 : KDDragAndDropCollectionView
         var column_x : CGFloat = 5
@@ -376,7 +377,7 @@ class HLBarterScreenViewController: BaseViewController {
         for p in array_to_traverse2{
             if p.tradeStatus == 2{
                 // removed product
-                let fakeImg = UIImageView(frame: CGRect(x:destx, y:80, width: smallSide, height:smallSide))
+                let fakeImg = UIImageView(frame: CGRect(x:destx + smallSide, y:80, width: smallSide, height:smallSide))
                 fakeImg.contentMode = .scaleAspectFill
                 fakeImg.clipsToBounds = true
                 fakeImg.loadImageFromURL(urlString: p.arrProductPhotoLink[0])
@@ -384,12 +385,12 @@ class HLBarterScreenViewController: BaseViewController {
                 //self.view.addSubview(fakeImg)
                 let cell = col2.cellForItem(at: IndexPath(item: counter, section: 0))
                 cell?.alpha = 0
-                UIView.animate(withDuration: 0.2, animations: {
+                UIView.animate(withDuration: 0.2 + Double(counter)/10, animations: {
                     fakeImg.alpha = 1
                     if cell != nil{
                         fakeImg.frame = (cell?.frame)!
                     } else {
-                        fakeImg.frame.origin = CGPoint(x:column_x, y:5)
+                        fakeImg.frame.origin = CGPoint(x:column_x, y: 5 + CGFloat(counter-1) * largeSide)
                         fakeImg.frame.size = CGSize(width:120, height:85)
                     }
                 }, completion:  { (success) in

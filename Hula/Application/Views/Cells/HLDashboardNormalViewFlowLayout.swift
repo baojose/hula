@@ -31,7 +31,9 @@ class HLDashboardNormalViewFlowLayout: UICollectionViewFlowLayout {
     }
     
     func itemWidth() -> CGFloat {
-        return collectionView!.frame.width - 1
+        let w = collectionView!.frame.width
+        let h = collectionView!.frame.height
+        return max(w, h) - 1
     }
     
     override var itemSize: CGSize {
@@ -42,11 +44,13 @@ class HLDashboardNormalViewFlowLayout: UICollectionViewFlowLayout {
             return CGSize(width: itemWidth(), height: itemHeight)
         }
     }
+ 
     /*
     override func targetContentOffset(forProposedContentOffset proposedContentOffset: CGPoint) -> CGPoint {
         return collectionView!.contentOffset
     }
  */
+    
     
     override func prepare() {
         self.scrollDirection = .vertical
@@ -57,10 +61,14 @@ class HLDashboardNormalViewFlowLayout: UICollectionViewFlowLayout {
         self.headerReferenceSize = CGSize(width: collectionViewWidth, height: 5)
         
     }
+ 
+    
     override func shouldInvalidateLayout(forBoundsChange newBounds: CGRect) -> Bool {
+        //print("shouldinvalidate \(newBounds)")
         return true
     }
     override func shouldInvalidateLayout(forPreferredLayoutAttributes preferredAttributes: UICollectionViewLayoutAttributes, withOriginalAttributes originalAttributes: UICollectionViewLayoutAttributes) -> Bool {
         return true
     }
+    
 }

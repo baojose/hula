@@ -287,13 +287,25 @@ class HLProductModalViewController: UIViewController, UIImagePickerControllerDel
             videoData?.write(toFile: path, atomically: false)
             //self.dismiss(animated: true, completion: nil)
             notify("Uploading video...")
-            
+            videoBtn.setTitle(" Uploading...", for: .normal)
             HLDataManager.sharedInstance.uploadVideo(path, productId: product.productId, taskCallback: { (success, json) in
-                print(json)
-                self.notify("Video uploaded!")
-                self.product.video_requested = true
-                self.product.video_url = String(path)
-                self.setupVideoButtons()
+                print("Uploaded")
+                //print(json)
+                DispatchQueue.main.async {
+                    if let dict = json as? [String: Any] {
+                        if let vp = dict["path"] as? String{
+                            self.product.video_url = HulaConstants.staticServerURL + vp
+                        }
+                    }
+                    self.videoBtn.setTitle(" Video uploaded", for: .normal)
+                    self.videoBtn.setImage(UIImage(named: "video-player-icon-red"), for: .normal)
+                    self.videoBtn.tag = 43909
+                    self.notify("Video uploaded!")
+                    self.product.video_requested = true
+                    self.product.video_url = String(path)
+                    self.setupVideoButtons()
+                }
+                
             })
         }
         
