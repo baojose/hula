@@ -88,11 +88,11 @@ class HLNotificationsViewController: BaseViewController, UITableViewDelegate, UI
         if let is_read = notification.object(forKey: "is_read") as? Bool{
         
             if !is_read {
-                cell.NotificationsText.font = UIFont(name:"HelveticaNeue-Regular", size: 13.0)
+                cell.NotificationsText.font = UIFont(name: HulaConstants.regular_font, size: 15.0)
                 cell.unreadIcon.isHidden = false
                 cell.backgroundColor = UIColor(red: 0, green: 0, blue: 0, alpha: 0.05)
             } else {
-                cell.NotificationsText.font = UIFont(name:"HelveticaNeue-Light", size: 15.0)
+                cell.NotificationsText.font = UIFont(name: HulaConstants.light_font, size: 15.0)
                 cell.unreadIcon.isHidden = true
                 cell.backgroundColor = UIColor(red: 1, green: 1, blue: 1, alpha: 1)
             }

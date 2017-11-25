@@ -34,6 +34,10 @@ struct HulaConstants {
     static let review_status:String = "review"
     
     
+    // FONTS
+    static let light_font:String = "HelveticaNeue-Light"
+    static let regular_font:String = "HelveticaNeue-Medium"
+    static let bold_font:String = "HelveticaNeue-Bold"
     
     // local storage
     static let userFile: String = "UserData"

@@ -249,6 +249,7 @@ class HLSwappViewController: UIViewController {
         if UIDeviceOrientationIsPortrait(UIDevice.current.orientation)  {
             self.portraitView.transform = CGAffineTransform(rotationAngle: 0)
             self.portraitView.frame.origin.y = 0
+            self.portraitView.frame.size.height = self.view.frame.height
             portraitView.isHidden = false
             rotateAnimation()
             //print("pre dismiss")
@@ -302,17 +303,17 @@ class HLSwappViewController: UIViewController {
             if (tradeStatus.owner_products.count == 0 || tradeStatus.other_products.count == 0) && tradeStatus.num_bids > 2  {
                 if tradeStatus.owner_id == HulaUser.sharedInstance.userId {
                     // i am the owner
-                    if tradeStatus.owner_products.count == 0{
+                    if tradeStatus.owner_products.count == 0 && tradeStatus.owner_money == 0 {
                         showAlert(message:"No offer without an item. Unless you wanna offer cash...", trigger:"notrade", cancelVisible:false, okText:"Ok")
                     } else {
                         showAlert(message:"Are you giving your stuff away for free? If not, choose the item you want to exchange it with.", trigger:"donation", cancelVisible:true, okText:"Ok!")
                     }
                 } else {
                     // i am the other
-                    if tradeStatus.other_products.count == 0{
-                        showAlert(message:"Are you giving your stuff away for free? If not, choose something you want to exchange it with.", trigger:"donation", cancelVisible:true, okText:"Ok!")
-                    } else {
+                    if tradeStatus.other_products.count == 0 && tradeStatus.other_money == 0 {
                         showAlert(message:"No offer without an item. Unless you wanna offer cash...", trigger:"notrade", cancelVisible:false, okText:"Ok")
+                    } else {
+                        showAlert(message:"Are you giving your stuff away for free? If not, choose something you want to exchange it with.", trigger:"donation", cancelVisible:true, okText:"Ok!")
                     }
                 }
                 return
