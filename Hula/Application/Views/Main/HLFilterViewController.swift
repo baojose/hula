@@ -27,6 +27,12 @@ class HLFilterViewController: BaseViewController {
         self.initData()
         self.initView()
     }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        
+        HLDataManager.sharedInstance.ga("discovery_filters")
+    }
+    
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
     }

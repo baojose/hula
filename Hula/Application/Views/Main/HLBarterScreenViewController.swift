@@ -285,6 +285,7 @@ class HLBarterScreenViewController: BaseViewController {
     
     override func viewDidAppear(_ animated: Bool) {
         
+        HLDataManager.sharedInstance.ga("barter_screen")
     }
     
     override func viewWillAppear(_ animated: Bool) {

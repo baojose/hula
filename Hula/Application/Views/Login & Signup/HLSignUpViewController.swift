@@ -39,6 +39,7 @@ class HLSignUpViewController: UserBaseViewController, UITextFieldDelegate  {
         currentStep = 0
         nextButton.setup()
         resetStepTexts()
+        HLDataManager.sharedInstance.ga("signup")
     }
     
     override func didReceiveMemoryWarning() {

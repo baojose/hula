@@ -135,6 +135,14 @@ class HLDataManager: NSObject {
         })
     }
     
+    func ga(_ page: String){
+        guard let tracker = GAI.sharedInstance().defaultTracker else { return }
+        tracker.set(kGAIScreenName, value: page)
+        
+        guard let builder = GAIDictionaryBuilder.createScreenView() else { return }
+        tracker.send(builder.build() as [NSObject : AnyObject])
+    }
+    
     func loginUser(email:String, pass:String) {
         
         //print("Login in progress...")

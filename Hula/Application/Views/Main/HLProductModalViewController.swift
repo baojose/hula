@@ -83,6 +83,11 @@ class HLProductModalViewController: UIViewController, UIImagePickerControllerDel
         appDelegate.allowRotation = false
     }
 
+    override func viewDidAppear(_ animated: Bool) {
+        
+        HLDataManager.sharedInstance.ga("product_detail_barter")
+    }
+    
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.

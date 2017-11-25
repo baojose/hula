@@ -2049,6 +2049,7 @@ Be clever, be fast but the most important: be honest! Good luck!</string>
                                         <rect key="frame" x="0.0" y="66" width="375" height="601"/>
                                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                         <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                        <inset key="contentInset" minX="0.0" minY="0.0" maxX="0.0" maxY="120"/>
                                         <prototypes>
                                             <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" selectionStyle="gray" indentationWidth="10" reuseIdentifier="myProductTableViewCell" id="HHx-8v-c0i" customClass="HLMyProductTableViewCell" customModule="Hula" customModuleProvider="target">
                                                 <rect key="frame" x="0.0" y="48" width="375" height="129"/>

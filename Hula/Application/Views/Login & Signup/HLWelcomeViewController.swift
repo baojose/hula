@@ -38,6 +38,10 @@ class HLWelcomeViewController: UserBaseViewController, CLLocationManagerDelegate
         self.mobileImage.frame.offsetBy(dx: 0, dy: 400)
         
     }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        HLDataManager.sharedInstance.ga("welcome")
+    }
 
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()

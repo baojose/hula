@@ -49,6 +49,7 @@ class HLSellerHorizontalViewController: BaseViewController {
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
+        HLDataManager.sharedInstance.ga("other_user_profile_horizontal")
     }
     func initData(){
         

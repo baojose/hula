@@ -69,6 +69,7 @@ class ChatViewController: UIViewController {
         
         
         timer.invalidate()
+        HLDataManager.sharedInstance.ga("chat")
     }
 
     /*

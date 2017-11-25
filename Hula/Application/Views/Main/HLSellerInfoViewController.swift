@@ -62,6 +62,7 @@ class HLSellerInfoViewController: BaseViewController, UITableViewDelegate, UITab
             self.addToTradeViewContainer.frame = CGRect(x: 0, y: self.view.frame.height - 120, width: self.view.frame.width, height: 60)
         }
  */
+        HLDataManager.sharedInstance.ga("other_user_profile")
     }
     func initData(){
         

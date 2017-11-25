@@ -58,6 +58,9 @@ class HLHomeViewController: BaseViewController, UIScrollViewDelegate, UITextFiel
         let appDelegate = UIApplication.shared.delegate as! AppDelegate
         appDelegate.allowRotation = true
         
+            
+            HLDataManager.sharedInstance.ga("discovery_home")
+        
         
     }
     override func didReceiveMemoryWarning() {

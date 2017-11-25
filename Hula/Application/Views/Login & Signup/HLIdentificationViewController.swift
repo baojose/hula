@@ -33,6 +33,7 @@ class HLIdentificationViewController: UserBaseViewController {
             // user not logged in
             self.closeIdentification()
         }
+        HLDataManager.sharedInstance.ga("identification")
     }
     
     @IBAction func facebookLoginAction(_ sender: Any) {

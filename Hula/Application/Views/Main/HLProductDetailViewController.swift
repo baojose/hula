@@ -59,6 +59,7 @@ class HLProductDetailViewController: BaseViewController, UIScrollViewDelegate, U
         UIView.animate(withDuration: 0.3) {
             self.addToTradeViewContainer.frame = CGRect(x: 0, y: self.view.frame.height - 120, width: self.view.frame.width, height: 60)
         }
+        HLDataManager.sharedInstance.ga("discovery_product")
     }
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()

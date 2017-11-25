@@ -68,6 +68,7 @@ class HLDashboardViewController: BaseViewController {
         self.mainCollectionView.reloadData()
         */
         
+        HLDataManager.sharedInstance.ga("dashboard")
     }
     
     override func didReceiveMemoryWarning() {

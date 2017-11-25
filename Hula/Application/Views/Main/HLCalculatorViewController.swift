@@ -33,6 +33,10 @@ class HLCalculatorViewController: UIViewController {
         
     }
     
+    override func viewDidAppear(_ animated: Bool) {
+        
+        HLDataManager.sharedInstance.ga("calculator")
+    }
 
     /*
     // MARK: - Navigation
