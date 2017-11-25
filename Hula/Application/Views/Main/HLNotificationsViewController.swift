@@ -26,7 +26,7 @@ class HLNotificationsViewController: BaseViewController, UITableViewDelegate, UI
         NotificationCenter.default.addObserver(self, selector: #selector(self.notificationsLoadedCallback), name: notificationsRecieved, object: nil)
         HLDataManager.sharedInstance.getTrades(taskCallback: { (success) in
             // trades loaded
-            print("trades loaded")
+            print("trades loaded from notifications")
         })
 
     }

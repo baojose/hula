@@ -151,6 +151,7 @@ class ChatViewController: UIViewController {
                 }
                 HLDataManager.sharedInstance.getTrades {(succ) in
                     // trades refreshed
+                    print("Trades loaded from chat")
                 }
             })
         }

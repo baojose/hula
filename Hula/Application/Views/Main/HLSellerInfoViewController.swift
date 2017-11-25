@@ -212,6 +212,7 @@ class HLSellerInfoViewController: BaseViewController, UITableViewDelegate, UITab
                     }
                     HLDataManager.sharedInstance.getTrades(taskCallback: { (success) in
                         // update trade counts
+                        print("Trades loaded from sellerinfo")
                     })
                 } else {
                     // connection error

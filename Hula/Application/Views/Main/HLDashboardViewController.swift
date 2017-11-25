@@ -33,6 +33,7 @@ class HLDashboardViewController: BaseViewController {
         
         
         let notificationsRecieved = Notification.Name("notificationsRecieved")
+        NotificationCenter.default.removeObserver(self, name: notificationsRecieved, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(self.notificationsLoadedCallback), name: notificationsRecieved, object: nil)
         //refreshCollectionViewData()
         mainCollectionView.collectionViewLayout = HLDashboardNormalViewFlowLayout()
@@ -44,8 +45,8 @@ class HLDashboardViewController: BaseViewController {
 
     
     override func viewWillAppear(_ animated: Bool) {
-        print(self.view.frame)
-        print(self.mainCollectionView.frame)
+        //print(self.view.frame)
+        //print(self.mainCollectionView.frame)
         refreshCollectionViewData()
         
         if let swappPageVC = self.parent as? HLSwappPageViewController{
@@ -110,6 +111,7 @@ class HLDashboardViewController: BaseViewController {
             }
             HLDataManager.sharedInstance.getTrades { (success) in
                 if (success){
+                    print("Trades loaded from dashboard")
                     //print("Trades ok")
                     DispatchQueue.main.async {
                         if (HLDataManager.sharedInstance.tradeMode == "current"){
