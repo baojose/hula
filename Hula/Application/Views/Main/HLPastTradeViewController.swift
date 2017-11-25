@@ -89,6 +89,11 @@ class HLPastTradeViewController: UIViewController, UICollectionViewDelegate, UIC
         }
     }
 
+    override func viewDidAppear(_ animated: Bool) {
+        HLDataManager.sharedInstance.ga("past_trades")
+    }
+    
+    
     /*
     // MARK: - Navigation
 
