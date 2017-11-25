@@ -24,8 +24,8 @@ class HulaProduct: NSObject {
     var productOwner: String!
     var productCategoryId: String!
     var productLocation: CLLocation!
-    var video_requested : Bool!
-    var video_url: String!
+    var video_requested : [String:Bool]!
+    var video_url: [String:String]!
     var trading_count: Int!
     
     class var sharedInstance: HulaProduct {
@@ -48,9 +48,9 @@ class HulaProduct: NSObject {
         self.tradeStatus = 0
         self.productStatus = ""
         self.productOwner = ""
-        self.video_url = ""
+        self.video_url = [:]
+        self.video_requested = [:]
         self.productLocation = CLLocation(latitude: 0.0, longitude: 0.0)
-        self.video_requested = false
         self.trading_count = 0
     }
     init(id : String, name : String, image: String) {
@@ -66,9 +66,9 @@ class HulaProduct: NSObject {
         self.arrProductPhotoLink = []
         self.tradeStatus = 0
         self.productOwner = ""
-        self.video_url = ""
+        self.video_url = [:]
+        self.video_requested = [:]
         self.productLocation = CLLocation(latitude: 0.0, longitude: 0.0)
-        self.video_requested = false
         self.trading_count = 0
     }
     override var description : String {
@@ -85,8 +85,8 @@ class HulaProduct: NSObject {
         if let tmp = with.object(forKey: "image_url") as? String { productImage = tmp }
         if let tmp = with.object(forKey: "status") as? String { productStatus = tmp }
         if let tmp = with.object(forKey: "owner_id") as? String { productOwner = tmp }
-        if let tmp = with.object(forKey: "video_requested") as? Bool { video_requested = tmp }
-        if let tmp = with.object(forKey: "video_url") as? String { video_url = tmp }
+        if let tmp = with.object(forKey: "video_requested") as? [String:Bool] { video_requested = tmp }
+        if let tmp = with.object(forKey: "video_url") as? [String:String] { video_url = tmp }
         if let tmp = with.object(forKey: "trading_count") as? Int { trading_count = tmp }
         if let tmp = with.object(forKey: "images") as? [String] {
             arrProductPhotoLink = []

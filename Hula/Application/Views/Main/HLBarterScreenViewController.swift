@@ -554,6 +554,7 @@ extension HLBarterScreenViewController: KDDragAndDropCollectionViewDataSource, U
                 // product on the user lists
                 viewController.hideVideoBtn = true
             }
+            viewController.currentTradeId = self.thisTrade.tradeId
             viewController.modalPresentationStyle = .overCurrentContext
             
             self.present(viewController, animated: true)
@@ -610,9 +611,24 @@ extension HLBarterScreenViewController: KDDragAndDropCollectionViewDataSource, U
         }
         //print(product.video_requested)
         //print(product.video_url)
-        if (product.video_requested){
-            if product.video_url.count > 0 {
+        var vreq : Bool = false
+        var vurl : String = ""
+        if let t = product.video_requested[thisTrade.tradeId] {
+            vreq = t
+        }
+
+        if let t = product.video_url[thisTrade.tradeId] {
+            vurl = t
+        }
+        
+        cell.statusImage.isHidden = false
+        if ( vreq ){
+            if vurl.count > 0 {
                 cell.statusImage.image = UIImage(named: "video-player-icon-red")
+                if (collectionView.tag == 2){
+                    // user selected
+                    cell.statusImage.isHidden = true
+                }
             } else {
                 cell.statusImage.image = UIImage(named: "video-requested-red")
             }
@@ -620,6 +636,7 @@ extension HLBarterScreenViewController: KDDragAndDropCollectionViewDataSource, U
             cell.statusImage.image = nil
         }
         cell.isHidden = false
+        
         
         if let kdCollectionView = collectionView as? KDDragAndDropCollectionView {
             

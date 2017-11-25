@@ -449,7 +449,7 @@ class HLDataManager: NSObject {
         }
     }
     
-    func uploadVideo(_ videoPath: String, productId:String, taskCallback: @escaping (Bool, Any?) -> ()){
+    func uploadVideo(_ videoPath: String, productId:String, tradeId:String, taskCallback: @escaping (Bool, Any?) -> ()){
         let videoData = NSData(contentsOfFile: videoPath)
         
         if videoData != nil{
@@ -467,7 +467,7 @@ class HLDataManager: NSObject {
             if (user.token.count>10){
                 request.setValue(user.token, forHTTPHeaderField: "x-access-token")
             }
-            let body = createBody(parameters: ["product_id": "\(productId)"],
+            let body = createBody(parameters: ["product_id": "\(productId)", "trade_id": "\(tradeId)"],
                                   boundary: boundary,
                                   data: videoData! as Data,
                                   mimeType: "video/mp4",

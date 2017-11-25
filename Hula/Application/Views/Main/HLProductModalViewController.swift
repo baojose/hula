@@ -39,6 +39,7 @@ class HLProductModalViewController: UIViewController, UIImagePickerControllerDel
     var videoPath: NSURL? = nil
     var image_dismissing : Bool = false
     var hideVideoBtn: Bool = false
+    var currentTradeId : String = ""
     
     
     override func viewDidLoad() {
@@ -126,11 +127,19 @@ class HLProductModalViewController: UIViewController, UIImagePickerControllerDel
         
         if !hideVideoBtn {
             videoBtnHolder.isHidden = false
+            var vreq : Bool = false
+            var vurl : String = ""
+            if let t = product.video_requested[currentTradeId] {
+                vreq = t
+            }
+            if let t = product.video_url[currentTradeId] {
+                vurl = t
+            }
             if (product.productOwner != HulaUser.sharedInstance.userId){
                 // not my product
-                if (product.video_requested || product.video_url.count  > 0){
+                if (vreq || vurl.count  > 0) {
                     // video has been requested
-                    if (product.video_url.count > 0){
+                    if (vurl.count > 0) {
                         // video was requested and is available
                         videoStatusImg.image = UIImage(named: "video-player-icon-red")
                         videoStatusImg2.image = UIImage(named: "video-player-icon-red")
@@ -156,7 +165,7 @@ class HLProductModalViewController: UIViewController, UIImagePickerControllerDel
                 }
             } else {
                 // it is my product
-                if (product.video_url.count > 0){
+                if (vurl.count > 0){
                     // I've already recorded a video
                     videoStatusImg.image = UIImage(named: "video-player-icon-red")
                     videoStatusImg2.image = UIImage(named: "video-player-icon-red")
@@ -189,8 +198,13 @@ class HLProductModalViewController: UIViewController, UIImagePickerControllerDel
                 if (tag == 43909){
                     playVideo()
                 } else {
-                    if !product.video_requested {
-                        let queryURL = HulaConstants.apiURL + "products/\(product.productId!)/requestvideo"
+                    var vreq : Bool = false
+                    if let t = product.video_requested[currentTradeId] {
+                        vreq = t
+                    }
+                    
+                    if !vreq {
+                        let queryURL = HulaConstants.apiURL + "products/\(product.productId!)/requestvideo/\(currentTradeId)"
                         HLDataManager.sharedInstance.httpGet(urlstr: queryURL, taskCallback: { (ok, json) in
                             if (ok){
                                 if let _ = json as? NSDictionary {
@@ -227,7 +241,12 @@ class HLProductModalViewController: UIViewController, UIImagePickerControllerDel
         let appDelegate = UIApplication.shared.delegate as! AppDelegate
         appDelegate.allowRotation = true
         
-        let videoURL = URL(string: product.video_url)
+        var vurl : String = ""
+        print(product.video_url)
+        if let t = product.video_url[currentTradeId] {
+            vurl = t
+        }
+        let videoURL = URL(string: vurl)
         let player = AVPlayer(url: videoURL!)
         let playerViewController = AVPlayerViewController()
         playerViewController.player = player
@@ -247,7 +266,7 @@ class HLProductModalViewController: UIViewController, UIImagePickerControllerDel
                 imagePicker.mediaTypes = [ kUTTypeMovie as String ]
                 imagePicker.allowsEditing = false
                 imagePicker.videoQuality = .typeMedium
-                imagePicker.videoMaximumDuration = 10
+                imagePicker.videoMaximumDuration = 20
                 imagePicker.delegate = self
                 
                 present(imagePicker, animated: true, completion: {})
@@ -288,21 +307,20 @@ class HLProductModalViewController: UIViewController, UIImagePickerControllerDel
             //self.dismiss(animated: true, completion: nil)
             notify("Uploading video...")
             videoBtn.setTitle(" Uploading...", for: .normal)
-            HLDataManager.sharedInstance.uploadVideo(path, productId: product.productId, taskCallback: { (success, json) in
+            HLDataManager.sharedInstance.uploadVideo(path, productId: product.productId, tradeId: self.currentTradeId, taskCallback: { (success, json) in
                 print("Uploaded")
                 //print(json)
                 DispatchQueue.main.async {
                     if let dict = json as? [String: Any] {
                         if let vp = dict["path"] as? String{
-                            self.product.video_url = HulaConstants.staticServerURL + vp
+                            self.product.video_requested[self.currentTradeId] = true
+                            self.product.video_url[self.currentTradeId] = HulaConstants.staticServerURL + vp
                         }
                     }
                     self.videoBtn.setTitle(" Video uploaded", for: .normal)
                     self.videoBtn.setImage(UIImage(named: "video-player-icon-red"), for: .normal)
                     self.videoBtn.tag = 43909
                     self.notify("Video uploaded!")
-                    self.product.video_requested = true
-                    self.product.video_url = String(path)
                     self.setupVideoButtons()
                 }
                 
