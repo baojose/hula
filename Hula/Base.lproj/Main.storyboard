@@ -4882,6 +4882,7 @@ Be clever, be fast but the most important: be honest! Good luck!</string>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" id="umY-w3-fo9">
                                         <rect key="frame" x="12" y="182" width="110" height="36"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                        <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="17"/>
                                         <state key="normal" title="Cancel" backgroundImage="button_border_green_alert_sm">
                                             <color key="titleColor" red="0.1851686239" green="0.67163127659999999" blue="0.60030430560000003" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                         </state>
@@ -4892,6 +4893,7 @@ Be clever, be fast but the most important: be honest! Good luck!</string>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" id="h9D-v0-Xbf">
                                         <rect key="frame" x="220" y="182" width="111" height="36"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMinY="YES"/>
+                                        <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="17"/>
                                         <state key="normal" title="OK" backgroundImage="button_green_alert_sm"/>
                                         <connections>
                                             <action selector="okButtonAction:" destination="QMT-7V-PYZ" eventType="touchUpInside" id="br3-Lq-JfN"/>
@@ -4983,6 +4985,187 @@ Be clever, be fast but the most important: be honest! Good luck!</string>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="d9O-K5-Fbt" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
             <point key="canvasLocation" x="2995.5" y="-418.5"/>
+        </scene>
+        <!--Final Feedback View Controller-->
+        <scene sceneID="9eh-hw-cSz">
+            <objects>
+                <viewController storyboardIdentifier="finalFeedback" id="slW-Ed-OxB" customClass="HLFinalFeedbackViewController" customModule="Hula" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="0S2-pD-QPE">
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <button opaque="NO" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" id="CMA-LY-hfl">
+                                <rect key="frame" x="132" y="591" width="111" height="38"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
+                                <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="17"/>
+                                <state key="normal" title="Next" backgroundImage="button_green_alert_sm"/>
+                                <connections>
+                                    <action selector="okButtonAction:" destination="slW-Ed-OxB" eventType="touchUpInside" id="EaU-cg-qkd"/>
+                                </connections>
+                            </button>
+                            <view contentMode="scaleToFill" misplaced="YES" id="mW8-mf-nOG">
+                                <rect key="frame" x="51" y="379" width="273" height="41"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMinX="YES" widthSizable="YES" flexibleMaxX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
+                                <subviews>
+                                    <imageView opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" tag="1" contentMode="center" image="star-empty" id="Wbj-OV-MLE">
+                                        <rect key="frame" x="5" y="5" width="36" height="31"/>
+                                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
+                                    </imageView>
+                                    <imageView opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" tag="2" contentMode="center" image="star-empty" id="NGL-FX-vok">
+                                        <rect key="frame" x="65" y="5" width="34" height="31"/>
+                                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
+                                    </imageView>
+                                    <imageView opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" tag="3" contentMode="center" image="star-empty" id="LWy-x8-0eL">
+                                        <rect key="frame" x="116" y="5" width="36" height="31"/>
+                                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
+                                    </imageView>
+                                    <imageView opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" tag="4" contentMode="center" image="star-empty" id="e08-6S-wwX">
+                                        <rect key="frame" x="179" y="5" width="33" height="31"/>
+                                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
+                                    </imageView>
+                                    <imageView opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" tag="5" contentMode="center" image="star-empty" id="xcr-T4-KMG">
+                                        <rect key="frame" x="233" y="5" width="33" height="31"/>
+                                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
+                                    </imageView>
+                                    <button opaque="NO" tag="11" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" id="X0u-7D-k1v">
+                                        <rect key="frame" x="0.0" y="0.0" width="46" height="41"/>
+                                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
+                                        <connections>
+                                            <action selector="starButtonTapped:" destination="QMT-7V-PYZ" eventType="touchUpInside" id="Ub2-hk-2Jm"/>
+                                            <action selector="starsButtonAction:" destination="slW-Ed-OxB" eventType="touchUpInside" id="g4P-44-T7t"/>
+                                        </connections>
+                                    </button>
+                                    <button opaque="NO" tag="12" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" id="Qbd-ZC-ioU">
+                                        <rect key="frame" x="57" y="0.0" width="48" height="41"/>
+                                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
+                                        <connections>
+                                            <action selector="starButtonTapped:" destination="QMT-7V-PYZ" eventType="touchUpInside" id="5bT-wA-kid"/>
+                                            <action selector="starsButtonAction:" destination="slW-Ed-OxB" eventType="touchUpInside" id="eZi-SW-ADw"/>
+                                        </connections>
+                                    </button>
+                                    <button opaque="NO" tag="13" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" id="rDt-DV-2ua">
+                                        <rect key="frame" x="115" y="0.0" width="42" height="41"/>
+                                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
+                                        <connections>
+                                            <action selector="starButtonTapped:" destination="QMT-7V-PYZ" eventType="touchUpInside" id="U1V-kF-L2F"/>
+                                            <action selector="starsButtonAction:" destination="slW-Ed-OxB" eventType="touchUpInside" id="RjM-E5-pdQ"/>
+                                        </connections>
+                                    </button>
+                                    <button opaque="NO" tag="14" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" id="NyW-4m-ti9">
+                                        <rect key="frame" x="170" y="0.0" width="47" height="41"/>
+                                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
+                                        <connections>
+                                            <action selector="starButtonTapped:" destination="QMT-7V-PYZ" eventType="touchUpInside" id="knO-D0-63X"/>
+                                            <action selector="starsButtonAction:" destination="slW-Ed-OxB" eventType="touchUpInside" id="0eN-xp-nIk"/>
+                                        </connections>
+                                    </button>
+                                    <button opaque="NO" tag="15" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" id="GmY-QH-HR7">
+                                        <rect key="frame" x="225" y="0.0" width="48" height="41"/>
+                                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
+                                        <connections>
+                                            <action selector="starButtonTapped:" destination="QMT-7V-PYZ" eventType="touchUpInside" id="Nej-0Y-sHi"/>
+                                            <action selector="starsButtonAction:" destination="slW-Ed-OxB" eventType="touchUpInside" id="f4W-Sm-ual"/>
+                                        </connections>
+                                    </button>
+                                </subviews>
+                                <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                            </view>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" text="Please rate your trade" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="IT2-XO-e2O">
+                                <rect key="frame" x="38" y="183" width="299" height="155"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMinX="YES" widthSizable="YES" flexibleMaxX="YES" flexibleMinY="YES" heightSizable="YES" flexibleMaxY="YES"/>
+                                <fontDescription key="fontDescription" name="HelveticaNeue-Light" family="Helvetica Neue" pointSize="17"/>
+                                <color key="textColor" red="0.27450980390000002" green="0.27450980390000002" blue="0.27450980390000002" alpha="1" colorSpace="calibratedRGB"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <imageView opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleAspectFit" misplaced="YES" insetsLayoutMarginsFromSafeArea="NO" image="temp_user" id="GF3-JD-ziP">
+                                <rect key="frame" x="152" y="50" width="71" height="71"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
+                            </imageView>
+                            <button opaque="NO" tag="101" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" id="pcY-dA-NEM">
+                                <rect key="frame" x="29" y="358" width="100" height="40"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMinX="YES" widthSizable="YES" flexibleMaxX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
+                                <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="14"/>
+                                <state key="normal" title="Fair deal">
+                                    <color key="titleColor" red="0.1851686239" green="0.67163127659999999" blue="0.60030430560000003" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                </state>
+                                <connections>
+                                    <action selector="canceButtonAction:" destination="QMT-7V-PYZ" eventType="touchUpInside" id="Y1R-qG-Cmi"/>
+                                    <action selector="mainButtonAction:" destination="slW-Ed-OxB" eventType="touchUpInside" id="DpP-BS-ON6"/>
+                                </connections>
+                            </button>
+                            <button opaque="NO" tag="102" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" id="k2k-AG-FeM">
+                                <rect key="frame" x="137" y="358" width="100" height="40"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMinX="YES" widthSizable="YES" flexibleMaxX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
+                                <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="14"/>
+                                <state key="normal" title="Easy communication">
+                                    <color key="titleColor" red="0.1851686239" green="0.67163127659999999" blue="0.60030430560000003" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                </state>
+                                <connections>
+                                    <action selector="canceButtonAction:" destination="QMT-7V-PYZ" eventType="touchUpInside" id="QJ0-Zb-AiE"/>
+                                    <action selector="mainButtonAction:" destination="slW-Ed-OxB" eventType="touchUpInside" id="ksH-TB-tQe"/>
+                                </connections>
+                            </button>
+                            <button opaque="NO" tag="103" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" id="3g5-BH-s9M">
+                                <rect key="frame" x="245" y="358" width="100" height="40"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMinX="YES" widthSizable="YES" flexibleMaxX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
+                                <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="14"/>
+                                <state key="normal" title="Smooth process">
+                                    <color key="titleColor" red="0.1851686239" green="0.67163127659999999" blue="0.60030430560000003" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                </state>
+                                <connections>
+                                    <action selector="canceButtonAction:" destination="QMT-7V-PYZ" eventType="touchUpInside" id="gV6-Rx-cAG"/>
+                                    <action selector="mainButtonAction:" destination="slW-Ed-OxB" eventType="touchUpInside" id="uan-gy-hft"/>
+                                </connections>
+                            </button>
+                            <button opaque="NO" tag="104" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" id="m9Z-BW-h1i">
+                                <rect key="frame" x="29" y="463" width="100" height="40"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMinX="YES" widthSizable="YES" flexibleMaxX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
+                                <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="14"/>
+                                <state key="normal" title="Good state of products">
+                                    <color key="titleColor" red="0.1851686239" green="0.67163127659999999" blue="0.60030430560000003" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                </state>
+                                <state key="selected">
+                                    <color key="titleColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                </state>
+                                <connections>
+                                    <action selector="canceButtonAction:" destination="QMT-7V-PYZ" eventType="touchUpInside" id="hK4-yz-R1J"/>
+                                    <action selector="mainButtonAction:" destination="slW-Ed-OxB" eventType="touchUpInside" id="Mnl-3t-NMQ"/>
+                                </connections>
+                            </button>
+                            <button opaque="NO" tag="105" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" id="7qR-4b-SzR">
+                                <rect key="frame" x="137" y="463" width="100" height="40"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMinX="YES" widthSizable="YES" flexibleMaxX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
+                                <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="14"/>
+                                <state key="normal" title="Fast delivery">
+                                    <color key="titleColor" red="0.1851686239" green="0.67163127659999999" blue="0.60030430560000003" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                </state>
+                                <connections>
+                                    <action selector="canceButtonAction:" destination="QMT-7V-PYZ" eventType="touchUpInside" id="ciJ-s0-woR"/>
+                                    <action selector="mainButtonAction:" destination="slW-Ed-OxB" eventType="touchUpInside" id="PCc-C9-qXV"/>
+                                </connections>
+                            </button>
+                            <button opaque="NO" tag="106" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" id="Ffn-70-qud">
+                                <rect key="frame" x="245" y="463" width="100" height="40"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMinX="YES" widthSizable="YES" flexibleMaxX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
+                                <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="14"/>
+                                <state key="normal" title="Other">
+                                    <color key="titleColor" red="0.1851686239" green="0.67163127659999999" blue="0.60030430560000003" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                </state>
+                                <connections>
+                                    <action selector="canceButtonAction:" destination="QMT-7V-PYZ" eventType="touchUpInside" id="qnk-LN-QF6"/>
+                                    <action selector="mainButtonAction:" destination="slW-Ed-OxB" eventType="touchUpInside" id="P1u-KU-9cq"/>
+                                </connections>
+                            </button>
+                        </subviews>
+                        <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                    </view>
+                    <connections>
+                        <outlet property="mainLabel" destination="IT2-XO-e2O" id="rD5-IM-Xo4"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="0IQ-je-RDO" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="3444.5" y="-416.5"/>
         </scene>
         <!--Edit Product Main View Controller-->
         <scene sceneID="LaX-Tc-Gmc">

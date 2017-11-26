@@ -628,7 +628,7 @@ class HLDataManager: NSObject {
             print("WARNING: Couldn't create dictionary from UserData.plist! Default values will be used!")
         }
         //self.onboardingTutorials = ["XInitializerItem": "DoNotEverChangeMe"]
-        print (self.onboardingTutorials)
+        //print (self.onboardingTutorials)
     }//eom
     
     func updateUserFromDict(dict: NSDictionary){
