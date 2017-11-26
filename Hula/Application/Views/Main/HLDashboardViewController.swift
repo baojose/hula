@@ -287,14 +287,23 @@ extension HLDashboardViewController: UICollectionViewDelegate, UICollectionViewD
             }
             cell.userId = otherUserId!;
             cell.chatCountLabel.isHidden = true
+            var owner_money : Float = 0;
+            var other_money : Float = 0;
+            
+            if let tmp = thisTrade.object(forKey: "owner_money") as? Float{
+                owner_money = tmp
+            }
+            if let tmp = thisTrade.object(forKey: "other_money") as? Float{
+                other_money = tmp
+            }
             
             if (HulaUser.sharedInstance.userId == thisTrade.object(forKey: "other_id") as? String ){
                 // i am the other of the trade
                 if let other_products_arr = thisTrade.object(forKey: "other_products") as? [String]{
-                    drawProducts(inCell: cell, fromArr: other_products_arr, side: "left")
+                    drawProducts(inCell: cell, fromArr: other_products_arr, money: other_money, side: "left")
                 }
                 if let owner_products_arr = thisTrade.object(forKey: "owner_products") as? [String]{
-                    drawProducts(inCell: cell, fromArr: owner_products_arr, side: "right")
+                    drawProducts(inCell: cell, fromArr: owner_products_arr, money: owner_money, side: "right")
                 }
                 
                 if let chat_count = thisTrade.object(forKey: "other_unread") as? Int{
@@ -305,10 +314,10 @@ extension HLDashboardViewController: UICollectionViewDelegate, UICollectionViewD
                 }
             } else {
                 if let other_products_arr = thisTrade.object(forKey: "other_products") as? [String]{
-                    drawProducts(inCell: cell, fromArr: other_products_arr, side: "right")
+                    drawProducts(inCell: cell, fromArr: other_products_arr, money: other_money, side: "right")
                 }
                 if let owner_products_arr = thisTrade.object(forKey: "owner_products") as? [String]{
-                    drawProducts(inCell: cell, fromArr: owner_products_arr, side: "left")
+                    drawProducts(inCell: cell, fromArr: owner_products_arr, money: owner_money, side: "left")
                 }
                 if let chat_count = thisTrade.object(forKey: "owner_unread") as? Int{
                     if chat_count > 0 {
@@ -440,7 +449,7 @@ extension HLDashboardViewController: UICollectionViewDelegate, UICollectionViewD
     }
  
     
-    func drawProducts(inCell:HLTradesCollectionViewCell, fromArr: [String], side: String){
+    func drawProducts(inCell:HLTradesCollectionViewCell, fromArr: [String], money: Float, side: String){
         var counter:Int = 0;
         if (side=="right"){
             inCell.right_side.subviews.forEach({ $0.removeFromSuperview() })
@@ -480,6 +489,26 @@ extension HLDashboardViewController: UICollectionViewDelegate, UICollectionViewD
                 
                 
                 counter += 1
+            }
+        }
+        if money > 0 {
+            let mn = UILabel()
+            mn.text = "$\(Int(money))";
+            mn.font = UIFont(name: HulaConstants.regular_font, size: 10.0)
+            mn.textColor = HulaConstants.appMainColor
+            if (side=="right"){
+                mn.frame = CGRect(x: ( CGFloat(counter) * (productImagesWidth + productImagesMargin)) + productImagesMargin*2,
+                                      y: verticalCenter,
+                                      width: productImagesWidth,
+                                      height: productImagesWidth)
+                inCell.right_side.addSubview(mn)
+            } else {
+                mn.frame = CGRect(x: inCell.left_side.frame.width - ( CGFloat(counter) * (productImagesWidth + productImagesMargin)) - (productImagesMargin) - productImagesWidth,
+                                      y: verticalCenter,
+                                      width: productImagesWidth,
+                                      height: productImagesWidth)
+                inCell.left_side.addSubview(mn)
+                
             }
         }
     }

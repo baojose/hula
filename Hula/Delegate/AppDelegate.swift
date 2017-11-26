@@ -38,7 +38,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         
         // Optional: set Logger to VERBOSE for debug information.
         // Remove before app release.
-        gai.logger.logLevel = .verbose;
+        //gai.logger.logLevel = .verbose;
         
         Fabric.with([Twitter.self, Crashlytics.self])
 
