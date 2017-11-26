@@ -237,6 +237,8 @@ class CommonUtils: NSObject, EasyTipViewDelegate {
                     bgViewToRemove.removeFromSuperview()
                 }
                 bgViewToRemove = UIView(frame: vc.view.frame)
+                bgViewToRemove.frame.size.width = max(vc.view.frame.width, vc.view.frame.height)
+                bgViewToRemove.frame.size.height = max(vc.view.frame.width, vc.view.frame.height)
                 bgViewToRemove.backgroundColor = UIColor(red: 0, green: 0, blue: 0, alpha: 0.3)
                 vc.view.addSubview(bgViewToRemove)
             }

@@ -179,8 +179,7 @@ class HLBarterScreenViewController: BaseViewController {
             // TUTORIAL
             if self.thisTrade.turn_user_id == HulaUser.sharedInstance.userId{
                 // my turn
-                if let _ = HLDataManager.sharedInstance.onboardingTutorials.object(forKey: "barter_my_turn") as? String{
-                } else {
+                if HLDataManager.sharedInstance.onboardingTutorials.object(forKey: "barter_my_turn") as? String == nil{
                     CommonUtils.sharedInstance.showTutorial(arrayTips: [
                         HulaTip(delay: 2, view: self.otherProductsCollection, text: "Here is their stuff. Drag & drop what you want. Click on the product to get more info."),
                         HulaTip(delay: 0.4, view: self.myProductsCollection, text: "Here is your stuff."),
@@ -188,16 +187,17 @@ class HLBarterScreenViewController: BaseViewController {
                         ])
                     //print(HLDataManager.sharedInstance.onboardingTutorials)
                     HLDataManager.sharedInstance.onboardingTutorials.setObject("done", forKey: "barter_my_turn" as NSCopying)
+                    HLDataManager.sharedInstance.writeUserData()
                 }
             } else {
                 // other's turn
-                if let _ = HLDataManager.sharedInstance.onboardingTutorials.object(forKey: "barter_other_turn") as? String{
-                } else {
+                if HLDataManager.sharedInstance.onboardingTutorials.object(forKey: "barter_other_turn") as? String  == nil{
                     CommonUtils.sharedInstance.showTutorial(arrayTips: [
                         HulaTip(delay: 2, view: self.sendOfferFakeView, text: "This trading is waiting for the other user to select the items he wants or accept your offer. As soon as the offer is ready you will be notified."),
                         HulaTip(delay: 0.4, view: self.ChatFakeView, text: "Start chat here if you need to talk.")
                         ])
                     HLDataManager.sharedInstance.onboardingTutorials.setValue("done", forKey: "barter_other_turn")
+                    HLDataManager.sharedInstance.writeUserData()
                 }
             }
             
