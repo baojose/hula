@@ -59,6 +59,11 @@ class HLSearchResultViewController: BaseViewController, UITableViewDataSource, U
     
     override func viewDidAppear(_ animated: Bool) {
         getSearchResults()
+        if self.searchByCategory {
+            HLDataManager.sharedInstance.ga("discovery_category")
+        } else {
+            HLDataManager.sharedInstance.ga("discovery_search")
+        }
     }
     
     //#MARK: - TableViewDelegate

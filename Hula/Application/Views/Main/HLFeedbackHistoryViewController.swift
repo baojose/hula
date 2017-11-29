@@ -16,6 +16,9 @@ class HLFeedbackHistoryViewController: BaseViewController, UITableViewDelegate, 
         super.viewDidLoad()
     }
 
+    override func viewDidAppear(_ animated: Bool) {
+        HLDataManager.sharedInstance.ga("feedback_history")
+    }
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
     }

@@ -612,6 +612,7 @@ class HLSwappViewController: UIViewController {
     }
     
     @IBAction func showCurrentTrades(_ sender: Any) {
+        
         self.tradeMode = "current"
         UIView.animate(withDuration: 0.3) {
             self.tradeModeLine.frame.origin.x = self.currentTradesBtn.frame.origin.x
@@ -769,15 +770,17 @@ extension HLSwappViewController: AlertDelegate{
     }
     
     func feedback(){
-        print("Deal closed. Requesting feedback")
-        let viewController = self.storyboard?.instantiateViewController(withIdentifier: "alertView") as! AlertViewController
+        //print("Deal closed. Requesting feedback")
+        let viewController = self.storyboard?.instantiateViewController(withIdentifier: "finalFeedback") as! HLFinalFeedbackViewController
         
-        viewController.delegate = self as AlertDelegate
-        viewController.isCancelVisible = true
-        viewController.message = "We would love to hear how your trade was. Please rate it from one to five stars:"
-        viewController.okButtonText = "Send"
-        viewController.starsVisible = true
-        viewController.trigger = "feedback_sent"
+        //viewController.delegate = self as AlertDelegate
+        //viewController.isCancelVisible = true
+        //viewController.message = "We would love to hear how your trade was. Please rate it from one to five stars:"
+        //viewController.okButtonText = "Send"
+        //viewController.starsVisible = true
+        //viewController.trigger = "feedback_sent"
+        viewController.trade_id_closed = self.trade_id_closed
+        viewController.user_id_closed = HulaUser.sharedInstance.userId
         self.present(viewController, animated: true)
         
     }

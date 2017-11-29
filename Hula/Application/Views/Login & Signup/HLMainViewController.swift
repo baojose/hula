@@ -19,7 +19,9 @@ class HLMainViewController: UserBaseViewController {
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         HLDataManager.sharedInstance.loadUserData()
+        HLDataManager.sharedInstance.ga("splash_screen")
         self.playVideo()
+        
     }
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
@@ -43,6 +45,7 @@ class HLMainViewController: UserBaseViewController {
             // we will jump to mainView only if user is not logged in
             self.navToMainView()
         } else {
+            HLDataManager.sharedInstance.ga("splash_video")
             guard let path = Bundle.main.path(forResource: "splash_intro", ofType:"mp4") else {
                 debugPrint("splash_intro.mp4 file not found")
                 return

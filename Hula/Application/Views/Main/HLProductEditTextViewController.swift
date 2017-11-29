@@ -66,6 +66,8 @@ class HLProductEditTextViewController: BaseViewController, UITextViewDelegate {
     override func viewDidAppear(_ animated: Bool) {
         editableTextView.becomeFirstResponder()
         textViewDidChange(editableTextView)
+        
+        HLDataManager.sharedInstance.ga("product_edit")
     }
 
     override func didReceiveMemoryWarning() {

@@ -104,6 +104,7 @@ class HLProfileViewController: BaseViewController {
             self.profileImageView.image = UIImage(named: "profile_placeholder")
         }
         
+        HLDataManager.sharedInstance.ga("my_profile")
     }
     
     func setupView(){

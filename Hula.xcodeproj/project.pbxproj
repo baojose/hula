@@ -33,6 +33,7 @@
 		275C55501EA3FB5A00A49051 /* UserData.plist in Resources */ = {isa = PBXBuildFile; fileRef = 275C554F1EA3FB5A00A49051 /* UserData.plist */; };
 		277C6C431EA2385B00530B0F /* HLRoundedButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 277C6C421EA2385B00530B0F /* HLRoundedButton.swift */; };
 		278988FB1ED7933600C0FBA9 /* HLCalculatorViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 278988FA1ED7933600C0FBA9 /* HLCalculatorViewController.swift */; };
+		2789E2E21FCB5293008D9426 /* HLFinalFeedbackViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2789E2E11FCB5293008D9426 /* HLFinalFeedbackViewController.swift */; };
 		278F77881F88D87B00411D66 /* HLPastTradeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 278F77871F88D87B00411D66 /* HLPastTradeViewController.swift */; };
 		279BAAD81E9D726D00091D24 /* HLNotificationsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 279BAAD71E9D726D00091D24 /* HLNotificationsViewController.swift */; };
 		279D93BD1F63E74F00360435 /* HLThreeDotsWaiting.swift in Sources */ = {isa = PBXBuildFile; fileRef = 279D93BC1F63E74F00360435 /* HLThreeDotsWaiting.swift */; };
@@ -151,6 +152,7 @@
 		275C554F1EA3FB5A00A49051 /* UserData.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = UserData.plist; sourceTree = "<group>"; };
 		277C6C421EA2385B00530B0F /* HLRoundedButton.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HLRoundedButton.swift; sourceTree = "<group>"; };
 		278988FA1ED7933600C0FBA9 /* HLCalculatorViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HLCalculatorViewController.swift; sourceTree = "<group>"; };
+		2789E2E11FCB5293008D9426 /* HLFinalFeedbackViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HLFinalFeedbackViewController.swift; sourceTree = "<group>"; };
 		278F77871F88D87B00411D66 /* HLPastTradeViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HLPastTradeViewController.swift; sourceTree = "<group>"; };
 		279BAAD71E9D726D00091D24 /* HLNotificationsViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HLNotificationsViewController.swift; sourceTree = "<group>"; };
 		279D93BC1F63E74F00360435 /* HLThreeDotsWaiting.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HLThreeDotsWaiting.swift; sourceTree = "<group>"; };
@@ -291,6 +293,7 @@
 				27AD31651F5072520047952A /* ChatViewController.swift */,
 				278F77871F88D87B00411D66 /* HLPastTradeViewController.swift */,
 				2723C6711F9D53FF00DABF7A /* HLSellerHorizontalViewController.swift */,
+				2789E2E11FCB5293008D9426 /* HLFinalFeedbackViewController.swift */,
 			);
 			name = Swapp;
 			sourceTree = "<group>";
@@ -1025,6 +1028,7 @@
 				F8BE7C471E72412200FAE07D /* HLProductTableViewCell.swift in Sources */,
 				F8B652031E7C77BF009D1DC6 /* HLSellerInfoViewController.swift in Sources */,
 				F8B651F41E7A82F6009D1DC6 /* HLCompleteProductProfileViewController.swift in Sources */,
+				2789E2E21FCB5293008D9426 /* HLFinalFeedbackViewController.swift in Sources */,
 				271533421F07C15600E5F319 /* KDDragAndDropCollectionView.swift in Sources */,
 				116669151E98222F0094B157 /* HLHomeNotificationsTableViewCell.swift in Sources */,
 				272814251EF52BDD00984562 /* HLDashboardNormalViewFlowLayout.swift in Sources */,

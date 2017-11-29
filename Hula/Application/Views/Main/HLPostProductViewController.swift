@@ -56,6 +56,8 @@ class HLPostProductViewController: BaseViewController, UITextFieldDelegate {
         
         self.navigationController?.isNavigationBarHidden = false
         self.tabBarController?.tabBar.isHidden = false
+        
+        HLDataManager.sharedInstance.ga("product_create")
     }
     func initData(){
         arrImageViews = NSMutableArray.init(capacity: 4)

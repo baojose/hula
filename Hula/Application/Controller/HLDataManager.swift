@@ -135,6 +135,14 @@ class HLDataManager: NSObject {
         })
     }
     
+    func ga(_ page: String){
+        guard let tracker = GAI.sharedInstance().defaultTracker else { return }
+        tracker.set(kGAIScreenName, value: page)
+        
+        guard let builder = GAIDictionaryBuilder.createScreenView() else { return }
+        tracker.send(builder.build() as [NSObject : AnyObject])
+    }
+    
     func loginUser(email:String, pass:String) {
         
         //print("Login in progress...")
@@ -449,7 +457,7 @@ class HLDataManager: NSObject {
         }
     }
     
-    func uploadVideo(_ videoPath: String, productId:String, taskCallback: @escaping (Bool, Any?) -> ()){
+    func uploadVideo(_ videoPath: String, productId:String, tradeId:String, taskCallback: @escaping (Bool, Any?) -> ()){
         let videoData = NSData(contentsOfFile: videoPath)
         
         if videoData != nil{
@@ -467,7 +475,7 @@ class HLDataManager: NSObject {
             if (user.token.count>10){
                 request.setValue(user.token, forHTTPHeaderField: "x-access-token")
             }
-            let body = createBody(parameters: ["product_id": "\(productId)"],
+            let body = createBody(parameters: ["product_id": "\(productId)", "trade_id": "\(tradeId)"],
                                   boundary: boundary,
                                   data: videoData! as Data,
                                   mimeType: "video/mp4",
@@ -620,7 +628,7 @@ class HLDataManager: NSObject {
             print("WARNING: Couldn't create dictionary from UserData.plist! Default values will be used!")
         }
         //self.onboardingTutorials = ["XInitializerItem": "DoNotEverChangeMe"]
-        print (self.onboardingTutorials)
+        //print (self.onboardingTutorials)
     }//eom
     
     func updateUserFromDict(dict: NSDictionary){

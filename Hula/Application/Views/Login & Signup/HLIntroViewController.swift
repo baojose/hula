@@ -47,6 +47,7 @@ class HLIntroViewController: UserBaseViewController, UIScrollViewDelegate {
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         jump_just_once = true
+        HLDataManager.sharedInstance.ga("intro_animations")
         //scene[0].play()
     }
     override func viewWillDisappear(_ animated: Bool) {

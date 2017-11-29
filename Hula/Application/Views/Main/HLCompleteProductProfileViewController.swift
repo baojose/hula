@@ -44,6 +44,11 @@ class HLCompleteProductProfileViewController: BaseViewController, UIScrollViewDe
         super.didReceiveMemoryWarning()
     }
     
+    override func viewDidAppear(_ animated: Bool) {
+        
+        HLDataManager.sharedInstance.ga("product_complete")
+    }
+    
     func initData(){
         
     }

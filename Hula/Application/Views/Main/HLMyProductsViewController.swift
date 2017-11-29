@@ -64,6 +64,9 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
         super.viewDidAppear(animated)
         let appDelegate = UIApplication.shared.delegate as! AppDelegate
         appDelegate.allowRotation = true
+        
+        
+        HLDataManager.sharedInstance.ga("my_products")
     }
     
     func setupView(){

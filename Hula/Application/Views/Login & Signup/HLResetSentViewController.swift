@@ -25,7 +25,11 @@ class HLResetSentViewController: UIViewController {
         // Dispose of any resources that can be recreated.
     }
     
-
+    override func viewDidAppear(_ animated: Bool) {
+        
+        HLDataManager.sharedInstance.ga("password_reset_sent")
+    }
+    
     /*
     // MARK: - Navigation
 

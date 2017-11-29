@@ -122,8 +122,6 @@ class HLBarterScreenViewController: BaseViewController {
                 self.sectionCover.isHidden = true
                 self.addMoneyBtn1.isUserInteractionEnabled = true
                 self.addMoneyBtn2.isUserInteractionEnabled = true
-                
-                
             } else {
                 self.sectionCover.isHidden = true // provisional
                 self.addMoneyBtn1.isUserInteractionEnabled = false
@@ -179,25 +177,26 @@ class HLBarterScreenViewController: BaseViewController {
             // TUTORIAL
             if self.thisTrade.turn_user_id == HulaUser.sharedInstance.userId{
                 // my turn
-                if let _ = HLDataManager.sharedInstance.onboardingTutorials.object(forKey: "barter_my_turn") as? String{
-                } else {
+                if HLDataManager.sharedInstance.onboardingTutorials.object(forKey: "barter_my_turn") as? String == nil{
                     CommonUtils.sharedInstance.showTutorial(arrayTips: [
-                        HulaTip(delay: 2, view: self.otherProductsCollection, text: "Here is their stuff. Drag & drop what you want. Click on the product to get more info."),
+                        HulaTip(delay: 2, view: self.otherProductsCollection, text: "Here is their stuff. Drag & drop what you want. Tap on the product to get more info."),
                         HulaTip(delay: 0.4, view: self.myProductsCollection, text: "Here is your stuff."),
                         HulaTip(delay: 0.4, view: self.sendOfferFakeView, text: "Once you select what you want, find out if the other trader interested. Click the button below to send a notification!")
                         ])
                     //print(HLDataManager.sharedInstance.onboardingTutorials)
                     HLDataManager.sharedInstance.onboardingTutorials.setObject("done", forKey: "barter_my_turn" as NSCopying)
+                    HLDataManager.sharedInstance.writeUserData()
                 }
             } else {
                 // other's turn
-                if let _ = HLDataManager.sharedInstance.onboardingTutorials.object(forKey: "barter_other_turn") as? String{
-                } else {
+                if HLDataManager.sharedInstance.onboardingTutorials.object(forKey: "barter_other_turn") as? String  == nil{
                     CommonUtils.sharedInstance.showTutorial(arrayTips: [
                         HulaTip(delay: 2, view: self.sendOfferFakeView, text: "This trading is waiting for the other user to select the items he wants or accept your offer. As soon as the offer is ready you will be notified."),
+                        HulaTip(delay: 0.5, view: self.otherProductsCollection, text: "Tap on any product to get more details or ask the owner for a video-proof."),
                         HulaTip(delay: 0.4, view: self.ChatFakeView, text: "Start chat here if you need to talk.")
                         ])
                     HLDataManager.sharedInstance.onboardingTutorials.setValue("done", forKey: "barter_other_turn")
+                    HLDataManager.sharedInstance.writeUserData()
                 }
             }
             
@@ -222,11 +221,16 @@ class HLBarterScreenViewController: BaseViewController {
         
         //print(thisTrade.last_bid_diff)
         for pr_id in list{
+            var found : Bool = false
             for pr in reference_list{
                 if pr.productId == pr_id{
-                    
                     final_arr.append(pr)
+                    found = true
                 }
+            }
+            
+            if !found {
+                self.animateDisolveProduct(pr_id, type: type)
             }
             
             if (self.otherProducts.count > 0){
@@ -285,6 +289,7 @@ class HLBarterScreenViewController: BaseViewController {
     
     override func viewDidAppear(_ animated: Bool) {
         
+        HLDataManager.sharedInstance.ga("barter_screen")
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -317,7 +322,27 @@ class HLBarterScreenViewController: BaseViewController {
         // Pass the selected object to the new view controller.
     }
     */
-    
+    func animateDisolveProduct(_ id : String, type : String){
+        
+        var destx : CGFloat = 0
+        let desty : CGFloat = 128
+        let smallSide : CGFloat = (mySelectedProductsCollection.frame.width)/3 - 8
+        if type == "owner" {
+            destx = 128 + mySelectedProductsCollection.frame.width/2 - smallSide*2
+        } else {
+            destx = self.view.frame.width/2 + mySelectedProductsCollection.frame.width/2 - smallSide*2
+        }
+        
+        let fakeImg = UIImageView(frame: CGRect(x:destx + smallSide, y:desty, width: smallSide, height:smallSide))
+        fakeImg.contentMode = .scaleAspectFill
+        fakeImg.clipsToBounds = true
+        fakeImg.loadImageFromURL(urlString: CommonUtils.sharedInstance.productImageURL(productId: id))
+        self.view.insertSubview(fakeImg, at: self.view.subviews.count - 2)
+        //self.view.addSubview(fakeImg)
+        UIView.animate(withDuration: 0.8, delay: 1, options: [], animations: {
+            fakeImg.alpha = 0
+        })
+    }
     func animateAddedProducts(_ type : String){
         var array_to_traverse : [HulaProduct]
         var array_to_traverse2 : [HulaProduct]
@@ -554,6 +579,7 @@ extension HLBarterScreenViewController: KDDragAndDropCollectionViewDataSource, U
                 // product on the user lists
                 viewController.hideVideoBtn = true
             }
+            viewController.currentTradeId = self.thisTrade.tradeId
             viewController.modalPresentationStyle = .overCurrentContext
             
             self.present(viewController, animated: true)
@@ -610,9 +636,24 @@ extension HLBarterScreenViewController: KDDragAndDropCollectionViewDataSource, U
         }
         //print(product.video_requested)
         //print(product.video_url)
-        if (product.video_requested){
-            if product.video_url.count > 0 {
+        var vreq : Bool = false
+        var vurl : String = ""
+        if let t = product.video_requested[thisTrade.tradeId] {
+            vreq = t
+        }
+
+        if let t = product.video_url[thisTrade.tradeId] {
+            vurl = t
+        }
+        
+        cell.statusImage.isHidden = false
+        if ( vreq ){
+            if vurl.count > 0 {
                 cell.statusImage.image = UIImage(named: "video-player-icon-red")
+                if (collectionView.tag == 2){
+                    // user selected
+                    cell.statusImage.isHidden = true
+                }
             } else {
                 cell.statusImage.image = UIImage(named: "video-requested-red")
             }
@@ -620,6 +661,7 @@ extension HLBarterScreenViewController: KDDragAndDropCollectionViewDataSource, U
             cell.statusImage.image = nil
         }
         cell.isHidden = false
+        
         
         if let kdCollectionView = collectionView as? KDDragAndDropCollectionView {
             

@@ -34,6 +34,7 @@ class HLLogInViewController: UserBaseViewController, UITextFieldDelegate {
     override func viewDidAppear(_ animated: Bool) {
         nextButton.setup()
         nextButton.stopAnimation()
+        HLDataManager.sharedInstance.ga("login")
     }
     @IBAction func closeIdentificationVC(_ sender: Any) {
         //self.closeIdentification()

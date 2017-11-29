@@ -61,6 +61,8 @@ class ChatViewController: UIViewController {
         
         timer.invalidate()
         timer = Timer.scheduledTimer(timeInterval: 10, target: self, selector: #selector(self.refreshChat), userInfo: nil, repeats: true)
+        
+        HLDataManager.sharedInstance.ga("chat")
     }
     
     override func viewWillDisappear(_ animated: Bool) {
@@ -151,6 +153,7 @@ class ChatViewController: UIViewController {
                 }
                 HLDataManager.sharedInstance.getTrades {(succ) in
                     // trades refreshed
+                    print("Trades loaded from chat")
                 }
             })
         }

@@ -26,7 +26,7 @@ class HLNotificationsViewController: BaseViewController, UITableViewDelegate, UI
         NotificationCenter.default.addObserver(self, selector: #selector(self.notificationsLoadedCallback), name: notificationsRecieved, object: nil)
         HLDataManager.sharedInstance.getTrades(taskCallback: { (success) in
             // trades loaded
-            print("trades loaded")
+            print("trades loaded from notifications")
         })
 
     }
@@ -61,6 +61,7 @@ class HLNotificationsViewController: BaseViewController, UITableViewDelegate, UI
         }
  */
         
+        HLDataManager.sharedInstance.ga("notifications")
     }
     
     override func didReceiveMemoryWarning() {
@@ -174,7 +175,8 @@ class HLNotificationsViewController: BaseViewController, UITableViewDelegate, UI
             // remove the item from the data model
             let notification : NSDictionary = HLDataManager.sharedInstance.arrNotifications.object(at: indexPath.row) as! NSDictionary
             
-            
+            let cell = tableView.cellForRow(at: indexPath)
+            cell?.alpha = 0.5
             
             /*
             // delete the table view row

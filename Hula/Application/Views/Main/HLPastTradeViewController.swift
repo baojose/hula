@@ -89,6 +89,11 @@ class HLPastTradeViewController: UIViewController, UICollectionViewDelegate, UIC
         }
     }
 
+    override func viewDidAppear(_ animated: Bool) {
+        HLDataManager.sharedInstance.ga("past_trades")
+    }
+    
+    
     /*
     // MARK: - Navigation
 
@@ -184,14 +189,14 @@ class HLPastTradeViewController: UIViewController, UICollectionViewDelegate, UIC
         switch type {
         case "other":
             if thisTrade.other_money > 0 {
-                let moneyProd = HulaProduct(id: "xmoney", name: "+$\(Int(round(thisTrade.other_money)))", image: "")
+                let moneyProd = HulaProduct(id: "xmoney", name: "+$\(Int(round(thisTrade.other_money)))", image: HulaConstants.transparentImg)
                 self.otherTradedProducts.append(moneyProd)
                 self.otherSelectedProductsCollection.reloadData()
             }
         default:
             
             if thisTrade.owner_money > 0 {
-                let moneyProd = HulaProduct(id: "xmoney", name: "+$\( Int(round(thisTrade.owner_money)) )", image: "")
+                let moneyProd = HulaProduct(id: "xmoney", name: "+$\( Int(round(thisTrade.owner_money)) )", image: HulaConstants.transparentImg)
                 self.myTradedProducts.append(moneyProd)
                 self.mySelectedProductsCollection.reloadData()
             }

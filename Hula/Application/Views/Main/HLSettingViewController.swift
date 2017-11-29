@@ -39,6 +39,8 @@ class HLSettingViewController: BaseViewController {
     
     override func viewWillAppear(_ animated: Bool) {
         initView()
+        
+        HLDataManager.sharedInstance.ga("settings_profile")
     }
 
     override func didReceiveMemoryWarning() {
@@ -47,6 +49,8 @@ class HLSettingViewController: BaseViewController {
     func initData() {
         
     }
+
+    
     func initView() {
         commonUtils.circleImageView(profileImageView)
         mainScrollView.contentSize = CGSize(width: 0, height: 650)
