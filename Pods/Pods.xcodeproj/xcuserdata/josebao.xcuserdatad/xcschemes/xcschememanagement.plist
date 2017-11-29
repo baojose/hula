@@ -12,7 +12,7 @@
 		<key>BRYXBanner.xcscheme</key>
 		<dict>
 			<key>orderHint</key>
-			<integer>15</integer>
+			<integer>16</integer>
 		</dict>
 		<key>Bolts.xcscheme</key>
 		<dict>
@@ -54,6 +54,11 @@
 			<key>orderHint</key>
 			<integer>4</integer>
 		</dict>
+		<key>GoogleToolboxForMac.xcscheme</key>
+		<dict>
+			<key>orderHint</key>
+			<integer>15</integer>
+		</dict>
 		<key>IOSLinkedInAPIFix.xcscheme</key>
 		<dict>
 			<key>orderHint</key>
@@ -62,7 +67,7 @@
 		<key>Kingfisher.xcscheme</key>
 		<dict>
 			<key>orderHint</key>
-			<integer>16</integer>
+			<integer>17</integer>
 		</dict>
 		<key>LinkedinSwift.xcscheme</key>
 		<dict>
