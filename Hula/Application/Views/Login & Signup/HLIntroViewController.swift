@@ -66,12 +66,13 @@ class HLIntroViewController: UserBaseViewController, UIScrollViewDelegate {
     }
     
     func removeVideos(){
-        
-        print("removing videos")
-        
+        print("removing previous vc")
+        self.navigationController?.viewControllers.remove(at: 0)
+        /*
         player1?.pause()
         player1 = nil
         playerLayer1.removeFromSuperlayer()
+         */
     }
     
     func initUI(){
@@ -258,6 +259,8 @@ class HLIntroViewController: UserBaseViewController, UIScrollViewDelegate {
         player1?.pause()
         player1 = nil
         playerLayer1.removeFromSuperlayer()
+        
+       
         
         guard let path = Bundle.main.path(forResource: "slide \(num)", ofType:"mp4") else {
             debugPrint("Video file not found")
