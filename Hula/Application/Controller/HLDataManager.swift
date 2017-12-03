@@ -688,39 +688,47 @@ class HLDataManager: NSObject {
     
     func loadUserNotifications(){
         //print("loading notifications...")
-        isLoadingNotifications = true
-        let queryURL = HulaConstants.apiURL + "notifications"
-        httpGet(urlstr: queryURL, taskCallback: { (ok, json) in
-            //print(ok)
-            var num_pending = 0
-            if (ok){
-                self.arrNotifications=[];
-                if let array = json as? [Any] {
-                    for not in array {
-                        // access all objects in array
-                        if let dict = not as? [String: Any]{
-                            if let status = dict["status"] as? String{
-                                if (status != "deleted"){
-                                    self.arrNotifications.add(not)
+        if HulaUser.sharedInstance.isUserLoggedIn() {
+            isLoadingNotifications = true
+            let queryURL = HulaConstants.apiURL + "notifications"
+            httpGet(urlstr: queryURL, taskCallback: { (ok, json) in
+                //print(ok)
+                var num_pending = 0
+                if (ok){
+                    self.arrNotifications = [];
+                    if let array = json as? [Any] {
+                        for not in array {
+                            // access all objects in array
+                            if let dict = not as? [String: Any]{
+                                if let status = dict["status"] as? String{
+                                    if (status != "deleted"){
+                                        self.arrNotifications.add(not)
+                                    }
                                 }
-                            }
-                            if let isread = dict["is_read"] as? Int{
-                                if isread == 0{
-                                    num_pending += 1
+                                if let isread = dict["is_read"] as? Int{
+                                    if isread == 0{
+                                        num_pending += 1
+                                    }
                                 }
                             }
                         }
+                        
                     }
-                    
+                    DispatchQueue.main.async { // Correct
+                        HLDataManager.sharedInstance.numNotificationsPending = num_pending
+                        UIApplication.shared.applicationIconBadgeNumber = num_pending
+                        self.isLoadingNotifications = false
+                        
+                        NotificationCenter.default.post(name: self.notificationsRecieved, object: nil)
+                    }
                 }
-                DispatchQueue.main.async { // Correct
-                    HLDataManager.sharedInstance.numNotificationsPending = num_pending
-                    UIApplication.shared.applicationIconBadgeNumber = num_pending
-                    self.isLoadingNotifications = false
-                    
-                    NotificationCenter.default.post(name: self.notificationsRecieved, object: nil)
-                }
-            }
-        })
+            })
+        } else {
+            HLDataManager.sharedInstance.numNotificationsPending = 0
+            UIApplication.shared.applicationIconBadgeNumber = 0
+            self.isLoadingNotifications = false
+            self.arrNotifications = []
+            NotificationCenter.default.post(name: self.notificationsRecieved, object: nil)
+        }
     }
 }

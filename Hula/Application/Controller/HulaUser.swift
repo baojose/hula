@@ -191,10 +191,13 @@ class HulaUser: NSObject {
         if let tmp = with.object(forKey: "bio") as? String { userBio = tmp }
         if let tmp = with.object(forKey: "email") as? String { userEmail = tmp }
         if let tmp = with.object(forKey: "image") as? String { userPhotoURL = tmp }
-        if let tmp = with.object(forKey: "location_name") as? [CGFloat]  {
+        if let tmp = with.object(forKey: "location") as? [CGFloat]  {
             let lat = tmp[0]
             let lon = tmp[1]
             location = CLLocation(latitude:CLLocationDegrees(lat), longitude:CLLocationDegrees(lon));
+        }
+        if let tmp = with.object(forKey: "location_name") as? String  {
+            userLocationName = tmp;
         }
         if let tmp = with.object(forKey: "fb_token") as? String { fbToken = tmp }
         if let tmp = with.object(forKey: "tw_token") as? String { twToken = tmp }

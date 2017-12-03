@@ -118,6 +118,10 @@ class HLSellerInfoViewController: BaseViewController, UITableViewDelegate, UITab
         tradesStartedLabel.text = "\(Int(user.trades_started))"
         tradesClosedLabel.text = "\(Int(user.trades_closed))"
         tradesEndedLabel.text = "\(Int(user.trades_finished))"
+        
+        if user.userId == HulaUser.sharedInstance.userId {
+            self.tradeButtonsHolder.isHidden = true
+        }
     }
     func initView(){
         commonUtils.circleImageView(profileImage)

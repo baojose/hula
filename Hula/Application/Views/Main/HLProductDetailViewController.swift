@@ -43,6 +43,7 @@ class HLProductDetailViewController: BaseViewController, UIScrollViewDelegate, U
     var sellerFeedback: NSArray! = []
     var sellerUser: HulaUser!
     
+    
     var initialTradeFrame: CGRect!
     
     override func viewDidLoad() {
@@ -53,14 +54,13 @@ class HLProductDetailViewController: BaseViewController, UIScrollViewDelegate, U
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         //self.addToTradeViewContainer.frame.size.height = 60
-    }
-    override func viewDidAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         UIView.animate(withDuration: 0.3) {
             self.addToTradeViewContainer.frame = CGRect(x: 0, y: self.view.frame.height - 120, width: self.view.frame.width, height: 60)
         }
         HLDataManager.sharedInstance.ga("discovery_product")
     }
+    
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
     }
@@ -87,8 +87,9 @@ class HLProductDetailViewController: BaseViewController, UIScrollViewDelegate, U
         productNameLabel.text = currentProduct.productName
         productDescriptionLabel.text = currentProduct.productDescription
         productCategory.text = currentProduct.productCategory
-        productCondition.text = currentProduct.productCondition
-        productDistance.text = commonUtils.getDistanceFrom(loc: currentProduct.productLocation)
+        productCondition.text = currentProduct.productCondition.capitalized
+        productDistance.text = commonUtils.getDistanceFrom(loc: sellerUser.location)
+
         
         // item height and position reset
         let h = commonUtils.heightString(width: productDescriptionLabel.frame.width, font: productDescriptionLabel.font! , string: productDescriptionLabel.text!) + 30
@@ -131,6 +132,9 @@ class HLProductDetailViewController: BaseViewController, UIScrollViewDelegate, U
             var newFrame: CGRect! = self.productTableView.frame
             newFrame.size.height = (CGFloat(self.sellerProducts.count) * 129.0);
             //print(newFrame.size.height)
+            print(self.sellerUser.location)
+            self.productDistance.text = self.commonUtils.getDistanceFrom(loc: self.sellerUser.location)
+            
             self.productTableView.frame = newFrame
             self.mainScrollView.contentSize = CGSize(width: 0, height: self.productTableView.frame.origin.y + self.productTableView.frame.size.height + 100)
             self.productTableView.reloadData()
@@ -263,7 +267,7 @@ class HLProductDetailViewController: BaseViewController, UIScrollViewDelegate, U
         self.navigationController?.pushViewController(viewController, animated: true)
     }
     
-    @IBAction func addToTradeAction(_ sender: Any) {
+    @IBAction func addToTradeAction(_ sender: UIButton) {
         let viewController = self.storyboard?.instantiateViewController(withIdentifier: "alertView") as! AlertViewController
         viewController.delegate = self
         if (HulaUser.sharedInstance.numProducts == 0){
@@ -283,6 +287,16 @@ class HLProductDetailViewController: BaseViewController, UIScrollViewDelegate, U
                 viewController.message = "You're about to start a trade. One room will be reserved for this negotiation until it's finished."
             }
         }
+        
+        if let btTitle = sender.titleLabel?.text {
+            if btTitle.range(of:"Currently trading") != nil {
+                if let pnc = self.navigationController?.navigationController as? HulaPortraitNavigationController {
+                    pnc.openSwapView()
+                    return
+                }
+            }
+        }
+        
         self.present(viewController, animated: true)
     }
     

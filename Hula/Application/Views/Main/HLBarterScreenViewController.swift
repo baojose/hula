@@ -579,6 +579,7 @@ extension HLBarterScreenViewController: KDDragAndDropCollectionViewDataSource, U
                 // product on the user lists
                 viewController.hideVideoBtn = true
             }
+            viewController.calledFrom = collectionView.tag
             viewController.currentTradeId = self.thisTrade.tradeId
             viewController.modalPresentationStyle = .overCurrentContext
             

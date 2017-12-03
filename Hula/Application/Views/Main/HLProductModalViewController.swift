@@ -40,6 +40,7 @@ class HLProductModalViewController: UIViewController, UIImagePickerControllerDel
     var image_dismissing : Bool = false
     var hideVideoBtn: Bool = false
     var currentTradeId : String = ""
+    var calledFrom : Int = 0
     
     
     override func viewDidLoad() {
@@ -129,7 +130,11 @@ class HLProductModalViewController: UIViewController, UIImagePickerControllerDel
     }
     
     func setupVideoButtons(){
-        
+        if calledFrom == 1 || calledFrom == 4 {
+            hideVideoBtn = true
+            videoStatusImg.isHidden = true;
+            videoStatusImg2.isHidden = true;
+        }
         if !hideVideoBtn {
             videoBtnHolder.isHidden = false
             var vreq : Bool = false

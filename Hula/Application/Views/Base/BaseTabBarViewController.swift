@@ -32,6 +32,7 @@ class BaseTabBarViewController: UITabBarController, UITabBarControllerDelegate{
     }
     
     override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
         let items : Int = (self.navigationController?.viewControllers.count)!
         if items > 1{
             print("Appear. Clearing previous vc...")
