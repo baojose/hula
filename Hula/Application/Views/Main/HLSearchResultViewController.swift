@@ -14,7 +14,7 @@ class HLSearchResultViewController: BaseViewController, UITableViewDataSource, U
     
     @IBOutlet weak var productsTableView: UITableView!
     @IBOutlet weak var productsResultsList: UIView!
-    @IBOutlet var noResultAlertView: UIView!
+    @IBOutlet weak var noResultAlertView: UIView!
     @IBOutlet weak var screenTitle: UILabel!
     var searchByCategory: Bool = false;
     var categoryToSearch: NSDictionary = [:]
@@ -57,7 +57,8 @@ class HLSearchResultViewController: BaseViewController, UITableViewDataSource, U
         }
     }
     
-    override func viewDidAppear(_ animated: Bool) {
+    override func viewWillAppear(_ animated: Bool) {
+        print("getting results...")
         getSearchResults()
         if self.searchByCategory {
             HLDataManager.sharedInstance.ga("discovery_category")
@@ -187,7 +188,7 @@ class HLSearchResultViewController: BaseViewController, UITableViewDataSource, U
             let encodedKw = keywordToSearch.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)
             queryURL = HulaConstants.apiURL + "products/search/" + encodedKw!
         }
-        //print(queryURL)
+        print(queryURL)
         HLDataManager.sharedInstance.httpGet(urlstr: queryURL, taskCallback: { (ok, json) in
             if (ok){
                 DispatchQueue.main.async {
@@ -214,6 +215,7 @@ class HLSearchResultViewController: BaseViewController, UITableViewDataSource, U
                 }
             } else {
                 // connection error
+                print("Connection error")
             }
         })
     }

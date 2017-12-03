@@ -13,12 +13,12 @@ import SpriteKit
 
 class HLIntroViewController: UserBaseViewController, UIScrollViewDelegate {
     
-    @IBOutlet var introView1: UIView!
-    @IBOutlet var introView2: UIView!
-    @IBOutlet var introView3: UIView!
-    @IBOutlet var introView5: UIView!
-    @IBOutlet var pageCtrl: UIPageControl!
-    @IBOutlet var mainScrollView: UIScrollView!
+    @IBOutlet weak var introView1: UIView!
+    @IBOutlet weak var introView2: UIView!
+    @IBOutlet weak var introView3: UIView!
+    @IBOutlet weak var introView5: UIView!
+    @IBOutlet weak var pageCtrl: UIPageControl!
+    @IBOutlet weak var mainScrollView: UIScrollView!
     
 
     
@@ -29,10 +29,10 @@ class HLIntroViewController: UserBaseViewController, UIScrollViewDelegate {
     var initialFrame:CGRect = CGRect(x:0, y:0, width: 191, height: 108)
     var rotating:Bool = false
     
-    var player1:AVPlayer?
-    var playerLayer1: AVPlayerLayer!
+    weak var player1:AVPlayer?
+    weak var playerLayer1: AVPlayerLayer!
     
-    var jump_just_once = true
+    var jump_just_once : Bool = true
     //var scene: [HulaVideoTransp] = []
     
     override func viewDidLoad() {
