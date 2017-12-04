@@ -117,9 +117,9 @@ class HLDashboardViewController: BaseViewController {
             
             let now = Double(DispatchTime.now().rawValue)
             //print ("Tiempo entre llamadas: \((now - self.last_trade_request)/10000000)")
+            self.mainCollectionView.reloadData()
             if ((now - self.last_trade_request)/10000000 > 10) {
                 
-                self.mainCollectionView.reloadData()
                 HLDataManager.sharedInstance.getTrades { (success) in
                     if (success){
                         self.last_trade_request = Double(DispatchTime.now().rawValue)
@@ -138,9 +138,8 @@ class HLDashboardViewController: BaseViewController {
                         
                             // TUTORIAL
                             print("tuto")
-                            
-                            print(HLDataManager.sharedInstance.tradeMode)
-                            print(HLDataManager.sharedInstance.arrCurrentTrades.count)
+                            //print(HLDataManager.sharedInstance.tradeMode)
+                            //print(HLDataManager.sharedInstance.arrCurrentTrades.count)
                             if (HLDataManager.sharedInstance.tradeMode == "current"){
                                 if (HLDataManager.sharedInstance.arrCurrentTrades.count == 0){
                                     // show empty rooms tutorial
@@ -167,7 +166,7 @@ class HLDashboardViewController: BaseViewController {
                     }
                 }
             } else {
-                print("Regarga de trades demasiado pronto. Omitida.");
+                print("Recarga de trades demasiado pronto. Omitida.");
             }
             //self.mainCollectionView.reloadData()
             //isExpandedFlowLayoutUsed = false

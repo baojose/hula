@@ -11,8 +11,8 @@ import AVKit
 import AVFoundation
 
 class HLMainViewController: UserBaseViewController {
-    var player : AVPlayer?
-    var playerLayer : AVPlayerLayer!
+    weak var player : AVPlayer?
+    weak var playerLayer : AVPlayerLayer!
     override func viewDidLoad() {
         super.viewDidLoad()
     }
@@ -59,7 +59,7 @@ class HLMainViewController: UserBaseViewController {
         }
     }
     
-    func playerEnded (notification:NSNotification) {
+    @objc private func playerEnded (notification:NSNotification) {
         //print("finished")
         let token = HulaUser.sharedInstance.token!
         //print(token)

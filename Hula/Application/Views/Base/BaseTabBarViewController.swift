@@ -31,6 +31,17 @@ class BaseTabBarViewController: UITabBarController, UITabBarControllerDelegate{
         super.didReceiveMemoryWarning()
     }
     
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        let items : Int = (self.navigationController?.viewControllers.count)!
+        if items > 1{
+            print("Appear. Clearing previous vc...")
+            // release some memory
+            //self.navigationController?.viewControllers = [(self.navigationController?.viewControllers.last)! ]
+            self.navigationController?.viewControllers.remove(at: 0)
+        }
+    }
+    
     func initTabbar(){
         
         let tabArray = self.tabbar.items as NSArray!

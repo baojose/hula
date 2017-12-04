@@ -52,6 +52,7 @@ class HLSignUpViewController: UserBaseViewController, UITextFieldDelegate  {
     
     @IBAction func nextStepPressed(_ sender: Any) {
         if (signupField.text! != ""){
+            signupField.isSecureTextEntry = false
             switch currentStep {
             case 0:
                 userNick = signupField.text!
@@ -59,38 +60,39 @@ class HLSignUpViewController: UserBaseViewController, UITextFieldDelegate  {
                 break
             case 1:
                 userEmail = signupField.text!
+                signupField.text = ""
+                signupField.isSecureTextEntry = true
+                currentStep += 1
+                resetStepTexts()
                 break
             case 2:
                 userPassword = signupField.text!
+                signupField.text = ""
+                currentStep += 1
+                resetStepTexts()
                 break
             default:
-                break
-            }
-            currentStep += 1
-            if (currentStep <= 2){
-                signupField.text = ""
-                
-                if (currentStep == 2){
-                    signupField.isSecureTextEntry = true
-                } else {
-                    signupField.isSecureTextEntry = false
-                }
-                resetStepTexts()
-            } else {
-                // send signup information to the server
                 HLDataManager.sharedInstance.signupUser(email: userEmail, nick:userNick, pass: userPassword)
                 UIView.animate(withDuration: 0.2, animations: {
                     self.signupErrorView.frame.origin.y = self.view.frame.height
                     self.greenBackgroundImage.alpha = 1
                 })
                 self.view.endEditing(true)
+                break
             }
+            
         } else {
-            UIView.animate(withDuration: 0.5, animations: {
-                self.signupErrorView.frame.origin.y = self.view.frame.height - self.signupErrorView.frame.height
-                self.greenBackgroundImage.alpha = 0
-            })
+            self.showError("This field cannot be empty. Please fill all the fields.")
         }
+    }
+    
+    func showError(_ msg : String){
+        self.view.endEditing(true)
+        UIView.animate(withDuration: 0.5, animations: {
+            self.signupErrorView.frame.origin.y = self.view.frame.height - self.signupErrorView.frame.height
+            self.greenBackgroundImage.alpha = 0
+            self.signupErrorLabel.text = msg
+        })
     }
     
     func checkUsernick(nick:String){
@@ -104,19 +106,20 @@ class HLSignUpViewController: UserBaseViewController, UITextFieldDelegate  {
                     if dict["user"] == "found" {
                         
                         DispatchQueue.main.async {
-                            UIView.animate(withDuration: 0.4, animations: {
-                                self.greenBackgroundImage.alpha = 0
-                            }, completion: { (success) in
-                                UIView.animate(withDuration: 1.4, animations: {
-                                    self.greenBackgroundImage.alpha = 1
-                                })
-                            })
+                            self.showError("Username has already been taken.")
+                            
                             
                             self.currentStep = 0
                             self.nextButton.setup()
-                            self.resetStepTexts()
+                            //self.resetStepTexts()
                         }
                         
+                    } else {
+                        DispatchQueue.main.async {
+                            self.signupField.text = ""
+                            self.currentStep += 1
+                            self.resetStepTexts()
+                        }
                     }
                 }
             }
@@ -177,11 +180,7 @@ class HLSignUpViewController: UserBaseViewController, UITextFieldDelegate  {
             }
         } else {
             DispatchQueue.main.async {
-                UIView.animate(withDuration: 0.5, animations: {
-                    self.signupErrorView.frame.origin.y = self.view.frame.height - self.signupErrorView.frame.height
-                    self.greenBackgroundImage.alpha = 0
-                })
-                self.signupErrorLabel.text = HLDataManager.sharedInstance.lastServerMessage
+                self.showError(HLDataManager.sharedInstance.lastServerMessage)
             }
         }
         self.view.setNeedsDisplay()
