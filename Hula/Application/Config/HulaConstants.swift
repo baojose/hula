@@ -23,8 +23,8 @@ struct HulaConstants {
     // Server API Links
     static let apiURL: String = "https://api.hula.trading/v1/"
     static let staticServerURL: String = "https://hula.trading"
-    static let noProductThumb: String = "https://hula.trading/files/user/nope.jpg"
-    static let transparentImg: String = "https://hula.trading/img/transparent.png"
+    static let noProductThumb: String = "https://hula.trading/files/user/nope_hula.jpg"
+    static let transparentImg: String = "https://hula.trading/img/transparent_hula.png"
     
     // TRADE STATUSES
     static let pending_status:String = "pending"
