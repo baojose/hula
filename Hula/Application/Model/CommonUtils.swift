@@ -12,7 +12,7 @@ import CoreLocation
 import EasyTipView
 import Kingfisher
 
-class CommonUtils: NSObject, EasyTipViewDelegate {
+class CommonUtils: NSObject, EasyTipViewDelegate, UIGestureRecognizerDelegate {
     
     var currentTipArr: [HulaTip] = []
     var currentTip:Int = -1
@@ -218,8 +218,11 @@ class CommonUtils: NSObject, EasyTipViewDelegate {
     }
     
     func getThumbFor(url:String) -> String {
-        if (url==""){
+        if (url == ""){
             return HulaConstants.noProductThumb
+        }
+        if (url == HulaConstants.transparentImg){
+            return HulaConstants.transparentImg
         }
         var parts = url.components(separatedBy: "/")
         let img_name = "tm_\(parts[parts.count - 1])"
@@ -240,6 +243,11 @@ class CommonUtils: NSObject, EasyTipViewDelegate {
                 bgViewToRemove.frame.size.width = max(vc.view.frame.width, vc.view.frame.height)
                 bgViewToRemove.frame.size.height = max(vc.view.frame.width, vc.view.frame.height)
                 bgViewToRemove.backgroundColor = UIColor(red: 0, green: 0, blue: 0, alpha: 0.3)
+                
+                let tap = UITapGestureRecognizer(target: self, action: #selector(removeEasyTips))
+                tap.delegate = self
+                bgViewToRemove.addGestureRecognizer(tap)
+                
                 vc.view.addSubview(bgViewToRemove)
             }
             self.showNextTip(false)
@@ -282,6 +290,20 @@ class CommonUtils: NSObject, EasyTipViewDelegate {
     func easyTipViewDidDismiss(_ tipView: EasyTipView) {
         print("dismissed")
         self.showNextTip(false)
+    }
+    
+    func removeEasyTips(){
+        print("removing from...")
+        print(self.currentTip)
+        if let prnt = self.currentTipArr[self.currentTip].view.parentViewController?.view {
+            for view in prnt.subviews {
+                if let tipView = view as? EasyTipView {
+                    tipView.dismiss(withCompletion: {
+                        //nada
+                    })
+                }
+            }
+        }
     }
     
     func getTopViewController() -> UIViewController? {
@@ -338,8 +360,11 @@ extension UIImageView {
         
         let url = URL(string: _urlString)!
         self.kf.indicatorType = .activity
-        self.kf.setImage(with: url, options: [.transition(.fade(0.5))])
-        
+        self.kf.setImage(with: url, options: [.transition(.fade(0.5))]) { (im, er, ty, ur) in
+            if !(er == nil) {
+                self.kf.setImage(with: URL(string: HulaConstants.noProductThumb), options: [.transition(.fade(0.5))])
+            }
+        }
         
         
         /*

@@ -298,6 +298,16 @@ extension HLEditProductMainViewController {
         }
         
         
+        let  deleteButton = UIAlertAction(title: "Delete image", style: .destructive, handler: { (action) -> Void in
+            //print("Delete button tapped")
+            self.dataManager.newProduct.arrProductPhotos.removeObject(at: self.currentEditingIndex);
+            self.dataManager.newProduct.arrProductPhotoLink.remove(at: self.currentEditingIndex);
+            self.dismissFullscreenImageDirect( )
+            self.redrawProductImages()
+            self.product.updateServerData()
+        })
+        alertController.addAction(deleteButton)
+        
         let cancelButton = UIAlertAction(title: "Cancel", style: .cancel, handler: { (action) -> Void in
             //print("Cancel button tapped")
         })

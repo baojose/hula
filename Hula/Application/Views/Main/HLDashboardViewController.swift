@@ -135,7 +135,7 @@ class HLDashboardViewController: BaseViewController {
                             self.mainCollectionView.scrollToItem(at: IndexPath(row: 0, section: 0) , at: .top, animated: true)
                         
                         
-                        
+                            //HLDataManager.sharedInstance.onboardingTutorials = [:]
                             // TUTORIAL
                             print("tuto")
                             //print(HLDataManager.sharedInstance.tradeMode)
