@@ -69,6 +69,9 @@ class HLCustomCameraViewController: BaseViewController, UIImagePickerControllerD
     }
     
     func initView(){
+        
+        dataManager.newProduct = HulaProduct.init()
+        
         pageTitleLabel.attributedText = commonUtils.attributedStringWithTextSpacing(pageTitleLabel.text!, 2.33)
         commonUtils.setRoundedRectBorderImageView(imageView1, 1.0, UIColor.init(white: 1, alpha: 0.9), 0.0)
         commonUtils.setRoundedRectBorderImageView(imageView2, 1.0, UIColor.init(white: 1, alpha: 0.9), 0.0)
@@ -76,13 +79,25 @@ class HLCustomCameraViewController: BaseViewController, UIImagePickerControllerD
         commonUtils.setRoundedRectBorderImageView(imageView4, 1.0, UIColor.init(white: 1, alpha: 0.9), 0.0)
         
         
-        let recognizer = UITapGestureRecognizer()
-        recognizer.addTarget(self, action: #selector(selectedImageTapped))
-        imageView1.addGestureRecognizer(recognizer)
-        imageView2.addGestureRecognizer(recognizer)
-        imageView3.addGestureRecognizer(recognizer)
-        imageView4.addGestureRecognizer(recognizer)
+        let recognizer1 = UITapGestureRecognizer()
+        recognizer1.addTarget(self, action: #selector(selectedImageTapped))
+        let recognizer2 = UITapGestureRecognizer()
+        recognizer2.addTarget(self, action: #selector(selectedImageTapped))
+        let recognizer3 = UITapGestureRecognizer()
+        recognizer3.addTarget(self, action: #selector(selectedImageTapped))
+        let recognizer4 = UITapGestureRecognizer()
+        recognizer4.addTarget(self, action: #selector(selectedImageTapped))
+        imageView1.addGestureRecognizer(recognizer1)
+        imageView2.addGestureRecognizer(recognizer2)
+        imageView3.addGestureRecognizer(recognizer3)
+        imageView4.addGestureRecognizer(recognizer4)
     }
+    
+    @IBAction func dismissCameraNoproduct(_ sender: Any) {
+        HLDataManager.sharedInstance.uploadMode = false
+        self.dismiss(animated: true, completion: nil)
+    }
+    
     func initData(){
         arrAlbumPhotos = NSMutableArray.init()
         arrSelectedIndexs = NSMutableArray.init()
@@ -115,9 +130,9 @@ class HLCustomCameraViewController: BaseViewController, UIImagePickerControllerD
     
     
     func selectedImageTapped(_ sender: UITapGestureRecognizer){
-        print("Touches began")
+        //print("Touches began")
         let tappedIndex: Int = (sender.view?.tag)!
-        print(dataManager.newProduct.arrProductPhotos)
+        //print(dataManager.newProduct.arrProductPhotos)
         if (dataManager.newProduct.arrProductPhotos.count > tappedIndex){
             print(dataManager.newProduct.arrProductPhotos[tappedIndex])
             if let imageView = dataManager.newProduct.arrProductPhotos[tappedIndex] as? UIImage {
@@ -187,7 +202,7 @@ class HLCustomCameraViewController: BaseViewController, UIImagePickerControllerD
         image_dismissing = true
     }
     func optionsFullscreenImage(_ sender: UIGestureRecognizer) {
-        let alertController = UIAlertController(title: "Image options", message: "Choose an option...", preferredStyle: .actionSheet)
+        let alertController = UIAlertController(title: "Image options...", message: nil, preferredStyle: .actionSheet)
         
         
         
@@ -242,7 +257,7 @@ class HLCustomCameraViewController: BaseViewController, UIImagePickerControllerD
     // IB Actions
     
     @IBAction func goNextPage(_ sender: UIButton) {
-        
+        // images taken. Let's go to the next step
         let viewController = self.storyboard?.instantiateViewController(withIdentifier: "postProductPage") as! HLPostProductViewController
         self.present(viewController, animated: true)
     }

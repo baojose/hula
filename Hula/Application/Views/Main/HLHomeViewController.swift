@@ -32,7 +32,9 @@ class HLHomeViewController: BaseViewController, UIScrollViewDelegate, UITextFiel
         boxRoundedView.layer.cornerRadius = CGFloat(17)
         boxRoundedView.layer.borderWidth = CGFloat(1.0)
         boxRoundedView.layer.borderColor = UIColor(red: 0.0, green: 0.0, blue: 0.0, alpha: 0.3).cgColor
-        boxRoundedOriginalSize = boxRoundedView.frame.size
+        boxRoundedOriginalSize = view.frame.size
+        boxRoundedOriginalSize.width = boxRoundedOriginalSize.width - 32
+        boxRoundedOriginalSize.height = 35
         cancelButton.alpha = 0
         
         
@@ -48,7 +50,18 @@ class HLHomeViewController: BaseViewController, UIScrollViewDelegate, UITextFiel
     }
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        boxRoundedOriginalSize = boxRoundedView.frame.size
+        boxRoundedOriginalSize = view.frame.size
+        boxRoundedOriginalSize.width = boxRoundedOriginalSize.width - 32
+        boxRoundedOriginalSize.height = 35
+        
+        // force allow rotation on this VC
+        let appDelegate = UIApplication.shared.delegate as! AppDelegate
+        appDelegate.allowRotation = true
+        
+            
+            HLDataManager.sharedInstance.ga("discovery_home")
+        
+        
     }
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
@@ -71,7 +84,7 @@ class HLHomeViewController: BaseViewController, UIScrollViewDelegate, UITextFiel
         
         self.profileCompleteAlertView.isHidden = true;
         self.noResultView.isHidden = true;
-        print(HulaUser.sharedInstance.userName)
+        //print(HulaUser.sharedInstance.userName)
         if (HulaUser.sharedInstance.userName == ""){
             //self.showProfileCompleteAlertView()
         }
@@ -164,7 +177,7 @@ class HLHomeViewController: BaseViewController, UIScrollViewDelegate, UITextFiel
         return true
     }
     func textFieldShouldReturn(_ textField: UITextField) -> Bool{
-        if textField.text?.characters.count == 0 {
+        if textField.text?.count == 0 {
             isSearching = false
             self.searchProduct(textField.text!)
         }else{
@@ -252,7 +265,7 @@ class HLHomeViewController: BaseViewController, UIScrollViewDelegate, UITextFiel
     }
     func searchProduct(_ searchString: String) {
         if isSearching == true {
-            if searchString.characters.count == 0 {
+            if searchString.count == 0 {
                 filteredKeywordsArray.removeAllObjects()
             }else{
                 
@@ -266,7 +279,7 @@ class HLHomeViewController: BaseViewController, UIScrollViewDelegate, UITextFiel
     
     func getKeywords(_ kw:String) {
         //print("Getting keywords...")
-        if (kw.characters.count > 1){
+        if (kw.count > 1){
             let encodedKw = kw.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)
             let queryURL = HulaConstants.apiURL + "search/auto/" + encodedKw!   
             //print(queryURL)

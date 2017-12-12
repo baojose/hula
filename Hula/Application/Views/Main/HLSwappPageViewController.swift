@@ -15,13 +15,11 @@ class HLSwappPageViewController: UIPageViewController {
     var arrTrades: [NSDictionary] = []
     var currentIndex: Int = 0
     
-    private(set) lazy var orderedViewControllers: [UIViewController] = {
-        return [UIStoryboard(name: "Main", bundle: nil) .
+    var orderedViewControllers: [UIViewController] = [UIStoryboard(name: "Main", bundle: nil) .
             instantiateViewController(withIdentifier: "dashboard"),
                 UIStoryboard(name: "Main", bundle: nil) .
-                    instantiateViewController(withIdentifier: "barterRoom")]
-        //HulaUser.sharedInstance.maxTrades
-    }()
+                    instantiateViewController(withIdentifier: "barterRoom")
+                ]
     
     
     override func viewDidLoad() {
@@ -48,6 +46,15 @@ class HLSwappPageViewController: UIPageViewController {
         // Dispose of any resources that can be recreated.
     }
     
+    override open var shouldAutorotate: Bool {
+        //print("Shouldautorotate")
+        return false
+    }
+    override open var supportedInterfaceOrientations : UIInterfaceOrientationMask {
+        //print("supportedInterfaceOrientations")
+        return .landscape
+    }
+    
 
     /*
     // MARK: - Navigation
@@ -63,6 +70,7 @@ class HLSwappPageViewController: UIPageViewController {
 
 extension HLSwappPageViewController: UIPageViewControllerDataSource, UIPageViewControllerDelegate {
     
+
     func pageViewController(_ pageViewController: UIPageViewController, viewControllerBefore viewController: UIViewController) -> UIViewController? {
         guard let viewControllerIndex = orderedViewControllers.index(of: viewController) else {
             return nil

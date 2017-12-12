@@ -10,7 +10,6 @@ import UIKit
 
 class HLEditProductMainViewController: BaseViewController, ProductPictureDelegate {
     
-    var productToDisplay:NSDictionary = [:]
     var product = HulaProduct()
     @IBOutlet var mainScrollVIew: UIScrollView!
     @IBOutlet var contentView: UIView!
@@ -28,6 +27,8 @@ class HLEditProductMainViewController: BaseViewController, ProductPictureDelegat
     @IBOutlet weak var prodImg4: UIImageView!
     
     var spinner: HLSpinnerUIView!
+    var currentEditingIndex: Int = 0
+    var image_dismissing : Bool = false
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -42,12 +43,10 @@ class HLEditProductMainViewController: BaseViewController, ProductPictureDelegat
     }
     
     func initData() {
-        product.populate(with: productToDisplay)
+        //product.populate(with: productToDisplay)
     }
     func initView() {
         mainScrollVIew.contentSize = contentView.frame.size
-        //print(productToDisplay);
-        productImage.loadImageFromURL(urlString: product.productImage)
         productTitle.text = product.productName
         productTitleLabel.text = product.productName
         categoryNameLabel.text = product.productCategory
@@ -57,7 +56,7 @@ class HLEditProductMainViewController: BaseViewController, ProductPictureDelegat
         redrawProductImages()
     }
     @IBAction func deleteProductAction(_ sender: Any) {
-        let alert = UIAlertController(title: "Delete product", message: "Are you sure you want to delete this product?", preferredStyle: UIAlertControllerStyle.alert)
+        let alert = UIAlertController(title: "Delete product", message: "Think twice before deleting it!", preferredStyle: UIAlertControllerStyle.alert)
         alert.addAction(UIAlertAction(title: "Cancel", style: UIAlertActionStyle.default, handler: nil))
         alert.addAction(UIAlertAction(title: "Delete", style: UIAlertActionStyle.destructive, handler: {UIAlertAction in
             //print("Deleting product")
@@ -73,6 +72,9 @@ class HLEditProductMainViewController: BaseViewController, ProductPictureDelegat
                 if (ok){
                     self.spinner.hide()
                     DispatchQueue.main.async {
+                        if let productListVC = self.parent?.childViewControllers.first as? HLMyProductsViewController{
+                            productListVC.getUserProducts()
+                        }
                         _ = self.navigationController?.popViewController(animated: true)
                     }
                 }
@@ -85,10 +87,29 @@ class HLEditProductMainViewController: BaseViewController, ProductPictureDelegat
     
     @IBAction func changeImageAction(_ sender: Any) {
         
-        let cameraViewController = self.storyboard?.instantiateViewController(withIdentifier: "productPictureEdit") as! HLProductPictureEditViewController
-        cameraViewController.positionToReplace = (sender as! UIButton).tag
-        cameraViewController.prodDelegate = self
-        self.present(cameraViewController, animated: true)
+        currentEditingIndex = (sender as! UIButton).tag - 1
+        var im : UIImage?
+        switch currentEditingIndex {
+        case 0:
+            im = prodImg1.image
+        case 1:
+            im = prodImg2.image
+        case 2:
+            im = prodImg3.image
+        case 3:
+            im = prodImg4.image
+        default:
+            im = nil
+        }
+        if im != nil{
+            fullScreenImage(image: im!, index: currentEditingIndex)
+        } else {
+            let cameraViewController = self.storyboard?.instantiateViewController(withIdentifier: "productPictureEdit") as! HLProductPictureEditViewController
+            cameraViewController.positionToReplace = (sender as! UIButton).tag
+            cameraViewController.prodDelegate = self
+            self.present(cameraViewController, animated: true)
+        }
+        
     }
     
     @IBAction func editItemAction(_ sender: Any) {
@@ -150,19 +171,21 @@ class HLEditProductMainViewController: BaseViewController, ProductPictureDelegat
         prodImg4.image = UIImage(named: "icon_camera_small")
         prodImg4.contentMode = .center
         
-        if product.arrProductPhotoLink.count > 0 && product.arrProductPhotoLink[0].characters.count > 0 {
+        if product.arrProductPhotoLink.count > 0 && product.arrProductPhotoLink[0].count > 0 {
             prodImg1.loadImageFromURL(urlString: product.arrProductPhotoLink[0])
         }
-        if product.arrProductPhotoLink.count > 1 && product.arrProductPhotoLink[1].characters.count > 0 {
+        if product.arrProductPhotoLink.count > 1 && product.arrProductPhotoLink[1].count > 0 {
             prodImg2.loadImageFromURL(urlString: product.arrProductPhotoLink[1])
         }
-        if product.arrProductPhotoLink.count > 2 && product.arrProductPhotoLink[2].characters.count > 0 {
+        if product.arrProductPhotoLink.count > 2 && product.arrProductPhotoLink[2].count > 0 {
             prodImg3.loadImageFromURL(urlString: product.arrProductPhotoLink[2])
         }
-        if product.arrProductPhotoLink.count > 3 && product.arrProductPhotoLink[3].characters.count > 0 {
+        if product.arrProductPhotoLink.count > 3 && product.arrProductPhotoLink[3].count > 0 {
             prodImg4.loadImageFromURL(urlString: product.arrProductPhotoLink[3])
             prodImg4.contentMode = .scaleAspectFill
         }
+        product.productImage = product.arrProductPhotoLink[0]
+        productImage.loadImageFromURL(urlString: product.arrProductPhotoLink[0])
     }
     
     func imageUploaded(path: String, pos: Int){
@@ -179,3 +202,118 @@ class HLEditProductMainViewController: BaseViewController, ProductPictureDelegat
         product.updateServerData()
     }
 }
+
+extension HLEditProductMainViewController {
+    func fullScreenImage(image: UIImage, index: Int) {
+        print("opening full screen...")
+        currentEditingIndex = index
+        
+        
+        let newImageView = UIImageView(image: image)
+        
+        newImageView.frame = CGRect(x: self.view.frame.width/2, y: self.view.frame.height/2, width: 10, height:10)
+        newImageView.backgroundColor = .black
+        newImageView.contentMode = .scaleAspectFit
+        newImageView.alpha = 0.0
+        newImageView.tag = 10001
+        newImageView.isUserInteractionEnabled = true
+        let tap = UITapGestureRecognizer(target: self, action: #selector(optionsFullscreenImage))
+        newImageView.addGestureRecognizer(tap)
+        let swipe = UIPanGestureRecognizer(target: self, action: #selector(dismissFullscreenImage))
+        newImageView.addGestureRecognizer(swipe)
+        self.view.addSubview(newImageView)
+        image_dismissing = false
+        UIView.animate(withDuration: 0.3, animations: {
+            newImageView.frame = UIScreen.main.bounds
+            newImageView.alpha = 1
+        }) { (success) in
+            self.navigationController?.isNavigationBarHidden = true
+            self.tabBarController?.tabBar.isHidden = true
+        }
+    }
+    
+    func dismissFullscreenImage(_ sender: UIGestureRecognizer) {
+        if (!image_dismissing){
+            guard let panRecognizer = sender as? UIPanGestureRecognizer else {
+                return
+            }
+            let velocity = panRecognizer.velocity(in: self.view)
+            
+            self.navigationController?.isNavigationBarHidden = true
+            self.tabBarController?.tabBar.isHidden = false
+            
+            UIView.animate(withDuration: 0.3, animations: {
+                sender.view?.frame = CGRect(x: self.view.frame.width/2 + velocity.x/2, y: self.view.frame.height/2 + velocity.y/2, width: 30, height:30)
+                sender.view?.alpha = 0
+                sender.view?.transform.rotated(by: CGFloat( arc4random_uniform(100)/12))
+            }) { (success) in
+                sender.view?.removeFromSuperview()
+            }
+            image_dismissing = true
+        }
+    }
+    func dismissFullscreenImageDirect() {
+        
+        self.navigationController?.isNavigationBarHidden = true
+        self.tabBarController?.tabBar.isHidden = false
+        if let imageView = self.view.viewWithTag(10001) as? UIImageView {
+            UIView.animate(withDuration: 0.3, animations: {
+                imageView.frame = CGRect(x: self.view.frame.width/2 , y: self.view.frame.height/2, width: 30, height:30)
+                imageView.alpha = 0
+                imageView.transform.rotated(by: CGFloat( arc4random_uniform(100)/12))
+            }) { (success) in
+                imageView.removeFromSuperview()
+            }
+        }
+        image_dismissing = true
+    }
+    func optionsFullscreenImage(_ sender: UIGestureRecognizer) {
+        let alertController = UIAlertController(title: "Image options...", message: nil, preferredStyle: .actionSheet)
+        
+        
+        let editButton = UIAlertAction(title: "Try another image", style: .default, handler: { (action) -> Void in
+            print("Close")
+            
+            let cameraViewController = self.storyboard?.instantiateViewController(withIdentifier: "productPictureEdit") as! HLProductPictureEditViewController
+            cameraViewController.positionToReplace = self.currentEditingIndex + 1
+            cameraViewController.prodDelegate = self
+            self.present(cameraViewController, animated: true)
+            self.dismissFullscreenImageDirect( )
+        })
+        alertController.addAction(editButton)
+        
+        
+        if (self.currentEditingIndex != 0){
+            let setDefaultButton = UIAlertAction(title: "Set as featured image", style: .default, handler: { (action) -> Void in
+                //swap(&self.product.arrProductPhotoLink[0], &self.product.arrProductPhotoLink[self.currentEditingIndex])
+                let a = self.product.arrProductPhotoLink[0]
+                let b = self.product.arrProductPhotoLink[self.currentEditingIndex]
+                self.product.arrProductPhotoLink[self.currentEditingIndex] = a
+                self.product.arrProductPhotoLink[0] = b
+                self.dismissFullscreenImageDirect( )
+                self.redrawProductImages()
+                self.product.updateServerData()
+            })
+            alertController.addAction(setDefaultButton)
+        }
+        
+        
+        let  deleteButton = UIAlertAction(title: "Delete image", style: .destructive, handler: { (action) -> Void in
+            //print("Delete button tapped")
+            self.dataManager.newProduct.arrProductPhotos.removeObject(at: self.currentEditingIndex);
+            self.dataManager.newProduct.arrProductPhotoLink.remove(at: self.currentEditingIndex);
+            self.dismissFullscreenImageDirect( )
+            self.redrawProductImages()
+            self.product.updateServerData()
+        })
+        alertController.addAction(deleteButton)
+        
+        let cancelButton = UIAlertAction(title: "Cancel", style: .cancel, handler: { (action) -> Void in
+            //print("Cancel button tapped")
+        })
+        alertController.addAction(cancelButton)
+        
+        self.present(alertController, animated: true)
+    }
+}
+

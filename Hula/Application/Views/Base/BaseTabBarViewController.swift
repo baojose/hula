@@ -21,10 +21,25 @@ class BaseTabBarViewController: UITabBarController, UITabBarControllerDelegate{
         
         let appDelegate = UIApplication.shared.delegate as! AppDelegate
         appDelegate.allowRotation = true
+        
+        
+        let notificationsRecieved = Notification.Name("notificationsRecieved")
+        NotificationCenter.default.addObserver(self, selector: #selector(self.notificationsRecieved), name: notificationsRecieved, object: nil)
     }
     
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
+    }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        let items : Int = (self.navigationController?.viewControllers.count)!
+        if items > 1{
+            print("Appear. Clearing previous vc...")
+            // release some memory
+            //self.navigationController?.viewControllers = [(self.navigationController?.viewControllers.last)! ]
+            self.navigationController?.viewControllers.remove(at: 0)
+        }
     }
     
     func initTabbar(){
@@ -68,6 +83,8 @@ class BaseTabBarViewController: UITabBarController, UITabBarControllerDelegate{
                 self.selectedIndex = 0;
             }
         }
+        
+        notificationsRecieved(nil)
     }
     func tabBarController(_ tabBarController: UITabBarController, shouldSelect viewController: UIViewController) -> Bool {
         //print("Tapp")
@@ -79,10 +96,17 @@ class BaseTabBarViewController: UITabBarController, UITabBarControllerDelegate{
         }
     }
 
+    func notificationsRecieved(_ notification: NSNotification?){
+        if ( HLDataManager.sharedInstance.numNotificationsPending > 0 ){
+            tabBar.items?[1].badgeValue = "\(HLDataManager.sharedInstance.numNotificationsPending)"
+        } else {
+            tabBar.items?[1].badgeValue = nil
+        }
+    }
     
     func checkUserLogin() -> Bool{
         let user = HulaUser.sharedInstance
-        if (user.token.characters.count < 10){
+        if (user.token.count < 10){
             isUserLoggedIn = false
         } else {
             isUserLoggedIn = true

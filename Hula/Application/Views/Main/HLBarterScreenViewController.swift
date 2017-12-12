@@ -11,6 +11,7 @@ import UIKit
 class HLBarterScreenViewController: BaseViewController {
     
     
+    @IBOutlet weak var moneyBtn: UIButton!
     
     @IBOutlet weak var sectionCover: UIButton!
     @IBOutlet weak var otherProductsCollection: KDDragAndDropCollectionView!
@@ -18,12 +19,16 @@ class HLBarterScreenViewController: BaseViewController {
     @IBOutlet weak var myProductsCollection: KDDragAndDropCollectionView!
     @IBOutlet weak var mySelectedProductsCollection: KDDragAndDropCollectionView!
     
+    @IBOutlet weak var ChatFakeView: UIView!
     
     @IBOutlet weak var rightBackground: UIView!
     @IBOutlet weak var leftBackground: UIView!
     @IBOutlet weak var otherProductsDragView: UIImageView!
     @IBOutlet weak var myProductsDragView: UIImageView!
     
+    @IBOutlet weak var addMoneyBtn2: UIButton!
+    @IBOutlet weak var addMoneyBtn1: UIButton!
+    @IBOutlet weak var sendOfferFakeView: UIView!
     
     @IBOutlet weak var otherProductsLabel: UILabel!
     @IBOutlet weak var myProductsLabel: UILabel!
@@ -36,15 +41,19 @@ class HLBarterScreenViewController: BaseViewController {
     var otherProductsDiff : [String] = []
     var myTradeIndex: Int = 1
     
+    var mainSwapViewHolder: HLSwappViewController?
+    
     var thisTrade: HulaTrade = HulaTrade()
     
     let arrowImagesName = ["","icon-product-added", "icon-product-removed", "icon-product-multipledeals"]
     
     var otherUserId: String = ""
     
+    var didTradeMutate:Bool = false
     
     var dragAndDropManager1 : KDDragAndDropManager?
     var dragAndDropManager2 : KDDragAndDropManager?
+    var alreadyLoaded = false
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -55,10 +64,8 @@ class HLBarterScreenViewController: BaseViewController {
         otherProductsDragView.isHidden = true
         myProductsDragView.isHidden = true
         
-        self.dragAndDropManager1 = KDDragAndDropManager(canvas: self.view, collectionViews: [otherProductsCollection, otherSelectedProductsCollection ])
         
         
-        self.dragAndDropManager2 = KDDragAndDropManager(canvas: self.view, collectionViews: [myProductsCollection, mySelectedProductsCollection ])
         
         
         // draw borders on collectionviews
@@ -75,6 +82,8 @@ class HLBarterScreenViewController: BaseViewController {
         // tag each collectionview
         otherSelectedProductsCollection.currentSide = "otherSide"
         mySelectedProductsCollection.currentSide = "mySide"
+        myProductsCollection.currentSide = "-"
+        otherProductsCollection.currentSide = "-"
     }
     
     override func didReceiveMemoryWarning() {
@@ -83,16 +92,14 @@ class HLBarterScreenViewController: BaseViewController {
     }
     
     func loadProductsArrays(){
+        alreadyLoaded = true
         var mtp:[String] = []
         var otp:[String] = []
         if let swappPageVC = self.parent as? HLSwappPageViewController{
             
             //print(swappPageVC.parent)
-            if let thisHolderScreen = swappPageVC.parent as? HLSwappViewController {
-                thisHolderScreen.barterDelegate = self
-            }
             
-            
+            myTradeIndex = min(swappPageVC.currentIndex, swappPageVC.arrTrades.count)
             
             let ct = swappPageVC.arrTrades[swappPageVC.currentIndex]
             //print("ct \(ct)")
@@ -113,10 +120,12 @@ class HLBarterScreenViewController: BaseViewController {
             if self.thisTrade.turn_user_id == HulaUser.sharedInstance.userId{
                 // my turn
                 self.sectionCover.isHidden = true
-                self.view.isUserInteractionEnabled = true
+                self.addMoneyBtn1.isUserInteractionEnabled = true
+                self.addMoneyBtn2.isUserInteractionEnabled = true
             } else {
-                self.sectionCover.isHidden = false
-                self.view.isUserInteractionEnabled = false
+                self.sectionCover.isHidden = true // provisional
+                self.addMoneyBtn1.isUserInteractionEnabled = false
+                self.addMoneyBtn2.isUserInteractionEnabled = false
                 
             }
             //print(otp)
@@ -127,7 +136,7 @@ class HLBarterScreenViewController: BaseViewController {
                 self.populateTradedProducts(list:otp, type:"other")
                 self.otherProductsCollection.reloadData()
                 self.otherSelectedProductsCollection.reloadData()
-                
+                self.animateAddedProducts("other")
             })
             
             getUserProducts(user: HulaUser.sharedInstance.userId, taskCallback: {(result) in
@@ -136,9 +145,67 @@ class HLBarterScreenViewController: BaseViewController {
                 self.populateTradedProducts(list:mtp, type:"owner")
                 self.myProductsCollection.reloadData()
                 self.mySelectedProductsCollection.reloadData()
+                self.animateAddedProducts("owner")
             })
             HulaTrade.sharedInstance.owner_products = thisTrade.owner_products
             HulaTrade.sharedInstance.other_products = thisTrade.other_products
+            
+            
+            
+            
+            //print(thisTrade.other_money)
+            //print(thisTrade.owner_money)
+            
+            
+            if (self.thisTrade.turn_user_id == HulaUser.sharedInstance.userId && thisTrade.num_bids == 1){
+                // first turn
+                self.addMoneyBtn1.alpha = 0
+                self.addMoneyBtn2.alpha = 0
+            } else {
+                self.addMoneyBtn1.alpha = 1
+                self.addMoneyBtn2.alpha = 1
+            }
+            
+            if self.thisTrade.turn_user_id == HulaUser.sharedInstance.userId  {
+                // my draganddrop
+                self.dragAndDropManager2 = KDDragAndDropManager(canvas: self.view, collectionViews: [myProductsCollection, mySelectedProductsCollection ])
+                // other draganddrop
+                self.dragAndDropManager1 = KDDragAndDropManager(canvas: self.view, collectionViews: [otherProductsCollection, otherSelectedProductsCollection ])
+            }
+            
+            
+            // TUTORIAL
+            if self.thisTrade.turn_user_id == HulaUser.sharedInstance.userId{
+                // my turn
+                if HLDataManager.sharedInstance.onboardingTutorials.object(forKey: "barter_my_turn") as? String == nil{
+                    CommonUtils.sharedInstance.showTutorial(arrayTips: [
+                        HulaTip(delay: 2, view: self.otherProductsCollection, text: "Here is their stuff. Drag & drop what you want. Tap on the product to get more info."),
+                        HulaTip(delay: 0.4, view: self.myProductsCollection, text: "Here is your stuff."),
+                        HulaTip(delay: 0.4, view: self.sendOfferFakeView, text: "Once you select what you want, find out if the other trader interested. Click the button below to send a notification!")
+                        ])
+                    //print(HLDataManager.sharedInstance.onboardingTutorials)
+                    HLDataManager.sharedInstance.onboardingTutorials.setObject("done", forKey: "barter_my_turn" as NSCopying)
+                    HLDataManager.sharedInstance.writeUserData()
+                }
+            } else {
+                // other's turn
+                if HLDataManager.sharedInstance.onboardingTutorials.object(forKey: "barter_other_turn") as? String  == nil{
+                    CommonUtils.sharedInstance.showTutorial(arrayTips: [
+                        HulaTip(delay: 2, view: self.sendOfferFakeView, text: "This trading is waiting for the other user to select the items he wants or accept your offer. As soon as the offer is ready you will be notified."),
+                        HulaTip(delay: 0.5, view: self.otherProductsCollection, text: "Tap on any product to get more details or ask the owner for a video-proof."),
+                        HulaTip(delay: 0.4, view: self.ChatFakeView, text: "Start chat here if you need to talk.")
+                        ])
+                    HLDataManager.sharedInstance.onboardingTutorials.setValue("done", forKey: "barter_other_turn")
+                    HLDataManager.sharedInstance.writeUserData()
+                }
+            }
+            
+            
+            if let thisHolderScreen = swappPageVC.parent as? HLSwappViewController {
+                self.mainSwapViewHolder = thisHolderScreen
+                self.mainSwapViewHolder?.barterDelegate = self
+                self.mainSwapViewHolder?.controlSetupBottomBar(index: myTradeIndex + 1)
+            }
         }
     }
     
@@ -154,11 +221,16 @@ class HLBarterScreenViewController: BaseViewController {
         
         //print(thisTrade.last_bid_diff)
         for pr_id in list{
+            var found : Bool = false
             for pr in reference_list{
                 if pr.productId == pr_id{
-                    
                     final_arr.append(pr)
+                    found = true
                 }
+            }
+            
+            if !found {
+                self.animateDisolveProduct(pr_id, type: type)
             }
             
             if (self.otherProducts.count > 0){
@@ -186,18 +258,29 @@ class HLBarterScreenViewController: BaseViewController {
         
         switch type {
         case "other":
-            if thisTrade.other_money > 0 {
-                let moneyProd = HulaProduct(id: "xmoney", name: "+$\(Int(round(thisTrade.other_money)))", image: "")
-                final_arr.append(moneyProd)
+            if (thisTrade.owner_id == HulaUser.sharedInstance.userId){
+                if thisTrade.other_money > 0 {
+                    let moneyProd = HulaProduct(id: "xmoney", name: "+$\(Int(round(thisTrade.other_money)))", image: HulaConstants.transparentImg)
+                    final_arr.append(moneyProd)
+                }
+            } else {
+                if thisTrade.owner_money > 0 {
+                    let moneyProd = HulaProduct(id: "xmoney", name: "+$\(Int(round(thisTrade.owner_money)))", image: HulaConstants.transparentImg)
+                    final_arr.append(moneyProd)
+                }
             }
-            
-            
             otherTradedProducts = final_arr
         default:
-            
-            if thisTrade.owner_money > 0 {
-                let moneyProd = HulaProduct(id: "xmoney", name: "+$\( Int(round(thisTrade.owner_money)) )", image: "")
-                final_arr.append(moneyProd)
+            if (thisTrade.owner_id == HulaUser.sharedInstance.userId){
+                if thisTrade.owner_money > 0 {
+                    let moneyProd = HulaProduct(id: "xmoney", name: "+$\(Int(round(thisTrade.owner_money)))", image: HulaConstants.transparentImg)
+                    final_arr.append(moneyProd)
+                }
+            } else {
+                if thisTrade.other_money > 0 {
+                    let moneyProd = HulaProduct(id: "xmoney", name: "+$\(Int(round(thisTrade.other_money)))", image: HulaConstants.transparentImg)
+                    final_arr.append(moneyProd)
+                }
             }
             myTradedProducts = final_arr
         }
@@ -206,13 +289,28 @@ class HLBarterScreenViewController: BaseViewController {
     
     override func viewDidAppear(_ animated: Bool) {
         
+        HLDataManager.sharedInstance.ga("barter_screen")
     }
     
     override func viewWillAppear(_ animated: Bool) {
-        
-        loadProductsArrays();
-        
-        
+        if let swappPageVC = self.parent as? HLSwappPageViewController{
+            self.addMoneyBtn1.isHidden = false
+            self.addMoneyBtn2.isHidden = false
+            if ( swappPageVC.arrTrades.count > 0 ){
+                if !alreadyLoaded{
+                    loadProductsArrays();
+                }
+                if let swappPageVC = self.parent as? HLSwappPageViewController{
+                    if let thisHolderScreen = swappPageVC.parent as? HLSwappViewController {
+                        thisHolderScreen.last_index_setup = 1
+                    }
+                }
+            } else {
+                self.addMoneyBtn1.isHidden = true
+                self.addMoneyBtn2.isHidden = true
+                
+            }
+        }
     }
 
     /*
@@ -224,10 +322,116 @@ class HLBarterScreenViewController: BaseViewController {
         // Pass the selected object to the new view controller.
     }
     */
+    func animateDisolveProduct(_ id : String, type : String){
+        
+        var destx : CGFloat = 0
+        let desty : CGFloat = 128
+        let smallSide : CGFloat = (mySelectedProductsCollection.frame.width)/3 - 8
+        if type == "owner" {
+            destx = 128 + mySelectedProductsCollection.frame.width/2 - smallSide*2
+        } else {
+            destx = self.view.frame.width/2 + mySelectedProductsCollection.frame.width/2 - smallSide*2
+        }
+        
+        let fakeImg = UIImageView(frame: CGRect(x:destx + smallSide, y:desty, width: smallSide, height:smallSide))
+        fakeImg.contentMode = .scaleAspectFill
+        fakeImg.clipsToBounds = true
+        fakeImg.loadImageFromURL(urlString: CommonUtils.sharedInstance.productImageURL(productId: id))
+        self.view.insertSubview(fakeImg, at: self.view.subviews.count - 2)
+        //self.view.addSubview(fakeImg)
+        UIView.animate(withDuration: 0.8, delay: 1, options: [], animations: {
+            fakeImg.alpha = 0
+        })
+    }
+    func animateAddedProducts(_ type : String){
+        var array_to_traverse : [HulaProduct]
+        var array_to_traverse2 : [HulaProduct]
+        var posx : CGFloat = 0
+        let posy : CGFloat = self.view.frame.height / 3
+        var destx :CGFloat = 0
+        let smallSide :CGFloat = (mySelectedProductsCollection.frame.width - 10)/3 - 8
+        let largeSide :CGFloat =  128
+        var col : KDDragAndDropCollectionView
+        var col2 : KDDragAndDropCollectionView
+        var column_x : CGFloat = 5
+        if type == "owner" {
+            array_to_traverse = myTradedProducts
+            array_to_traverse2 = myProducts
+            posx = 20
+            destx = 128
+            col = mySelectedProductsCollection
+            col2 = myProductsCollection
+            column_x = 5
+        } else {
+            array_to_traverse = otherTradedProducts
+            array_to_traverse2 = otherProducts
+            posx = self.view.frame.width - 20
+            destx = self.view.frame.width/2
+            col = otherSelectedProductsCollection
+            col2 = otherProductsCollection
+            column_x = self.view.frame.width - 128
+        }
+        var counter : Int = 0
+        for p in array_to_traverse{
+            if p.tradeStatus == 1 {
+                // added product
+                let fakeImg = UIImageView(frame: CGRect(x:posx, y:posy, width: 120, height:120))
+                fakeImg.contentMode = .scaleAspectFill
+                fakeImg.clipsToBounds = true
+                fakeImg.loadImageFromURL(urlString: p.arrProductPhotoLink[0])
+                self.view.insertSubview(fakeImg, at: self.view.subviews.count - 2)
+                let cell = col.cellForItem(at: IndexPath(item: counter, section: 0))
+                cell?.alpha = 0
+                UIView.animate(withDuration: 0.3 + Double(counter)/10 , animations: {
+                    fakeImg.alpha = 1
+                    if cell != nil{
+                        fakeImg.frame = (cell?.frame)!
+                    } else {
+                        fakeImg.frame.origin = CGPoint(x:destx + CGFloat(counter%3) * smallSide + 8, y:7)
+                        fakeImg.frame.size = CGSize(width:smallSide, height:smallSide)
+                    }
+                }, completion:  { (success) in
+                    UIView.animate(withDuration: 0.3, animations: {
+                        fakeImg.alpha = 0
+                        cell?.alpha = 1
+                    })
+                })
+            }
+            counter += 1
+        }
+        for p in array_to_traverse2{
+            if p.tradeStatus == 2{
+                // removed product
+                let fakeImg = UIImageView(frame: CGRect(x:destx + smallSide, y:80, width: smallSide, height:smallSide))
+                fakeImg.contentMode = .scaleAspectFill
+                fakeImg.clipsToBounds = true
+                fakeImg.loadImageFromURL(urlString: p.arrProductPhotoLink[0])
+                self.view.insertSubview(fakeImg, at: self.view.subviews.count - 2)
+                //self.view.addSubview(fakeImg)
+                let cell = col2.cellForItem(at: IndexPath(item: counter, section: 0))
+                cell?.alpha = 0
+                UIView.animate(withDuration: 0.2 + Double(counter)/10, animations: {
+                    fakeImg.alpha = 1
+                    if cell != nil{
+                        fakeImg.frame = (cell?.frame)!
+                    } else {
+                        fakeImg.frame.origin = CGPoint(x:column_x, y: 5 + CGFloat(counter-1) * largeSide)
+                        fakeImg.frame.size = CGSize(width:120, height:85)
+                    }
+                }, completion:  { (success) in
+                    UIView.animate(withDuration: 0.3, animations: {
+                        fakeImg.alpha = 0
+                        cell?.alpha = 1
+                    })
+                })
+            }
+            counter += 1
+        }
+    }
     
     func getUserProducts(user: String, taskCallback: @escaping ([HulaProduct]) -> ()) {
         //print("Getting user info...")
-        if (HulaUser.sharedInstance.userId.characters.count>0){
+        if (HulaUser.sharedInstance.userId.count>0){
             let queryURL = HulaConstants.apiURL + "products/user/" + user
             //print(queryURL)
             HLDataManager.sharedInstance.httpGet(urlstr: queryURL, taskCallback: { (ok, json) in
@@ -253,7 +457,7 @@ class HLBarterScreenViewController: BaseViewController {
                                     newProd.populate(with: product_data as NSDictionary)
                                     
                                     for difprod in self.thisTrade.last_bid_diff {
-                                        if (difprod == newProd.productId!){
+                                        if (difprod == newProd.productId!) || (self.thisTrade.num_bids < 3) {
                                             // recently added
                                             newProd.tradeStatus = 1
                                         }
@@ -296,8 +500,14 @@ class HLBarterScreenViewController: BaseViewController {
         
         viewController.calculatorDelegate = self
         viewController.side = "other"
-        
+        if thisTrade.owner_id == HulaUser.sharedInstance.userId{
+            viewController.amount = Int(thisTrade.other_money)
+        } else {
+            viewController.amount = Int(thisTrade.owner_money)
+        }
         self.present(viewController, animated: true)
+        self.didTradeMutate = true
+        self.mainSwapViewHolder?.controlSetupBottomBar(index: myTradeIndex + 1)
     }
     
     @IBAction func addMonewToOwner(_ sender: Any) {
@@ -305,7 +515,14 @@ class HLBarterScreenViewController: BaseViewController {
         
         viewController.calculatorDelegate = self
         viewController.side = "owner"
+        if thisTrade.owner_id == HulaUser.sharedInstance.userId{
+            viewController.amount = Int(thisTrade.owner_money)
+        } else {
+            viewController.amount = Int(thisTrade.other_money)
+        }
         self.present(viewController, animated: true)
+        self.didTradeMutate = true
+        self.mainSwapViewHolder?.controlSetupBottomBar(index: myTradeIndex + 1)
     }
 }
 
@@ -327,7 +544,7 @@ extension HLBarterScreenViewController: KDDragAndDropCollectionViewDataSource, U
     }
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        print("Collection: \(collectionView.tag) item \(indexPath.item)")
+        //print("Collection: \(collectionView.tag) item \(indexPath.item)")
         let product:HulaProduct
         switch collectionView.tag {
         case 1:
@@ -342,14 +559,33 @@ extension HLBarterScreenViewController: KDDragAndDropCollectionViewDataSource, U
             product = HulaProduct(id : "nada", name : "Test product", image: "https://api.hula.trading/v1/products/59400e5ce8825609f281bc68/image")
         }
         //print(product)
-        let viewController = self.storyboard?.instantiateViewController(withIdentifier: "ProductModal") as! HLProductModalViewController
         
-        viewController.product = product
-        viewController.modalPresentationStyle = .overCurrentContext
-        
-        self.present(viewController, animated: true)
-        print("presented vc")
-        
+        if (product.productId == "xmoney"){
+            if thisTrade.turn_user_id == HulaUser.sharedInstance.userId {
+                if collectionView.tag == 2 {
+                    addMonewToOwner("")
+                } else {
+                    addMoneyToOther("")
+                }
+            }
+        } else {
+            let viewController = self.storyboard?.instantiateViewController(withIdentifier: "ProductModal") as! HLProductModalViewController
+            
+            viewController.product = product
+            if collectionView.tag == 2 || collectionView.tag == 3 {
+                // product on the barter table
+                viewController.hideVideoBtn = false
+            } else {
+                // product on the user lists
+                viewController.hideVideoBtn = true
+            }
+            viewController.calledFrom = collectionView.tag
+            viewController.currentTradeId = self.thisTrade.tradeId
+            viewController.modalPresentationStyle = .overCurrentContext
+            
+            self.present(viewController, animated: true)
+            //print("presented vc")
+        }
     }
     
     // The cell that is returned must be retrieved from a call to -dequeueReusableCellWithReuseIdentifier:forIndexPath:
@@ -393,20 +629,40 @@ extension HLBarterScreenViewController: KDDragAndDropCollectionViewDataSource, U
         cell.image.loadImageFromURL(urlString: thumb)
         //print(product.tradeStatus)
         if (product.tradeStatus != 0){
-            
-            
-            //cell.statusImage.image = UIImage.init(named: arrowImagesName[product.tradeStatus])
-            
             if (product.tradeStatus == 1){
                 cell.is_added()
             } else {
                 cell.is_removed()
             }
-            
+        }
+        //print(product.video_requested)
+        //print(product.video_url)
+        var vreq : Bool = false
+        var vurl : String = ""
+        if let t = product.video_requested[thisTrade.tradeId] {
+            vreq = t
+        }
+
+        if let t = product.video_url[thisTrade.tradeId] {
+            vurl = t
+        }
+        
+        cell.statusImage.isHidden = false
+        if ( vreq ){
+            if vurl.count > 0 {
+                cell.statusImage.image = UIImage(named: "video-player-icon-red")
+                if (collectionView.tag == 2){
+                    // user selected
+                    cell.statusImage.isHidden = true
+                }
+            } else {
+                cell.statusImage.image = UIImage(named: "video-requested-red")
+            }
         } else {
             cell.statusImage.image = nil
         }
         cell.isHidden = false
+        
         
         if let kdCollectionView = collectionView as? KDDragAndDropCollectionView {
             
@@ -456,6 +712,8 @@ extension HLBarterScreenViewController: KDDragAndDropCollectionViewDataSource, U
             default: break
             }
         }
+        self.didTradeMutate = true
+        self.mainSwapViewHolder?.controlSetupBottomBar(index: myTradeIndex + 1)
         
         
     }
@@ -471,6 +729,8 @@ extension HLBarterScreenViewController: KDDragAndDropCollectionViewDataSource, U
             otherProducts.remove( at: indexPath.item)
         default: break
         }
+        self.didTradeMutate = true
+        self.mainSwapViewHolder?.controlSetupBottomBar(index: myTradeIndex + 1)
     }
     
     func collectionView(_ collectionView: UICollectionView, moveDataItemFromIndexPath from: IndexPath, toIndexPath to : IndexPath) -> Void {
@@ -500,6 +760,8 @@ extension HLBarterScreenViewController: KDDragAndDropCollectionViewDataSource, U
             myProducts.insert(fromDataItem, at: to.item)
         }
         
+        self.didTradeMutate = true
+        self.mainSwapViewHolder?.controlSetupBottomBar(index: myTradeIndex + 1)
         
     }
     
@@ -577,20 +839,68 @@ extension HLBarterScreenViewController: HLBarterScreenDelegate{
         trade.tradeId = thisTrade.tradeId
         trade.owner_money = thisTrade.owner_money
         trade.other_money = thisTrade.other_money
+        trade.owner_id = thisTrade.owner_id
+        trade.other_id = thisTrade.other_id
+        trade.num_bids = thisTrade.num_bids
         return trade
+    }
+    
+    func isTradeMutated() -> Bool!{
+        return self.didTradeMutate
+    }
+    
+    func reloadTrade(){
+        self.alreadyLoaded = false
     }
 }
 
 extension HLBarterScreenViewController: CalculatorDelegate{
     
     func amountSelected(amount:Int, side:String){
+        //print("Calculator amount: \(amount)")
         if (amount > 0){
-            
+            // amount valid
+            let final_amount = Float(amount)
+            let moneyProd = HulaProduct(id: "xmoney", name: "+$\( Int(round(final_amount)) )", image: HulaConstants.transparentImg)
             if (side == "owner"){
-                thisTrade.owner_money = Float((amount))
+                if (thisTrade.owner_id == HulaUser.sharedInstance.userId){
+                    thisTrade.owner_money = final_amount
+                    
+                } else {
+                    thisTrade.other_money = final_amount
+                }
+                self.myTradedProducts = removeMoneyProduct(fromProducts:self.myTradedProducts)
+                self.myTradedProducts.append(moneyProd)
+                self.mySelectedProductsCollection.reloadData()
             } else {
-                thisTrade.other_money = Float((amount))
+                if (thisTrade.owner_id == HulaUser.sharedInstance.userId){
+                    thisTrade.other_money = final_amount
+                } else {
+                    thisTrade.owner_money = final_amount
+                }
+                self.otherTradedProducts = removeMoneyProduct(fromProducts:self.otherTradedProducts)
+                self.otherTradedProducts.append(moneyProd)
+                self.otherSelectedProductsCollection.reloadData()
+            }
+        } else {
+            // if value is 0 then remove all money
+            if (side == "owner"){
+                self.myTradedProducts = removeMoneyProduct(fromProducts:self.myTradedProducts)
+                self.mySelectedProductsCollection.reloadData()
+            } else {
+                self.myTradedProducts = removeMoneyProduct(fromProducts:self.myTradedProducts)
+                self.mySelectedProductsCollection.reloadData()
             }
         }
+    }
+    
+    func removeMoneyProduct(fromProducts:[HulaProduct]) -> [HulaProduct]{
+        var newArr:[HulaProduct] = []
+        for prod in fromProducts{
+            if prod.productId != "xmoney" {
+                newArr.append(prod)
+            }
+        }
+        return newArr
     }
 }

@@ -12,6 +12,8 @@ import EasyTipView
 
 class HLDashboardViewController: BaseViewController {
     
+    @IBOutlet weak var fakeFirstTradeView: UIView!
+    @IBOutlet weak var fakeAddTradeView: UIView!
     @IBOutlet weak var landscapeView: UIView!
     @IBOutlet weak var portraitView: UIView!
     @IBOutlet weak var mainCollectionView: UICollectionView!
@@ -23,35 +25,44 @@ class HLDashboardViewController: BaseViewController {
     
     
     let sectionInsets = UIEdgeInsets(top: 4, left: 0, bottom: 30, right: 0)
+    var lastTradeInteracted:String = ""
+    var last_trade_request : Double = 0
     
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        refreshCollectionViewData()
+        
+        NotificationCenter.default.addObserver(self, selector: #selector(self.rotated), name: NSNotification.Name.UIDeviceOrientationDidChange, object: nil)
         
         
-    }
-    
-    override func viewDidLayoutSubviews() {
-        print("refreshing")
-        //self.mainCollectionView.reloadData()
+        let notificationsRecieved = Notification.Name("notificationsRecieved")
+        NotificationCenter.default.removeObserver(self, name: notificationsRecieved, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(self.notificationsLoadedCallback), name: notificationsRecieved, object: nil)
         //refreshCollectionViewData()
+        mainCollectionView.collectionViewLayout = HLDashboardNormalViewFlowLayout()
+        
+        
+        let appDelegate = UIApplication.shared.delegate as! AppDelegate
+        appDelegate.allowRotation = true
+        
     }
+
     
     override func viewWillAppear(_ animated: Bool) {
-        mainCollectionView.frame = self.view.frame
-        //self.mainCollectionView.collectionViewLayout.invalidateLayout()
-        
-        //self.mainCollectionView.setCollectionViewLayout(HLDashboardNormalViewFlowLayout(), animated: false)
-        //
-        //isExpandedFlowLayoutUsed = false
+        //print(self.view.frame)
+        //print(self.mainCollectionView.frame)
         refreshCollectionViewData()
         
-        self.mainCollectionView.reloadData()
+        if let swappPageVC = self.parent as? HLSwappPageViewController{
+            if let thisHolderScreen = swappPageVC.parent as? HLSwappViewController {
+                thisHolderScreen.last_index_setup = 0
+            }
+        }
     }
-    
     override func viewDidAppear(_ animated: Bool) {
+        //self.mainCollectionView.frame = self.view.frame
         self.mainCollectionView.scrollToItem(at: IndexPath(row: 0, section: 0) , at: .top, animated: true)
+        self.mainCollectionView.collectionViewLayout.invalidateLayout()
         
         /*
         self.mainCollectionView.setCollectionViewLayout(HLDashboardNormalViewFlowLayout(), animated: false)
@@ -61,23 +72,18 @@ class HLDashboardViewController: BaseViewController {
         self.mainCollectionView.reloadData()
         */
         
-        
-        /*
-        CommonUtils.sharedInstance.showTutorial(arrayTips: [
-            HulaTip(delay: 1, view: self.mainCollectionView, text: "Texto 1, tras un segundo"),
-            HulaTip(delay: 3, view: self.mainCollectionView, text: "Texto 2, tras tres segundos"),
-            HulaTip(delay: 1, view: self.mainCollectionView, text: "Texto 1, tras un segundo más")
-        ])
-        */
+        HLDataManager.sharedInstance.ga("dashboard")
     }
- 
-
+    
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
     }
     
-    
+    func notificationsLoadedCallback() {
+        //print("Refreshing...")
+        refreshCollectionViewData()
+    }
     
     @IBAction func backButtonAction(_ sender: Any) {
         self.dismiss(animated: true) { 
@@ -86,48 +92,186 @@ class HLDashboardViewController: BaseViewController {
         
     }
     
+    func rotated(){
+        if !UIDeviceOrientationIsPortrait(UIDevice.current.orientation) {
+            mainCollectionView.collectionViewLayout.invalidateLayout()
+        }
+    }
+    
     func refreshCollectionViewData(){
         if let vc = self.parent as? HLSwappPageViewController {
             swappPageVC = vc
-            if (HLDataManager.sharedInstance.arrTrades.count > 0){
-                swappPageVC?.arrTrades = HLDataManager.sharedInstance.arrTrades as [NSDictionary]
-            }
-            HLDataManager.sharedInstance.getTrades { (success) in
-                if (success){
-                    //print("Trades ok")
-                    DispatchQueue.main.async {
-                        if (self.swappPageVC?.arrTrades.count != HLDataManager.sharedInstance.arrTrades.count){
-                            self.swappPageVC?.arrTrades = HLDataManager.sharedInstance.arrTrades as [NSDictionary]
-                        } else {
-                            self.swappPageVC?.arrTrades = HLDataManager.sharedInstance.arrTrades as [NSDictionary]
-                        }
-                        self.mainCollectionView.reloadData()
-                    }
+            if (HLDataManager.sharedInstance.tradeMode == "current"){
+                if (HLDataManager.sharedInstance.arrCurrentTrades.count > 0){
+                    swappPageVC?.arrTrades = HLDataManager.sharedInstance.arrCurrentTrades as [NSDictionary]
+                } else {
+                    swappPageVC?.arrTrades = []
+                }
+            } else {
+                if (HLDataManager.sharedInstance.arrPastTrades.count > 0){
+                    swappPageVC?.arrTrades = HLDataManager.sharedInstance.arrPastTrades as [NSDictionary]
+                } else {
+                    swappPageVC?.arrTrades = []
                 }
             }
-            mainCollectionView.collectionViewLayout = HLDashboardNormalViewFlowLayout()
+            
+            let now = Double(DispatchTime.now().rawValue)
+            //print ("Tiempo entre llamadas: \((now - self.last_trade_request)/10000000)")
+            self.mainCollectionView.reloadData()
+            if ((now - self.last_trade_request)/10000000 > 10) {
+                
+                HLDataManager.sharedInstance.getTrades { (success) in
+                    if (success){
+                        self.last_trade_request = Double(DispatchTime.now().rawValue)
+                        //print("Trades loaded from dashboard")
+                        //print("Trades ok")
+                        DispatchQueue.main.async {
+                            if (HLDataManager.sharedInstance.tradeMode == "current"){
+                                self.swappPageVC?.arrTrades = HLDataManager.sharedInstance.arrCurrentTrades as [NSDictionary]
+                            } else {
+                                self.swappPageVC?.arrTrades = HLDataManager.sharedInstance.arrPastTrades as [NSDictionary]
+                            }
+                            self.mainCollectionView.reloadData()
+                            self.mainCollectionView.scrollToItem(at: IndexPath(row: 0, section: 0) , at: .top, animated: true)
+                        
+                        
+                            //HLDataManager.sharedInstance.onboardingTutorials = [:]
+                            // TUTORIAL
+                            print("tuto")
+                            //print(HLDataManager.sharedInstance.tradeMode)
+                            //print(HLDataManager.sharedInstance.arrCurrentTrades.count)
+                            if (HLDataManager.sharedInstance.tradeMode == "current"){
+                                if (HLDataManager.sharedInstance.arrCurrentTrades.count == 0){
+                                    // show empty rooms tutorial
+                                    if HLDataManager.sharedInstance.onboardingTutorials.object(forKey: "dashboard_empty") as? String == nil {
+                                        CommonUtils.sharedInstance.showTutorial(arrayTips: [
+                                            HulaTip(delay: 1, view: self.mainCollectionView, text: "You're in the Trade Room!\nto start trading, start exchanging."),
+                                            HulaTip(delay: 0.5, view: self.fakeAddTradeView, text: "Need more trading rooms? tap here to add more spaces!")
+                                        ])
+                                        HLDataManager.sharedInstance.onboardingTutorials.setValue("done", forKey: "dashboard_empty")
+                                        HLDataManager.sharedInstance.writeUserData()
+                                    }
+                                } else {
+                                    // show full rooms tutorial
+                                    if HLDataManager.sharedInstance.onboardingTutorials.object(forKey: "dashboard_full") as? String == nil {
+                                        CommonUtils.sharedInstance.showTutorial(arrayTips: [
+                                            HulaTip(delay: 1, view: self.fakeFirstTradeView, text: "Welcome to your first trade! Get some advice. Click on the Trade Room you used.")
+                                            ])
+                                        HLDataManager.sharedInstance.onboardingTutorials.setValue("done", forKey: "dashboard_full")
+                                        HLDataManager.sharedInstance.writeUserData()
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            } else {
+                print("Recarga de trades demasiado pronto. Omitida.");
+            }
+            //self.mainCollectionView.reloadData()
             //isExpandedFlowLayoutUsed = false
         } else {
             print("Error. Not detected parent parent vc")
         }
     }
     
+    
+    func closeTrade(_ tradeId: String){
+        
+        lastTradeInteracted = tradeId
+        let viewController = self.storyboard?.instantiateViewController(withIdentifier: "alertView") as! AlertViewController
+        viewController.delegate = self
+        viewController.isCancelVisible = true
+        viewController.cancelButtonText = "Don't cancel"
+        viewController.okButtonText = "Cancel"
+        viewController.trigger = "cancelconfirm"
+        viewController.message = "Cancel this trade?"
+        self.present(viewController, animated: true)
+        
+    }
+    
+    func reportUser(_ userId:String){
+        let queryURL = HulaConstants.apiURL + "users/report/\(userId)"
+        //print(dataString)
+        HLDataManager.sharedInstance.httpGet(urlstr: queryURL, taskCallback: { (ok, json) in
+            if (ok){
+                //print(json!)
+                DispatchQueue.main.async {
+                    
+                    let viewController = self.storyboard?.instantiateViewController(withIdentifier: "alertView") as! AlertViewController
+                    
+                    viewController.delegate = self
+                    viewController.isCancelVisible = false
+                    viewController.message = "The user has been reported. We will review the user behavior and take necessary actions. Thanks for keeping Hula trustworthy."
+                    
+                    self.present(viewController, animated: true)
+                    
+                    
+                    self.refreshCollectionViewData()
+                }
+            } else {
+                // connection error
+                print("Connection error")
+            }
+        })
+    }
+    
 }
 
-
+extension HLDashboardViewController: AlertDelegate{
+    func alertResponded(response: String, trigger:String) {
+        //print("Response: \(response)")
+        self.refreshCollectionViewData()
+        
+        
+        if (trigger == "cancelconfirm" && response == "ok"){
+            let tradeId = lastTradeInteracted
+            if (tradeId != ""){
+                let queryURL = HulaConstants.apiURL + "trades/\(tradeId)"
+                let status = HulaConstants.cancel_status
+                let dataString:String = "status=\(status)"
+                //print(dataString)
+                HLDataManager.sharedInstance.httpPost(urlstr: queryURL, postString: dataString, isPut: true, taskCallback: { (ok, json) in
+                    if (ok){
+                        //print(json!)
+                        DispatchQueue.main.async {
+                            
+                            let alert = UIAlertController(title: "Trade cancelled", message: "Help us to improve, tell us why:", preferredStyle: UIAlertControllerStyle.actionSheet)
+                            alert.addAction(UIAlertAction(title: "Not interested anymore", style: UIAlertActionStyle.default, handler: nil))
+                            alert.addAction(UIAlertAction(title: "Unhappy with trader", style: UIAlertActionStyle.default, handler: nil))
+                            alert.addAction(UIAlertAction(title: "Product deleted", style: UIAlertActionStyle.default, handler: nil))
+                            alert.addAction(UIAlertAction(title: "Other", style: UIAlertActionStyle.default, handler: nil))
+                            self.present(alert, animated: true, completion: nil)
+                            
+                            self.refreshCollectionViewData()
+                        }
+                    } else {
+                        // connection error
+                        print("Connection error")
+                    }
+                })
+            }
+        }
+    }
+}
 
 extension HLDashboardViewController: UICollectionViewDelegate, UICollectionViewDataSource {
     func numberOfSections(in collectionView: UICollectionView) -> Int {
         return 1
     }
+    
+    
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         return max((swappPageVC?.arrTrades.count)!, HulaUser.sharedInstance.maxTrades)
     }
-    func collectionView(_ collectionView: UICollectionView,
-                                 cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+    
+    
+    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "tradeCell",
                                                       for: indexPath) as! HLTradesCollectionViewCell
         cell.tradeNumber.text = "\(indexPath.row+1)"
+        
+        cell.dbDelegate = self
         
         //print(cell.frame)
         // Configure the cell
@@ -137,6 +281,18 @@ extension HLDashboardViewController: UICollectionViewDelegate, UICollectionViewD
             let thisTrade : NSDictionary = (swappPageVC?.arrTrades[indexPath.row])!
             cell.emptyRoomLabel.text = ""
             //print(thisTrade)
+            
+            let trade_status =  (thisTrade.object(forKey: "status") as? String)!
+            var status = trade_status
+            if status == HulaConstants.end_status || status == HulaConstants.cancel_status {
+                status = "past"
+            } else {
+                status = "current"
+            }
+            cell.tradeStatus = status
+            
+            cell.tradeId = (thisTrade.object(forKey: "_id") as? String)!
+            
             var otherUserId = thisTrade.object(forKey: "other_id") as? String
             if otherUserId == HulaUser.sharedInstance.userId {
                 otherUserId = thisTrade.object(forKey: "owner_id") as? String
@@ -145,21 +301,45 @@ extension HLDashboardViewController: UICollectionViewDelegate, UICollectionViewD
                 cell.userImage.loadImageFromURL(urlString: CommonUtils.sharedInstance.userImageURL(userId: otherUserId!) )
                 
             }
+            cell.userId = otherUserId!;
+            cell.chatCountLabel.isHidden = true
+            var owner_money : Float = 0;
+            var other_money : Float = 0;
             
+            if let tmp = thisTrade.object(forKey: "owner_money") as? Float{
+                owner_money = tmp
+            }
+            if let tmp = thisTrade.object(forKey: "other_money") as? Float{
+                other_money = tmp
+            }
             
-            if (HulaUser.sharedInstance.userId == otherUserId){
+            if (HulaUser.sharedInstance.userId == thisTrade.object(forKey: "other_id") as? String ){
+                // i am the other of the trade
                 if let other_products_arr = thisTrade.object(forKey: "other_products") as? [String]{
-                    drawProducts(inCell: cell, fromArr: other_products_arr, side: "left")
+                    drawProducts(inCell: cell, fromArr: other_products_arr, money: other_money, side: "left")
                 }
                 if let owner_products_arr = thisTrade.object(forKey: "owner_products") as? [String]{
-                    drawProducts(inCell: cell, fromArr: owner_products_arr, side: "right")
+                    drawProducts(inCell: cell, fromArr: owner_products_arr, money: owner_money, side: "right")
+                }
+                
+                if let chat_count = thisTrade.object(forKey: "other_unread") as? Int{
+                    if chat_count > 0 {
+                        cell.chatCountLabel.text = "\(chat_count)"
+                        cell.chatCountLabel.isHidden = false
+                    }
                 }
             } else {
                 if let other_products_arr = thisTrade.object(forKey: "other_products") as? [String]{
-                    drawProducts(inCell: cell, fromArr: other_products_arr, side: "right")
+                    drawProducts(inCell: cell, fromArr: other_products_arr, money: other_money, side: "right")
                 }
                 if let owner_products_arr = thisTrade.object(forKey: "owner_products") as? [String]{
-                    drawProducts(inCell: cell, fromArr: owner_products_arr, side: "left")
+                    drawProducts(inCell: cell, fromArr: owner_products_arr, money: owner_money, side: "left")
+                }
+                if let chat_count = thisTrade.object(forKey: "owner_unread") as? Int{
+                    if chat_count > 0 {
+                        cell.chatCountLabel.text = "\(chat_count)"
+                        cell.chatCountLabel.isHidden = false
+                    }
                 }
             }
             
@@ -167,31 +347,68 @@ extension HLDashboardViewController: UICollectionViewDelegate, UICollectionViewD
             cell.myImage.isHidden = false
             cell.middleArrows.isHidden = false
             cell.tradeNumber.textColor = HulaConstants.appMainColor
-            if let turnUser = thisTrade.object(forKey: "turn_user_id") as? String{
-                if turnUser != HulaUser.sharedInstance.userId {
-                    cell.myTurnView.isHidden = true
-                    cell.otherTurnView.isHidden = false
+            
+            
+            cell.dealClosedLbl.isHidden = true
+            if status == "current"{
+                // current trades
+                if let turnUser = thisTrade.object(forKey: "turn_user_id") as? String{
+                    if trade_status == HulaConstants.review_status {
+                        cell.dealClosedLbl.isHidden = false
+                        cell.myTurnView.isHidden = true
+                        cell.otherTurnView.isHidden = true
+                    } else {
+                        if turnUser != HulaUser.sharedInstance.userId {
+                            cell.myTurnView.isHidden = true
+                            cell.otherTurnView.isHidden = false
+                        } else {
+                            cell.myTurnView.isHidden = false
+                            cell.otherTurnView.isHidden = true
+                        }
+                    }
                 } else {
                     cell.myTurnView.isHidden = false
                     cell.otherTurnView.isHidden = true
                 }
+                cell.boxView.layer.shadowColor = UIColor.black.cgColor
+                cell.boxView.layer.shadowOffset = CGSize(width: 0, height: 0)
+                cell.boxView.layer.shadowOpacity = 0.2
+                cell.boxView.layer.shadowRadius = 3
+                cell.optionsDotsImage.alpha = 1
             } else {
-                cell.myTurnView.isHidden = false
+                // past trades
+                cell.tradeNumber.textColor = UIColor.gray
+                cell.myTurnView.isHidden = true
                 cell.otherTurnView.isHidden = true
+                cell.boxView.layer.shadowColor = UIColor(red:1, green:1, blue:1, alpha: 0).cgColor
+                cell.boxView.layer.shadowOffset = CGSize(width: 0, height: 0)
+                cell.boxView.layer.shadowOpacity = 0
+                cell.boxView.layer.shadowRadius = 0
+                cell.optionsDotsImage.alpha = 0.2
+                
             }
-            cell.awakeFromNib()
+            cell.userImage.isHidden = false
         } else {
             //print("Empty row \(indexPath.row)")
             cell.isEmptyRoom = true
+            cell.tradeId = "";
             cell.emptyRoomLabel.text = "Empty Trade Room"
             cell.myImage.isHidden = true
             cell.userImage.image = nil
+            cell.userImage.isHidden = true
             cell.middleArrows.isHidden = true
             cell.left_side.subviews.forEach({ $0.removeFromSuperview() })
             cell.right_side.subviews.forEach({ $0.removeFromSuperview() })
             cell.tradeNumber.textColor = UIColor.gray
             cell.myTurnView.isHidden = true
             cell.otherTurnView.isHidden = true
+            cell.boxView.layer.shadowColor = UIColor(red:1, green:1, blue:1, alpha: 0).cgColor
+            cell.boxView.layer.shadowOffset = CGSize(width: 0, height: 0)
+            cell.boxView.layer.shadowOpacity = 0
+            cell.boxView.layer.shadowRadius = 0
+            cell.optionsDotsImage.alpha = 0.2
+            cell.chatCountLabel.isHidden = true
+            cell.dealClosedLbl.isHidden = true
         }
         
         return cell
@@ -205,12 +422,12 @@ extension HLDashboardViewController: UICollectionViewDelegate, UICollectionViewD
         if ((swappPageVC?.arrTrades.count)! > indexPath.row){
 
             
-            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "tradeCell",
-                                                          for: indexPath) as! HLTradesCollectionViewCell
-            cell.layer.zPosition = 100;
-            
+            //let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "tradeCell", for: indexPath) as! HLTradesCollectionViewCell
+
             //isExpandedFlowLayoutUsed = !isExpandedFlowLayoutUsed
-            let when = DispatchTime.now() + 0.3
+            let when = DispatchTime.now() + 0.2
+            
+            
             DispatchQueue.main.asyncAfter(deadline: when) {
                 if let swappPageVC = self.parent as? HLSwappPageViewController{
                     self.selectedBarter = indexPath.row
@@ -219,7 +436,16 @@ extension HLDashboardViewController: UICollectionViewDelegate, UICollectionViewD
                     self.swappPageVC?.currentIndex = indexPath.row
                     //print(swappPageVC.currentTrade!)
                     
-                    //always number 1
+                    let tradeStatus = thisTrade.object(forKey: "status") as! String
+                    if HLDataManager.sharedInstance.tradeMode == "current" && tradeStatus != HulaConstants.review_status {
+                        let vc = (self.storyboard?.instantiateViewController( withIdentifier: "barterRoom")) as! HLBarterScreenViewController
+                        self.swappPageVC?.orderedViewControllers[1] = vc
+                    } else {
+                        let vc = (self.storyboard?.instantiateViewController( withIdentifier: "pastTrade")) as! HLPastTradeViewController
+                        vc.currTrade = thisTrade
+                        self.swappPageVC?.orderedViewControllers[1] = vc
+                    }
+                    
                     self.swappPageVC?.goTo(page: 1)
                 }
                 //print(self.parent!)
@@ -229,13 +455,17 @@ extension HLDashboardViewController: UICollectionViewDelegate, UICollectionViewD
         }
  
     }
+    
 
     
     override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
-        //mainCollectionView.collectionViewLayout.invalidateLayout()
+        super.viewWillTransition(to:size, with: coordinator)
+        
+        mainCollectionView.collectionViewLayout.invalidateLayout()
     }
+ 
     
-    func drawProducts(inCell:HLTradesCollectionViewCell, fromArr: [String], side: String){
+    func drawProducts(inCell:HLTradesCollectionViewCell, fromArr: [String], money: Float, side: String){
         var counter:Int = 0;
         if (side=="right"){
             inCell.right_side.subviews.forEach({ $0.removeFromSuperview() })
@@ -275,6 +505,26 @@ extension HLDashboardViewController: UICollectionViewDelegate, UICollectionViewD
                 
                 
                 counter += 1
+            }
+        }
+        if money > 0 {
+            let mn = UILabel()
+            mn.text = "$\(Int(money))";
+            mn.font = UIFont(name: HulaConstants.regular_font, size: 10.0)
+            mn.textColor = HulaConstants.appMainColor
+            if (side=="right"){
+                mn.frame = CGRect(x: ( CGFloat(counter) * (productImagesWidth + productImagesMargin)) + productImagesMargin*2,
+                                      y: verticalCenter,
+                                      width: productImagesWidth,
+                                      height: productImagesWidth)
+                inCell.right_side.addSubview(mn)
+            } else {
+                mn.frame = CGRect(x: inCell.left_side.frame.width - ( CGFloat(counter) * (productImagesWidth + productImagesMargin)) - (productImagesMargin) - productImagesWidth,
+                                      y: verticalCenter,
+                                      width: productImagesWidth,
+                                      height: productImagesWidth)
+                inCell.left_side.addSubview(mn)
+                
             }
         }
     }

@@ -16,6 +16,9 @@ target 'Hula' do
   pod 'Crashlytics'
   pod 'LinkedinSwift', '>= 1.6.2'
   pod 'EasyTipView', '~> 1.0.2'
+  pod 'BRYXBanner'
+  pod 'Kingfisher', '~> 3.0'
+  pod 'Google/Analytics'
   
   target 'HulaTests' do
     inherit! :search_paths

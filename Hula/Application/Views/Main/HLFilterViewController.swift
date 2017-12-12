@@ -19,11 +19,20 @@ class HLFilterViewController: BaseViewController {
     var preselRep: Int = 0
     var preselCondition: String = "all"
     
+    //@IBOutlet weak var publishBtn: HLRoundedGradientNextButton!
+    
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         self.initData()
         self.initView()
     }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        
+        HLDataManager.sharedInstance.ga("discovery_filters")
+    }
+    
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
     }
@@ -37,6 +46,7 @@ class HLFilterViewController: BaseViewController {
         self.changeDistanceFilterButtonSelctedState( getTagForDistance(preselDistance) )
         self.changeTradeFilterButtonSelctedState( getTagForRep(preselRep)  )
         self.changeConditionFilterButtonSelctedState( getTagForCond(preselCondition) )
+        
     }
     
     
@@ -48,14 +58,17 @@ class HLFilterViewController: BaseViewController {
     @IBAction func distanceFilterOptionBtnClicked(_ sender: Any) {
         let button: UIButton = sender as! UIButton
         self.changeDistanceFilterButtonSelctedState(button.tag)
+        
     }
     @IBAction func tradeFilterOptionBtnClicked(_ sender: Any) {
         let button: UIButton = sender as! UIButton
         self.changeTradeFilterButtonSelctedState(button.tag)
+        
     }
     @IBAction func conditionOptionBtnClicked(_ sender: Any) {
         let button: UIButton = sender as! UIButton
         self.changeConditionFilterButtonSelctedState(button.tag)
+        
     }
     
     

@@ -56,6 +56,8 @@ class HLPostProductViewController: BaseViewController, UITextFieldDelegate {
         
         self.navigationController?.isNavigationBarHidden = false
         self.tabBarController?.tabBar.isHidden = false
+        
+        HLDataManager.sharedInstance.ga("product_create")
     }
     func initData(){
         arrImageViews = NSMutableArray.init(capacity: 4)
@@ -242,10 +244,10 @@ class HLPostProductViewController: BaseViewController, UITextFieldDelegate {
         image_dismissing = true
     }
     func optionsFullscreenImage(_ sender: UIGestureRecognizer) {
-        let alertController = UIAlertController(title: "Image options", message: "Choose an option...", preferredStyle: .actionSheet)
+        let alertController = UIAlertController(title: "Image options...", message: nil, preferredStyle: .actionSheet)
         
         
-        let editButton = UIAlertAction(title: "Choose another image", style: .default, handler: { (action) -> Void in
+        let editButton = UIAlertAction(title: "Try another image", style: .default, handler: { (action) -> Void in
             print("Close")
             self.dataManager.newProduct.arrProductPhotos.removeObject(at: self.currentEditingIndex);
             self.presentingViewController?.dismiss(animated: true, completion: nil)
@@ -254,7 +256,7 @@ class HLPostProductViewController: BaseViewController, UITextFieldDelegate {
         
         
         if (self.currentEditingIndex != 0){
-            let setDefaultButton = UIAlertAction(title: "Set image as default", style: .default, handler: { (action) -> Void in
+            let setDefaultButton = UIAlertAction(title: "Set as featured image", style: .default, handler: { (action) -> Void in
                 swap(&self.dataManager.newProduct.arrProductPhotos[0], &self.dataManager.newProduct.arrProductPhotos[self.currentEditingIndex])
                 self.dismissFullscreenImageDirect( )
                 self.setupImagesBoxes()
@@ -291,7 +293,7 @@ class HLPostProductViewController: BaseViewController, UITextFieldDelegate {
     }
     func changePublishBtnState(_ string: String){
         self.dataManager.newProduct.productName = string
-        if dataManager.newProduct.arrProductPhotos.count != 0 && string.characters.count != 0  {
+        if dataManager.newProduct.arrProductPhotos.count != 0 && string.count != 0  {
             publishBtn.isEnabled = true
             publishBtn.startAnimation()
         }else{
@@ -301,7 +303,10 @@ class HLPostProductViewController: BaseViewController, UITextFieldDelegate {
     }
     func onTapScreen(){
         productTitleTxtField.resignFirstResponder()
-        mainScrollView.setContentOffset(CGPoint(x: 0.0, y: 0.0), animated: true)
+        
+        UIView.animate(withDuration: 0.3, animations: {
+            self.mainScrollView.contentOffset =  CGPoint(x: 0.0, y: 0.0)
+        })
     }
     @IBAction func cameraButtonTap(_ sender: Any) {
         print((sender as AnyObject).tag)
@@ -309,7 +314,9 @@ class HLPostProductViewController: BaseViewController, UITextFieldDelegate {
     }
     //#MARK - TextField Delegate
     func textFieldShouldBeginEditing(_ textField: UITextField) -> Bool{
-        mainScrollView.setContentOffset(CGPoint(x: 0.0, y: 195.0), animated: true)
+        UIView.animate(withDuration: 0.3, animations: {
+            self.mainScrollView.contentOffset =  CGPoint(x: 0.0, y: 195.0)
+        })
         return true
     }
     func textchange(_ textField:UITextField) {
@@ -320,10 +327,11 @@ class HLPostProductViewController: BaseViewController, UITextFieldDelegate {
         return textField.resignFirstResponder()
     }
     @IBAction func dismissToProductPage(_ sender: Any) {
+        HLDataManager.sharedInstance.uploadMode = false
         self.presentingViewController?.presentingViewController?.dismiss(animated: true, completion: nil)
     }
     @IBAction func publishNewProduct(_ sender: Any) {
-        if productTitleTxtField.text?.characters.count != 0 {
+        if productTitleTxtField.text?.count != 0 {
             dataManager.newProduct.productName = productTitleTxtField.text
         }
         NotificationCenter.default.post(name: NSNotification.Name(rawValue: "uploadModeUpdateDesign"), object: nil)

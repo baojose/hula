@@ -14,7 +14,7 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "89B508C1DDB2C85D8B32971FD79CF037"
+               BlueprintIdentifier = "834C71CAC0FC99911E4DBCD69088DDC8"
                BuildableName = "Pods_Hula.framework"
                BlueprintName = "Pods-Hula"
                ReferencedContainer = "container:Pods.xcodeproj">
@@ -26,6 +26,7 @@
       buildConfiguration = "Debug"
       selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
+      language = ""
       shouldUseLaunchSchemeArgsEnv = "YES">
       <Testables>
       </Testables>
@@ -36,6 +37,7 @@
       buildConfiguration = "Debug"
       selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
+      language = ""
       launchStyle = "0"
       useCustomWorkingDirectory = "NO"
       ignoresPersistentStateOnLaunch = "NO"
@@ -45,7 +47,7 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "89B508C1DDB2C85D8B32971FD79CF037"
+            BlueprintIdentifier = "834C71CAC0FC99911E4DBCD69088DDC8"
             BuildableName = "Pods_Hula.framework"
             BlueprintName = "Pods-Hula"
             ReferencedContainer = "container:Pods.xcodeproj">

@@ -12,9 +12,12 @@ class HLHomeNotificationsTableViewCell: UITableViewCell {
     
     //MARK: Properties
 
+    @IBOutlet weak var forwardIcon: UIImageView!
+    @IBOutlet weak var rotationIcon: UIImageView!
     @IBOutlet weak var NotificationsText: UILabel!
     @IBOutlet var NotificationImageView: UIImageView!
     @IBOutlet var NotificationsDate: UILabel!
+    @IBOutlet weak var unreadIcon: UIImageView!
 
     override func awakeFromNib() {
         super.awakeFromNib()

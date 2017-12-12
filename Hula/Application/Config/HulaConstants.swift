@@ -18,9 +18,26 @@ struct HulaConstants {
     static let product_max_size = 800.0
     static let product_image_thumb_size:CGSize = CGSize(width: product_max_size, height: product_max_size)
     
+    static let courtesyTime: Double = 72.0 // hours between trades
+    
     // Server API Links
     static let apiURL: String = "https://api.hula.trading/v1/"
     static let staticServerURL: String = "https://hula.trading"
+    static let noProductThumb: String = "https://hula.trading/files/user/nope_hula.jpg"
+    static let transparentImg: String = "https://hula.trading/img/transparent_hula.png"
+    
+    // TRADE STATUSES
+    static let pending_status:String = "pending"
+    static let sent_status:String = "offer_sent"
+    static let end_status:String = "ended"
+    static let cancel_status:String = "closed"
+    static let review_status:String = "review"
+    
+    
+    // FONTS
+    static let light_font:String = "HelveticaNeue-Light"
+    static let regular_font:String = "HelveticaNeue-Medium"
+    static let bold_font:String = "HelveticaNeue-Bold"
     
     // local storage
     static let userFile: String = "UserData"

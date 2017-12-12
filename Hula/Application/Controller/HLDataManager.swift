@@ -22,13 +22,23 @@ class HLDataManager: NSObject {
     var newProduct: HulaProduct!
     var arrCategories : NSMutableArray!
     var arrTrades : [NSDictionary]! = []
+    var arrCurrentTrades : [NSDictionary]! = []
+    var arrPastTrades : [NSDictionary]! = []
     var arrNotifications : NSMutableArray!
     var uploadMode: Bool!
+    var onboardingTutorials: NSMutableDictionary!
+    var tradeMode:String = "current"
+    var numNotificationsPending: Int = 0
+    var lastServerMessage:String = ""
+    var isLoadingNotifications:Bool = false
+    var isInSwapVC : Bool = false
+    var onlyLandscapeView : Bool = false
     
     let categoriesLoaded = Notification.Name("categoriesLoaded")
     let loginRecieved = Notification.Name("loginRecieved")
     let fbLoginRecieved = Notification.Name("fbLoginRecieved")
     let signupRecieved = Notification.Name("signupRecieved")
+    let notificationsRecieved = Notification.Name("notificationsRecieved")
     
     class var sharedInstance: HLDataManager {
         struct Static {
@@ -43,11 +53,15 @@ class HLDataManager: NSObject {
         uploadMode = false
         currentUser = HulaUser.init()
         newProduct = HulaProduct.init()
+        numNotificationsPending = 0
         
+        isInSwapVC = false
         
         arrCategories = []
         arrNotifications = []
         arrTrades = []
+        arrCurrentTrades = []
+        arrPastTrades = []
         getCategories()
 //        arrCategories = [["icon" : "icon_cat_service" , "name" : "SERVICES"],
 //                         ["icon" : "icon_cat_cars" , "name" : "CARS, BIKES & AUTO PARTS"],
@@ -93,11 +107,25 @@ class HLDataManager: NSObject {
         httpGet(urlstr: queryURL, taskCallback: { (ok, json) in
             //print(ok)
             if (ok){
-                self.arrTrades=[];
-                if let array = json as? [Any] {
+                self.arrTrades = [];
+                self.arrCurrentTrades = [];
+                self.arrPastTrades = []
+                if let array = json as? [NSDictionary] {
                     for trade in array {
                         // access all objects in array
-                        self.arrTrades.append(trade as! NSDictionary)
+                        if let st = trade.object(forKey: "status") as? String{
+                            //print(st)
+                            if st != HulaConstants.end_status && st != HulaConstants.cancel_status {
+                                if st != HulaConstants.pending_status || trade.object(forKey: "turn_user_id") as! String == HulaUser.sharedInstance.userId {
+                                    self.arrCurrentTrades.append(trade)
+                                }
+                            } else {
+                                if st == HulaConstants.end_status {
+                                    self.arrPastTrades.append(trade)
+                                }
+                            }
+                        }
+                        self.arrTrades.append(trade)
                     }
                 }
                 taskCallback(true)
@@ -105,6 +133,14 @@ class HLDataManager: NSObject {
                 taskCallback(false)
             }
         })
+    }
+    
+    func ga(_ page: String){
+        guard let tracker = GAI.sharedInstance().defaultTracker else { return }
+        tracker.set(kGAIScreenName, value: page)
+        
+        guard let builder = GAIDictionaryBuilder.createScreenView() else { return }
+        tracker.send(builder.build() as [NSObject : AnyObject])
     }
     
     func loginUser(email:String, pass:String) {
@@ -137,7 +173,7 @@ class HLDataManager: NSObject {
                     user.token = ""
                     loginSuccess = "Incorrect login. Please try again.";
                 }
-                
+                self.lastServerMessage = loginSuccess
                 NotificationCenter.default.post(name: self.loginRecieved, object: loginSuccess)
             }
         })
@@ -152,15 +188,24 @@ class HLDataManager: NSObject {
             //print("done")
             //print(ok)
             //print(json!)
+            self.lastServerMessage = "Facebook login error"
             if (ok){
                 let user = HulaUser.sharedInstance
                 if let dictionary = json as? [String: Any] {
                     if (dictionary["token"] as? String) != nil {
-                        // access individual value in dictionary
-                        self.updateUserFromDict(dict: dictionary as NSDictionary)
-                        //print(token)
+                        
+                        if let us = dictionary["allUser"] as? NSDictionary {
+                            HulaUser.sharedInstance.logout();
+                            //print(us)
+                            // access individual value in dictionary
+                            
+                            self.updateUserFromDict(dict: dictionary as NSDictionary)
+                            self.updateUserFromDict(dict: us as NSDictionary)
+                            //print(token)
+                            self.writeUserData()
+                        }
                         loginSuccess = true;
-                        self.writeUserData()
+                        self.lastServerMessage = "ok"
                     }
                 } else {
                     user.token = ""
@@ -174,13 +219,64 @@ class HLDataManager: NSObject {
 
     
     func logout() {
-        var user = HulaUser.sharedInstance
-        user.token = ""
-        user.userId = ""
+        //var user = HulaUser.sharedInstance
+        HulaUser.sharedInstance.token = ""
+        HulaUser.sharedInstance.userId = ""
         
-        user = HulaUser.init()
-        user.logout();
+        HulaUser.sharedInstance.logout();
         self.writeUserData()
+        
+        
+    }
+    
+    func amITradingWith(_ user_id: String) -> Bool{
+        for tr in arrCurrentTrades{
+            if let trade = tr as? [String:Any] {
+                //print(trade["owner_id"] as! String)
+                if trade["owner_id"] as! String == user_id {
+                    return true
+                }
+                if trade["other_id"] as! String == user_id {
+                    return true
+                }
+            }
+        }
+        return false
+    }
+    
+    func getTradeWith(_ user_id: String) -> String{
+        
+        for tr in arrCurrentTrades{
+            if let trade = tr as? [String:Any] {
+                //print(trade["owner_id"] as! String)
+                if trade["owner_id"] as! String == user_id {
+                    return trade["_id"] as! String
+                }
+                if trade["other_id"] as! String == user_id {
+                    return trade["_id"] as! String
+                }
+            }
+        }
+        return ""
+    }
+    func amIOfferedToTradeWith(_ user_id: String) -> Bool{
+        for tr in arrCurrentTrades{
+            if let trade = tr as? [String:Any] {
+                let numBids = (trade["bids"] as! [Any]).count
+                //print(numBids)
+                if trade["other_id"] as! String == user_id && (trade["status"] as! String == HulaConstants.pending_status || numBids <= 2)  {
+                    return true
+                }
+            }
+        }
+        return false
+    }
+    
+    func myRoomsFull() -> Bool{
+        if (arrCurrentTrades.count >= HulaUser.sharedInstance.maxTrades){
+            return true
+        }
+        return false
     }
     
     func signupUser(email:String, nick: String, pass:String) {
@@ -197,14 +293,24 @@ class HLDataManager: NSObject {
                 let user = HulaUser.sharedInstance
                 if let dictionary = json as? [String: Any] {
                     // access individual value in dictionary
-                    self.updateUserFromDict(dict: dictionary as NSDictionary)
-                    //print(token)
-                    signupSuccess = true;
-                    self.writeUserData()
+                    if let token = dictionary["token"] as? String {
+                        if (token != ""){
+                            self.updateUserFromDict(dict: dictionary as NSDictionary)
+                            //print(token)
+                            signupSuccess = true;
+                            self.writeUserData()
+                            self.lastServerMessage = "ok"
+                        } else {
+                            
+                            self.lastServerMessage = "User email already exists! Please use the login form."
+                            
+                        }
+                        
+                    }
                 } else {
                     user.token = ""
+                    self.lastServerMessage = "Server response unexpected"
                 }
-                
                 NotificationCenter.default.post(name: self.signupRecieved, object: signupSuccess)
             }
         })
@@ -212,7 +318,6 @@ class HLDataManager: NSObject {
     
     
     func getUserProfile(userId:String, taskCallback: @escaping (HulaUser, NSArray) -> ()) {
-        
         //print("Getting user info...")
         let queryURL = HulaConstants.apiURL + "users/" + userId
         //print(queryURL)
@@ -221,54 +326,10 @@ class HLDataManager: NSObject {
                 DispatchQueue.main.async {
                     if let dictionary = json as? [String: Any] {
                         let userReturned = HulaUser()
+                        //print("----------- User loaded")
                         //print(dictionary)
-                        if let user = dictionary["user"] as? [String: Any] {
-                            if (user["name"] as? String) != nil {
-                                userReturned.userName = user["name"] as? String
-                            }
-                            if (user["nick"] as? String) != nil {
-                                userReturned.userNick = user["nick"] as? String
-                            }
-                            if (user["bio"] as? String) != nil {
-                                userReturned.userBio = user["bio"] as? String
-                            }
-                            if (user["email"] as? String) != nil {
-                                userReturned.userEmail = user["email"] as? String
-                            }
-                            if (user["image"] as? String) != nil {
-                                userReturned.userPhotoURL = user["image"] as? String
-                            }
-                            
-                            if (user["location_name"] as? String) != nil {
-                                userReturned.userLocationName = user["location_name"] as? String
-                            }
-                            
-                            if let loc = user["location"] as? [CGFloat] {
-                                let lat = loc[0]
-                                let lon = loc[1]
-                                userReturned.location = CLLocation(latitude:CLLocationDegrees(lat), longitude:CLLocationDegrees(lon));
-                            }
-                            
-                            if let fbt = (user["fb_token"] as? String) {
-                                if (fbt != ""){
-                                    userReturned.fbToken = fbt
-                                }
-                            }
-                            if let lit = (user["li_token"] as? String) {
-                                if (lit != ""){
-                                    userReturned.liToken = user["li_token"] as? String
-                                }
-                            }
-                            if let twt = (user["tw_token"] as? String){
-                                if (twt != ""){
-                                    userReturned.twToken = user["tw_token"] as? String
-                                }
-                            }
-                            if let uStatus = (user["status"] as? String) {
-                                if (uStatus == "verified"){
-                                    userReturned.status = user["status"] as? String
-                                }
-                            }
+                        if let user = dictionary["user"] as? NSDictionary {
+                            userReturned.populate(with: user)
                         }
                         var arrProducts = NSArray()
                         if let dpr = dictionary["products"] as? NSArray {
@@ -292,11 +353,10 @@ class HLDataManager: NSObject {
         
         let user = HulaUser.sharedInstance
         //print(user.token)
-        if (user.token.characters.count>10){
+        if (user.token.count>10){
             request.setValue(user.token, forHTTPHeaderField: "x-access-token")
         }
         request.httpMethod = "GET"
-        //print(request)
         let task = URLSession.shared.dataTask(with: request) { data, response, error in
             guard error == nil else {
                 print(error!)
@@ -308,7 +368,9 @@ class HLDataManager: NSObject {
                 taskCallback(false, nil)
                 return
             }
-            //print(data)
+            //print(request)
+            //print(response)
+            //print(data.count)
             let json = try! JSONSerialization.jsonObject(with: data, options: [])
             taskCallback(true, json as AnyObject?)
         }
@@ -327,7 +389,7 @@ class HLDataManager: NSObject {
         request.addValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Content-Type") //Optional
         request.httpBody = postString.data(using: .utf8)
         let user = HulaUser.sharedInstance
-        if (user.token.characters.count>10){
+        if (user.token.count>10){
             request.addValue(user.token, forHTTPHeaderField: "x-access-token")
         }
         //print(request.httpBody!)
@@ -363,7 +425,7 @@ class HLDataManager: NSObject {
             request.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
             
             let user = HulaUser.sharedInstance
-            if (user.token.characters.count>10){
+            if (user.token.count>10){
                 request.setValue(user.token, forHTTPHeaderField: "x-access-token")
             }
             let body = createBody(parameters: ["position": "\(itemPosition)"],
@@ -394,10 +456,56 @@ class HLDataManager: NSObject {
             task.resume()
             
         }
-        
-        
-        
     }
+    
+    func uploadVideo(_ videoPath: String, productId:String, tradeId:String, taskCallback: @escaping (Bool, Any?) -> ()){
+        let videoData = NSData(contentsOfFile: videoPath)
+        
+        if videoData != nil{
+            let queryURL = HulaConstants.apiURL + "upload/video"
+            var request = URLRequest(url: URL(string:queryURL)!)
+            let session:URLSession = URLSession.shared
+            
+            request.httpMethod = "POST"
+            
+            
+            let boundary = "Boundary-\(UUID().uuidString)"
+            request.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
+            
+            let user = HulaUser.sharedInstance
+            if (user.token.count>10){
+                request.setValue(user.token, forHTTPHeaderField: "x-access-token")
+            }
+            let body = createBody(parameters: ["product_id": "\(productId)", "trade_id": "\(tradeId)"],
+                                  boundary: boundary,
+                                  data: videoData! as Data,
+                                  mimeType: "video/mp4",
+                                  filename: "video.mp4")
+            
+            
+            request.httpBody = body as Data
+            
+            
+            let task = session.dataTask(with: request) { data, response, error in
+                guard let data = data, error == nil else {                                                 // check for fundamental networking error
+                    print(error!)
+                    return
+                }
+                
+                if let httpStatus = response as? HTTPURLResponse, httpStatus.statusCode != 200 {           // check for http errors
+                    print("statusCode should be 200, but is \(httpStatus.statusCode)")
+                    print(response ?? "No response")
+                } else {
+                    
+                    let json = try! JSONSerialization.jsonObject(with: data, options: [])
+                    taskCallback(true, json as AnyObject?)
+                }
+            }
+            task.resume()
+            
+        }
+    }
+    
     func createBody(parameters: [String: String],
                     boundary: String,
                     data: Data,
@@ -439,12 +547,15 @@ class HLDataManager: NSObject {
         dict.setObject(user.userNick, forKey: "userNick" as NSCopying)
         dict.setObject(user.userName, forKey: "userName" as NSCopying)
         dict.setObject(user.userEmail, forKey: "userEmail" as NSCopying)
+        dict.setObject(user.maxTrades, forKey: "max_trades" as NSCopying)
         dict.setObject(user.userLocationName, forKey: "userLocationName" as NSCopying)
+        dict.setObject(self.onboardingTutorials, forKey: "onboardingTutorials" as NSCopying)
         dict.setObject([CGFloat(user.location.coordinate.latitude), CGFloat(user.location.coordinate.longitude)] as [CGFloat], forKey: "userLocation" as NSCopying)
         dict.setObject(user.userPhotoURL, forKey: "userPhotoURL" as NSCopying)
         dict.setObject(user.userBio, forKey: "userBio" as NSCopying)
+        dict.setObject(user.numProducts, forKey: "numProducts" as NSCopying)
+        
         //...
-        //writing to GameData.plist
         dict.write(toFile: path, atomically: false)
         //let resultDictionary = NSMutableDictionary(contentsOfFile: path)
         //print("Saved UserData.plist file is --> \(String(describing: resultDictionary?.description))")
@@ -506,21 +617,29 @@ class HLDataManager: NSObject {
             //print(dict)
             
             updateUserFromDict(dict: dict)
-            
+            if let tmp = dict.object(forKey: "onboardingTutorials") as? NSDictionary {
+                let tmpMutable:NSMutableDictionary = NSMutableDictionary(dictionary: tmp)
+                self.onboardingTutorials = tmpMutable
+            } else {
+                self.onboardingTutorials = ["XInitializerItem": "DoNotEverChangeMe"]
+            }
             
             self.loadUserNotifications()
-        }
-        else
-        {
+        } else {
             print("WARNING: Couldn't create dictionary from UserData.plist! Default values will be used!")
         }
-        
+        //self.onboardingTutorials = ["XInitializerItem": "DoNotEverChangeMe"]
+        //print (self.onboardingTutorials)
     }//eom
     
     func updateUserFromDict(dict: NSDictionary){
         let user = HulaUser.sharedInstance
-        user.token = dict.object(forKey: "token")! as! String
-        user.userId = dict.object(forKey: "userId")! as! String
+        if dict.object(forKey: "token") as? String != nil {
+            user.token = dict.object(forKey: "token")! as! String
+        }
+        if dict.object(forKey: "userId") as? String != nil {
+            user.userId = dict.object(forKey: "userId")! as! String
+        }
         if dict.object(forKey: "userNick") as? String != nil {
             user.userNick = dict.object(forKey: "userNick")! as! String
         }
@@ -557,25 +676,60 @@ class HLDataManager: NSObject {
         if dict.object(forKey: "location_name") as? String != nil {
             user.userLocationName = dict.object(forKey: "location_name")! as! String
         }
+        if dict.object(forKey: "max_trades") as? Int != nil {
+            user.maxTrades = dict.object(forKey: "max_trades")! as! Int
+        }
         if let loc = dict.object(forKey: "userLocation") as? [CGFloat] {
             user.location = CLLocation(latitude: CLLocationDegrees(loc[0]), longitude: CLLocationDegrees(loc[1]))
+        }
+        if let n = dict.object(forKey: "numProducts") as? Int {
+            user.numProducts = n
         }
     }
     
     func loadUserNotifications(){
         //print("loading notifications...")
-        let queryURL = HulaConstants.apiURL + "notifications"
-        httpGet(urlstr: queryURL, taskCallback: { (ok, json) in
-            //print(ok)
-            if (ok){
-                self.arrNotifications=[];
-                if let array = json as? [Any] {
-                    for not in array {
-                        // access all objects in array
-                        self.arrNotifications.add(not)
+        if HulaUser.sharedInstance.isUserLoggedIn() {
+            isLoadingNotifications = true
+            let queryURL = HulaConstants.apiURL + "notifications"
+            httpGet(urlstr: queryURL, taskCallback: { (ok, json) in
+                //print(ok)
+                var num_pending = 0
+                if (ok){
+                    self.arrNotifications = [];
+                    if let array = json as? [Any] {
+                        for not in array {
+                            // access all objects in array
+                            if let dict = not as? [String: Any]{
+                                if let status = dict["status"] as? String{
+                                    if (status != "deleted"){
+                                        self.arrNotifications.add(not)
+                                    }
+                                }
+                                if let isread = dict["is_read"] as? Int{
+                                    if isread == 0{
+                                        num_pending += 1
+                                    }
+                                }
+                            }
+                        }
+                        
+                    }
+                    DispatchQueue.main.async { // Correct
+                        HLDataManager.sharedInstance.numNotificationsPending = num_pending
+                        UIApplication.shared.applicationIconBadgeNumber = num_pending
+                        self.isLoadingNotifications = false
+                        
+                        NotificationCenter.default.post(name: self.notificationsRecieved, object: nil)
                     }
                 }
-            }
-        })
+            })
+        } else {
+            HLDataManager.sharedInstance.numNotificationsPending = 0
+            UIApplication.shared.applicationIconBadgeNumber = 0
+            self.isLoadingNotifications = false
+            self.arrNotifications = []
+            NotificationCenter.default.post(name: self.notificationsRecieved, object: nil)
+        }
     }
 }

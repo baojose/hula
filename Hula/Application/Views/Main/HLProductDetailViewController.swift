@@ -12,7 +12,6 @@ import MapKit
 class HLProductDetailViewController: BaseViewController, UIScrollViewDelegate, UITableViewDelegate, UITableViewDataSource {
     
     
-    @IBOutlet var titleLabel: UILabel!
     @IBOutlet var mainScrollView: UIScrollView!
     @IBOutlet var productMainDetailView: UIView!
     @IBOutlet var sellerView: UIView!
@@ -23,6 +22,7 @@ class HLProductDetailViewController: BaseViewController, UIScrollViewDelegate, U
     @IBOutlet weak var productCategory: UILabel!
     @IBOutlet weak var productCondition: UILabel!
     
+    @IBOutlet weak var tradeWithUserButton: UIButton!
     @IBOutlet weak var addToTradeViewContainer: UIView!
     @IBOutlet var productsScrollView: UIScrollView!
     @IBOutlet var productNameLabel: UILabel!
@@ -32,16 +32,19 @@ class HLProductDetailViewController: BaseViewController, UIScrollViewDelegate, U
     @IBOutlet var sellerImageView: UIImageView!
     @IBOutlet var sellerNameLabel: UILabel!
     @IBOutlet var sellerFeedbackLabel: UILabel!
-    @IBOutlet var sellerVerifiedMethodsView: UIView!
 
     @IBOutlet var sellerLabel: UILabel!
     @IBOutlet var userInventoryLabel: UILabel!
+    
     
     var productData: HulaProduct!
     var currentProduct: HulaProduct!
     var sellerProducts: NSArray! = []
     var sellerFeedback: NSArray! = []
     var sellerUser: HulaUser!
+    
+    
+    var initialTradeFrame: CGRect!
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -50,10 +53,14 @@ class HLProductDetailViewController: BaseViewController, UIScrollViewDelegate, U
     }
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-    }
-    override func viewDidAppear(_ animated: Bool) {
+        //self.addToTradeViewContainer.frame.size.height = 60
         super.viewWillAppear(animated)
+        UIView.animate(withDuration: 0.3) {
+            self.addToTradeViewContainer.frame = CGRect(x: 0, y: self.view.frame.height - 120, width: self.view.frame.width, height: 60)
+        }
+        HLDataManager.sharedInstance.ga("discovery_product")
     }
+    
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
     }
@@ -70,12 +77,19 @@ class HLProductDetailViewController: BaseViewController, UIScrollViewDelegate, U
         newFrame.size.height = CGFloat(sellerProducts.count) * 129.0;
         productTableView.frame = newFrame
         
+        
+        tradeWithUserButton.layer.cornerRadius = 19
+        tradeWithUserButton.layer.borderColor = UIColor.white.cgColor
+        tradeWithUserButton.layer.borderWidth = 1.0
+        
+        
         // product details
         productNameLabel.text = currentProduct.productName
         productDescriptionLabel.text = currentProduct.productDescription
         productCategory.text = currentProduct.productCategory
-        productCondition.text = currentProduct.productCondition
-        productDistance.text = commonUtils.getDistanceFrom(loc: currentProduct.productLocation)
+        productCondition.text = currentProduct.productCondition.capitalized
+        productDistance.text = commonUtils.getDistanceFrom(loc: sellerUser.location)
+
         
         // item height and position reset
         let h = commonUtils.heightString(width: productDescriptionLabel.frame.width, font: productDescriptionLabel.font! , string: productDescriptionLabel.text!) + 30
@@ -108,11 +122,19 @@ class HLProductDetailViewController: BaseViewController, UIScrollViewDelegate, U
         HLDataManager.sharedInstance.getUserProfile(userId: currentProduct.productOwner, taskCallback: {(user, prods) in
             self.sellerUser = user
             self.sellerNameLabel.text = user.userNick;
-            self.sellerFeedbackLabel.text = user.userLocationName;
+            if HLDataManager.sharedInstance.amITradingWith(user.userId){
+                self.tradeWithUserButton.setTitle("Currently trading with \(user.userNick!)", for: .normal)
+            } else {
+                self.tradeWithUserButton.setTitle("Trade with \(user.userNick!)", for: .normal)
+            }
+            self.sellerFeedbackLabel.text = user.getFeedback();
             self.sellerProducts = prods
             var newFrame: CGRect! = self.productTableView.frame
             newFrame.size.height = (CGFloat(self.sellerProducts.count) * 129.0);
             //print(newFrame.size.height)
+            print(self.sellerUser.location)
+            self.productDistance.text = self.commonUtils.getDistanceFrom(loc: self.sellerUser.location)
+            
             self.productTableView.frame = newFrame
             self.mainScrollView.contentSize = CGSize(width: 0, height: self.productTableView.frame.origin.y + self.productTableView.frame.size.height + 100)
             self.productTableView.reloadData()
@@ -141,9 +163,34 @@ class HLProductDetailViewController: BaseViewController, UIScrollViewDelegate, U
         
             cell.productName.text = pr.object(forKey: "title") as? String
             
+            
+            
             if let im_ur = pr.object(forKey: "image_url") as? String {
                 let thumb = commonUtils.getThumbFor(url: im_ur)
                 cell.productImage.loadImageFromURL(urlString:thumb)
+            }
+            
+            if let st = pr.object(forKey: "status") as? String{
+                if st == "traded"{
+                    cell.tradedAlertImage.isHidden = false
+                    cell.tradedLabel.isHidden = false
+                    cell.goArrow.isHidden = true
+                    cell.isUserInteractionEnabled = false
+                } else {
+                    cell.tradedAlertImage.isHidden = true
+                    cell.tradedLabel.isHidden = true
+                    cell.goArrow.isHidden = false
+                    cell.isUserInteractionEnabled = true
+                    
+                    
+                    if let prid = pr.object(forKey: "_id") as? String {
+                        if (prid == productData.productId){
+                            cell.goArrow.isHidden = true
+                            cell.isUserInteractionEnabled = false
+                        }
+                    }
+                    
+                }
             }
         }
         return cell
@@ -157,9 +204,11 @@ class HLProductDetailViewController: BaseViewController, UIScrollViewDelegate, U
         let product = sellerProducts[indexPath.row] as! NSDictionary
         let hproduct = HulaProduct();
         hproduct.populate(with: product)
-        viewController.productData = hproduct
+        if hproduct.productStatus != "traded" {
+            viewController.productData = hproduct
         
-        self.navigationController?.pushViewController(viewController, animated: true)
+            self.navigationController?.pushViewController(viewController, animated: true)
+        }
     }
     
     
@@ -182,7 +231,7 @@ class HLProductDetailViewController: BaseViewController, UIScrollViewDelegate, U
             //print(img_arr)
             for i in 0 ..< img_arr.count {
                 let img_url = img_arr[i]
-                if (img_url.characters.count > 0){
+                if (img_url.count > 0){
                     let imageFrame = CGRect(x: (CGFloat)(i) * productsScrollView.frame.size.width, y: 0, width: productsScrollView.frame.size.width, height: productsScrollView.frame.size.height)
                     let imgView: UIImageView! = UIImageView.init(frame: imageFrame)
                     //commonUtils.loadImageOnView(imageView: imgView, withURL: img_url)
@@ -218,29 +267,93 @@ class HLProductDetailViewController: BaseViewController, UIScrollViewDelegate, U
         self.navigationController?.pushViewController(viewController, animated: true)
     }
     
-    @IBAction func addToTradeAction(_ sender: Any) {
-        if let productId = currentProduct.productId {
-            //print(productId)
-            let otherId = currentProduct.productOwner
-            if (HulaUser.sharedInstance.userId.characters.count>0){
-                // user is loggedin
-                let queryURL = HulaConstants.apiURL + "trades/"
-                let dataString:String = "product_id=\(productId)&other_id=\(otherId!)"
-                HLDataManager.sharedInstance.httpPost(urlstr: queryURL, postString: dataString, isPut: false, taskCallback: { (ok, json) in
-                    if (ok){
-                        // show barter screen
+    @IBAction func addToTradeAction(_ sender: UIButton) {
+        let viewController = self.storyboard?.instantiateViewController(withIdentifier: "alertView") as! AlertViewController
+        viewController.delegate = self
+        if (HulaUser.sharedInstance.numProducts == 0){
+            viewController.isCancelVisible = true
+            viewController.cancelButtonText = "Add stuff"
+            viewController.trigger = "noproduct"
+            viewController.message = "Sorry! If you want to trade, you have to upload your stuff."
+        } else {
+            if HLDataManager.sharedInstance.myRoomsFull() {
+                viewController.isCancelVisible = false
+                viewController.trigger = "fullrooms"
+                viewController.message = "Sorry! your Trade Rooms are busy. Turn your phone, get in the Trade Room and request a new one."
+            } else {
+                viewController.isCancelVisible = true
+                viewController.okButtonText = "Accept"
+                viewController.trigger = ""
+                viewController.message = "You're about to start a trade. One room will be reserved for this negotiation until it's finished."
+            }
+        }
+        
+        if let btTitle = sender.titleLabel?.text {
+            if btTitle.range(of:"Currently trading") != nil {
+                if let pnc = self.navigationController?.navigationController as? HulaPortraitNavigationController {
+                    pnc.openSwapView()
+                    return
+                }
+            }
+        }
+        
+        self.present(viewController, animated: true)
+    }
+    
+    
+   /*
+    func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
+        if productsScrollView == scrollView {
+            let page: Int = Int(round(productsScrollView.contentOffset.x / productsScrollView.frame.width))
+            pageControl.currentPage = page
+        }
+    }
+    */
+}
+
+extension HLProductDetailViewController: AlertDelegate{
+    func alertResponded(response: String, trigger: String) {
+        if trigger == "noproduct" && response == "ok" {
+            self.tabBarController?.selectedIndex = 2
+            return
+        }
+        if trigger == "fullrooms" {
+            return
+        }
+        if response == "ok" {
+            if (currentProduct.productOwner != HulaUser.sharedInstance.userId) {
+                
+                if let productId = currentProduct.productId {
+                    //print(productId)
+                    let otherId = currentProduct.productOwner
+                    if (HulaUser.sharedInstance.userId.count>0){
+                        // user is loggedin
                         DispatchQueue.main.async {
-                            let storyboard = UIStoryboard(name: "Main", bundle: nil)
-                            let myModalViewController = storyboard.instantiateViewController(withIdentifier: "swappView")
-                            myModalViewController.modalPresentationStyle = UIModalPresentationStyle.fullScreen
-                            myModalViewController.modalTransitionStyle = UIModalTransitionStyle.crossDissolve
-                            self.present(myModalViewController, animated: true, completion: nil)
+                            UIView.animate(withDuration: 0.5, animations: {
+                                self.addToTradeViewContainer.frame.size.height = self.view.frame.height
+                                self.addToTradeViewContainer.frame.origin.y = 0
+                                //print(self.addToTradeViewContainer.frame)
+                                //self.addToTradeViewContainer.layoutIfNeeded()
+                            })
                         }
-                    } else {
-                        // connection error
-                        print("Connection error")
+                        let queryURL = HulaConstants.apiURL + "trades/"
+                        let dataString:String = "product_id=\(productId)&other_id=\(otherId!)"
+                        HLDataManager.sharedInstance.httpPost(urlstr: queryURL, postString: dataString, isPut: false, taskCallback: { (ok, json) in
+                            if (ok){
+                                // show barter screen
+                                DispatchQueue.main.async {
+                                    
+                                    if let pnc = self.navigationController?.navigationController as? HulaPortraitNavigationController {
+                                        pnc.openSwapView()
+                                    }
+                                }
+                            } else {
+                                // connection error
+                                print("Connection error")
+                            }
+                        })
                     }
-                })
+                }
             }
         }
     }

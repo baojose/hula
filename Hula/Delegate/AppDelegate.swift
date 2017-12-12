@@ -18,6 +18,7 @@ import Fabric
 import TwitterKit
 import Crashlytics
 import LinkedinSwift
+import BRYXBanner
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
@@ -28,11 +29,22 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
-
+        
+        
+        
+        guard let gai = GAI.sharedInstance() else {
+            assert(false, "Google Analytics not configured correctly")
+        }
+        gai.tracker(withTrackingId: "UA-110186272-2")
+        // Optional: automatically report uncaught exceptions.
+        gai.trackUncaughtExceptions = true
+        
+        // Optional: set Logger to VERBOSE for debug information.
+        // Remove before app release.
+        //gai.logger.logLevel = .verbose;
         
         Fabric.with([Twitter.self, Crashlytics.self])
 
-        
         
         return FBSDKApplicationDelegate.sharedInstance().application(application, didFinishLaunchingWithOptions: launchOptions)
     }
@@ -73,10 +85,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
 
     func application(_ app: UIApplication, open url: URL, options: [UIApplicationOpenURLOptionsKey : Any] = [:]) -> Bool {
-        if #available(iOS 9.0, *) {
-            let isHandled = FBSDKApplicationDelegate.sharedInstance().application(app, open: url, sourceApplication: options[.sourceApplication] as! String!, annotation: options[.annotation])
-            return isHandled
-        }
         
         if LinkedinSwiftHelper.shouldHandle(url) {
             if #available(iOS 9.0, *) {
@@ -84,9 +92,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             }
         }
         
+        if #available(iOS 9.0, *) {
+            let isHandled = FBSDKApplicationDelegate.sharedInstance().application(app, open: url, sourceApplication: options[.sourceApplication] as! String!, annotation: options[.annotation])
+            return isHandled
+        }
         return false
     }
-    
     func registerForPushNotifications() {
         if #available(iOS 10.0, *) {
             UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge]) {
@@ -106,8 +117,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         if #available(iOS 10.0, *) {
             UNUserNotificationCenter.current().getNotificationSettings { (settings) in
                 print("Notification settings: \(settings)")
-                guard settings.authorizationStatus == .authorized else { return }
-                UIApplication.shared.registerForRemoteNotifications()
+                DispatchQueue.main.async {
+                    guard settings.authorizationStatus == .authorized else { return }
+                    UIApplication.shared.registerForRemoteNotifications()
+                }
             }
         } else {
             // Fallback on earlier versions
@@ -130,6 +143,35 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     func application(_ application: UIApplication,
                      didFailToRegisterForRemoteNotificationsWithError error: Error) {
         print("Failed to register: \(error)")
+    }
+    
+    
+    func application(_ application: UIApplication, didReceiveRemoteNotification userInfo: [AnyHashable : Any]) {
+        //print(userInfo)
+        
+        
+        if let aps = userInfo["aps"] as? NSDictionary{
+            //print("aps")
+            //print(aps)
+            if let text = aps.object(forKey: "alert") as? String{
+                let banner = Banner(title: "Notification", subtitle: text, backgroundColor: HulaConstants.appMainColor)
+                banner.dismissesOnTap = true
+                banner.didTapBlock = {
+                    //print("tapped")
+                    let storyboard = UIStoryboard(name: "Main", bundle: nil)
+                    let myModalViewController = storyboard.instantiateViewController(withIdentifier: "swappView")
+                    myModalViewController.modalPresentationStyle = UIModalPresentationStyle.fullScreen
+                    myModalViewController.modalTransitionStyle = UIModalTransitionStyle.coverVertical
+                    self.window?.rootViewController?.present(myModalViewController, animated: true, completion: nil)
+                    
+                }
+                banner.show(duration: 5.0)
+                HLDataManager.sharedInstance.loadUserNotifications()
+                
+            }
+        } else {
+            print("error")
+        }
     }
 }
 

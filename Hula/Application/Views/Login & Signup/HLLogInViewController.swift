@@ -15,7 +15,8 @@ class HLLogInViewController: UserBaseViewController, UITextFieldDelegate {
     @IBOutlet weak var greenBackgroundImage: UIImageView!
     @IBOutlet weak var loginErrorView: UIView!
     @IBOutlet weak var inputElements: UIView!
-
+    @IBOutlet weak var forgotPasswordBtn: UIButton!
+    
     @IBOutlet weak var errorMessageLabel: UILabel!
     
     override func viewDidLoad() {
@@ -33,9 +34,11 @@ class HLLogInViewController: UserBaseViewController, UITextFieldDelegate {
     override func viewDidAppear(_ animated: Bool) {
         nextButton.setup()
         nextButton.stopAnimation()
+        HLDataManager.sharedInstance.ga("login")
     }
     @IBAction func closeIdentificationVC(_ sender: Any) {
-        self.closeIdentification()
+        //self.closeIdentification()
+        _ = self.navigationController?.popViewController(animated: true)
     }
     
     @IBAction func emailValueChanged(_ sender: Any) {
@@ -85,7 +88,7 @@ class HLLogInViewController: UserBaseViewController, UITextFieldDelegate {
     func checkUserInput(){
         let email_str = emailField.text!
         let pass_str = passwordField.text!
-        if ((pass_str.characters.count>4) && (email_str.characters.count>4)){
+        if ((pass_str.count>4) && (email_str.count>4)){
             nextButton.startAnimation()
         } else {
             nextButton.stopAnimation()
@@ -108,6 +111,7 @@ class HLLogInViewController: UserBaseViewController, UITextFieldDelegate {
                 let nextViewController = storyBoard.instantiateViewController(withIdentifier: "welcome") as! HLWelcomeViewController
                 //self.present(nextViewController, animated:true, completion:nil)
                 self.navigationController?.pushViewController(nextViewController, animated: true)
+                self.view.setNeedsDisplay()
             }
             
         } else {
@@ -117,10 +121,11 @@ class HLLogInViewController: UserBaseViewController, UITextFieldDelegate {
                 UIView.animate(withDuration: 0.5, animations: {
                     self.loginErrorView.frame.origin.y = self.view.frame.height - self.loginErrorView.frame.height
                     self.greenBackgroundImage.alpha = 0
+                    self.forgotPasswordBtn.frame.origin.y = self.inputElements.frame.height - 40 - self.loginErrorView.frame.height
                 })
+                self.view.setNeedsDisplay()
             }
         }
-        self.view.setNeedsDisplay()
     }
     
     func dismissKeyboard(){

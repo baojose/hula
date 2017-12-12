@@ -25,14 +25,15 @@ class HLDashboardNormalViewFlowLayout: UICollectionViewFlowLayout {
      Sets up the layout for the collectionView. 1pt distance between each cell and 1pt distance between each row plus use a vertical layout
      */
     func setupLayout() {
-        minimumInteritemSpacing = 1
-        minimumLineSpacing = 1
+        minimumInteritemSpacing = 0
+        minimumLineSpacing = 0
         scrollDirection = .vertical
     }
     
-    /// here we define the width of each cell, creating a 2 column layout. In case you would create 3 columns, change the number 2 to 3
     func itemWidth() -> CGFloat {
-        return collectionView!.frame.width
+        let w = collectionView!.frame.width
+        let h = collectionView!.frame.height
+        return max(w, h) - 1
     }
     
     override var itemSize: CGSize {
@@ -43,13 +44,27 @@ class HLDashboardNormalViewFlowLayout: UICollectionViewFlowLayout {
             return CGSize(width: itemWidth(), height: itemHeight)
         }
     }
+ 
     /*
     override func targetContentOffset(forProposedContentOffset proposedContentOffset: CGPoint) -> CGPoint {
         return collectionView!.contentOffset
     }
  */
     
+    
+    override func prepare() {
+        self.scrollDirection = .vertical
+        self.minimumInteritemSpacing = 1
+        self.minimumLineSpacing = 1
+        self.sectionInset = UIEdgeInsets(top: 0, left: 0, bottom: self.minimumLineSpacing, right: 0)
+        let collectionViewWidth = self.collectionView?.bounds.size.width ?? 0
+        self.headerReferenceSize = CGSize(width: collectionViewWidth, height: 5)
+        
+    }
+ 
+    
     override func shouldInvalidateLayout(forBoundsChange newBounds: CGRect) -> Bool {
+        //print("shouldinvalidate \(newBounds)")
         return true
     }
     override func shouldInvalidateLayout(forPreferredLayoutAttributes preferredAttributes: UICollectionViewLayoutAttributes, withOriginalAttributes originalAttributes: UICollectionViewLayoutAttributes) -> Bool {

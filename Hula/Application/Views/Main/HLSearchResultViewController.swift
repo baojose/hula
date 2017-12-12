@@ -14,7 +14,7 @@ class HLSearchResultViewController: BaseViewController, UITableViewDataSource, U
     
     @IBOutlet weak var productsTableView: UITableView!
     @IBOutlet weak var productsResultsList: UIView!
-    @IBOutlet var noResultAlertView: UIView!
+    @IBOutlet weak var noResultAlertView: UIView!
     @IBOutlet weak var screenTitle: UILabel!
     var searchByCategory: Bool = false;
     var categoryToSearch: NSDictionary = [:]
@@ -35,6 +35,7 @@ class HLSearchResultViewController: BaseViewController, UITableViewDataSource, U
         self.view.addSubview(spinner)
         spinner.show(inView: self.view)
         
+        initView()
     }
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
@@ -45,13 +46,29 @@ class HLSearchResultViewController: BaseViewController, UITableViewDataSource, U
     }
     func initView(){
         noResultAlertView.isHidden = true
+        if self.searchByCategory {
+            var category_name = categoryToSearch.object(forKey: "name") as? String
+            if (category_name == nil){
+                category_name = "Category search"
+            }
+            screenTitle.text = category_name
+        } else {
+            screenTitle.text = keywordToSearch
+        }
     }
     
-    override func viewDidAppear(_ animated: Bool) {
+    override func viewWillAppear(_ animated: Bool) {
+        print("getting results...")
         getSearchResults()
+        if self.searchByCategory {
+            HLDataManager.sharedInstance.ga("discovery_category")
+        } else {
+            HLDataManager.sharedInstance.ga("discovery_search")
+        }
     }
     
     //#MARK: - TableViewDelegate
+    /*
     func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat{
         return 48.0
     }
@@ -76,6 +93,7 @@ class HLSearchResultViewController: BaseViewController, UITableViewDataSource, U
         
         return view
     }
+ */
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return filteredList.count
     }
@@ -87,6 +105,11 @@ class HLSearchResultViewController: BaseViewController, UITableViewDataSource, U
         //print(product)
         cell.productName.text = product.productName
         
+        if product.trading_count > 0 {
+            cell.isMultipleTrades.isHidden = false
+        } else {
+            cell.isMultipleTrades.isHidden = true
+        }
         let prod_thumb = commonUtils.getThumbFor(url: product.productImage)
         cell.productImage.loadImageFromURL(urlString: prod_thumb)
         let user_id = product.productOwner as String;
@@ -105,8 +128,14 @@ class HLSearchResultViewController: BaseViewController, UITableViewDataSource, U
             } else {
                 cell.productTradeRate.text = "-"
             }
+            
+            if let loc = user.object(forKey: "location") as? [Float]{
+                let userloc = CLLocation(latitude: Double( loc[0]), longitude:  Double(loc[1]) )
+                cell.productDistance.text = "(" + commonUtils.getDistanceFrom(loc: userloc) + ")"
+            } else {
+                cell.productDistance.text = "-"
+            }
         }
-        cell.productDistance.text = "(" + commonUtils.getDistanceFrom(loc: product.productLocation) + ")"
         
         commonUtils.circleImageView(cell.productOwnerImage)
         return cell
@@ -119,6 +148,29 @@ class HLSearchResultViewController: BaseViewController, UITableViewDataSource, U
         self.navigationController?.pushViewController(viewController, animated: true)
     }
     
+    private var finishedLoadingInitialTableCells = false
+    func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
+        var lastInitialDisplayableCell = false
+        //change flag as soon as last displayable cell is being loaded (which will mean table has initially loaded)
+        if filteredList.count > 0 && !finishedLoadingInitialTableCells {
+            if let indexPathsForVisibleRows = tableView.indexPathsForVisibleRows,
+                let lastIndexPath = indexPathsForVisibleRows.last, lastIndexPath.row == indexPath.row {
+                lastInitialDisplayableCell = true
+            }
+        }
+        if !finishedLoadingInitialTableCells {
+            if lastInitialDisplayableCell {
+                finishedLoadingInitialTableCells = true
+            }
+            //animates the cell as it is being displayed for the first time
+            cell.transform = CGAffineTransform(translationX: 0, y: tableView.rowHeight/2)
+            cell.alpha = 0
+            UIView.animate(withDuration: 0.5, delay: 0.05*Double(indexPath.row), options: [.curveEaseInOut], animations: {
+                cell.transform = CGAffineTransform(translationX: 0, y: 0)
+                cell.alpha = 1
+            }, completion: nil)
+        }
+    }
     
     
     
@@ -136,7 +188,7 @@ class HLSearchResultViewController: BaseViewController, UITableViewDataSource, U
             let encodedKw = keywordToSearch.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)
             queryURL = HulaConstants.apiURL + "products/search/" + encodedKw!
         }
-        //print(queryURL)
+        print(queryURL)
         HLDataManager.sharedInstance.httpGet(urlstr: queryURL, taskCallback: { (ok, json) in
             if (ok){
                 DispatchQueue.main.async {
@@ -163,6 +215,7 @@ class HLSearchResultViewController: BaseViewController, UITableViewDataSource, U
                 }
             } else {
                 // connection error
+                print("Connection error")
             }
         })
     }

@@ -27,6 +27,9 @@ class HLPictureSelectViewController: BaseViewController, UIImagePickerController
     var resultingImage: String = ""
     var backCam:Bool = true
     
+    var originalSettingsVC:HLSettingViewController?
+    var originalProfileVC:HLProfileViewController?
+    
     // vars related with Photo Albums
     var arrAlbumPhotos: NSMutableArray!
     var arrSelectedIndexs: NSMutableArray!
@@ -201,10 +204,10 @@ class HLPictureSelectViewController: BaseViewController, UIImagePickerController
     
     func uploadImage(_ image:UIImage) {
         //print("Getting user info...")
-        print("Uploading images...")
+        //print("Uploading images...")
         dataManager.uploadImage(image, itemPosition:10, taskCallback: { (ok, json) in
             if (ok){
-                print("Uploaded!")
+                //print("Uploaded!")
                 DispatchQueue.main.async {
                     if let dictionary = json as? [String: Any] {
                         print(dictionary)
@@ -214,7 +217,12 @@ class HLPictureSelectViewController: BaseViewController, UIImagePickerController
                                 print(pos)
                                 self.resultingImage = HulaConstants.staticServerURL + filePath
                                 HulaUser.sharedInstance.userPhotoURL = self.resultingImage
+                                
                                 HulaUser.sharedInstance.updateServerData()
+                                HLDataManager.sharedInstance.writeUserData()
+                                //print(self.originalSettingsVC)
+                                self.originalSettingsVC?.smallProfileImage.loadImageFromURL(urlString: HulaUser.sharedInstance.userPhotoURL)
+                                self.originalProfileVC?.profileImageView.loadImageFromURL(urlString: HulaUser.sharedInstance.userPhotoURL)
                                 self.dismissToPreviousPage(self.resultingImage)
                             }
                         }

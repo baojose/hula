@@ -16,6 +16,10 @@ class HLIdentificationViewController: UserBaseViewController {
         super.viewDidLoad()
         let loginRecieved = Notification.Name("fbLoginRecieved")
         NotificationCenter.default.addObserver(self, selector: #selector(self.loginDataRecieved), name: loginRecieved, object: nil)
+        
+        
+        let appDelegate = UIApplication.shared.delegate as! AppDelegate
+        appDelegate.allowRotation = false
     }
     
     override func didReceiveMemoryWarning() {
@@ -25,10 +29,11 @@ class HLIdentificationViewController: UserBaseViewController {
     override func viewDidAppear(_ animated: Bool) {
         
         let user = HulaUser.sharedInstance
-        if (user.token.characters.count > 10){
+        if (user.token.count > 10){
             // user not logged in
             self.closeIdentification()
         }
+        HLDataManager.sharedInstance.ga("identification")
     }
     
     @IBAction func facebookLoginAction(_ sender: Any) {

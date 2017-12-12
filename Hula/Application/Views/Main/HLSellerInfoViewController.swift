@@ -21,35 +21,119 @@ class HLSellerInfoViewController: BaseViewController, UITableViewDelegate, UITab
     
     @IBOutlet weak var sellerFeedbackLabel: UILabel!
     
+    @IBOutlet weak var tradeWithUserButton: UIButton!
     
+    @IBOutlet weak var fbIcon: UIImageView!
+    @IBOutlet weak var liIcon: UIImageView!
+    @IBOutlet weak var twIcon: UIImageView!
+    @IBOutlet weak var emIcon: UIImageView!
+    
+    @IBOutlet weak var addToTradeViewContainer: UIImageView!
+    
+    @IBOutlet weak var tradesStartedLabel: UILabel!
+    @IBOutlet weak var tradesEndedLabel: UILabel!
+    @IBOutlet weak var tradesClosedLabel: UILabel!
+    
+    @IBOutlet weak var sellerBioTextView: UITextView!
+    @IBOutlet weak var declineTradeBtn: UIButton!
+    @IBOutlet weak var acceptTradeBtn: UIButton!
+    
+    @IBOutlet weak var tradeButtonsHolder: UIView!
     var user = HulaUser();
     var userProducts: NSArray = []
     var userFeedback: NSArray = []
+    var initialTradeFrame: CGRect!
 
     override func viewDidLoad() {
         super.viewDidLoad()
         self.initData()
         self.initView()
+        self.initialTradeFrame = self.addToTradeViewContainer.frame
     }
 
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
     }
     
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        /*
+        UIView.animate(withDuration: 0.3) {
+            self.addToTradeViewContainer.frame = CGRect(x: 0, y: self.view.frame.height - 120, width: self.view.frame.width, height: 60)
+        }
+ */
+        HLDataManager.sharedInstance.ga("other_user_profile")
+    }
     func initData(){
+        
+        let thumb = CommonUtils.sharedInstance.getThumbFor(url: user.userPhotoURL)
+        profileImage.loadImageFromURL(urlString: thumb)
+        sellerNameLabel.text = user.userNick
+        self.declineTradeBtn.isHidden = true
+        self.acceptTradeBtn.isHidden = true
+        if HLDataManager.sharedInstance.amITradingWith(user.userId){
+            if HLDataManager.sharedInstance.amIOfferedToTradeWith(user.userId){
+                // first offer
+                self.tradeWithUserButton.isHidden = true
+                self.declineTradeBtn.isHidden = false
+                self.acceptTradeBtn.isHidden = false
+                
+                self.declineTradeBtn.layer.cornerRadius = 19
+                self.declineTradeBtn.layer.borderColor = UIColor.white.cgColor
+                self.declineTradeBtn.layer.borderWidth = 1.0
+                
+                self.acceptTradeBtn.layer.cornerRadius = 19
+                self.acceptTradeBtn.layer.borderColor = UIColor.white.cgColor
+                self.acceptTradeBtn.layer.borderWidth = 1.0
+            } else {
+                self.tradeWithUserButton.setTitle("Currently trading with \(user.userNick!)", for: .normal)
+            }
+        } else {
+            self.tradeWithUserButton.setTitle("Trade with \(user.userNick!)", for: .normal)
+        }
+        sellerLocationLabel.text = user.userLocationName
+        tradeWithUserButton.layer.cornerRadius = 19
+        tradeWithUserButton.layer.borderColor = UIColor.white.cgColor
+        tradeWithUserButton.layer.borderWidth = 1.0
+        
+        if (user.twToken.count>1){
+            twIcon.image = UIImage(named: "icon_twitter_on")
+        }
+        if (user.fbToken.count>1){
+            fbIcon.image = UIImage(named: "icon_facebook_on")
+        }
+        if (user.liToken.count>1){
+            liIcon.image = UIImage(named: "icon_linkedin_on")
+        }
+        if (user.status == "verified"){
+            emIcon.image = UIImage(named: "icon_mail_on")
+        }
+        if (user.userBio.count>1){
+            sellerBioTextView.text = user.userBio
+        } else {
+            sellerBioTextView.text = "..."
+        }
+        sellerFeedbackLabel.text = user.getFeedback()
+        
+        tradesStartedLabel.text = "\(Int(user.trades_started))"
+        tradesClosedLabel.text = "\(Int(user.trades_closed))"
+        tradesEndedLabel.text = "\(Int(user.trades_finished))"
+        
+        if user.userId == HulaUser.sharedInstance.userId {
+            self.tradeButtonsHolder.isHidden = true
+        }
     }
     func initView(){
         commonUtils.circleImageView(profileImage)
+        
         lblOtherItemInStock.attributedText = commonUtils.attributedStringWithTextSpacing("OTHER ITEMS IN STOCK", 2.33)
+        
         var newFrame: CGRect! = sellerProductTableView.frame
-        newFrame.size.height = CGFloat(userProducts.count) * 129 + 100;
+        newFrame.size.height = CGFloat(userProducts.count) * 129 + 200;
         sellerProductTableView.frame = newFrame
         let totalHeight = sellerProductTableView.frame.origin.y + sellerProductTableView.frame.size.height
         mainScrollView.contentSize = CGSize(width: 0, height: totalHeight)
         
-        profileImage.loadImageFromURL(urlString: user.userPhotoURL)
-        sellerNameLabel.text = user.userNick
-        sellerLocationLabel.text = user.userLocationName
         containerView.frame.size.height = totalHeight
         
     }
@@ -82,6 +166,109 @@ class HLSellerInfoViewController: BaseViewController, UITableViewDelegate, UITab
             hproduct.populate(with: product)
             viewController.productData = hproduct
             self.navigationController?.pushViewController(viewController, animated: true)
+        }
+    }
+    
+    @IBAction func addToTradeAction(_ sender: Any) {
+        
+        if HLDataManager.sharedInstance.amITradingWith(user.userId){
+            // go directly to the trading room
+            
+            if let pnc = self.navigationController?.navigationController as? HulaPortraitNavigationController {
+                pnc.openSwapView()
+            }
+        } else {
+            let viewController = self.storyboard?.instantiateViewController(withIdentifier: "alertView") as! AlertViewController
+            viewController.delegate = self
+            if (HulaUser.sharedInstance.numProducts == 0){
+                viewController.isCancelVisible = true
+                viewController.cancelButtonText = "Add stuff"
+                viewController.trigger = "noproduct"
+                viewController.message = "Sorry! If you want to trade, you have to upload your stuff."
+            } else {
+                if HLDataManager.sharedInstance.myRoomsFull() {
+                    viewController.isCancelVisible = false
+                    viewController.trigger = "fullrooms"
+                    viewController.message = "Sorry! your Trade Rooms are busy. Turn your phone, get in the Trade Room and request a new one."
+                } else {
+                    viewController.isCancelVisible = true
+                    viewController.okButtonText = "Accept"
+                    viewController.trigger = ""
+                    viewController.message = "You're about to start a trade. One room will be reserved for this negotiation until it's finished."
+                }
+            }
+            self.present(viewController, animated: true)
+        }
+    }
+    
+    @IBAction func declineTradeAction(_ sender: Any) {
+        let tradeId = HLDataManager.sharedInstance.getTradeWith(user.userId)
+        if tradeId != "" {
+            // close trade
+            let queryURL = HulaConstants.apiURL + "trades/\(tradeId)"
+            let status = HulaConstants.cancel_status
+            let dataString:String = "status=\(status)"
+            //print(dataString)
+            HLDataManager.sharedInstance.httpPost(urlstr: queryURL, postString: dataString, isPut: true, taskCallback: { (ok, json) in
+                if (ok){
+                    //print(json!)
+                    DispatchQueue.main.async {
+                        self.tradeButtonsHolder.isHidden = true
+                    }
+                    HLDataManager.sharedInstance.getTrades(taskCallback: { (success) in
+                        // update trade counts
+                        print("Trades loaded from sellerinfo")
+                    })
+                } else {
+                    // connection error
+                    print("Connection error")
+                }
+            })
+        }
+    }
+    
+}
+
+extension HLSellerInfoViewController: AlertDelegate{
+    func alertResponded(response: String, trigger: String) {
+        if trigger == "noproduct" && response == "ok" {
+            self.tabBarController?.selectedIndex = 2
+            return
+        }
+        if trigger == "fullrooms" {
+            return
+        }
+        if response == "ok" {
+            let otherId = user.userId
+            if(HulaUser.sharedInstance.userId != otherId){
+                if (HulaUser.sharedInstance.userId.count>0){
+                    // user is loggedin
+                    DispatchQueue.main.async {
+                        UIView.animate(withDuration: 0.3, animations: {
+                            self.addToTradeViewContainer.frame = self.view.frame
+                        })
+                    }
+                    
+                    let queryURL = HulaConstants.apiURL + "trades/"
+                    let dataString:String = "product_id=&other_id=\(otherId!)"
+                    HLDataManager.sharedInstance.httpPost(urlstr: queryURL, postString: dataString, isPut: false, taskCallback: { (ok, json) in
+                        if (ok){
+                            // show barter screen
+                            DispatchQueue.main.async {
+                                if let pnc = self.navigationController?.navigationController as? HulaPortraitNavigationController {
+                                    pnc.openSwapView()
+                                }
+                            }
+                        } else {
+                            // connection error
+                            print("Connection error")
+                        }
+                    })
+                }
+            }
+        }
+        if trigger == "noproduct" && response == "cancel" {
+            self.tabBarController?.selectedIndex = 2
         }
     }
 }

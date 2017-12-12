@@ -47,12 +47,11 @@ class HLProductEditTextViewController: BaseViewController, UITextViewDelegate {
         default:
             break
         }
-    }
-    override func viewWillAppear(_ animated: Bool) {
+        
+        
         editPageTitleLabel.text = pageTitle
         currentTextLabel.text = "CURRENT: \(originalText)"
         editableTextView.text = originalText
-        
         if (self.product.productCondition == "new"){
             setBtnStatus(button:conditionNewBtn, selected:true)
             setBtnStatus(button:conditionUsedBtn, selected:false)
@@ -61,9 +60,14 @@ class HLProductEditTextViewController: BaseViewController, UITextViewDelegate {
             setBtnStatus(button:conditionUsedBtn, selected:true)
         }
     }
+    override func viewWillAppear(_ animated: Bool) {
+        
+    }
     override func viewDidAppear(_ animated: Bool) {
         editableTextView.becomeFirstResponder()
         textViewDidChange(editableTextView)
+        
+        HLDataManager.sharedInstance.ga("product_edit")
     }
 
     override func didReceiveMemoryWarning() {

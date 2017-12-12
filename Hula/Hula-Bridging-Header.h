@@ -11,6 +11,6 @@
 
 
 #import <LinkedinSwift/LSHeader.h>
-
+#import <Google/Analytics.h>
 
 #endif /* Hula_Bridging_Header_h */

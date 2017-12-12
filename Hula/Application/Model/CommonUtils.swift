@@ -10,12 +10,15 @@ import UIKit
 import Foundation
 import CoreLocation
 import EasyTipView
+import Kingfisher
 
-class CommonUtils: NSObject, EasyTipViewDelegate {
+class CommonUtils: NSObject, EasyTipViewDelegate, UIGestureRecognizerDelegate {
     
     var currentTipArr: [HulaTip] = []
-    var currentTip:Int = 0
+    var currentTip:Int = -1
     var lastTip:EasyTipView = EasyTipView(text: "");
+    var startingViewController: UIViewController!
+    var bgViewToRemove : UIView!
     
     class var sharedInstance: CommonUtils {
         struct Static {
@@ -86,23 +89,7 @@ class CommonUtils: NSObject, EasyTipViewDelegate {
         return boundingBox.height
     }
 
-    func loadImageOnView(imageView:UIImageView, withURL:String){
-        let urlString = withURL
-        guard let url = URL(string: urlString) else { return }
-        URLSession.shared.dataTask(with: url) { (data, response, error) in
-            if error != nil {
-                print("Failed fetching image:", error!)
-                return
-            }
-            guard let response = response as? HTTPURLResponse, response.statusCode == 200 else {
-                print("Not a proper HTTPURLResponse or statusCode")
-                return
-            }
-            DispatchQueue.main.async {
-                imageView.image = UIImage(data: data!)
-            }
-            }.resume()
-    }
+
     
     func getDistanceFrom(lat:CGFloat, lon:CGFloat) -> String{
         let coordinate₀ = CLLocation(latitude: CLLocationDegrees(lat), longitude: CLLocationDegrees(lon))
@@ -112,6 +99,12 @@ class CommonUtils: NSObject, EasyTipViewDelegate {
     func getDistanceFrom(loc:CLLocation) -> String{
         let coordinate₀ = loc
         
+        if loc.coordinate.latitude == 0 && loc.coordinate.longitude == 0 {
+            return "-"
+        }
+        if HulaUser.sharedInstance.location.coordinate.latitude == 0 && HulaUser.sharedInstance.location.coordinate.longitude == 0 {
+            return "-"
+        }
         if let userLocation = HulaUser.sharedInstance.location {
             let distanceInMeters = coordinate₀.distance(from: userLocation) // result is in meters
             
@@ -119,9 +112,10 @@ class CommonUtils: NSObject, EasyTipViewDelegate {
             if (distance<1){
                 distance = round( distanceInMeters / 161 ) / 10
             } else {
-                if (distance>100){
-                    distance = 999
-                    return "Too far"
+                if (distance>1000){
+                    //distance = distance
+                    //return "Too far"
+                    return "\(Int(distance)) miles"
                 }
             }
             return "\(distance) miles"
@@ -224,6 +218,12 @@ class CommonUtils: NSObject, EasyTipViewDelegate {
     }
     
     func getThumbFor(url:String) -> String {
+        if (url == ""){
+            return HulaConstants.noProductThumb
+        }
+        if (url == HulaConstants.transparentImg){
+            return HulaConstants.transparentImg
+        }
         var parts = url.components(separatedBy: "/")
         let img_name = "tm_\(parts[parts.count - 1])"
         parts[parts.count - 1] = img_name
@@ -232,13 +232,31 @@ class CommonUtils: NSObject, EasyTipViewDelegate {
     
     
     func showTutorial(arrayTips: [HulaTip]){
-        currentTipArr = arrayTips
-        currentTip = -1
-        self.showNextTip(false)
+        if (currentTip == -1){
+            currentTipArr = arrayTips
+            
+            if let vc = currentTipArr[0].view.parentViewController  {
+                if bgViewToRemove != nil{
+                    bgViewToRemove.removeFromSuperview()
+                }
+                bgViewToRemove = UIView(frame: vc.view.frame)
+                bgViewToRemove.frame.size.width = max(vc.view.frame.width, vc.view.frame.height)
+                bgViewToRemove.frame.size.height = max(vc.view.frame.width, vc.view.frame.height)
+                bgViewToRemove.backgroundColor = UIColor(red: 0, green: 0, blue: 0, alpha: 0.3)
+                
+                let tap = UITapGestureRecognizer(target: self, action: #selector(removeEasyTips))
+                tap.delegate = self
+                bgViewToRemove.addGestureRecognizer(tap)
+                
+                vc.view.addSubview(bgViewToRemove)
+            }
+            self.showNextTip(false)
+        }
     }
     
     func showNextTip(_ direct:Bool){
         //self.lastTip.dismiss()
+        print("shownext")
         self.currentTip += 1
         if (self.currentTip < self.currentTipArr.count){
             var when = DispatchTime.now() + Double(currentTipArr[currentTip].delay)
@@ -248,18 +266,59 @@ class CommonUtils: NSObject, EasyTipViewDelegate {
             DispatchQueue.main.asyncAfter(deadline: when) {
                 
                 if (self.currentTip < self.currentTipArr.count){
-                    //EasyTipView.show(forView: self.currentTipArr[self.currentTip].view, text: self.currentTipArr[self.currentTip].text, delegate:self )
+                    EasyTipView.show(forView: self.currentTipArr[self.currentTip].view, withinSuperview: self.currentTipArr[self.currentTip].view.parentViewController?.view, text: self.currentTipArr[self.currentTip].text, delegate:self )
                     
-                    self.lastTip = EasyTipView(text: self.currentTipArr[self.currentTip].text)
-                    self.lastTip.show(forView: self.currentTipArr[self.currentTip].view)
+                    //self.lastTip = EasyTipView(text: self.currentTipArr[self.currentTip].text)
+                    //self.lastTip.show(forView: self.currentTipArr[self.currentTip].view)
                     
-                    self.showNextTip(false)
+                    //self.showNextTip(false)
+                } else {
+                    self.bgViewToRemove.removeFromSuperview()
+                    self.currentTip = -1
+                }
+            }
+        }else{
+            self.currentTip = -1
+            UIView.animate(withDuration: 0.5, animations: {
+                self.bgViewToRemove.alpha = 0
+            }, completion: {(success) in
+                self.bgViewToRemove.removeFromSuperview()
+            })
+            
+        }
+    }
+    func easyTipViewDidDismiss(_ tipView: EasyTipView) {
+        print("dismissed")
+        self.showNextTip(false)
+    }
+    
+    func removeEasyTips(){
+        print("removing from...")
+        print(self.currentTip)
+        if let prnt = self.currentTipArr[self.currentTip].view.parentViewController?.view {
+            for view in prnt.subviews {
+                if let tipView = view as? EasyTipView {
+                    tipView.dismiss(withCompletion: {
+                        //nada
+                    })
                 }
             }
         }
     }
-    func easyTipViewDidDismiss(_ tipView: EasyTipView) {
-        self.showNextTip(true)
+    
+    func getTopViewController() -> UIViewController? {
+        if var topController = UIApplication.shared.keyWindow?.rootViewController {
+            while let presentedViewController = topController.presentedViewController {
+                topController = presentedViewController
+            }
+            
+            // topController should now be your topmost view controller
+            print(topController)
+            return topController;
+        } else {
+            return nil
+        }
+        
     }
 }
 
@@ -290,36 +349,61 @@ let imageCache = NSCache<AnyObject, AnyObject>()
 
 extension UIImageView {
     func loadImageFromURL(urlString: String) {
-        self.image = nil
+        
+        
+        var _urlString = ""
         if (urlString == ""){
-            return
+            _urlString = HulaConstants.noProductThumb
+        } else {
+            _urlString = urlString
         }
+        
+        let url = URL(string: _urlString)!
+        self.kf.indicatorType = .activity
+        self.kf.setImage(with: url, options: [.transition(.fade(0.5))]) { (im, er, ty, ur) in
+            if !(er == nil) {
+                self.kf.setImage(with: URL(string: HulaConstants.noProductThumb), options: [.transition(.fade(0.5))])
+            }
+        }
+        
+        
+        /*
+         
+         //old manual way
+         
+        self.image = nil
+        
         // check for cache
-        if let cachedImage = imageCache.object(forKey: urlString as AnyObject) as? UIImage {
+        if let cachedImage = imageCache.object(forKey: _urlString as AnyObject) as? UIImage {
             self.image = cachedImage
             return
         }
         
-        URLSession.shared.dataTask(with: NSURL(string: urlString)! as URL, completionHandler: { (data, response, error) -> Void in
-            //print("getting: \(urlString)")
-            if error != nil {
-                print(error!)
-                return
-            }
-            DispatchQueue.main.async(execute: { () -> Void in
-                self.transform = CGAffineTransform(scaleX: 0.1, y: 0.1)
-                let image = UIImage(data: data!)
-                self.image = image
-                
-                UIView.animate(withDuration: 0.1, animations: {
-                    self.transform = CGAffineTransform(scaleX: 1, y: 1)
-                })
-                if self.image != nil {
-                    imageCache.setObject(image!, forKey: urlString as AnyObject)
+        
+        if let url = NSURL(string: _urlString) {
+        
+            URLSession.shared.dataTask(with: url as URL, completionHandler: { (data, response, error) -> Void in
+                //print("getting: \(_urlString)")
+                if error != nil {
+                    print(error!)
+                    return
                 }
-            })
-            
-        }).resume()
+                DispatchQueue.main.async(execute: { () -> Void in
+                    self.transform = CGAffineTransform(scaleX: 0.1, y: 0.1)
+                    let image = UIImage(data: data!)
+                    self.image = image
+                    
+                    UIView.animate(withDuration: 0.1, animations: {
+                        self.transform = CGAffineTransform(scaleX: 1, y: 1)
+                    })
+                    if self.image != nil {
+                        imageCache.setObject(image!, forKey: _urlString as AnyObject)
+                    }
+                })
+                
+            }).resume()
+        }
+         */
     }
 }
 
@@ -333,5 +417,36 @@ extension UIView {
                 self.transform = CGAffineTransform(scaleX: 1,y: 1);
             })
         })
+    }
+}
+
+
+extension UIView {
+    var parentViewController: UIViewController? {
+        var parentResponder: UIResponder? = self
+        while parentResponder != nil {
+            parentResponder = parentResponder!.next
+            if let viewController = parentResponder as? UIViewController {
+                return viewController
+            }
+        }
+        return nil
+    }
+}
+// character at position
+extension String {
+    
+    subscript (i: Int) -> Character {
+        return self[index(startIndex, offsetBy: i)]
+    }
+    
+    subscript (i: Int) -> String {
+        return String(self[i] as Character)
+    }
+    
+    subscript (r: Range<Int>) -> String {
+        let start = index(startIndex, offsetBy: r.lowerBound)
+        let end = index(startIndex, offsetBy: r.upperBound)
+        return self[Range(start ..< end)]
     }
 }

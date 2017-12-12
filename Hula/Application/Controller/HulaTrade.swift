@@ -14,14 +14,20 @@ class HulaTrade: NSObject {
     var owner_id: String!
     var other_id: String!
     var date: Date = Date()
+    var last_update: Date = Date()
     var owner_products = [] as [String]
     var other_products = [] as [String]
     var owner_money : Float = 0.0
     var other_money : Float = 0.0
+    var owner_unread : Int = 0
+    var other_unread : Int = 0
+    var owner_accepted : Bool = false
+    var other_accepted : Bool = false
     var next_bid: String!
     var status: String!
     var turn_user_id: String!
     var last_bid_diff:[String] = []
+    var num_bids:Int = 0
     
     
     class var sharedInstance: HulaTrade {
@@ -39,14 +45,20 @@ class HulaTrade: NSObject {
         self.owner_id = ""
         self.other_id = ""
         self.date = Date()
+        self.last_update = Date()
         self.owner_products = []
         self.other_products = []
         self.owner_money = 0.0
         self.other_money = 0.0
+        self.owner_unread = 0
+        self.other_unread = 0
+        self.owner_accepted = false
+        self.other_accepted = false
         self.next_bid = ""
         self.turn_user_id = ""
         self.status = "pending"
         self.last_bid_diff = []
+        self.num_bids = 0
     }
     
     func saveNewTrade(){
@@ -123,9 +135,35 @@ class HulaTrade: NSObject {
         if (dict["turn_user_id"] as? String) != nil {
             self.turn_user_id = dict["turn_user_id"] as? String
         }
+        if (dict["last_update"] as? String) != nil {
+            let str_date = dict["last_update"] as! String
+            self.last_update = (str_date.dateFromISO8601)!
+        }
+        if (dict["owner_unread"] as? Int) != nil {
+            self.owner_unread = dict["owner_unread"] as! Int
+        } else {
+            self.owner_unread = 0
+        }
+        if (dict["other_unread"] as? Int) != nil {
+            self.other_unread = dict["other_unread"] as! Int
+        } else {
+            self.other_unread = 0
+        }
+        if (dict["owner_accepted"] as? Bool) != nil {
+            self.owner_accepted = dict["owner_accepted"] as! Bool
+        } else {
+            self.owner_accepted = false
+        }
+        if (dict["other_accepted"] as? Bool) != nil {
+            self.other_accepted = dict["other_accepted"] as! Bool
+        } else {
+            self.other_accepted = false
+        }
+        
         //print(dict)
         self.last_bid_diff = []
         if let bids = dict["bids"] as? [Any] {
+            self.num_bids = bids.count
             if let last_bid = bids[ (bids.count - 1) ] as? [String:Any]{
                 //print(last_bid)
                 if let lb_owner = last_bid["owner_diff"] as? [String]{
@@ -145,7 +183,7 @@ class HulaTrade: NSObject {
 
     func updateServerData(){
         //print("Updating trade...")
-        if(tradeId.characters.count > 0){
+        if(tradeId.count > 0){
             let queryURL = HulaConstants.apiURL + "trades/" + self.tradeId
             let post_string = get_post_string();
             HLDataManager.sharedInstance.httpPost(urlstr: queryURL, postString: post_string, isPut: true, taskCallback: { (ok, json) in

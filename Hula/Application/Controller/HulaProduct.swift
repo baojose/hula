@@ -19,10 +19,14 @@ class HulaProduct: NSObject {
     var arrProductPhotos: NSMutableArray!
     var productDescription: String!
     var productImage: String!
+    var productStatus: String!
     var tradeStatus: Int = 0
     var productOwner: String!
     var productCategoryId: String!
     var productLocation: CLLocation!
+    var video_requested : [String:Bool]!
+    var video_url: [String:String]!
+    var trading_count: Int!
     
     class var sharedInstance: HulaProduct {
         struct Static {
@@ -42,8 +46,12 @@ class HulaProduct: NSObject {
         self.arrProductPhotos = NSMutableArray.init()
         self.arrProductPhotoLink = []
         self.tradeStatus = 0
+        self.productStatus = ""
         self.productOwner = ""
+        self.video_url = [:]
+        self.video_requested = [:]
         self.productLocation = CLLocation(latitude: 0.0, longitude: 0.0)
+        self.trading_count = 0
     }
     init(id : String, name : String, image: String) {
         self.productId = id
@@ -52,12 +60,16 @@ class HulaProduct: NSObject {
         self.productCondition = ""
         self.productCategory = ""
         self.productCategoryId = ""
+        self.productStatus = ""
         self.productImage = image
         self.arrProductPhotos = NSMutableArray.init()
         self.arrProductPhotoLink = []
         self.tradeStatus = 0
         self.productOwner = ""
+        self.video_url = [:]
+        self.video_requested = [:]
         self.productLocation = CLLocation(latitude: 0.0, longitude: 0.0)
+        self.trading_count = 0
     }
     override var description : String {
         return "(Product id: \(self.productId!); name:   \(self.productName!))\n"
@@ -71,11 +83,15 @@ class HulaProduct: NSObject {
         if let tmp = with.object(forKey: "category_name") as? String { productCategory = tmp }
         if let tmp = with.object(forKey: "category_id") as? String { productCategoryId = tmp }
         if let tmp = with.object(forKey: "image_url") as? String { productImage = tmp }
+        if let tmp = with.object(forKey: "status") as? String { productStatus = tmp }
         if let tmp = with.object(forKey: "owner_id") as? String { productOwner = tmp }
+        if let tmp = with.object(forKey: "video_requested") as? [String:Bool] { video_requested = tmp }
+        if let tmp = with.object(forKey: "video_url") as? [String:String] { video_url = tmp }
+        if let tmp = with.object(forKey: "trading_count") as? Int { trading_count = tmp }
         if let tmp = with.object(forKey: "images") as? [String] {
             arrProductPhotoLink = []
             for im in tmp {
-                if im.characters.count > 0 {
+                if im.count > 0 {
                     arrProductPhotoLink.append(im)
                 }
             }
@@ -107,8 +123,8 @@ class HulaProduct: NSObject {
     func getPostString() -> String {
         var str = "title=" + self.productName +
             "&description=" + self.productDescription +
-            "&condition=" + self.productCondition +
-            "&category_name=" + self.productCategory +
+            "&condition=" + self.productCondition
+        str = str + "&category_name=" + self.productCategory +
             "&category_id=" + self.productCategoryId +
             "&image_url=" + self.productImage
         str = str + "&owner_id=" + self.productOwner +

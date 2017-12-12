@@ -21,13 +21,22 @@ class HLCalculatorViewController: UIViewController {
         super.viewDidLoad()
 
         // Do any additional setup after loading the view.
+        let appDelegate = UIApplication.shared.delegate as! AppDelegate
+        appDelegate.allowRotation = true
+        
+        updatePrice()
     }
 
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
+        
     }
     
+    override func viewDidAppear(_ animated: Bool) {
+        
+        HLDataManager.sharedInstance.ga("calculator")
+    }
 
     /*
     // MARK: - Navigation
@@ -78,10 +87,10 @@ class HLCalculatorViewController: UIViewController {
     }
     @IBAction func clearNumberAction(_ sender: Any) {
         let str_amount = "\(amount)"
-        if(str_amount.characters.count == 1){
+        if(str_amount.count == 1){
             amount = 0
         } else {
-            let index = str_amount.index(str_amount.startIndex, offsetBy: str_amount.characters.count - 1)
+            let index = str_amount.index(str_amount.startIndex, offsetBy: str_amount.count - 1)
             let new_str = str_amount.substring(to: index)
             amount = Int(new_str)!
         }

@@ -16,6 +16,7 @@ class HLSignUpViewController: UserBaseViewController, UITextFieldDelegate  {
     @IBOutlet weak var signupErrorView: UIView!
     @IBOutlet weak var nextButton: HLRoundedNextButton!
     @IBOutlet weak var inputFieldsView: UIView!
+    @IBOutlet weak var signupErrorLabel: UILabel!
     
     let descriptions = ["What is your name?", "What is your email address?", "Set a password for your account"]
     let hints = ["This is your public identification", "We wont bother you with nonsense emails", "Use a non-obvious password with more than 5 characters"]
@@ -38,58 +39,95 @@ class HLSignUpViewController: UserBaseViewController, UITextFieldDelegate  {
         currentStep = 0
         nextButton.setup()
         resetStepTexts()
+        HLDataManager.sharedInstance.ga("signup")
     }
     
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
     }
     @IBAction func closeIdentificationVC(_ sender: Any) {
-        self.closeIdentification()
+        //self.closeIdentification()
+        _ = self.navigationController?.popViewController(animated: true)
     }
     
     @IBAction func nextStepPressed(_ sender: Any) {
         if (signupField.text! != ""){
+            signupField.isSecureTextEntry = false
             switch currentStep {
             case 0:
                 userNick = signupField.text!
+                checkUsernick(nick:userNick)
                 break
             case 1:
                 userEmail = signupField.text!
+                signupField.text = ""
+                signupField.isSecureTextEntry = true
+                currentStep += 1
+                resetStepTexts()
                 break
             case 2:
                 userPassword = signupField.text!
+                signupField.text = ""
+                currentStep += 1
+                resetStepTexts()
                 break
             default:
-                break
-            }
-            currentStep += 1
-            if (currentStep <= 2){
-                signupField.text = ""
-                
-                if (currentStep == 2){
-                    signupField.isSecureTextEntry = true
-                } else {
-                    signupField.isSecureTextEntry = false
-                }
-                resetStepTexts()
-            } else {
-                // send signup information to the server
                 HLDataManager.sharedInstance.signupUser(email: userEmail, nick:userNick, pass: userPassword)
                 UIView.animate(withDuration: 0.2, animations: {
                     self.signupErrorView.frame.origin.y = self.view.frame.height
                     self.greenBackgroundImage.alpha = 1
                 })
+                self.view.endEditing(true)
+                break
             }
+            
         } else {
-            UIView.animate(withDuration: 0.5, animations: {
-                self.signupErrorView.frame.origin.y = self.view.frame.height - self.signupErrorView.frame.height
-                self.greenBackgroundImage.alpha = 0
-            })
+            self.showError("This field cannot be empty. Please fill all the fields.")
         }
+    }
+    
+    func showError(_ msg : String){
+        self.view.endEditing(true)
+        UIView.animate(withDuration: 0.5, animations: {
+            self.signupErrorView.frame.origin.y = self.view.frame.height - self.signupErrorView.frame.height
+            self.greenBackgroundImage.alpha = 0
+            self.signupErrorLabel.text = msg
+        })
+    }
+    
+    func checkUsernick(nick:String){
+        let queryURL = HulaConstants.apiURL + "users/validatenick/\(nick)"
+        //print(queryURL)
+        
+        HLDataManager.sharedInstance.httpGet(urlstr: queryURL, taskCallback: { (ok, json) in
+            //print(ok)
+            if (ok){
+                if let dict = json as? [String:String]{
+                    if dict["user"] == "found" {
+                        
+                        DispatchQueue.main.async {
+                            self.showError("Username has already been taken.")
+                            
+                            
+                            self.currentStep = 0
+                            self.nextButton.setup()
+                            //self.resetStepTexts()
+                        }
+                        
+                    } else {
+                        DispatchQueue.main.async {
+                            self.signupField.text = ""
+                            self.currentStep += 1
+                            self.resetStepTexts()
+                        }
+                    }
+                }
+            }
+        })
     }
 
     @IBAction func signupFieldChanged(_ sender: Any) {
-        if (self.signupField.text!.characters.count>4){
+        if (self.signupField.text!.count>4){
             nextButton.startAnimation()
         } else {
             nextButton.stopAnimation()
@@ -100,6 +138,12 @@ class HLSignUpViewController: UserBaseViewController, UITextFieldDelegate  {
         let step_x = self.stepLabel.frame.origin.x
         let description_x = self.descriptionLabel.frame.origin.x
         let signup_x = self.signupField.frame.origin.x
+        
+        UIView.animate(withDuration: 0.2, animations: {
+            self.signupErrorView.frame.origin.y = self.view.frame.height
+            self.greenBackgroundImage.alpha = 1
+        })
+        
         UIView.animate(withDuration: 0.6, delay: 0, options: .curveEaseIn, animations: {
             self.stepLabel.frame.origin.x = -self.view.frame.width*2
             self.descriptionLabel.frame.origin.x = -self.view.frame.width*5
@@ -122,17 +166,21 @@ class HLSignUpViewController: UserBaseViewController, UITextFieldDelegate  {
     }
     
     func signupDataRecieved(notification: NSNotification) {
-        print("Signup received. Closing VC")
+        //print("Signup received. Closing VC")
         let signupOk = notification.object as! Bool
+        print("signupOk")
         print(signupOk)
         if (signupOk){
-            self.closeIdentification()
+            DispatchQueue.main.async {
+                let storyBoard : UIStoryboard = UIStoryboard(name: "Main", bundle:nil)
+                let nextViewController = storyBoard.instantiateViewController(withIdentifier: "welcome") as! HLWelcomeViewController
+                //self.present(nextViewController, animated:true, completion:nil)
+                print("navigationController?.pushViewController")
+                self.navigationController?.pushViewController(nextViewController, animated: true)
+            }
         } else {
             DispatchQueue.main.async {
-                UIView.animate(withDuration: 0.5, animations: {
-                    self.signupErrorView.frame.origin.y = self.view.frame.height - self.signupErrorView.frame.height
-                    self.greenBackgroundImage.alpha = 0
-                })
+                self.showError(HLDataManager.sharedInstance.lastServerMessage)
             }
         }
         self.view.setNeedsDisplay()
