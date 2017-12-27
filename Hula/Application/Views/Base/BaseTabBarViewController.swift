@@ -69,8 +69,10 @@ class BaseTabBarViewController: UITabBarController, UITabBarControllerDelegate{
         
         self.tabbar.tintColor = HulaConstants.appMainColor
         
-        //let tabbarSelectedItemBackgroundImage: UIImage! = UIImage(named: "img_tabbar_selected_bg")?.withRenderingMode(.alwaysOriginal)
-        //self.tabbar.selectionIndicatorImage = tabbarSelectedItemBackgroundImage;
+        if !Device.IS_IPHONE_X {
+            let tabbarSelectedItemBackgroundImage: UIImage! = UIImage(named: "img_tabbar_selected_bg_ok")?.withRenderingMode(.alwaysOriginal)
+            self.tabbar.selectionIndicatorImage = tabbarSelectedItemBackgroundImage;
+        }
     }
     
     override func tabBar(_ tabBar: UITabBar, didSelect item: UITabBarItem) {
