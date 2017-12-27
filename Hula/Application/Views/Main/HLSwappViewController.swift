@@ -106,7 +106,10 @@ class HLSwappViewController: UIViewController {
         
     }
     
-    
+    override func prefersHomeIndicatorAutoHidden() -> Bool {
+        print("prefersHomeIndicatorAutoHidden in Swapp")
+        return true
+    }
     override func viewWillAppear(_ animated: Bool) {
         //print(UIDevice.current.orientation)
         if (firstLoad) {
@@ -153,6 +156,13 @@ class HLSwappViewController: UIViewController {
         }
         self.backFromChat = false
         self.rotateAnimation()
+        
+        
+        if #available(iOS 11.0, *) {
+            setNeedsUpdateOfHomeIndicatorAutoHidden()
+        } else {
+            // Fallback on earlier versions
+        }
     }
 
     override func didReceiveMemoryWarning() {

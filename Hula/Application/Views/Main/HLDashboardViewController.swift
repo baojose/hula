@@ -47,7 +47,6 @@ class HLDashboardViewController: BaseViewController {
         
     }
 
-    
     override func viewWillAppear(_ animated: Bool) {
         //print(self.view.frame)
         //print(self.mainCollectionView.frame)
@@ -73,6 +72,7 @@ class HLDashboardViewController: BaseViewController {
         */
         
         HLDataManager.sharedInstance.ga("dashboard")
+        
     }
     
     override func didReceiveMemoryWarning() {

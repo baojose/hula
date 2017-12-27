@@ -35,9 +35,7 @@ class BaseTabBarViewController: UITabBarController, UITabBarControllerDelegate{
         super.viewDidAppear(animated)
         let items : Int = (self.navigationController?.viewControllers.count)!
         if items > 1{
-            print("Appear. Clearing previous vc...")
-            // release some memory
-            //self.navigationController?.viewControllers = [(self.navigationController?.viewControllers.last)! ]
+            //print("Appear. Clearing previous vc...")
             self.navigationController?.viewControllers.remove(at: 0)
         }
     }
@@ -71,8 +69,8 @@ class BaseTabBarViewController: UITabBarController, UITabBarControllerDelegate{
         
         self.tabbar.tintColor = HulaConstants.appMainColor
         
-        let tabbarSelectedItemBackgroundImage: UIImage! = UIImage(named: "img_tabbar_selected_bg")?.withRenderingMode(.alwaysOriginal)
-        self.tabbar.selectionIndicatorImage = tabbarSelectedItemBackgroundImage;
+        //let tabbarSelectedItemBackgroundImage: UIImage! = UIImage(named: "img_tabbar_selected_bg")?.withRenderingMode(.alwaysOriginal)
+        //self.tabbar.selectionIndicatorImage = tabbarSelectedItemBackgroundImage;
     }
     
     override func tabBar(_ tabBar: UITabBar, didSelect item: UITabBarItem) {
