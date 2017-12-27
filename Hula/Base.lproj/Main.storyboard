@@ -1938,6 +1938,30 @@ recycle!</string>
                                                             <rect key="frame" x="49" y="31" width="16" height="16"/>
                                                             <autoresizingMask key="autoresizingMask"/>
                                                         </imageView>
+                                                        <view contentMode="scaleToFill" misplaced="YES" id="b8X-Dh-Tv3">
+                                                            <rect key="frame" x="162" y="70" width="204" height="26"/>
+                                                            <autoresizingMask key="autoresizingMask" flexibleMinX="YES" widthSizable="YES" flexibleMinY="YES"/>
+                                                            <subviews>
+                                                                <button opaque="NO" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" id="Y0o-Vv-8XK">
+                                                                    <rect key="frame" x="14" y="-1" width="78" height="28"/>
+                                                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" heightSizable="YES"/>
+                                                                    <color key="backgroundColor" red="0.22352941179999999" green="0.66666666669999997" blue="0.64313725489999995" alpha="1" colorSpace="calibratedRGB"/>
+                                                                    <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="13"/>
+                                                                    <state key="normal" title="Decline">
+                                                                        <color key="titleColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                                                    </state>
+                                                                </button>
+                                                                <button opaque="NO" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" id="mf6-wE-Gjd">
+                                                                    <rect key="frame" x="115" y="0.0" width="76" height="26"/>
+                                                                    <autoresizingMask key="autoresizingMask" flexibleMinX="YES" heightSizable="YES"/>
+                                                                    <color key="backgroundColor" red="0.22352941179999999" green="0.66666666669999997" blue="0.64313725489999995" alpha="1" colorSpace="calibratedRGB"/>
+                                                                    <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="13"/>
+                                                                    <state key="normal" title="Accept">
+                                                                        <color key="titleColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                                                    </state>
+                                                                </button>
+                                                            </subviews>
+                                                        </view>
                                                     </subviews>
                                                 </tableViewCellContentView>
                                                 <inset key="separatorInset" minX="0.0" minY="0.0" maxX="0.0" maxY="0.0"/>
@@ -1945,7 +1969,10 @@ recycle!</string>
                                                     <outlet property="NotificationImageView" destination="qUv-mB-hOF" id="nh2-8M-atI"/>
                                                     <outlet property="NotificationsDate" destination="ODt-f7-Y70" id="M9i-iG-uUE"/>
                                                     <outlet property="NotificationsText" destination="O5A-0A-owp" id="7qE-oP-DBC"/>
+                                                    <outlet property="acceptBtn" destination="mf6-wE-Gjd" id="vYm-Ao-Yoj"/>
                                                     <outlet property="forwardIcon" destination="7n8-km-83N" id="lC4-u1-lQH"/>
+                                                    <outlet property="newTradeActionView" destination="b8X-Dh-Tv3" id="gnK-wI-WoY"/>
+                                                    <outlet property="rejectBtn" destination="Y0o-Vv-8XK" id="D5n-Fx-7HK"/>
                                                     <outlet property="rotationIcon" destination="FEq-ii-lbL" id="ub8-h8-MeP"/>
                                                     <outlet property="unreadIcon" destination="K1a-Eg-HOv" id="GU6-GJ-T3j"/>
                                                 </connections>

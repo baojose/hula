@@ -86,6 +86,8 @@ class HLNotificationsViewController: BaseViewController, UITableViewDelegate, UI
         let cell = tableView.dequeueReusableCell(withIdentifier: "NotificationsCategoryCell") as! HLHomeNotificationsTableViewCell
         let notification : NSDictionary = HLDataManager.sharedInstance.arrNotifications.object(at: indexPath.row) as! NSDictionary
         
+        
+        
         if let is_read = notification.object(forKey: "is_read") as? Bool{
         
             if !is_read {
@@ -97,17 +99,29 @@ class HLNotificationsViewController: BaseViewController, UITableViewDelegate, UI
                 cell.unreadIcon.isHidden = true
                 cell.backgroundColor = UIColor(red: 1, green: 1, blue: 1, alpha: 1)
             }
-        }
-        
-        if let type = notification.object(forKey: "type") as? String{
-            if (type == "start"){
-                cell.rotationIcon.isHidden = true
-                cell.forwardIcon.isHidden = false
-            } else {
-                cell.rotationIcon.isHidden = false
-                cell.forwardIcon.isHidden = true
+            
+            
+            cell.newTradeActionView.isHidden = true
+            if let type = notification.object(forKey: "type") as? String{
+                if (type == "start"){
+                    cell.rotationIcon.isHidden = true
+                    cell.forwardIcon.isHidden = false
+                    if !is_read {
+                        
+                        cell.rejectBtn.tag = indexPath.row;
+                        cell.rejectBtn.addTarget(self, action: #selector(rejectBtnTapped), for: .touchUpInside)
+                        cell.acceptBtn.tag = indexPath.row;
+                        cell.acceptBtn.addTarget(self, action: #selector(acceptBtnTapped), for: .touchUpInside)
+                        cell.newTradeActionView.isHidden = false
+                    }
+                } else {
+                    cell.rotationIcon.isHidden = false
+                    cell.forwardIcon.isHidden = true
+                }
             }
         }
+        
+        
         cell.NotificationsText.text = notification.object(forKey: "text") as? String
         commonUtils.circleImageView(cell.NotificationImageView)
         
@@ -120,6 +134,53 @@ class HLNotificationsViewController: BaseViewController, UITableViewDelegate, UI
         return cell
     }
     
+    
+    func rejectBtnTapped(_ sender:UIButton){
+        let tag = sender.tag
+        let notification : NSDictionary = HLDataManager.sharedInstance.arrNotifications.object(at: tag) as! NSDictionary
+        
+        if let notification_id = notification.object(forKey: "_id") as? String{
+            markAsReadNotification(notification_id)
+            
+        }
+        
+        if let user_id = notification.object(forKey: "from_id") as? String{
+            let tradeId = HLDataManager.sharedInstance.getTradeWith(user_id)
+            if tradeId != "" {
+                // close trade
+                let queryURL = HulaConstants.apiURL + "trades/\(tradeId)"
+                let status = HulaConstants.cancel_status
+                let dataString:String = "status=\(status)"
+                print(queryURL)
+                HLDataManager.sharedInstance.httpPost(urlstr: queryURL, postString: dataString, isPut: true, taskCallback: { (ok, json) in
+                    if (ok){
+                        //print(json!)
+                        HLDataManager.sharedInstance.getTrades(taskCallback: { (success) in
+                            // update trade counts
+                            print("Trades loaded from sellerinfo")
+                        })
+                    } else {
+                        // connection error
+                        print("Connection error")
+                    }
+                })
+            }
+        }
+    }
+    func acceptBtnTapped(_ sender:UIButton){
+        
+        let tag = sender.tag
+        let notification : NSDictionary = HLDataManager.sharedInstance.arrNotifications.object(at: tag) as! NSDictionary
+        
+        if let notification_id = notification.object(forKey: "_id") as? String{
+            markAsReadNotification(notification_id)
+        }
+        
+        if let portraitNC = self.tabBarController?.navigationController as? HulaPortraitNavigationController {
+            portraitNC.openSwapView()
+        }
+        
+    }
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         let notification : NSDictionary = HLDataManager.sharedInstance.arrNotifications.object(at: indexPath.row) as! NSDictionary
         
@@ -151,17 +212,7 @@ class HLNotificationsViewController: BaseViewController, UITableViewDelegate, UI
         }
         
         if let notification_id = notification.object(forKey: "_id") as? String{
-            let queryURL = HulaConstants.apiURL + "notifications/" + notification_id
-            HLDataManager.sharedInstance.httpGet(urlstr: queryURL, taskCallback: { (ok, json) in
-                //print(ok)
-                if (ok){
-                    DispatchQueue.main.async {
-                        HLDataManager.sharedInstance.loadUserNotifications()
-                        tableView.reloadData()
-                        self.updateTabBarCounter()
-                    }
-                }
-            })
+            markAsReadNotification(notification_id)
         }
         
     }
@@ -202,6 +253,19 @@ class HLNotificationsViewController: BaseViewController, UITableViewDelegate, UI
         }
     }
     
+    func markAsReadNotification(_ notification_id:String){
+        let queryURL = HulaConstants.apiURL + "notifications/" + notification_id
+        HLDataManager.sharedInstance.httpGet(urlstr: queryURL, taskCallback: { (ok, json) in
+            //print(ok)
+            if (ok){
+                DispatchQueue.main.async {
+                    HLDataManager.sharedInstance.loadUserNotifications()
+                    self.notificationsTable.reloadData()
+                    self.updateTabBarCounter()
+                }
+            }
+        })
+    }
     
     private var finishedLoadingInitialTableCells = false
     func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
