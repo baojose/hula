@@ -367,7 +367,17 @@ class HLProductModalViewController: UIViewController, UIImagePickerControllerDel
 extension HLProductModalViewController: AlertDelegate{
     
     func alertResponded(response: String, trigger: String) {
-        
+        if trigger == "video_request" {
+            print("Requesting trades reload...")
+            HLDataManager.sharedInstance.getTrades(taskCallback: { (success) in
+                DispatchQueue.main.async {
+                    
+                    self.dismiss(animated: true, completion: {
+                        print("Dismissed")
+                    })
+                }
+            })
+        }
     }
 
 }

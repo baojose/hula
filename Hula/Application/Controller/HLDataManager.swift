@@ -357,7 +357,6 @@ class HLDataManager: NSObject {
             request.setValue(user.token, forHTTPHeaderField: "x-access-token")
         }
         request.httpMethod = "GET"
-        //print(request)
         let task = URLSession.shared.dataTask(with: request) { data, response, error in
             guard error == nil else {
                 print(error!)
@@ -369,7 +368,9 @@ class HLDataManager: NSObject {
                 taskCallback(false, nil)
                 return
             }
-            //print(data)
+            //print(request)
+            //print(response)
+            //print(data.count)
             let json = try! JSONSerialization.jsonObject(with: data, options: [])
             taskCallback(true, json as AnyObject?)
         }

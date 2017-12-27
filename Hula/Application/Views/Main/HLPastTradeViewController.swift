@@ -174,12 +174,14 @@ class HLPastTradeViewController: UIViewController, UICollectionViewDelegate, UIC
         //print(thisTrade.last_bid_diff)
         for pr_id in list{
             getProduct(productId: pr_id, taskCallback: { (product) in
-                if (type == "other") {
-                    self.otherTradedProducts.append(product)
-                    self.otherSelectedProductsCollection.reloadData()
-                } else {
-                    self.myTradedProducts.append(product)
-                    self.mySelectedProductsCollection.reloadData()
+                DispatchQueue.main.async {
+                    if (type == "other") {
+                        self.otherTradedProducts.append(product)
+                        self.otherSelectedProductsCollection.reloadData()
+                    } else {
+                        self.myTradedProducts.append(product)
+                        self.mySelectedProductsCollection.reloadData()
+                    }
                 }
             })
             
