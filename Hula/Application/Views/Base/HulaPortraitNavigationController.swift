@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import BRYXBanner
 
 class HulaPortraitNavigationController: UINavigationController {
     
@@ -40,13 +41,20 @@ class HulaPortraitNavigationController: UINavigationController {
     }
     
     func openSwapView(){
-        if !HLDataManager.sharedInstance.isInSwapVC {
-            HLDataManager.sharedInstance.isInSwapVC = true
-            let storyboard = UIStoryboard(name: "Main", bundle: nil)
-            let myModalViewController = storyboard.instantiateViewController(withIdentifier: "swappView")
-            myModalViewController.modalPresentationStyle = UIModalPresentationStyle.fullScreen
-            myModalViewController.modalTransitionStyle = UIModalTransitionStyle.crossDissolve
-            self.present(myModalViewController, animated: true, completion: nil)
+        if HulaUser.sharedInstance.isUserLoggedIn() {
+            if !HLDataManager.sharedInstance.isInSwapVC {
+                HLDataManager.sharedInstance.isInSwapVC = true
+                let storyboard = UIStoryboard(name: "Main", bundle: nil)
+                let myModalViewController = storyboard.instantiateViewController(withIdentifier: "swappView")
+                myModalViewController.modalPresentationStyle = UIModalPresentationStyle.fullScreen
+                myModalViewController.modalTransitionStyle = UIModalTransitionStyle.crossDissolve
+                self.present(myModalViewController, animated: true, completion: nil)
+            }
+        } else {
+            print("user not logged in!")
+            let banner = Banner(title: "Trade mode disabled", subtitle: "You have to be logged in to enter into trade mode", backgroundColor: HulaConstants.appMainColor)
+            banner.dismissesOnTap = true
+            banner.show(duration: 5.0)
         }
     }
     

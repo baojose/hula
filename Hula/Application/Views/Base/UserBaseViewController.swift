@@ -44,8 +44,14 @@ class UserBaseViewController: UIViewController {
                         if let tb = aViewController as? BaseTabBarViewController {
                             //print("BaseTabBarViewController index:")
                             //print(tb.selectedIndex)
-                            tb.tabBarController?.selectedIndex = 0
-                            tb.selectedIndex = 0
+                            
+                            if HulaUser.sharedInstance.isUserLoggedIn() {
+                                tb.tabBarController?.selectedIndex = 3
+                                tb.selectedIndex = 3
+                            } else {
+                                tb.tabBarController?.selectedIndex = 0
+                                tb.selectedIndex = 0
+                            }
                         }
                         _ = self.navigationController?.popToViewController(aViewController, animated: true)
                     }

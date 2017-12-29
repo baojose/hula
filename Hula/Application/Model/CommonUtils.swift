@@ -469,3 +469,13 @@ struct Device {
     static let IS_IPHONE_6P        = IS_IPHONE && SCREEN_MAX_LENGTH == 736
     static let IS_IPHONE_X         = IS_IPHONE && SCREEN_MAX_LENGTH == 812
 }
+
+
+extension UIImagePickerController{
+    override open var shouldAutorotate: Bool {
+        return true
+    }
+    override open var supportedInterfaceOrientations : UIInterfaceOrientationMask {
+        return .all
+    }
+}
