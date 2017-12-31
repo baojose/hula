@@ -11,7 +11,7 @@ import MobileCoreServices
 import AVKit
 import BRYXBanner
 
-class HLProductModalViewController: UIViewController, UIImagePickerControllerDelegate, UINavigationControllerDelegate, UIScrollViewDelegate {
+class HLProductModalViewController: UIViewController, UIImagePickerControllerDelegate, UINavigationControllerDelegate, UIScrollViewDelegate, AVPlayerViewControllerDelegate {
 
     var product: HulaProduct!
     
@@ -251,6 +251,8 @@ class HLProductModalViewController: UIViewController, UIImagePickerControllerDel
         let appDelegate = UIApplication.shared.delegate as! AppDelegate
         appDelegate.allowRotation = true
         
+        print("do not allow rotation")
+        
         var vurl : String = ""
         print(product.video_url)
         if let t = product.video_url[currentTradeId] {
@@ -258,17 +260,31 @@ class HLProductModalViewController: UIViewController, UIImagePickerControllerDel
         }
         let videoURL = URL(string: vurl)
         let player = AVPlayer(url: videoURL!)
-        let playerViewController = AVPlayerViewController()
+        let playerViewController = LandscapeAVPlayerController()
+        if #available(iOS 9.0, *) {
+            HLDataManager.sharedInstance.onlyLandscapeView = true
+            playerViewController.delegate = self
+        } else {
+            // Fallback on earlier versions
+        }
         playerViewController.player = player
         self.present(playerViewController, animated: true) {
             playerViewController.player!.play()
         }
     }
+    
+    func playerViewControllerWillBeginDismissalTransition(_ playerViewController: AVPlayerViewController){
+        
+        print("allow rotation again")
+        HLDataManager.sharedInstance.onlyLandscapeView = false
+    }
+    
     func recordVideo() {
         if (UIImagePickerController.isSourceTypeAvailable(.camera)) {
             
             let appDelegate = UIApplication.shared.delegate as! AppDelegate
             appDelegate.allowRotation = true
+            HLDataManager.sharedInstance.onlyLandscapeView = true
             
             if UIImagePickerController.availableCaptureModes(for: .rear) != nil {
                 HLDataManager.sharedInstance.onlyLandscapeView = true

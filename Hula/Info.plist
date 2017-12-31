@@ -90,10 +90,10 @@
 	<string>Allow to us</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>Store your products location to calculate distances</string>
-	<key>NSPhotoLibraryUsageDescription</key>
-	<string>Allow to us</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>Record videos as proof of your stuff</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Allow to us</string>
 	<key>UIAppFonts</key>
 	<array>
 		<string>BebasNeue Bold.otf</string>

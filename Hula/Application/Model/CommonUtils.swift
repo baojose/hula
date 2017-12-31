@@ -11,6 +11,7 @@ import Foundation
 import CoreLocation
 import EasyTipView
 import Kingfisher
+import AVKit
 
 class CommonUtils: NSObject, EasyTipViewDelegate, UIGestureRecognizerDelegate {
     
@@ -478,4 +479,12 @@ extension UIImagePickerController{
     override open var supportedInterfaceOrientations : UIInterfaceOrientationMask {
         return .all
     }
+}
+
+class LandscapeAVPlayerController: AVPlayerViewController {
+    
+    override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
+        return .landscape
+    }
+    
 }
