@@ -344,11 +344,14 @@ class HLBarterScreenViewController: BaseViewController {
                     if p.productStatus == "deleted" {
                         let indexPath = IndexPath(row: counter, section: 0)
                         let cell = self.mySelectedProductsCollection.cellForItem(at: indexPath)
-                        self.myTradedProducts.remove(at: counter)
                         UIView.animate(withDuration: 0.9, delay: 1, options: [], animations: {
                             cell!.alpha = 0
                         }, completion: { (success) in
-                            self.mySelectedProductsCollection.reloadData()
+                            if (success){
+                                self.updateMyRemovedProducts()
+                            } else {
+                                cell!.alpha = 0
+                            }
                         })
                     }
                     counter += 1
@@ -358,17 +361,42 @@ class HLBarterScreenViewController: BaseViewController {
                     if p.productStatus == "deleted" {
                         let indexPath = IndexPath(row: counter, section: 0)
                         let cell = self.otherSelectedProductsCollection.cellForItem(at: indexPath)
-                        self.otherTradedProducts.remove(at: counter)
                         UIView.animate(withDuration: 0.9, delay: 0.5, options: [], animations: {
                             cell!.alpha = 0
                         }, completion: { (success) in
-                            self.otherSelectedProductsCollection.reloadData()
+                            if (success){
+                                self.updateOtherRemovedProducts()
+                            } else {
+                                cell!.alpha = 0
+                            }
                         })
                     }
                     counter += 1
                 }
             }
         }
+    }
+    func updateMyRemovedProducts(){
+        var newArr: [HulaProduct] = []
+        for i in 0 ..< self.myTradedProducts.count {
+            let p = self.myTradedProducts[i]
+            if p.productStatus != "deleted" {
+                newArr.append(p)
+            }
+        }
+        self.myTradedProducts = newArr
+        self.mySelectedProductsCollection.reloadData()
+    }
+    func updateOtherRemovedProducts(){
+        var newArr: [HulaProduct] = []
+        for i in 0 ..< self.otherTradedProducts.count {
+            let p = self.otherTradedProducts[i]
+            if p.productStatus != "deleted" {
+                newArr.append(p)
+            }
+        }
+        self.otherTradedProducts = newArr
+        self.otherSelectedProductsCollection.reloadData()
     }
     
     func animateAddedProducts(_ type : String){
@@ -400,6 +428,7 @@ class HLBarterScreenViewController: BaseViewController {
             column_x = self.view.frame.width - 128
         }
         var counter : Int = 0
+        DispatchQueue.main.async {
         for p in array_to_traverse{
             if p.tradeStatus == 1 {
                 // added product
@@ -413,7 +442,12 @@ class HLBarterScreenViewController: BaseViewController {
                 UIView.animate(withDuration: 0.3 + Double(counter)/10 , animations: {
                     fakeImg.alpha = 1
                     if cell != nil{
-                        fakeImg.frame = (cell?.frame)!
+                        var rct = (cell?.frame)!
+                        rct.origin.x += col.frame.origin.x + 5
+                        rct.origin.y += col.frame.origin.y + 5
+                        rct.size.width -= 10
+                        rct.size.height -= 10
+                        fakeImg.frame = rct
                     } else {
                         fakeImg.frame.origin = CGPoint(x:destx + CGFloat(counter%3) * smallSide + 8, y:7)
                         fakeImg.frame.size = CGSize(width:smallSide, height:smallSide)
@@ -454,6 +488,7 @@ class HLBarterScreenViewController: BaseViewController {
                 })
             }
             counter += 1
+        }
         }
     }
     
@@ -515,7 +550,7 @@ class HLBarterScreenViewController: BaseViewController {
         var final_arr = [String]();
         
         for prod in from {
-            if (prod.productId != "xmoney"){
+            if (prod.productId != "xmoney") && (prod.productStatus != "deleted"){
                 final_arr.append(prod.productId)
             }
         }
