@@ -185,10 +185,8 @@ class HLBarterScreenViewController: BaseViewController {
                         HulaTip(delay: 2, view: self.otherProductsCollection, text: "Here is their stuff. Drag & drop what you want. Tap on the product to get more info."),
                         HulaTip(delay: 0.4, view: self.myProductsCollection, text: "Here is your stuff."),
                         HulaTip(delay: 0.4, view: self.sendOfferFakeView, text: "Once you select what you want, find out if the other trader interested. Click the button below to send a notification!")
-                        ])
+                        ], named: "barter_my_turn")
                     //print(HLDataManager.sharedInstance.onboardingTutorials)
-                    HLDataManager.sharedInstance.onboardingTutorials.setObject("done", forKey: "barter_my_turn" as NSCopying)
-                    HLDataManager.sharedInstance.writeUserData()
                 }
             } else {
                 // other's turn
@@ -197,9 +195,7 @@ class HLBarterScreenViewController: BaseViewController {
                         HulaTip(delay: 2, view: self.sendOfferFakeView, text: "This trading is waiting for the other user to select the items he wants or accept your offer. As soon as the offer is ready you will be notified."),
                         HulaTip(delay: 0.5, view: self.otherProductsCollection, text: "Tap on any product to get more details or ask the owner for a video-proof."),
                         HulaTip(delay: 0.4, view: self.ChatFakeView, text: "Start chat here if you need to talk.")
-                        ])
-                    HLDataManager.sharedInstance.onboardingTutorials.setValue("done", forKey: "barter_other_turn")
-                    HLDataManager.sharedInstance.writeUserData()
+                        ], named: "barter_other_turn")
                 }
             }
             
@@ -234,8 +230,9 @@ class HLBarterScreenViewController: BaseViewController {
             
             if !found {
                 //self.animateDisolveProduct(pr_id, type: type)
-                let tmp_prod = HulaProduct(id: pr_id, name: "Deleted", image: CommonUtils.sharedInstance.productImageURL(productId: pr_id))
+                let tmp_prod = HulaProduct(id: pr_id, name: "Deleted product", image: CommonUtils.sharedInstance.productImageURL(productId: pr_id))
                 tmp_prod.productStatus = "deleted"
+                tmp_prod.productDescription = "This product is not available anymore."
                 tmp_prod.tradeStatus = 2
                 final_arr.append(tmp_prod)
                 
@@ -443,8 +440,8 @@ class HLBarterScreenViewController: BaseViewController {
                     fakeImg.alpha = 1
                     if cell != nil{
                         var rct = (cell?.frame)!
-                        rct.origin.x += col.frame.origin.x + 5
-                        rct.origin.y += col.frame.origin.y + 5
+                        rct.origin.x += col.frame.origin.x + (col.superview?.frame.origin.x)! + 5
+                        rct.origin.y += col.frame.origin.y + (col.superview?.frame.origin.y)! + 5
                         rct.size.width -= 10
                         rct.size.height -= 10
                         fakeImg.frame = rct

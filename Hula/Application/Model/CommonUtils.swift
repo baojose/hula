@@ -20,6 +20,7 @@ class CommonUtils: NSObject, EasyTipViewDelegate, UIGestureRecognizerDelegate {
     var lastTip:EasyTipView = EasyTipView(text: "");
     var startingViewController: UIViewController!
     var bgViewToRemove : UIView!
+    var tutorialToComplete : String = ""
     
     class var sharedInstance: CommonUtils {
         struct Static {
@@ -232,10 +233,10 @@ class CommonUtils: NSObject, EasyTipViewDelegate, UIGestureRecognizerDelegate {
     }
     
     
-    func showTutorial(arrayTips: [HulaTip]){
+    func showTutorial(arrayTips: [HulaTip], named: String){
         if (currentTip == -1){
             currentTipArr = arrayTips
-            
+            self.tutorialToComplete = named
             if let vc = currentTipArr[0].view.parentViewController  {
                 if bgViewToRemove != nil{
                     bgViewToRemove.removeFromSuperview()
@@ -276,6 +277,9 @@ class CommonUtils: NSObject, EasyTipViewDelegate, UIGestureRecognizerDelegate {
                 } else {
                     self.bgViewToRemove.removeFromSuperview()
                     self.currentTip = -1
+                    
+                    HLDataManager.sharedInstance.onboardingTutorials.setObject("done", forKey: self.tutorialToComplete as NSCopying)
+                    HLDataManager.sharedInstance.writeUserData()
                 }
             }
         }else{
@@ -286,6 +290,8 @@ class CommonUtils: NSObject, EasyTipViewDelegate, UIGestureRecognizerDelegate {
                 self.bgViewToRemove.removeFromSuperview()
             })
             
+            HLDataManager.sharedInstance.onboardingTutorials.setObject("done", forKey: self.tutorialToComplete as NSCopying)
+            HLDataManager.sharedInstance.writeUserData()
         }
     }
     func easyTipViewDidDismiss(_ tipView: EasyTipView) {

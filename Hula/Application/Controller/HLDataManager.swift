@@ -115,12 +115,22 @@ class HLDataManager: NSObject {
                         // access all objects in array
                         if let st = trade.object(forKey: "status") as? String{
                             //print(st)
-                            if st != HulaConstants.end_status && st != HulaConstants.cancel_status {
-                                if st != HulaConstants.pending_status || trade.object(forKey: "turn_user_id") as! String == HulaUser.sharedInstance.userId {
+                            var hideFromDashboard = false
+                            if trade.object(forKey: "owner_id") as! String == HulaUser.sharedInstance.userId {
+                                if trade.object(forKey: "owner_accepted") as? Bool == true {
+                                    hideFromDashboard = true
+                                }
+                            } else {
+                                if trade.object(forKey: "other_accepted") as? Bool == true {
+                                    hideFromDashboard = true
+                                }
+                            }
+                            if st != HulaConstants.end_status && st != HulaConstants.cancel_status && !hideFromDashboard {
+                                if  (st != HulaConstants.pending_status || trade.object(forKey: "turn_user_id") as! String == HulaUser.sharedInstance.userId) {
                                     self.arrCurrentTrades.append(trade)
                                 }
                             } else {
-                                if st == HulaConstants.end_status {
+                                if st == HulaConstants.end_status || st == HulaConstants.review_status {
                                     self.arrPastTrades.append(trade)
                                 }
                             }
