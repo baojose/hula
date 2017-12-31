@@ -238,6 +238,10 @@ class HLBarterScreenViewController: BaseViewController {
                 tmp_prod.productStatus = "deleted"
                 tmp_prod.tradeStatus = 2
                 final_arr.append(tmp_prod)
+                
+                // update button. We cannot close the deal directly
+                self.didTradeMutate = true
+                self.mainSwapViewHolder?.controlSetupBottomBar(index: myTradeIndex + 1)
             }
             
             if (self.otherProducts.count > 0){

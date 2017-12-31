@@ -268,6 +268,20 @@ class HLProductDetailViewController: BaseViewController, UIScrollViewDelegate, U
     }
     
     @IBAction func addToTradeAction(_ sender: UIButton) {
+        
+        if !HulaUser.sharedInstance.isUserLoggedIn() {
+            //print( self.tabBarController )
+            
+            if let tb = self.tabBarController as? BaseTabBarViewController {
+                tb.openUserIdentification()
+            }
+            print("User is not logged in!")
+                
+            return
+                
+        }
+        
+        
         let viewController = self.storyboard?.instantiateViewController(withIdentifier: "alertView") as! AlertViewController
         viewController.delegate = self
         if (HulaUser.sharedInstance.numProducts == 0){
