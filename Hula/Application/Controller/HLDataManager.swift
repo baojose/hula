@@ -354,6 +354,24 @@ class HLDataManager: NSObject {
         })
     }
     
+    func getProduct(productId:String, taskCallback: @escaping (HulaProduct) -> ()) {
+        //print("Getting user info...")
+        let queryURL = HulaConstants.apiURL + "products/" + productId
+        //print(queryURL)
+        HLDataManager.sharedInstance.httpGet(urlstr: queryURL, taskCallback: { (ok, json) in
+            if (ok){
+                DispatchQueue.main.async {
+                    if let dictionary = json as? NSDictionary {
+                        let productReturned = HulaProduct()
+                        productReturned.populate(with: dictionary)
+                        taskCallback(productReturned)
+                    }
+                }
+            } else {
+                // connection error
+            }
+        })
+    }
     
     
     func httpGet(urlstr:String, taskCallback: @escaping (Bool, Any?) -> ()) {

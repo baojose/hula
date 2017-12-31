@@ -713,7 +713,7 @@ extension HLBarterScreenViewController: KDDragAndDropCollectionViewDataSource, U
                 cell.statusImage.image = UIImage(named: "video-player-icon-red")
                 if (collectionView.tag == 2){
                     // user selected
-                    cell.statusImage.isHidden = true
+                    // cell.statusImage.isHidden = true
                 }
             } else {
                 cell.statusImage.image = UIImage(named: "video-requested-red")

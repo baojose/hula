@@ -48,6 +48,13 @@ class HLProductModalViewController: UIViewController, UIImagePickerControllerDel
 
         // Do any additional setup after loading the view.
         mainBoxView.layer.cornerRadius = 4
+        mainScrollView.clipsToBounds = true
+        
+        
+        productSetup()
+    }
+    
+    func productSetup(){
         titleLabel.text = product.productName
         productDistance.text = CommonUtils.sharedInstance.getDistanceFrom(loc: product.productLocation)
         productCategory.text = product.productCategory
@@ -57,7 +64,6 @@ class HLProductModalViewController: UIViewController, UIImagePickerControllerDel
         } else {
             productDescriptionLabel.text = "No product description provided."
         }
-        mainScrollView.clipsToBounds = true
         self.setupVideoButtons()
         
         self.multipleDealsImg.isHidden = true
@@ -83,7 +89,7 @@ class HLProductModalViewController: UIViewController, UIImagePickerControllerDel
         let appDelegate = UIApplication.shared.delegate as! AppDelegate
         appDelegate.allowRotation = false
     }
-
+    
     override func viewDidAppear(_ animated: Bool) {
         
         HLDataManager.sharedInstance.ga("product_detail_barter")
@@ -107,6 +113,9 @@ class HLProductModalViewController: UIViewController, UIImagePickerControllerDel
     
     func setUpProductImagesScrollView() {
         var num_images: CGFloat = 0;
+        
+        productsScrollView.subviews.forEach({ $0.removeFromSuperview() })
+        
         for i in 0 ..< product.arrProductPhotoLink.count {
             let img_url = product.arrProductPhotoLink[i]
             if (img_url.count > 0){
@@ -332,7 +341,9 @@ class HLProductModalViewController: UIViewController, UIImagePickerControllerDel
             videoData?.write(toFile: path, atomically: false)
             //self.dismiss(animated: true, completion: nil)
             notify("Uploading video...")
-            videoBtn.setTitle(" Uploading...", for: .normal)
+            videoBtn.setTitle(" Uploading", for: .normal)
+            // three-dots animation
+            
             HLDataManager.sharedInstance.uploadVideo(path, productId: product.productId, tradeId: self.currentTradeId, taskCallback: { (success, json) in
                 print("Uploaded")
                 //print(json)
@@ -347,7 +358,8 @@ class HLProductModalViewController: UIViewController, UIImagePickerControllerDel
                     self.videoBtn.setImage(UIImage(named: "video-player-icon-red"), for: .normal)
                     self.videoBtn.tag = 43909
                     self.notify("Video uploaded!")
-                    self.setupVideoButtons()
+                    //self.setupVideoButtons()
+                    self.refreshProduct()
                 }
                 
             })
@@ -362,7 +374,7 @@ class HLProductModalViewController: UIViewController, UIImagePickerControllerDel
     }
     
     func videoWasSavedSuccessfully(_ data:Any){
-        print(data)
+        //print(data)
         
     }
     
@@ -376,6 +388,13 @@ class HLProductModalViewController: UIViewController, UIImagePickerControllerDel
         if let im = productsScrollView.viewWithTag(pageControl.currentPage + 1000) as? UIImageView{
             fullScreenImage(im.image!)
         }
+    }
+    
+    func refreshProduct(){
+        HLDataManager.sharedInstance.getProduct(productId:product.productId, taskCallback: {(pr) in
+            self.product = pr;
+            self.productSetup()
+        })
     }
     
 }
