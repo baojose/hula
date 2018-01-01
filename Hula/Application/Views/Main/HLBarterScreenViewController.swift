@@ -185,10 +185,8 @@ class HLBarterScreenViewController: BaseViewController {
                         HulaTip(delay: 2, view: self.otherProductsCollection, text: "Here is their stuff. Drag & drop what you want. Tap on the product to get more info."),
                         HulaTip(delay: 0.4, view: self.myProductsCollection, text: "Here is your stuff."),
                         HulaTip(delay: 0.4, view: self.sendOfferFakeView, text: "Once you select what you want, find out if the other trader interested. Click the button below to send a notification!")
-                        ])
+                        ], named: "barter_my_turn")
                     //print(HLDataManager.sharedInstance.onboardingTutorials)
-                    HLDataManager.sharedInstance.onboardingTutorials.setObject("done", forKey: "barter_my_turn" as NSCopying)
-                    HLDataManager.sharedInstance.writeUserData()
                 }
             } else {
                 // other's turn
@@ -197,9 +195,7 @@ class HLBarterScreenViewController: BaseViewController {
                         HulaTip(delay: 2, view: self.sendOfferFakeView, text: "This trading is waiting for the other user to select the items he wants or accept your offer. As soon as the offer is ready you will be notified."),
                         HulaTip(delay: 0.5, view: self.otherProductsCollection, text: "Tap on any product to get more details or ask the owner for a video-proof."),
                         HulaTip(delay: 0.4, view: self.ChatFakeView, text: "Start chat here if you need to talk.")
-                        ])
-                    HLDataManager.sharedInstance.onboardingTutorials.setValue("done", forKey: "barter_other_turn")
-                    HLDataManager.sharedInstance.writeUserData()
+                        ], named: "barter_other_turn")
                 }
             }
             
@@ -234,10 +230,15 @@ class HLBarterScreenViewController: BaseViewController {
             
             if !found {
                 //self.animateDisolveProduct(pr_id, type: type)
-                let tmp_prod = HulaProduct(id: pr_id, name: "Deleted", image: CommonUtils.sharedInstance.productImageURL(productId: pr_id))
+                let tmp_prod = HulaProduct(id: pr_id, name: "Deleted product", image: CommonUtils.sharedInstance.productImageURL(productId: pr_id))
                 tmp_prod.productStatus = "deleted"
+                tmp_prod.productDescription = "This product is not available anymore."
                 tmp_prod.tradeStatus = 2
                 final_arr.append(tmp_prod)
+                
+                // update button. We cannot close the deal directly
+                self.didTradeMutate = true
+                self.mainSwapViewHolder?.controlSetupBottomBar(index: myTradeIndex + 1)
             }
             
             if (self.otherProducts.count > 0){
@@ -340,11 +341,14 @@ class HLBarterScreenViewController: BaseViewController {
                     if p.productStatus == "deleted" {
                         let indexPath = IndexPath(row: counter, section: 0)
                         let cell = self.mySelectedProductsCollection.cellForItem(at: indexPath)
-                        self.myTradedProducts.remove(at: counter)
                         UIView.animate(withDuration: 0.9, delay: 1, options: [], animations: {
                             cell!.alpha = 0
                         }, completion: { (success) in
-                            self.mySelectedProductsCollection.reloadData()
+                            if (success){
+                                self.updateMyRemovedProducts()
+                            } else {
+                                cell!.alpha = 0
+                            }
                         })
                     }
                     counter += 1
@@ -354,17 +358,42 @@ class HLBarterScreenViewController: BaseViewController {
                     if p.productStatus == "deleted" {
                         let indexPath = IndexPath(row: counter, section: 0)
                         let cell = self.otherSelectedProductsCollection.cellForItem(at: indexPath)
-                        self.otherTradedProducts.remove(at: counter)
                         UIView.animate(withDuration: 0.9, delay: 0.5, options: [], animations: {
                             cell!.alpha = 0
                         }, completion: { (success) in
-                            self.otherSelectedProductsCollection.reloadData()
+                            if (success){
+                                self.updateOtherRemovedProducts()
+                            } else {
+                                cell!.alpha = 0
+                            }
                         })
                     }
                     counter += 1
                 }
             }
         }
+    }
+    func updateMyRemovedProducts(){
+        var newArr: [HulaProduct] = []
+        for i in 0 ..< self.myTradedProducts.count {
+            let p = self.myTradedProducts[i]
+            if p.productStatus != "deleted" {
+                newArr.append(p)
+            }
+        }
+        self.myTradedProducts = newArr
+        self.mySelectedProductsCollection.reloadData()
+    }
+    func updateOtherRemovedProducts(){
+        var newArr: [HulaProduct] = []
+        for i in 0 ..< self.otherTradedProducts.count {
+            let p = self.otherTradedProducts[i]
+            if p.productStatus != "deleted" {
+                newArr.append(p)
+            }
+        }
+        self.otherTradedProducts = newArr
+        self.otherSelectedProductsCollection.reloadData()
     }
     
     func animateAddedProducts(_ type : String){
@@ -396,6 +425,7 @@ class HLBarterScreenViewController: BaseViewController {
             column_x = self.view.frame.width - 128
         }
         var counter : Int = 0
+        DispatchQueue.main.async {
         for p in array_to_traverse{
             if p.tradeStatus == 1 {
                 // added product
@@ -409,7 +439,12 @@ class HLBarterScreenViewController: BaseViewController {
                 UIView.animate(withDuration: 0.3 + Double(counter)/10 , animations: {
                     fakeImg.alpha = 1
                     if cell != nil{
-                        fakeImg.frame = (cell?.frame)!
+                        var rct = (cell?.frame)!
+                        rct.origin.x += col.frame.origin.x + (col.superview?.frame.origin.x)! + 5
+                        rct.origin.y += col.frame.origin.y + (col.superview?.frame.origin.y)! + 5
+                        rct.size.width -= 10
+                        rct.size.height -= 10
+                        fakeImg.frame = rct
                     } else {
                         fakeImg.frame.origin = CGPoint(x:destx + CGFloat(counter%3) * smallSide + 8, y:7)
                         fakeImg.frame.size = CGSize(width:smallSide, height:smallSide)
@@ -450,6 +485,7 @@ class HLBarterScreenViewController: BaseViewController {
                 })
             }
             counter += 1
+        }
         }
     }
     
@@ -511,7 +547,7 @@ class HLBarterScreenViewController: BaseViewController {
         var final_arr = [String]();
         
         for prod in from {
-            if (prod.productId != "xmoney"){
+            if (prod.productId != "xmoney") && (prod.productStatus != "deleted"){
                 final_arr.append(prod.productId)
             }
         }
@@ -677,7 +713,7 @@ extension HLBarterScreenViewController: KDDragAndDropCollectionViewDataSource, U
                 cell.statusImage.image = UIImage(named: "video-player-icon-red")
                 if (collectionView.tag == 2){
                     // user selected
-                    cell.statusImage.isHidden = true
+                    // cell.statusImage.isHidden = true
                 }
             } else {
                 cell.statusImage.image = UIImage(named: "video-requested-red")
