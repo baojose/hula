@@ -337,7 +337,7 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
         }
     }
     func updateProduct() {
-        print("Updating product...")
+        //print("Updating product...")
         if (HLDataManager.sharedInstance.newProduct.productId.count>0){
             let queryURL = HulaConstants.apiURL + "products/" + HLDataManager.sharedInstance.newProduct.productId
             let dataString:String = updateProductDataString()
@@ -345,8 +345,8 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
             HLDataManager.sharedInstance.httpPost(urlstr: queryURL, postString: dataString, isPut: true, taskCallback: { (ok, json) in
                 if (ok){
                     DispatchQueue.main.async {
-                        if let dictionary = json as? [String:Any] {
-                            print(dictionary)
+                        if json as? [String:Any] != nil {
+                            //print(dictionary)
                         }
                         HLDataManager.sharedInstance.uploadMode = false
                         
@@ -375,7 +375,7 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
         dataString += "&images=" + product_images_array.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)!
         dataString += "&lat=\(HulaUser.sharedInstance.location.coordinate.latitude)"
         dataString += "&lng=\(HulaUser.sharedInstance.location.coordinate.longitude)"
-        print(dataString)
+        //print(dataString)
         return dataString
     }
     
