@@ -107,7 +107,7 @@ class HLSwappViewController: UIViewController {
     }
     
     override func prefersHomeIndicatorAutoHidden() -> Bool {
-        print("prefersHomeIndicatorAutoHidden in Swapp")
+        //print("prefersHomeIndicatorAutoHidden in Swapp")
         return true
     }
     override func viewWillAppear(_ animated: Bool) {

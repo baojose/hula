@@ -12,6 +12,7 @@ import CoreLocation
 
 class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITableViewDataSource, CLLocationManagerDelegate {
 
+    @IBOutlet weak var addProductHolder: UIView!
     @IBOutlet var productTableView: UITableView!
     @IBOutlet weak var noProductsView: UIView!
     var locationManager = CLLocationManager()
@@ -54,6 +55,12 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
         if dataManager.uploadMode == false {
             self.productTableView.reloadData()
         }
+        
+        var tabbarHeight : CGFloat = 50
+        if Device.IS_IPHONE_X {
+            tabbarHeight = 84
+        }
+        addProductHolder.frame.origin.y = self.view.frame.height - addProductHolder.frame.height - tabbarHeight
     }
     
     override func didReceiveMemoryWarning() {

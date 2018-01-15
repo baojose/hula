@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="13196" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" colorMatched="YES" initialViewController="omL-QY-oVG">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="13771" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" colorMatched="YES" initialViewController="omL-QY-oVG">
     <device id="retina4_0" orientation="portrait">
         <adaptation id="fullscreen"/>
     </device>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="13173"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="13772"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <customFonts key="customFonts">
@@ -2168,6 +2168,7 @@ recycle!</string>
                     <navigationItem key="navigationItem" id="DDJ-zp-W0z"/>
                     <simulatedTabBarMetrics key="simulatedBottomBarMetrics"/>
                     <connections>
+                        <outlet property="addProductHolder" destination="Olg-Cf-M84" id="LM3-yz-L0s"/>
                         <outlet property="noProductsView" destination="gMI-mp-ghW" id="Ikf-tu-hfg"/>
                         <outlet property="productTableView" destination="dpm-oG-ufv" id="E7z-Nm-akr"/>
                     </connections>
@@ -7609,6 +7610,7 @@ recycle!</string>
                         <outlet property="addMoneyBtn1" destination="QNs-eY-NEZ" id="Jep-3e-LQ9"/>
                         <outlet property="addMoneyBtn2" destination="xXH-sC-plA" id="vNy-0T-j4M"/>
                         <outlet property="leftBackground" destination="4WV-0w-VgU" id="7hu-mL-aZv"/>
+                        <outlet property="mainViewHolder" destination="e24-Ji-y0r" id="t6G-2r-6iq"/>
                         <outlet property="moneyBtn" destination="xXH-sC-plA" id="d4A-9U-qgf"/>
                         <outlet property="myProductsCollection" destination="dRd-A1-3Ps" id="bjD-w6-0sW"/>
                         <outlet property="myProductsDragView" destination="kJx-gG-UNP" id="QGK-vi-85j"/>
