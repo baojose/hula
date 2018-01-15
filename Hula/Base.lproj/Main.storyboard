@@ -6047,7 +6047,7 @@ recycle!</string>
                                         <subviews>
                                             <view contentMode="scaleToFill" id="dz4-Lp-wIq">
                                                 <rect key="frame" x="0.0" y="30" width="320" height="150"/>
-                                                <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES" flexibleMaxY="YES"/>
+                                                <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxY="YES"/>
                                                 <subviews>
                                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Selected pictures:" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="j1n-mN-kQi">
                                                         <rect key="frame" x="33" y="6" width="279" height="24"/>
@@ -6198,7 +6198,7 @@ recycle!</string>
                                             </view>
                                             <view contentMode="scaleToFill" id="kMl-zi-BfP">
                                                 <rect key="frame" x="0.0" y="201.5" width="320" height="112"/>
-                                                <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES" heightSizable="YES" flexibleMaxY="YES"/>
+                                                <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxY="YES"/>
                                                 <subviews>
                                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Write a title:" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="pbn-WJ-6Er">
                                                         <rect key="frame" x="33" y="6" width="279" height="24"/>
