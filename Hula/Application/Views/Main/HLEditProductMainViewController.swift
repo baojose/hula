@@ -70,8 +70,8 @@ class HLEditProductMainViewController: BaseViewController, ProductPictureDelegat
             HLDataManager.sharedInstance.httpGet(urlstr: queryURL, taskCallback: { (ok, json) in
                 //print(json)
                 if (ok){
-                    self.spinner.hide()
                     DispatchQueue.main.async {
+                        self.spinner.hide()
                         if let productListVC = self.parent?.childViewControllers.first as? HLMyProductsViewController{
                             productListVC.getUserProducts()
                         }

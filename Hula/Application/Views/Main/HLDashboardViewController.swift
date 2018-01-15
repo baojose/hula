@@ -47,7 +47,6 @@ class HLDashboardViewController: BaseViewController {
         
     }
 
-    
     override func viewWillAppear(_ animated: Bool) {
         //print(self.view.frame)
         //print(self.mainCollectionView.frame)
@@ -73,6 +72,7 @@ class HLDashboardViewController: BaseViewController {
         */
         
         HLDataManager.sharedInstance.ga("dashboard")
+        
     }
     
     override func didReceiveMemoryWarning() {
@@ -147,18 +147,14 @@ class HLDashboardViewController: BaseViewController {
                                         CommonUtils.sharedInstance.showTutorial(arrayTips: [
                                             HulaTip(delay: 1, view: self.mainCollectionView, text: "You're in the Trade Room!\nto start trading, start exchanging."),
                                             HulaTip(delay: 0.5, view: self.fakeAddTradeView, text: "Need more trading rooms? tap here to add more spaces!")
-                                        ])
-                                        HLDataManager.sharedInstance.onboardingTutorials.setValue("done", forKey: "dashboard_empty")
-                                        HLDataManager.sharedInstance.writeUserData()
+                                        ], named: "dashboard_empty")
                                     }
                                 } else {
                                     // show full rooms tutorial
                                     if HLDataManager.sharedInstance.onboardingTutorials.object(forKey: "dashboard_full") as? String == nil {
                                         CommonUtils.sharedInstance.showTutorial(arrayTips: [
                                             HulaTip(delay: 1, view: self.fakeFirstTradeView, text: "Welcome to your first trade! Get some advice. Click on the Trade Room you used.")
-                                            ])
-                                        HLDataManager.sharedInstance.onboardingTutorials.setValue("done", forKey: "dashboard_full")
-                                        HLDataManager.sharedInstance.writeUserData()
+                                            ], named: "dashboard_full")
                                     }
                                 }
                             }

@@ -10,9 +10,13 @@ import UIKit
 
 class HLDashboardNormalViewFlowLayout: UICollectionViewFlowLayout {
     let itemHeight: CGFloat = 70
-    
+    var isIphoneX : Bool = false
+    var hMargin : CGFloat = 1.0
     override init() {
         super.init()
+        if Device.IS_IPHONE_X {
+            hMargin = 60.0
+        }
         setupLayout()
     }
     
@@ -33,7 +37,7 @@ class HLDashboardNormalViewFlowLayout: UICollectionViewFlowLayout {
     func itemWidth() -> CGFloat {
         let w = collectionView!.frame.width
         let h = collectionView!.frame.height
-        return max(w, h) - 1
+        return max(w, h) - hMargin
     }
     
     override var itemSize: CGSize {
