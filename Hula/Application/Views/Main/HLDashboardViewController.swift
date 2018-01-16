@@ -137,7 +137,7 @@ class HLDashboardViewController: BaseViewController {
                         
                             //HLDataManager.sharedInstance.onboardingTutorials = [:]
                             // TUTORIAL
-                            print("tuto")
+                            //print("tuto")
                             //print(HLDataManager.sharedInstance.tradeMode)
                             //print(HLDataManager.sharedInstance.arrCurrentTrades.count)
                             if (HLDataManager.sharedInstance.tradeMode == "current"){

@@ -11,6 +11,7 @@ import UIKit
 class HLBarterScreenViewController: BaseViewController {
     
     
+    @IBOutlet weak var mainViewHolder: UIView!
     @IBOutlet weak var moneyBtn: UIButton!
     
     @IBOutlet weak var sectionCover: UIButton!
@@ -66,17 +67,20 @@ class HLBarterScreenViewController: BaseViewController {
         
         
         
-        
+        if Device.IS_IPHONE_X {
+            self.mainViewHolder.frame.origin.x = 25
+            self.mainViewHolder.frame.size.width = self.view.frame.width - 50
+        }
         
         // draw borders on collectionviews
         let border = UIView()
-        border.frame = CGRect(x:myProductsCollection.frame.width-1, y: 0, width: 1, height: self.view.frame.height)
+        border.frame = CGRect(x:myProductsCollection.frame.width-1, y: 0, width: 1, height: self.mainViewHolder.frame.height)
         border.backgroundColor = UIColor(red: 0, green: 0, blue: 0, alpha: 0.1)
-        self.view.addSubview(border)
+        self.mainViewHolder.addSubview(border)
         let border2 = UIView()
-        border2.frame = CGRect(x: self.view.frame.width - otherProductsCollection.frame.width, y: 0, width: 1, height: self.view.frame.height)
+        border2.frame = CGRect(x: self.mainViewHolder.frame.width - otherProductsCollection.frame.width, y: 0, width: 1, height: self.mainViewHolder.frame.height)
         border2.backgroundColor = UIColor(red: 0, green: 0, blue: 0, alpha: 0.1)
-        self.view.addSubview(border2)
+        self.mainViewHolder.addSubview(border2)
         
         
         // tag each collectionview
@@ -228,7 +232,7 @@ class HLBarterScreenViewController: BaseViewController {
                 }
             }
             
-            if !found {
+            if !found && pr_id != "" {
                 //self.animateDisolveProduct(pr_id, type: type)
                 let tmp_prod = HulaProduct(id: pr_id, name: "Deleted product", image: CommonUtils.sharedInstance.productImageURL(productId: pr_id))
                 tmp_prod.productStatus = "deleted"
@@ -302,6 +306,11 @@ class HLBarterScreenViewController: BaseViewController {
     }
     
     override func viewWillAppear(_ animated: Bool) {
+        if Device.IS_IPHONE_X {
+            self.mainViewHolder.frame.origin.x = 25
+            self.mainViewHolder.frame.size.width = self.view.frame.width - 50
+        }
+        
         if let swappPageVC = self.parent as? HLSwappPageViewController{
             self.addMoneyBtn1.isHidden = false
             self.addMoneyBtn2.isHidden = false
@@ -320,6 +329,8 @@ class HLBarterScreenViewController: BaseViewController {
                 
             }
         }
+        
+        
     }
 
     /*
@@ -332,7 +343,7 @@ class HLBarterScreenViewController: BaseViewController {
     }
     */
     func animateDisolveProducts(_ type:String){
-        print("Disolve")
+        //print("Disolve")
         
         DispatchQueue.main.async {
             var counter = 0

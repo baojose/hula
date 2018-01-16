@@ -87,13 +87,13 @@
 		</dict>
 	</dict>
 	<key>NSCameraUsageDescription</key>
-	<string>Allow to us</string>
+	<string>In order to take pictures of your stuff, we need access to your camera.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>Store your products location to calculate distances</string>
+	<string>We use your location to calculate distances between users.</string>
 	<key>NSMicrophoneUsageDescription</key>
-	<string>Record videos as proof of your stuff</string>
+	<string>We need multimedia access in order to record videos as proof of your stuff.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>Allow to us</string>
+	<string>We need access to your photo library if you want to upload an image.</string>
 	<key>UIAppFonts</key>
 	<array>
 		<string>BebasNeue Bold.otf</string>
