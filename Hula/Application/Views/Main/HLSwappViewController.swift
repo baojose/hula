@@ -102,8 +102,6 @@ class HLSwappViewController: UIViewController {
         
         
         
-        
-        
     }
     
     override func prefersHomeIndicatorAutoHidden() -> Bool {
@@ -590,7 +588,11 @@ class HLSwappViewController: UIViewController {
                 self.extraRoomImage.alpha = 1
                 self.nextTradeBtn.alpha = 1
                  */
-                self.addTradeRoomBtn.alpha = 1;
+                if HulaUser.sharedInstance.maxTrades >= 5{
+                    self.addTradeRoomBtn.alpha = 0
+                } else {
+                    self.addTradeRoomBtn.alpha = 1;
+                }
                 self.mainCentralLabel.alpha=0;
                 self.myUserView.frame.origin.x = -500
                 self.otherUserView.frame.origin.x = self.initialOtherUserX + 500
@@ -604,6 +606,9 @@ class HLSwappViewController: UIViewController {
                 self.tradeModeLine.alpha = 1
             }
             self.chatCountLbl.isHidden = true
+            
+            
+            
         }
     }
     
@@ -746,6 +751,7 @@ extension HLSwappViewController: AlertDelegate{
                 switch result {
                 case .success(let result):
                     print("App Invite Sent with result \(result)")
+                    self.addExtraRoom()
                 case .failed(let error):
                     print("Failed to send app invite with error \(error)")
                 }
@@ -753,7 +759,6 @@ extension HLSwappViewController: AlertDelegate{
         } catch let error {
             print("Failed to show app invite dialog with error \(error)")
         }
-        self.addExtraRoom()
     }
     func shareHulaStandard(){
         let text = "Hey, I trade on HULA! I get what I want and give what I don't. https://hula.trading"
@@ -767,7 +772,12 @@ extension HLSwappViewController: AlertDelegate{
         activityViewController.excludedActivityTypes = [ UIActivityType.airDrop, UIActivityType.addToReadingList, UIActivityType.assignToContact ]
         // present the view controller
         self.present(activityViewController, animated: true, completion: nil)
-        self.addExtraRoom()
+        
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 15.5) {
+            self.addExtraRoom()
+        }
+
         
     }
     
