@@ -6242,14 +6242,14 @@ recycle!</string>
                                                 </subviews>
                                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                             </view>
-                                            <button opaque="NO" contentMode="scaleToFill" enabled="NO" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" id="y6V-HN-KNH" customClass="HLRoundedGradientNextButton" customModule="Hula" customModuleProvider="target">
-                                                <rect key="frame" x="159" y="398" width="137" height="39"/>
+                                            <button opaque="NO" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" id="XkK-rB-sAy" customClass="HLRoundedGradientButton" customModule="Hula" customModuleProvider="target">
+                                                <rect key="frame" x="156" y="397" width="130" height="41"/>
                                                 <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxY="YES"/>
-                                                <state key="normal" title="Publish   ">
-                                                    <color key="titleColor" red="0.76692307757178335" green="0.77499595207253891" blue="0.77499595207253891" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                                <state key="normal" title="Publish">
+                                                    <color key="titleColor" red="0.71454722640000001" green="0.71357300739999996" blue="0.73059018779999996" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                                 </state>
                                                 <connections>
-                                                    <action selector="publishNewProduct:" destination="QjV-x8-CvW" eventType="touchUpInside" id="aUS-za-BUw"/>
+                                                    <action selector="publishNewProduct:" destination="QjV-x8-CvW" eventType="touchUpInside" id="ll6-ot-gIE"/>
                                                 </connections>
                                             </button>
                                         </subviews>
@@ -6281,7 +6281,7 @@ recycle!</string>
                         <outlet property="mainScrollView" destination="Nyb-Ce-GvW" id="x1I-3B-DH5"/>
                         <outlet property="pageTitleLabel" destination="DJw-de-AwB" id="cdj-00-x4H"/>
                         <outlet property="productTitleTxtField" destination="ZuC-LO-RdP" id="pvy-zK-rgk"/>
-                        <outlet property="publishBtn" destination="y6V-HN-KNH" id="kXh-x5-UBq"/>
+                        <outlet property="publishBtn" destination="XkK-rB-sAy" id="Iq0-wQ-vWV"/>
                         <outlet property="secondImage" destination="k82-gz-3Iy" id="f80-dO-uB0"/>
                         <outlet property="thirdImage" destination="XwQ-if-qRL" id="Guw-oI-bub"/>
                     </connections>

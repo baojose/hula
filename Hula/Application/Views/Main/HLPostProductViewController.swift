@@ -21,7 +21,8 @@ class HLPostProductViewController: BaseViewController, UITextFieldDelegate {
     @IBOutlet weak var mainImageLabel: UILabel!
     
     @IBOutlet var productTitleTxtField: UITextField!
-    @IBOutlet var publishBtn: HLRoundedNextButton!
+    
+    @IBOutlet weak var publishBtn: HLRoundedGradientButton!
     @IBOutlet weak var cameraButton1: UIButton!
     @IBOutlet weak var cameraButton2: UIButton!
     @IBOutlet weak var cameraButton3: UIButton!
@@ -146,7 +147,7 @@ class HLPostProductViewController: BaseViewController, UITextFieldDelegate {
         //publishBtn.setTitleColor(UIColor.white, for: UIControlState.normal)
         
         productTitleTxtField.addTarget(self, action: #selector(textchange(_:)), for: UIControlEvents.editingChanged)
-        publishBtn.setup()
+        //publishBtn.setup()
         self.changePublishBtnState("")
         let tapGesture: UITapGestureRecognizer! = UITapGestureRecognizer.init(target: self, action: #selector(onTapScreen))
         self.view.addGestureRecognizer(tapGesture)
@@ -295,10 +296,10 @@ class HLPostProductViewController: BaseViewController, UITextFieldDelegate {
         self.dataManager.newProduct.productName = string
         if dataManager.newProduct.arrProductPhotos.count != 0 && string.count != 0  {
             publishBtn.isEnabled = true
-            publishBtn.startAnimation()
+            //publishBtn.startAnimation()
         }else{
             publishBtn.isEnabled = false
-            publishBtn.stopAnimation()
+            //publishBtn.stopAnimation()
         }
     }
     func onTapScreen(){
