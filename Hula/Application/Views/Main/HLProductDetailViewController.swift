@@ -54,11 +54,16 @@ class HLProductDetailViewController: BaseViewController, UIScrollViewDelegate, U
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         //self.addToTradeViewContainer.frame.size.height = 60
-        super.viewWillAppear(animated)
         UIView.animate(withDuration: 0.3) {
             self.addToTradeViewContainer.frame = CGRect(x: 0, y: self.view.frame.height - 120, width: self.view.frame.width, height: 60)
         }
         HLDataManager.sharedInstance.ga("discovery_product")
+        
+        var tabbarHeight : CGFloat = 50
+        if Device.IS_IPHONE_X {
+            tabbarHeight = 84
+        }
+        addToTradeViewContainer.frame.origin.y = self.view.frame.height - addToTradeViewContainer.frame.height - tabbarHeight
     }
     
     override func didReceiveMemoryWarning() {

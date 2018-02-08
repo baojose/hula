@@ -212,7 +212,7 @@ class HLCompleteProductProfileViewController: BaseViewController, UIScrollViewDe
         }
     }
     @IBAction func doneBtnPRessed(_ sender: Any) {
-        print("Complete button pressed")
+        //print("Complete button pressed")
         //if (dataManager.newProduct.arrProductPhotoLink.count>0 || dataManager.newProduct.productImage != ""){
             dataManager.newProduct.productDescription = desciptionTxtField.text
             dataManager.newProduct.productCondition = productCondition

@@ -258,7 +258,7 @@ class CommonUtils: NSObject, EasyTipViewDelegate, UIGestureRecognizerDelegate {
     
     func showNextTip(_ direct:Bool){
         //self.lastTip.dismiss()
-        print("shownext")
+        //print("shownext")
         self.currentTip += 1
         if (self.currentTip < self.currentTipArr.count){
             var when = DispatchTime.now() + Double(currentTipArr[currentTip].delay)
@@ -295,12 +295,12 @@ class CommonUtils: NSObject, EasyTipViewDelegate, UIGestureRecognizerDelegate {
         }
     }
     func easyTipViewDidDismiss(_ tipView: EasyTipView) {
-        print("dismissed")
+        //print("dismissed")
         self.showNextTip(false)
     }
     
     func removeEasyTips(){
-        print("removing from...")
+        //print("removing from...")
         print(self.currentTip)
         if let prnt = self.currentTipArr[self.currentTip].view.parentViewController?.view {
             for view in prnt.subviews {

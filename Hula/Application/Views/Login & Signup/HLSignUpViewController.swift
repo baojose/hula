@@ -49,7 +49,7 @@ class HLSignUpViewController: UserBaseViewController, UITextFieldDelegate  {
         //self.closeIdentification()
         _ = self.navigationController?.popViewController(animated: true)
     }
-    
+    //test
     @IBAction func nextStepPressed(_ sender: Any) {
         if (signupField.text! != ""){
             signupField.isSecureTextEntry = false
@@ -68,19 +68,23 @@ class HLSignUpViewController: UserBaseViewController, UITextFieldDelegate  {
             case 2:
                 userPassword = signupField.text!
                 signupField.text = ""
+                //resetStepTexts()
                 currentStep += 1
-                resetStepTexts()
                 break
             default:
-                HLDataManager.sharedInstance.signupUser(email: userEmail, nick:userNick, pass: userPassword)
-                UIView.animate(withDuration: 0.2, animations: {
-                    self.signupErrorView.frame.origin.y = self.view.frame.height
-                    self.greenBackgroundImage.alpha = 1
-                })
-                self.view.endEditing(true)
+                
                 break
             }
-            
+            if currentStep > 2{
+                HLDataManager.sharedInstance.signupUser(email: userEmail, nick:userNick, pass: userPassword)
+                DispatchQueue.main.async {
+                    UIView.animate(withDuration: 0.2, animations: {
+                        self.signupErrorView.frame.origin.y = self.view.frame.height
+                        self.greenBackgroundImage.alpha = 1
+                    })
+                    self.view.endEditing(true)
+                }
+            }
         } else {
             self.showError("This field cannot be empty. Please fill all the fields.")
         }
@@ -167,23 +171,22 @@ class HLSignUpViewController: UserBaseViewController, UITextFieldDelegate  {
     
     func signupDataRecieved(notification: NSNotification) {
         //print("Signup received. Closing VC")
-        let signupOk = notification.object as! Bool
-        print("signupOk")
-        print(signupOk)
-        if (signupOk){
-            DispatchQueue.main.async {
+        DispatchQueue.main.async {
+            let signupOk = notification.object as! Bool
+            //print("signupOk")
+            //print(signupOk)
+            if (signupOk){
                 let storyBoard : UIStoryboard = UIStoryboard(name: "Main", bundle:nil)
                 let nextViewController = storyBoard.instantiateViewController(withIdentifier: "welcome") as! HLWelcomeViewController
                 //self.present(nextViewController, animated:true, completion:nil)
-                print("navigationController?.pushViewController")
+                //print("navigationController?.pushViewController")
                 self.navigationController?.pushViewController(nextViewController, animated: true)
-            }
-        } else {
-            DispatchQueue.main.async {
+               
+            } else {
                 self.showError(HLDataManager.sharedInstance.lastServerMessage)
             }
+            self.view.setNeedsDisplay()
         }
-        self.view.setNeedsDisplay()
     }
     @IBAction func beginEditText(_ sender: Any) {
         moveUpView()

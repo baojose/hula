@@ -324,7 +324,7 @@ class HLProductModalViewController: UIViewController, UIImagePickerControllerDel
         })
     }
     func imagePickerController(_ picker:UIImagePickerController, didFinishPickingMediaWithInfo info: [String:Any]) {
-        print("Got a video")
+        //print("Got a video")
         
         if let pickedVideo:NSURL = (info[UIImagePickerControllerMediaURL] as? NSURL) {
             // Save video to the main photo album
@@ -414,7 +414,7 @@ extension HLProductModalViewController: AlertDelegate{
                 DispatchQueue.main.async {
                     
                     self.dismiss(animated: true, completion: {
-                        print("Dismissed")
+                        //print("Dismissed")
                     })
                 }
             })
@@ -426,7 +426,7 @@ extension HLProductModalViewController: AlertDelegate{
 
 extension HLProductModalViewController {
     func fullScreenImage(_ image: UIImage) {
-        print("Fullingscreening")
+        //print("Fullingscreening")
         let newImageView = UIImageView(image: image)
         
         newImageView.frame = CGRect(x: self.view.frame.width/2, y: self.view.frame.height/2, width: 10, height:10)

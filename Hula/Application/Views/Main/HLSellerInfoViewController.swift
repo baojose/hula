@@ -54,7 +54,13 @@ class HLSellerInfoViewController: BaseViewController, UITableViewDelegate, UITab
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
     }
-    
+    override func viewWillAppear(_ animated: Bool) {
+        var tabbarHeight : CGFloat = 50
+        if Device.IS_IPHONE_X {
+            tabbarHeight = 84
+        }
+        tradeButtonsHolder.frame.origin.y = self.view.frame.height - tradeButtonsHolder.frame.height - tabbarHeight
+    }
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         /*
