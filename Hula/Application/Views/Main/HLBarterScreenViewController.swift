@@ -297,7 +297,6 @@ class HLBarterScreenViewController: BaseViewController {
     }
     
     override func viewDidAppear(_ animated: Bool) {
-        
         HLDataManager.sharedInstance.ga("barter_screen")
     }
     
@@ -555,6 +554,34 @@ class HLBarterScreenViewController: BaseViewController {
         return final_arr
     }
     
+    func updateProductsFromTrade(){
+        print("Updating products from trade...")
+        getUserProducts(user: HulaUser.sharedInstance.userId, taskCallback: {(result) in
+            var ctr = 0;
+            for tr_prod in self.myTradedProducts {
+                for my_prod in result {
+                    if tr_prod.productId == my_prod.productId {
+                        self.myTradedProducts[ctr].video_requested = my_prod.video_requested
+                        self.myTradedProducts[ctr].video_url = my_prod.video_url
+                    }
+                }
+                ctr += 1
+            }
+        })
+        getUserProducts(user: otherUserId, taskCallback: {(result) in
+            var ctr = 0;
+            for tr_prod in self.otherTradedProducts {
+                for other_prod in result {
+                    if tr_prod.productId == other_prod.productId {
+                        self.otherTradedProducts[ctr].video_requested = other_prod.video_requested
+                        self.otherTradedProducts[ctr].video_url = other_prod.video_url
+                    }
+                }
+                ctr += 1
+            }
+        })
+    }
+    
     @IBAction func addMoneyToOther(_ sender: Any) {
         let viewController = self.storyboard?.instantiateViewController(withIdentifier: "calculatorView") as! HLCalculatorViewController
         
@@ -708,13 +735,9 @@ extension HLBarterScreenViewController: KDDragAndDropCollectionViewDataSource, U
         }
         
         cell.statusImage.isHidden = false
-        if ( vreq ){
+        if ( vreq || vurl.count > 0 ){
             if vurl.count > 0 {
                 cell.statusImage.image = UIImage(named: "video-player-icon-red")
-                if (collectionView.tag == 2){
-                    // user selected
-                    // cell.statusImage.isHidden = true
-                }
             } else {
                 cell.statusImage.image = UIImage(named: "video-requested-red")
             }
