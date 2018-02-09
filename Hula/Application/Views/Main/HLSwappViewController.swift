@@ -817,6 +817,8 @@ extension HLSwappViewController: AlertDelegate{
                 if (ok){
                     print(json!)
                     DispatchQueue.main.async {
+                        
+                        
                     }
                 }
             })
