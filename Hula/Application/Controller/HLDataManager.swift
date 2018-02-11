@@ -400,6 +400,7 @@ class HLDataManager: NSObject {
             //print(response)
             //print(data.count)
             let json = try! JSONSerialization.jsonObject(with: data, options: [])
+            //print(json)
             taskCallback(true, json as AnyObject?)
         }
     
