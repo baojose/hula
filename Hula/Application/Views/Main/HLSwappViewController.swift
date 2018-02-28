@@ -309,21 +309,7 @@ class HLSwappViewController: UIViewController {
             
             self.tempTag = (sender as? UIButton)!.tag
             if (tradeStatus.owner_products.count == 0 || tradeStatus.other_products.count == 0) && tradeStatus.num_bids > 2  {
-                if tradeStatus.owner_id == HulaUser.sharedInstance.userId {
-                    // i am the owner
-                    if tradeStatus.owner_products.count == 0 && tradeStatus.owner_money == 0 {
-                        showAlert(message:"No offer without an item. Unless you wanna offer cash...", trigger:"notrade", cancelVisible:false, okText:"Ok")
-                    } else {
-                        showAlert(message:"Are you giving your stuff away for free? If not, choose the item you want to exchange it with.", trigger:"donation", cancelVisible:true, okText:"Ok!")
-                    }
-                } else {
-                    // i am the other
-                    if tradeStatus.other_products.count == 0 && tradeStatus.other_money == 0 {
-                        showAlert(message:"No offer without an item. Unless you wanna offer cash...", trigger:"notrade", cancelVisible:false, okText:"Ok")
-                    } else {
-                        showAlert(message:"Are you giving your stuff away for free? If not, choose something you want to exchange it with.", trigger:"donation", cancelVisible:true, okText:"Ok!")
-                    }
-                }
+                manageDonationMessages(tradeStatus: tradeStatus, okStatus:"donation")
                 return
             }
             executeOfferOptions(tradeStatus, buttonTag: self.tempTag)
@@ -332,6 +318,25 @@ class HLSwappViewController: UIViewController {
             print("No trade/barter delegate vc found!")
         }
     }
+    
+    func manageDonationMessages(tradeStatus:HulaTrade, okStatus:String){
+        if tradeStatus.owner_id == HulaUser.sharedInstance.userId {
+            // i am the owner
+            if tradeStatus.owner_products.count == 0 && tradeStatus.owner_money == 0 {
+                showAlert(message:"No offer without an item. Unless you wanna offer cash...", trigger:"notrade", cancelVisible:false, okText:"Ok")
+            } else {
+                showAlert(message:"Are you giving your stuff away for free? If not, choose the item you want to exchange it with.", trigger:okStatus, cancelVisible:true, okText:"Ok!")
+            }
+        } else {
+            // i am the other
+            if tradeStatus.other_products.count == 0 && tradeStatus.other_money == 0 {
+                showAlert(message:"No offer without an item. Unless you wanna offer cash...", trigger:"notrade", cancelVisible:false, okText:"Ok")
+            } else {
+                showAlert(message:"Are you giving your stuff away for free? If not, choose something you want to exchange it with.", trigger:okStatus, cancelVisible:true, okText:"Ok!")
+            }
+        }
+    }
+    
     
     func showAlert(message:String, trigger:String, cancelVisible:Bool,  okText:String){
     
@@ -388,8 +393,17 @@ class HLSwappViewController: UIViewController {
                         viewController.isCancelVisible = false
                         
                         if buttonTag == 91053 {
+                            
+                            //donation?
+                            if (tradeStatus.owner_products.count == 0 || tradeStatus.other_products.count == 0) {
+                                self.manageDonationMessages(tradeStatus: tradeStatus, okStatus:"deal_review")
+                                return
+                            }
+                            
                             viewController.message = "You accepted the deal. Now meet the trader and exchange your stuff."
                             viewController.trigger = "deal_review"
+                            
+                            
                         } else {
                             if buttonTag == 90441 {
                                 viewController.message = "Great! Enjoy your stuff and many thanks for using HULA.\nIn order to free up this trading room, this trade will be moved to your past trades tab."
@@ -817,6 +831,8 @@ extension HLSwappViewController: AlertDelegate{
                 if (ok){
                     print(json!)
                     DispatchQueue.main.async {
+                        
+                        
                     }
                 }
             })

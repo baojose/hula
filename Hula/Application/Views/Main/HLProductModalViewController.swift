@@ -101,6 +101,11 @@ class HLProductModalViewController: UIViewController, UIImagePickerControllerDel
     }
     
     @IBAction func closeModalAction(_ sender: Any) {
+        //print(self.parent)
+        if let pvc = self.presentingViewController as? HLBarterScreenViewController{
+            pvc.updateProductsFromTrade()
+        }
+        HLDataManager.sharedInstance.onlyLandscapeView = false
         self.dismiss(animated: true)
     }
     
@@ -395,6 +400,7 @@ class HLProductModalViewController: UIViewController, UIImagePickerControllerDel
             self.product = pr;
             self.productSetup()
         })
+        
     }
     
 }

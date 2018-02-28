@@ -203,6 +203,7 @@ class HLDashboardViewController: BaseViewController {
                     self.present(viewController, animated: true)
                     
                     
+                    self.last_trade_request = 0
                     self.refreshCollectionViewData()
                 }
             } else {
@@ -238,7 +239,7 @@ extension HLDashboardViewController: AlertDelegate{
                             alert.addAction(UIAlertAction(title: "Product deleted", style: UIAlertActionStyle.default, handler: nil))
                             alert.addAction(UIAlertAction(title: "Other", style: UIAlertActionStyle.default, handler: nil))
                             self.present(alert, animated: true, completion: nil)
-                            
+                            self.last_trade_request = 0
                             self.refreshCollectionViewData()
                         }
                     } else {
