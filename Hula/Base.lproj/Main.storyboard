@@ -4961,73 +4961,6 @@ recycle!</string>
                                     <action selector="okButtonAction:" destination="slW-Ed-OxB" eventType="touchUpInside" id="EaU-cg-qkd"/>
                                 </connections>
                             </button>
-                            <view contentMode="scaleToFill" misplaced="YES" id="mW8-mf-nOG">
-                                <rect key="frame" x="43.5" y="319" width="233" height="41"/>
-                                <autoresizingMask key="autoresizingMask" flexibleMinX="YES" widthSizable="YES" flexibleMaxX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
-                                <subviews>
-                                    <imageView opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" tag="1" contentMode="center" image="star-empty" id="Wbj-OV-MLE">
-                                        <rect key="frame" x="4" y="5" width="36" height="31"/>
-                                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
-                                    </imageView>
-                                    <imageView opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" tag="2" contentMode="center" image="star-empty" id="NGL-FX-vok">
-                                        <rect key="frame" x="54" y="5" width="34" height="31"/>
-                                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
-                                    </imageView>
-                                    <imageView opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" tag="3" contentMode="center" image="star-empty" id="LWy-x8-0eL">
-                                        <rect key="frame" x="96.5" y="5" width="36" height="31"/>
-                                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
-                                    </imageView>
-                                    <imageView opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" tag="4" contentMode="center" image="star-empty" id="e08-6S-wwX">
-                                        <rect key="frame" x="149" y="5" width="33" height="31"/>
-                                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
-                                    </imageView>
-                                    <imageView opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" tag="5" contentMode="center" image="star-empty" id="xcr-T4-KMG">
-                                        <rect key="frame" x="194" y="5" width="33" height="31"/>
-                                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
-                                    </imageView>
-                                    <button opaque="NO" tag="11" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" id="X0u-7D-k1v">
-                                        <rect key="frame" x="0.0" y="0.0" width="46" height="41"/>
-                                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
-                                        <connections>
-                                            <action selector="starButtonTapped:" destination="QMT-7V-PYZ" eventType="touchUpInside" id="Ub2-hk-2Jm"/>
-                                            <action selector="starsButtonAction:" destination="slW-Ed-OxB" eventType="touchUpInside" id="g4P-44-T7t"/>
-                                        </connections>
-                                    </button>
-                                    <button opaque="NO" tag="12" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" id="Qbd-ZC-ioU">
-                                        <rect key="frame" x="47" y="0.0" width="48" height="41"/>
-                                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
-                                        <connections>
-                                            <action selector="starButtonTapped:" destination="QMT-7V-PYZ" eventType="touchUpInside" id="5bT-wA-kid"/>
-                                            <action selector="starsButtonAction:" destination="slW-Ed-OxB" eventType="touchUpInside" id="eZi-SW-ADw"/>
-                                        </connections>
-                                    </button>
-                                    <button opaque="NO" tag="13" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" id="rDt-DV-2ua">
-                                        <rect key="frame" x="95" y="0.0" width="42" height="41"/>
-                                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
-                                        <connections>
-                                            <action selector="starButtonTapped:" destination="QMT-7V-PYZ" eventType="touchUpInside" id="U1V-kF-L2F"/>
-                                            <action selector="starsButtonAction:" destination="slW-Ed-OxB" eventType="touchUpInside" id="RjM-E5-pdQ"/>
-                                        </connections>
-                                    </button>
-                                    <button opaque="NO" tag="14" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" id="NyW-4m-ti9">
-                                        <rect key="frame" x="140" y="0.0" width="47" height="41"/>
-                                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
-                                        <connections>
-                                            <action selector="starButtonTapped:" destination="QMT-7V-PYZ" eventType="touchUpInside" id="knO-D0-63X"/>
-                                            <action selector="starsButtonAction:" destination="slW-Ed-OxB" eventType="touchUpInside" id="0eN-xp-nIk"/>
-                                        </connections>
-                                    </button>
-                                    <button opaque="NO" tag="15" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" id="GmY-QH-HR7">
-                                        <rect key="frame" x="185" y="0.0" width="48" height="41"/>
-                                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
-                                        <connections>
-                                            <action selector="starButtonTapped:" destination="QMT-7V-PYZ" eventType="touchUpInside" id="Nej-0Y-sHi"/>
-                                            <action selector="starsButtonAction:" destination="slW-Ed-OxB" eventType="touchUpInside" id="f4W-Sm-ual"/>
-                                        </connections>
-                                    </button>
-                                </subviews>
-                                <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
-                            </view>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" text="Please rate your trade" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="IT2-XO-e2O">
                                 <rect key="frame" x="32.5" y="156" width="255" height="132"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMinX="YES" widthSizable="YES" flexibleMaxX="YES" flexibleMinY="YES" heightSizable="YES" flexibleMaxY="YES"/>
@@ -5114,6 +5047,68 @@ recycle!</string>
                                     <action selector="mainButtonAction:" destination="slW-Ed-OxB" eventType="touchUpInside" id="P1u-KU-9cq"/>
                                 </connections>
                             </button>
+                            <view contentMode="scaleToFill" misplaced="YES" id="mW8-mf-nOG">
+                                <rect key="frame" x="43" y="319" width="233" height="41"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMinX="YES" widthSizable="YES" flexibleMaxX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
+                                <subviews>
+                                    <imageView opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" tag="1" contentMode="center" image="star-empty" id="Wbj-OV-MLE">
+                                        <rect key="frame" x="4" y="5" width="36" height="31"/>
+                                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
+                                    </imageView>
+                                    <imageView opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" tag="2" contentMode="center" image="star-empty" id="NGL-FX-vok">
+                                        <rect key="frame" x="54" y="5" width="34" height="31"/>
+                                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
+                                    </imageView>
+                                    <imageView opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" tag="3" contentMode="center" image="star-empty" id="LWy-x8-0eL">
+                                        <rect key="frame" x="96.5" y="5" width="36" height="31"/>
+                                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
+                                    </imageView>
+                                    <imageView opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" tag="4" contentMode="center" image="star-empty" id="e08-6S-wwX">
+                                        <rect key="frame" x="149" y="5" width="33" height="31"/>
+                                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
+                                    </imageView>
+                                    <imageView opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" tag="5" contentMode="center" image="star-empty" id="xcr-T4-KMG">
+                                        <rect key="frame" x="194" y="5" width="33" height="31"/>
+                                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
+                                    </imageView>
+                                    <button opaque="NO" tag="11" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" id="X0u-7D-k1v">
+                                        <rect key="frame" x="2" y="0.0" width="46" height="41"/>
+                                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
+                                        <connections>
+                                            <action selector="starsButtonAction:" destination="slW-Ed-OxB" eventType="touchUpInside" id="g4P-44-T7t"/>
+                                        </connections>
+                                    </button>
+                                    <button opaque="NO" tag="12" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" id="Qbd-ZC-ioU">
+                                        <rect key="frame" x="47" y="0.0" width="48" height="41"/>
+                                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
+                                        <connections>
+                                            <action selector="starsButtonAction:" destination="slW-Ed-OxB" eventType="touchUpInside" id="eZi-SW-ADw"/>
+                                        </connections>
+                                    </button>
+                                    <button opaque="NO" tag="13" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" id="rDt-DV-2ua">
+                                        <rect key="frame" x="95" y="0.0" width="42" height="41"/>
+                                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
+                                        <connections>
+                                            <action selector="starsButtonAction:" destination="slW-Ed-OxB" eventType="touchUpInside" id="RjM-E5-pdQ"/>
+                                        </connections>
+                                    </button>
+                                    <button opaque="NO" tag="14" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" id="NyW-4m-ti9">
+                                        <rect key="frame" x="140" y="0.0" width="47" height="41"/>
+                                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
+                                        <connections>
+                                            <action selector="starsButtonAction:" destination="slW-Ed-OxB" eventType="touchUpInside" id="0eN-xp-nIk"/>
+                                        </connections>
+                                    </button>
+                                    <button opaque="NO" tag="15" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" id="GmY-QH-HR7">
+                                        <rect key="frame" x="185" y="0.0" width="48" height="41"/>
+                                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
+                                        <connections>
+                                            <action selector="starButtonTapped:" destination="QMT-7V-PYZ" eventType="touchUpInside" id="Nej-0Y-sHi"/>
+                                            <action selector="starsButtonAction:" destination="slW-Ed-OxB" eventType="touchUpInside" id="f4W-Sm-ual"/>
+                                        </connections>
+                                    </button>
+                                </subviews>
+                            </view>
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                     </view>
