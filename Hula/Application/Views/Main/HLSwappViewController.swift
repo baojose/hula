@@ -54,6 +54,9 @@ class HLSwappViewController: UIViewController {
     var backFromChat: Bool = false
     var tempTag: Int = 0
     
+    let kTagCloseDeal: Int = 91053
+    let kTagProductsReceived: Int = 90441
+    
     var firstLoad : Bool = true
     
     override func viewDidLoad() {
@@ -308,10 +311,17 @@ class HLSwappViewController: UIViewController {
         if let tradeStatus = barterDelegate?.getCurrentTradeStatus() {
             
             self.tempTag = (sender as? UIButton)!.tag
+            
             if (tradeStatus.owner_products.count == 0 || tradeStatus.other_products.count == 0) && tradeStatus.num_bids > 2  {
                 manageDonationMessages(tradeStatus: tradeStatus, okStatus:"donation")
                 return
             }
+            
+            if self.tempTag == kTagCloseDeal {
+                manageConfirmation(tradeStatus: tradeStatus, okStatus:"doit")
+                return
+            }
+            
             executeOfferOptions(tradeStatus, buttonTag: self.tempTag)
             
         } else {
@@ -337,6 +347,9 @@ class HLSwappViewController: UIViewController {
         }
     }
     
+    func manageConfirmation(tradeStatus:HulaTrade, okStatus:String){
+        showAlert(message:"You are about to close the deal. Confirm?", trigger:okStatus, cancelVisible:true, okText:"Yes!")
+    }
     
     func showAlert(message:String, trigger:String, cancelVisible:Bool,  okText:String){
     
@@ -363,7 +376,7 @@ class HLSwappViewController: UIViewController {
         }
         
         //print(tradeStatus.owner_products)
-        if (turn_id != HulaUser.sharedInstance.userId) && buttonTag != 90441{
+        if (turn_id != HulaUser.sharedInstance.userId) && buttonTag != kTagProductsReceived{
             print("This is not your turn!!!")
         } else {
             let queryURL = HulaConstants.apiURL + "trades/\(trade_id!)"
@@ -373,55 +386,48 @@ class HLSwappViewController: UIViewController {
             let other_money:Int = Int(tradeStatus.other_money)
             var status = HulaConstants.sent_status
             var acceptedTrade: String = "false"
-            if buttonTag == 91053 || buttonTag == 90441 {
+            if buttonTag == kTagCloseDeal || buttonTag == kTagProductsReceived {
                 // offer sent or product received
                 status = HulaConstants.review_status
             }
-            if buttonTag == 90441 {
+            if buttonTag == kTagProductsReceived {
                 acceptedTrade = "true"
             }
             let dataString:String = "status=\(status)&owner_products=\(owner_products)&other_products=\(other_products)&owner_money=\(owner_money)&other_money=\(other_money)&accepted=\(acceptedTrade)"
             //print(dataString)
-            HLDataManager.sharedInstance.httpPost(urlstr: queryURL, postString: dataString, isPut: true, taskCallback: { (ok, json) in
-                if (ok){
-                    //print(json!)
-                    DispatchQueue.main.async {
-                        
-                        let viewController = self.storyboard?.instantiateViewController(withIdentifier: "alertView") as! AlertViewController
-                        
-                        viewController.delegate = self as AlertDelegate
-                        viewController.isCancelVisible = false
-                        
-                        if buttonTag == 91053 {
-                            
-                            //donation?
-                            if (tradeStatus.owner_products.count == 0 || tradeStatus.other_products.count == 0) {
-                                self.manageDonationMessages(tradeStatus: tradeStatus, okStatus:"deal_review")
-                                return
-                            }
-                            
-                            viewController.message = "You accepted the deal. Now meet the trader and exchange your stuff."
-                            viewController.trigger = "deal_review"
-                            
-                            
-                        } else {
-                            if buttonTag == 90441 {
-                                viewController.message = "Great! Enjoy your stuff and many thanks for using HULA.\nIn order to free up this trading room, this trade will be moved to your past trades tab."
-                                viewController.trigger = "deal_closed"
-                            } else {
-                                viewController.message = "Your offer has been sent with your changes.\nPlease allow 72 hours for the user to reply."
-                            }
-                        }
-                        
-                        
-                        self.present(viewController, animated: true)
-                    }
-                } else {
-                    // connection error
-                    print("Connection error")
-                }
-            })
+            
+            
+            sendDataToServer(queryURL: queryURL, dataString: dataString, buttonTag:buttonTag)
         }
+    }
+    
+    func sendDataToServer(queryURL:String, dataString:String, buttonTag:Int){
+        HLDataManager.sharedInstance.httpPost(urlstr: queryURL, postString: dataString, isPut: true, taskCallback: { (ok, json) in
+            if (ok){
+                DispatchQueue.main.async {
+                    let viewController = self.storyboard?.instantiateViewController(withIdentifier: "alertView") as! AlertViewController
+                    
+                    viewController.delegate = self as AlertDelegate
+                    viewController.isCancelVisible = false
+                    
+                    if buttonTag == self.kTagCloseDeal {
+                        viewController.message = "You accepted the deal. Now meet the trader and exchange your stuff."
+                        viewController.trigger = "deal_review"
+                    } else {
+                        if buttonTag == self.kTagProductsReceived {
+                            viewController.message = "Great! Enjoy your stuff and many thanks for using HULA.\nIn order to free up this trading room, this trade will be moved to your past trades tab."
+                            viewController.trigger = "deal_closed"
+                        } else {
+                            viewController.message = "Your offer has been sent with your changes.\nPlease allow 72 hours for the user to reply."
+                        }
+                    }
+                    self.present(viewController, animated: true)
+                }
+            } else {
+                // connection error
+                print("Connection error")
+            }
+        })
     }
     @IBAction func showUserAction(_ sender: Any) {
         //print (prevUser)
@@ -496,7 +502,7 @@ class HLSwappViewController: UIViewController {
                             self.threeDotsView.isHidden = true
                             
                             self.sendOfferBtn.setTitle( "I received my stuff", for: .normal)
-                            self.sendOfferBtn.tag = 90441
+                            self.sendOfferBtn.tag = kTagProductsReceived
                         } else {
                             // still bartering
                             
@@ -531,7 +537,7 @@ class HLSwappViewController: UIViewController {
                                     if self.tradeCanBeClosed(thisTrade) {
                                         // can be closed
                                         self.sendOfferBtn.setTitle( "Accept trade", for: .normal)
-                                        self.sendOfferBtn.tag = 91053
+                                        self.sendOfferBtn.tag = kTagCloseDeal
                                         
                                     } else {
                                         self.sendOfferBtn.setTitle( "Send offer", for: .normal)
@@ -716,6 +722,15 @@ extension HLSwappViewController: AlertDelegate{
             }
             
             if trigger == "donation"{
+                if response == "ok"{
+                    if let tradeStatus = self.barterDelegate?.getCurrentTradeStatus() {
+                        self.executeOfferOptions(tradeStatus, buttonTag: self.tempTag)
+                    }
+                } else {
+                    return
+                }
+            }
+            if trigger == "doit"{
                 if response == "ok"{
                     if let tradeStatus = self.barterDelegate?.getCurrentTradeStatus() {
                         self.executeOfferOptions(tradeStatus, buttonTag: self.tempTag)
