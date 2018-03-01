@@ -124,6 +124,9 @@ class HLDataManager: NSObject {
                                 if trade.object(forKey: "other_accepted") as? Bool == true {
                                     hideFromDashboard = true
                                 }
+                                if trade.object(forKey: "other_agree") as? Bool == false {
+                                    hideFromDashboard = true
+                                }
                             }
                             if st != HulaConstants.end_status && st != HulaConstants.cancel_status && !hideFromDashboard {
                                 if  (st != HulaConstants.pending_status || trade.object(forKey: "turn_user_id") as! String == HulaUser.sharedInstance.userId) {
@@ -267,6 +270,15 @@ class HLDataManager: NSObject {
                 }
             }
         }
+        for tr in self.arrTrades {
+            if let trade = tr as? [String:Any] {
+                if let agreed = trade["other_agree"] as? Bool {
+                    if !agreed && trade["owner_id"] as! String == user_id && (trade["status"] as! String == HulaConstants.sent_status)  {
+                        return trade["_id"] as! String
+                    }
+                }
+            }
+        }
         return ""
     }
     func amIOfferedToTradeWith(_ user_id: String) -> Bool{
@@ -277,6 +289,18 @@ class HLDataManager: NSObject {
                 if trade["other_id"] as! String == user_id && (trade["status"] as! String == HulaConstants.pending_status || numBids <= 2)  {
                     return true
                 }
+            }
+        }
+        for tr in self.arrTrades {
+            if let trade = tr as? [String:Any] {
+                if let agreed = trade["other_agree"] as? Bool {
+                    print(agreed)
+                    if !agreed && trade["owner_id"] as! String == user_id   {
+                        return true
+                    }
+                }
+                //print(numBids)
+                
             }
         }
         return false

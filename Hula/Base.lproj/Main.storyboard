@@ -7010,7 +7010,7 @@ recycle!</string>
                                             <color key="titleColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                         </state>
                                         <connections>
-                                            <action selector="addToTradeAction:" destination="euT-fj-LZ1" eventType="touchUpInside" id="1Uf-0f-PF5"/>
+                                            <action selector="acceptTradeAction:" destination="euT-fj-LZ1" eventType="touchUpInside" id="p4Z-56-asg"/>
                                         </connections>
                                     </button>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" id="73w-eh-HUY">
