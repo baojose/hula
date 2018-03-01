@@ -184,7 +184,7 @@ class HLDataManager: NSObject {
                     }
                 } else {
                     user.token = ""
-                    loginSuccess = "Incorrect login. Please try again.";
+                    loginSuccess = NSLocalizedString("Incorrect login. Please try again.", comment: "");
                 }
                 self.lastServerMessage = loginSuccess
                 NotificationCenter.default.post(name: self.loginRecieved, object: loginSuccess)
@@ -201,7 +201,7 @@ class HLDataManager: NSObject {
             //print("done")
             //print(ok)
             //print(json!)
-            self.lastServerMessage = "Facebook login error"
+            self.lastServerMessage = NSLocalizedString("Facebook login error", comment: "")
             if (ok){
                 let user = HulaUser.sharedInstance
                 if let dictionary = json as? [String: Any] {
@@ -336,14 +336,14 @@ class HLDataManager: NSObject {
                             self.lastServerMessage = "ok"
                         } else {
                             
-                            self.lastServerMessage = "User email already exists! Please use the login form."
+                            self.lastServerMessage = NSLocalizedString("User email already exists! Please use the login form.", comment: "")
                             
                         }
                         
                     }
                 } else {
                     user.token = ""
-                    self.lastServerMessage = "Server response unexpected"
+                    self.lastServerMessage = NSLocalizedString("Server response unexpected", comment: "")
                 }
                 NotificationCenter.default.post(name: self.signupRecieved, object: signupSuccess)
             }
