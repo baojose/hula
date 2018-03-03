@@ -46,7 +46,7 @@ class ChatViewController: UIViewController {
         
         
         
-        timer = Timer.scheduledTimer(timeInterval: 10, target: self, selector: #selector(self.refreshChat), userInfo: nil, repeats: true)
+        timer = Timer.scheduledTimer(timeInterval: 4, target: self, selector: #selector(self.refreshChat), userInfo: nil, repeats: true)
     }
 
     override func didReceiveMemoryWarning() {

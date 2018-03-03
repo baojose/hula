@@ -59,6 +59,8 @@ class HLFinalFeedbackViewController: UIViewController {
 
     @IBAction func starsButtonAction(_ sender: Any) {
         let index = (sender as! UIButton).tag - 10
+        print(index)
+        
         self.points = index
         for i in 1 ... 5 {
             let star = self.view.viewWithTag(i) as! UIImageView

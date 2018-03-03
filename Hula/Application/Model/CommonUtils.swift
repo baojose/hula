@@ -117,10 +117,10 @@ class CommonUtils: NSObject, EasyTipViewDelegate, UIGestureRecognizerDelegate {
                 if (distance>1000){
                     //distance = distance
                     //return "Too far"
-                    return "\(Int(distance)) miles"
+                    return "\(Int(distance)) " + NSLocalizedString("miles", comment: "")
                 }
             }
-            return "\(distance) miles"
+            return "\(distance) " + NSLocalizedString("miles", comment: "")
         } else {
             return "-"
         }

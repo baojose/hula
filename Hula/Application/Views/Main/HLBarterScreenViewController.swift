@@ -679,6 +679,8 @@ extension HLBarterScreenViewController: KDDragAndDropCollectionViewDataSource, U
             }
             viewController.calledFrom = collectionView.tag
             viewController.currentTradeId = self.thisTrade.tradeId
+            viewController.isTradeAgreed = self.thisTrade.other_agree
+            //print("viewController.isTradeAgreed \(viewController.isTradeAgreed)")
             viewController.modalPresentationStyle = .overCurrentContext
             
             self.present(viewController, animated: true)
