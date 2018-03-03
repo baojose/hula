@@ -4961,8 +4961,19 @@ recycle!</string>
                                     <action selector="okButtonAction:" destination="slW-Ed-OxB" eventType="touchUpInside" id="EaU-cg-qkd"/>
                                 </connections>
                             </button>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" text="Please rate your trade" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="IT2-XO-e2O">
+                                <rect key="frame" x="32.5" y="156" width="255" height="132"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMinX="YES" widthSizable="YES" flexibleMaxX="YES" flexibleMinY="YES" heightSizable="YES" flexibleMaxY="YES"/>
+                                <fontDescription key="fontDescription" name="HelveticaNeue-Light" family="Helvetica Neue" pointSize="17"/>
+                                <color key="textColor" red="0.27450980390000002" green="0.27450980390000002" blue="0.27450980390000002" alpha="1" colorSpace="calibratedRGB"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <imageView opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleAspectFit" misplaced="YES" insetsLayoutMarginsFromSafeArea="NO" image="temp_user" id="GF3-JD-ziP">
+                                <rect key="frame" x="124.5" y="41.5" width="71" height="71"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
+                            </imageView>
                             <view contentMode="scaleToFill" misplaced="YES" id="mW8-mf-nOG">
-                                <rect key="frame" x="43.5" y="319" width="233" height="41"/>
+                                <rect key="frame" x="43" y="319" width="233" height="41"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMinX="YES" widthSizable="YES" flexibleMaxX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
                                 <subviews>
                                     <imageView opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" tag="1" contentMode="center" image="star-empty" id="Wbj-OV-MLE">
@@ -4985,11 +4996,10 @@ recycle!</string>
                                         <rect key="frame" x="194" y="5" width="33" height="31"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
                                     </imageView>
-                                    <button opaque="NO" tag="11" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" id="X0u-7D-k1v">
-                                        <rect key="frame" x="0.0" y="0.0" width="46" height="41"/>
+                                    <button opaque="NO" tag="11" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" id="X0u-7D-k1v">
+                                        <rect key="frame" x="2" y="0.0" width="46" height="41"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
                                         <connections>
-                                            <action selector="starButtonTapped:" destination="QMT-7V-PYZ" eventType="touchUpInside" id="Ub2-hk-2Jm"/>
                                             <action selector="starsButtonAction:" destination="slW-Ed-OxB" eventType="touchUpInside" id="g4P-44-T7t"/>
                                         </connections>
                                     </button>
@@ -4997,7 +5007,6 @@ recycle!</string>
                                         <rect key="frame" x="47" y="0.0" width="48" height="41"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
                                         <connections>
-                                            <action selector="starButtonTapped:" destination="QMT-7V-PYZ" eventType="touchUpInside" id="5bT-wA-kid"/>
                                             <action selector="starsButtonAction:" destination="slW-Ed-OxB" eventType="touchUpInside" id="eZi-SW-ADw"/>
                                         </connections>
                                     </button>
@@ -5005,7 +5014,6 @@ recycle!</string>
                                         <rect key="frame" x="95" y="0.0" width="42" height="41"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
                                         <connections>
-                                            <action selector="starButtonTapped:" destination="QMT-7V-PYZ" eventType="touchUpInside" id="U1V-kF-L2F"/>
                                             <action selector="starsButtonAction:" destination="slW-Ed-OxB" eventType="touchUpInside" id="RjM-E5-pdQ"/>
                                         </connections>
                                     </button>
@@ -5013,7 +5021,6 @@ recycle!</string>
                                         <rect key="frame" x="140" y="0.0" width="47" height="41"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
                                         <connections>
-                                            <action selector="starButtonTapped:" destination="QMT-7V-PYZ" eventType="touchUpInside" id="knO-D0-63X"/>
                                             <action selector="starsButtonAction:" destination="slW-Ed-OxB" eventType="touchUpInside" id="0eN-xp-nIk"/>
                                         </connections>
                                     </button>
@@ -5026,19 +5033,7 @@ recycle!</string>
                                         </connections>
                                     </button>
                                 </subviews>
-                                <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                             </view>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" text="Please rate your trade" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="IT2-XO-e2O">
-                                <rect key="frame" x="32.5" y="156" width="255" height="132"/>
-                                <autoresizingMask key="autoresizingMask" flexibleMinX="YES" widthSizable="YES" flexibleMaxX="YES" flexibleMinY="YES" heightSizable="YES" flexibleMaxY="YES"/>
-                                <fontDescription key="fontDescription" name="HelveticaNeue-Light" family="Helvetica Neue" pointSize="17"/>
-                                <color key="textColor" red="0.27450980390000002" green="0.27450980390000002" blue="0.27450980390000002" alpha="1" colorSpace="calibratedRGB"/>
-                                <nil key="highlightedColor"/>
-                            </label>
-                            <imageView opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleAspectFit" misplaced="YES" insetsLayoutMarginsFromSafeArea="NO" image="temp_user" id="GF3-JD-ziP">
-                                <rect key="frame" x="124.5" y="41.5" width="71" height="71"/>
-                                <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
-                            </imageView>
                             <button opaque="NO" tag="101" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" id="pcY-dA-NEM">
                                 <rect key="frame" x="24.5" y="301.5" width="85.5" height="40"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMinX="YES" widthSizable="YES" flexibleMaxX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
@@ -7015,7 +7010,7 @@ recycle!</string>
                                             <color key="titleColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                         </state>
                                         <connections>
-                                            <action selector="addToTradeAction:" destination="euT-fj-LZ1" eventType="touchUpInside" id="1Uf-0f-PF5"/>
+                                            <action selector="acceptTradeAction:" destination="euT-fj-LZ1" eventType="touchUpInside" id="p4Z-56-asg"/>
                                         </connections>
                                     </button>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" id="73w-eh-HUY">

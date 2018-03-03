@@ -176,6 +176,23 @@ class HLNotificationsViewController: BaseViewController, UITableViewDelegate, UI
             markAsReadNotification(notification_id)
         }
         
+        if let user_id = notification.object(forKey: "from_id") as? String{
+            let tradeId = HLDataManager.sharedInstance.getTradeWith(user_id)
+            if tradeId != "" {
+                // close trade
+                let queryURL = HulaConstants.apiURL + "trades/\(tradeId)/agree"
+                HLDataManager.sharedInstance.httpGet(urlstr: queryURL, taskCallback: { (ok, json) in
+                    if (ok){
+                        //print(json!)
+                        if (json as? [String: Any]) != nil {
+                            //print(dictionary)
+                        }
+                        //NotificationCenter.default.post(name: self.signupRecieved, object: signupSuccess)
+                    }
+                })
+            }
+        }
+        
         if let portraitNC = self.tabBarController?.navigationController as? HulaPortraitNavigationController {
             portraitNC.openSwapView()
         }

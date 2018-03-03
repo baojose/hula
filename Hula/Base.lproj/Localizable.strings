@@ -1,0 +1,12 @@
+/* 
+  Localizable.strings
+  Hula
+
+  Created by Juan Searle FC on 01/03/2018.
+  Copyright © 2018 star. All rights reserved.
+*/
+"Incorrect login. Please try again." = "Incorrect login. Please try again.";
+"Facebook login error" = "Facebook login error";
+"User email already exists! Please use the login form." = "User email already exists! Please use the login form.";
+"Server response unexpected" = "Server response unexpected";
+"miles" = "miles";

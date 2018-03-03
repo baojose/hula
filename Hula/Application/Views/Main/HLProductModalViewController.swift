@@ -41,6 +41,7 @@ class HLProductModalViewController: UIViewController, UIImagePickerControllerDel
     var hideVideoBtn: Bool = false
     var currentTradeId : String = ""
     var calledFrom : Int = 0
+    var isTradeAgreed : Bool = false
     
     
     override func viewDidLoad() {
@@ -144,7 +145,7 @@ class HLProductModalViewController: UIViewController, UIImagePickerControllerDel
     }
     
     func setupVideoButtons(){
-        if calledFrom == 1 || calledFrom == 4 {
+        if calledFrom == 1 || calledFrom == 4 || !isTradeAgreed {
             hideVideoBtn = true
             videoStatusImg.isHidden = true;
             videoStatusImg2.isHidden = true;

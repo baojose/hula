@@ -13,6 +13,7 @@ class HulaTrade: NSObject {
     var product_id: String!
     var owner_id: String!
     var other_id: String!
+    var other_agree: Bool = false
     var date: Date = Date()
     var last_update: Date = Date()
     var owner_products = [] as [String]
@@ -42,6 +43,7 @@ class HulaTrade: NSObject {
         super.init()
         self.tradeId = ""
         self.product_id = ""
+        self.other_agree = false
         self.owner_id = ""
         self.other_id = ""
         self.date = Date()
@@ -109,6 +111,9 @@ class HulaTrade: NSObject {
         }
         if (dict["other_id"] as? String) != nil {
             self.other_id = dict["other_id"] as? String
+        }
+        if (dict["other_agree"] as? Bool) != nil {
+            self.other_agree = (dict["other_agree"] as? Bool)!
         }
         if (dict["date"] as? String) != nil {
             let str_date = dict["date"] as? String
@@ -198,6 +203,7 @@ class HulaTrade: NSObject {
             })
         }
     }
+    
     override var description : String {
         return "**** Hula Trade - owner: \(self.owner_id) and other:   \(self.other_id)****\n"
     }

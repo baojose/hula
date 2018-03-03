@@ -78,6 +78,8 @@ class HLSellerInfoViewController: BaseViewController, UITableViewDelegate, UITab
         self.declineTradeBtn.isHidden = true
         self.acceptTradeBtn.isHidden = true
         if HLDataManager.sharedInstance.amITradingWith(user.userId){
+            self.tradeWithUserButton.setTitle("Currently trading with \(user.userNick!)", for: .normal)
+        } else {
             if HLDataManager.sharedInstance.amIOfferedToTradeWith(user.userId){
                 // first offer
                 self.tradeWithUserButton.isHidden = true
@@ -92,10 +94,8 @@ class HLSellerInfoViewController: BaseViewController, UITableViewDelegate, UITab
                 self.acceptTradeBtn.layer.borderColor = UIColor.white.cgColor
                 self.acceptTradeBtn.layer.borderWidth = 1.0
             } else {
-                self.tradeWithUserButton.setTitle("Currently trading with \(user.userNick!)", for: .normal)
+                self.tradeWithUserButton.setTitle("Trade with \(user.userNick!)", for: .normal)
             }
-        } else {
-            self.tradeWithUserButton.setTitle("Trade with \(user.userNick!)", for: .normal)
         }
         sellerLocationLabel.text = user.userLocationName
         tradeWithUserButton.layer.cornerRadius = 19
@@ -231,6 +231,25 @@ class HLSellerInfoViewController: BaseViewController, UITableViewDelegate, UITab
                 }
             })
         }
+    }
+    @IBAction func acceptTradeAction(_ sender: Any) {
+        let tradeId = HLDataManager.sharedInstance.getTradeWith(user.userId)
+        if tradeId != "" {
+            // close trade
+            let queryURL = HulaConstants.apiURL + "trades/\(tradeId)/agree"
+            HLDataManager.sharedInstance.httpGet(urlstr: queryURL, taskCallback: { (ok, json) in
+                if (ok){
+                    print(json!)
+                    if (json as? [String: Any]) != nil {
+                        if let pnc = self.navigationController?.navigationController as? HulaPortraitNavigationController {
+                            pnc.openSwapView()
+                        }
+                    }
+                    //NotificationCenter.default.post(name: self.signupRecieved, object: signupSuccess)
+                }
+            })
+        }
+        
     }
     
 }
