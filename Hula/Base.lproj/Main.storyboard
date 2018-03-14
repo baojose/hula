@@ -3213,7 +3213,7 @@ recycle!</string>
         <!--Feedback History View Controller-->
         <scene sceneID="dhp-cn-MJl">
             <objects>
-                <viewController id="E7c-9K-Thg" customClass="HLFeedbackHistoryViewController" customModule="Hula" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="userFeedback" id="E7c-9K-Thg" customClass="HLFeedbackHistoryViewController" customModule="Hula" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="IuL-Qb-CS0">
                         <rect key="frame" x="0.0" y="0.0" width="320" height="568"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -3263,10 +3263,6 @@ recycle!</string>
                                             <rect key="frame" x="0.0" y="0.0" width="320" height="84"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
-                                                <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="icon_plus" id="Wr9-gD-6hh">
-                                                    <rect key="frame" x="27" y="34" width="16" height="16"/>
-                                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                                </imageView>
                                                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Thank you for an easy, pleasant transaction. Excellect swapper. A+++" textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="04z-sD-g9u">
                                                     <rect key="frame" x="55" y="0.0" width="186.5" height="84"/>
                                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxX="YES" flexibleMaxY="YES"/>
@@ -3296,12 +3292,16 @@ recycle!</string>
                                                     <nil key="textColor"/>
                                                     <nil key="highlightedColor"/>
                                                 </label>
+                                                <imageView opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" misplaced="YES" insetsLayoutMarginsFromSafeArea="NO" image="temp_profile_1" id="vtx-7g-yZQ">
+                                                    <rect key="frame" x="17" y="27" width="30" height="30"/>
+                                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                                </imageView>
                                             </subviews>
                                         </tableViewCellContentView>
                                         <connections>
                                             <outlet property="feedbackCommentLabel" destination="04z-sD-g9u" id="u11-Of-DB3"/>
-                                            <outlet property="feedbackIcon" destination="Wr9-gD-6hh" id="MkJ-Bj-lHx"/>
                                             <outlet property="feedbackPercentage" destination="hux-Jl-W3d" id="6iB-mC-KGp"/>
+                                            <outlet property="userImage" destination="vtx-7g-yZQ" id="wb1-5y-19V"/>
                                         </connections>
                                     </tableViewCell>
                                 </prototypes>
@@ -5042,7 +5042,6 @@ recycle!</string>
                                     <color key="titleColor" red="0.1851686239" green="0.67163127659999999" blue="0.60030430560000003" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 </state>
                                 <connections>
-                                    <action selector="canceButtonAction:" destination="QMT-7V-PYZ" eventType="touchUpInside" id="Y1R-qG-Cmi"/>
                                     <action selector="mainButtonAction:" destination="slW-Ed-OxB" eventType="touchUpInside" id="DpP-BS-ON6"/>
                                 </connections>
                             </button>
@@ -5054,7 +5053,6 @@ recycle!</string>
                                     <color key="titleColor" red="0.1851686239" green="0.67163127659999999" blue="0.60030430560000003" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 </state>
                                 <connections>
-                                    <action selector="canceButtonAction:" destination="QMT-7V-PYZ" eventType="touchUpInside" id="QJ0-Zb-AiE"/>
                                     <action selector="mainButtonAction:" destination="slW-Ed-OxB" eventType="touchUpInside" id="ksH-TB-tQe"/>
                                 </connections>
                             </button>
@@ -5066,7 +5064,6 @@ recycle!</string>
                                     <color key="titleColor" red="0.1851686239" green="0.67163127659999999" blue="0.60030430560000003" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 </state>
                                 <connections>
-                                    <action selector="canceButtonAction:" destination="QMT-7V-PYZ" eventType="touchUpInside" id="gV6-Rx-cAG"/>
                                     <action selector="mainButtonAction:" destination="slW-Ed-OxB" eventType="touchUpInside" id="uan-gy-hft"/>
                                 </connections>
                             </button>
@@ -5081,7 +5078,6 @@ recycle!</string>
                                     <color key="titleColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 </state>
                                 <connections>
-                                    <action selector="canceButtonAction:" destination="QMT-7V-PYZ" eventType="touchUpInside" id="hK4-yz-R1J"/>
                                     <action selector="mainButtonAction:" destination="slW-Ed-OxB" eventType="touchUpInside" id="Mnl-3t-NMQ"/>
                                 </connections>
                             </button>
@@ -5093,7 +5089,6 @@ recycle!</string>
                                     <color key="titleColor" red="0.1851686239" green="0.67163127659999999" blue="0.60030430560000003" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 </state>
                                 <connections>
-                                    <action selector="canceButtonAction:" destination="QMT-7V-PYZ" eventType="touchUpInside" id="ciJ-s0-woR"/>
                                     <action selector="mainButtonAction:" destination="slW-Ed-OxB" eventType="touchUpInside" id="PCc-C9-qXV"/>
                                 </connections>
                             </button>
@@ -5105,14 +5100,25 @@ recycle!</string>
                                     <color key="titleColor" red="0.1851686239" green="0.67163127659999999" blue="0.60030430560000003" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 </state>
                                 <connections>
-                                    <action selector="canceButtonAction:" destination="QMT-7V-PYZ" eventType="touchUpInside" id="qnk-LN-QF6"/>
                                     <action selector="mainButtonAction:" destination="slW-Ed-OxB" eventType="touchUpInside" id="P1u-KU-9cq"/>
+                                </connections>
+                            </button>
+                            <button opaque="NO" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" id="qdI-GJ-kY5">
+                                <rect key="frame" x="16" y="498" width="85.5" height="40"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
+                                <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="14"/>
+                                <state key="normal" title="Back">
+                                    <color key="titleColor" red="0.1851686239" green="0.67163127659999999" blue="0.60030430560000003" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                </state>
+                                <connections>
+                                    <action selector="backStepAction:" destination="slW-Ed-OxB" eventType="touchUpInside" id="ZsG-J9-w7m"/>
                                 </connections>
                             </button>
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                     </view>
                     <connections>
+                        <outlet property="backBtn" destination="qdI-GJ-kY5" id="gkU-Tv-3mF"/>
                         <outlet property="mainLabel" destination="IT2-XO-e2O" id="rD5-IM-Xo4"/>
                     </connections>
                 </viewController>
@@ -6892,7 +6898,7 @@ recycle!</string>
                                                                 <rect key="frame" x="8" y="8" width="304" height="45"/>
                                                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                                 <connections>
-                                                                    <segue destination="E7c-9K-Thg" kind="push" id="8X8-bg-W6f"/>
+                                                                    <action selector="gotoFeedbackAction:" destination="euT-fj-LZ1" eventType="touchUpInside" id="gKo-kX-Gw1"/>
                                                                 </connections>
                                                             </button>
                                                         </subviews>
@@ -6968,7 +6974,7 @@ recycle!</string>
                                                         </connections>
                                                     </tableView>
                                                     <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" misplaced="YES" editable="NO" text="..." textAlignment="natural" selectable="NO" id="RV9-Dg-cX0">
-                                                        <rect key="frame" x="17" y="413" width="273" height="82"/>
+                                                        <rect key="frame" x="17" y="413" width="273" height="74"/>
                                                         <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxY="YES"/>
                                                         <color key="textColor" red="0.27450980392156865" green="0.27450980392156865" blue="0.27450980392156865" alpha="1" colorSpace="calibratedRGB"/>
                                                         <fontDescription key="fontDescription" name="HelveticaNeue-Light" family="Helvetica Neue" pointSize="16"/>
@@ -7056,7 +7062,7 @@ recycle!</string>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="fw1-WB-nns" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="2995.5" y="2030.5"/>
+            <point key="canvasLocation" x="2995" y="2030"/>
         </scene>
         <!--Seller Horizontal View Controller-->
         <scene sceneID="fTr-co-xcg">
@@ -8043,7 +8049,6 @@ recycle!</string>
         <image name="icon_logout" width="29" height="29"/>
         <image name="icon_mail_off" width="15" height="15"/>
         <image name="icon_password" width="29" height="29"/>
-        <image name="icon_plus" width="16" height="16"/>
         <image name="icon_profile" width="22" height="23"/>
         <image name="icon_search" width="27" height="27"/>
         <image name="icon_setting" width="21" height="21"/>
@@ -8099,7 +8104,6 @@ recycle!</string>
         <image name="your-turn-label" width="77" height="24"/>
     </resources>
     <inferredMetricsTieBreakers>
-        <segue reference="8X8-bg-W6f"/>
         <segue reference="wT5-4p-lNl"/>
     </inferredMetricsTieBreakers>
 </document>

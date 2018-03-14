@@ -124,8 +124,9 @@ class HLProductDetailViewController: BaseViewController, UIScrollViewDelegate, U
         // start bartering item button
         //commonUtils.setRoundedRectBorderButton(addToTradeBtn, 1.0, UIColor.white, addToTradeBtn.frame.size.height / 2.0)
         
-        HLDataManager.sharedInstance.getUserProfile(userId: currentProduct.productOwner, taskCallback: {(user, prods) in
+        HLDataManager.sharedInstance.getUserProfile(userId: currentProduct.productOwner, taskCallback: {(user, prods, userfeedback) in
             self.sellerUser = user
+            self.sellerFeedback = userfeedback
             self.sellerNameLabel.text = user.userNick;
             if HLDataManager.sharedInstance.amITradingWith(user.userId){
                 self.tradeWithUserButton.setTitle("Currently trading with \(user.userNick!)", for: .normal)

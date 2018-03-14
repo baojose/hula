@@ -9,12 +9,14 @@
 import UIKit
 
 class HLFeedbackHistoryTableViewCell: UITableViewCell {
-    @IBOutlet weak var feedbackIcon: UIImageView!
     @IBOutlet weak var feedbackCommentLabel: UILabel!
     @IBOutlet weak var feedbackPercentage: UILabel!
-
+    @IBOutlet weak var userImage: UIImageView!
+    
     override func awakeFromNib() {
         super.awakeFromNib()
+        
+        CommonUtils.sharedInstance.circleImageView(userImage)
     }
 
     override func setSelected(_ selected: Bool, animated: Bool) {

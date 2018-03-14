@@ -312,7 +312,7 @@ class HLSwappViewController: UIViewController {
             
             self.tempTag = (sender as? UIButton)!.tag
             
-            if (tradeStatus.owner_products.count == 0 || tradeStatus.other_products.count == 0) && tradeStatus.num_bids > 2  {
+            if (tradeStatus.owner_products.count == 0 || tradeStatus.other_products.count == 0)   {
                 manageDonationMessages(tradeStatus: tradeStatus, okStatus:"donation")
                 return
             }
@@ -330,19 +330,33 @@ class HLSwappViewController: UIViewController {
     }
     
     func manageDonationMessages(tradeStatus:HulaTrade, okStatus:String){
+        
+        if (tradeStatus.owner_products.count == 0) && (tradeStatus.other_products.count == 0){
+            showAlert(message:"Sorry, drag at least one item to send your offer.", trigger:"notrade", cancelVisible:false, okText:"Ok")
+            return
+        }
         if tradeStatus.owner_id == HulaUser.sharedInstance.userId {
+            
             // i am the owner
             if tradeStatus.owner_products.count == 0 && tradeStatus.owner_money == 0 {
-                showAlert(message:"No offer without an item. Unless you wanna offer cash...", trigger:"notrade", cancelVisible:false, okText:"Ok")
+                showAlert(message:"No offer without an item from your side. Unless you wanna offer cash...", trigger:"notrade", cancelVisible:false, okText:"Ok")
             } else {
-                showAlert(message:"Are you giving your stuff away for free? If not, choose the item you want to exchange it with.", trigger:okStatus, cancelVisible:true, okText:"Ok!")
+                if tradeStatus.other_products.count == 0 && tradeStatus.other_money == 0 {
+                    showAlert(message:"Are you giving your stuff away for free? If not, choose the item you want to exchange it with.", trigger:okStatus, cancelVisible:true, okText:"Ok!")
+                } else {
+                    executeOfferOptions(tradeStatus, buttonTag: self.tempTag)
+                }
             }
         } else {
             // i am the other
             if tradeStatus.other_products.count == 0 && tradeStatus.other_money == 0 {
-                showAlert(message:"No offer without an item. Unless you wanna offer cash...", trigger:"notrade", cancelVisible:false, okText:"Ok")
+                showAlert(message:"No offer without an item from your side. Unless you wanna offer cash...", trigger:"notrade", cancelVisible:false, okText:"Ok")
             } else {
-                showAlert(message:"Are you giving your stuff away for free? If not, choose something you want to exchange it with.", trigger:okStatus, cancelVisible:true, okText:"Ok!")
+                if tradeStatus.owner_products.count == 0 && tradeStatus.owner_money == 0 {
+                    showAlert(message:"Are you giving your stuff away for free? If not, choose something you want to exchange it with.", trigger:okStatus, cancelVisible:true, okText:"Ok!")
+                } else {
+                    executeOfferOptions(tradeStatus, buttonTag: self.tempTag)
+                }
             }
         }
     }
@@ -431,7 +445,7 @@ class HLSwappViewController: UIViewController {
     }
     @IBAction func showUserAction(_ sender: Any) {
         //print (prevUser)
-        HLDataManager.sharedInstance.getUserProfile(userId: prevUser, taskCallback: {(user, prods) in
+        HLDataManager.sharedInstance.getUserProfile(userId: prevUser, taskCallback: {(user, prods, feedback) in
             let viewController = self.storyboard?.instantiateViewController(withIdentifier: "sellerHorizontal") as! HLSellerHorizontalViewController
             
             viewController.user = user
