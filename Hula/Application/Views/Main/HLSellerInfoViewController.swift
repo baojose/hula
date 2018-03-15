@@ -144,6 +144,12 @@ class HLSellerInfoViewController: BaseViewController, UITableViewDelegate, UITab
         
     }
     
+    @IBAction func gotoFeedbackAction(_ sender: Any) {
+        print(self.userFeedback)
+        let viewController = self.storyboard?.instantiateViewController(withIdentifier: "userFeedback") as! HLFeedbackHistoryViewController
+        viewController.feedbackList = self.userFeedback
+        self.navigationController?.pushViewController(viewController, animated: true)
+    }
     //#MARK: - TableViewDelegate
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {

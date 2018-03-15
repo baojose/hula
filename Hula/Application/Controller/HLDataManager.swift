@@ -351,7 +351,7 @@ class HLDataManager: NSObject {
     }
     
     
-    func getUserProfile(userId:String, taskCallback: @escaping (HulaUser, NSArray) -> ()) {
+    func getUserProfile(userId:String, taskCallback: @escaping (HulaUser, NSArray, NSArray) -> ()) {
         //print("Getting user info...")
         let queryURL = HulaConstants.apiURL + "users/" + userId
         //print(queryURL)
@@ -369,7 +369,11 @@ class HLDataManager: NSObject {
                         if let dpr = dictionary["products"] as? NSArray {
                             arrProducts = dpr
                         }
-                        taskCallback(userReturned, arrProducts)
+                        var arrFeedback = NSArray()
+                        if let dpr = dictionary["feedback"] as? NSArray {
+                            arrFeedback = dpr
+                        }
+                        taskCallback(userReturned, arrProducts, arrFeedback)
                     }
                 }
             } else {

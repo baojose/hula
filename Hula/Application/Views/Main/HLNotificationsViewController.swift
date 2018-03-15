@@ -217,7 +217,7 @@ class HLNotificationsViewController: BaseViewController, UITableViewDelegate, UI
             
             if (type == "start"){
                 let user_id = notification.object(forKey: "from_id") as! String
-                HLDataManager.sharedInstance.getUserProfile(userId: user_id, taskCallback: {(user, prods) in
+                HLDataManager.sharedInstance.getUserProfile(userId: user_id, taskCallback: {(user, prods, userfeedback) in
                     let storyboard = UIStoryboard(name: "Main", bundle: nil)
                     let myModalViewController = storyboard.instantiateViewController(withIdentifier: "sellerInfoPage") as! HLSellerInfoViewController
                     myModalViewController.user = user

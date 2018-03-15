@@ -118,6 +118,7 @@ extension HLSwappPageViewController: UIPageViewControllerDataSource, UIPageViewC
             // removed. Now index is controled by selection, not by pagination
             //self.currentIndex = index
             
+            
             if (index == 0){
                 if let dashboardVc = firstViewController as? HLDashboardViewController{
                     dashboardVc.refreshCollectionViewData()
