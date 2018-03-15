@@ -15,6 +15,6 @@ class HLAPIClient: NSObject {
             static let instance: HLAPIClient = HLAPIClient()
         }
         return Static.instance
-/Users/josebao/Desktop/hula_master/Hula/Application/Views/Cells/HLHomeNotificationsTableViewCell.swift    }
+   }
 
 }
