@@ -184,8 +184,15 @@ class HLEditProductMainViewController: BaseViewController, ProductPictureDelegat
             prodImg4.loadImageFromURL(urlString: product.arrProductPhotoLink[3])
             prodImg4.contentMode = .scaleAspectFill
         }
-        product.productImage = product.arrProductPhotoLink[0]
-        productImage.loadImageFromURL(urlString: product.arrProductPhotoLink[0])
+        
+        
+        if product.arrProductPhotoLink.count > 0 {
+            product.productImage = product.arrProductPhotoLink[0]
+            productImage.loadImageFromURL(urlString: product.arrProductPhotoLink[0])
+        } else {
+            productImage.loadImageFromURL(urlString: HulaConstants.noProductThumb)
+            //prodImg1.loadImageFromURL(urlString: HulaConstants.noProductThumb)
+        }
     }
     
     func imageUploaded(path: String, pos: Int){
