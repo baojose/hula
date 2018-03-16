@@ -13,6 +13,7 @@ class HLSwappPageViewController: UIPageViewController {
     weak var swappDelegate: SwappPageViewControllerDelegate?
     var currentTrade: NSDictionary?
     var arrTrades: [NSDictionary] = []
+    var arrPastTrades: [NSDictionary] = []
     var currentIndex: Int = 0
     
     var orderedViewControllers: [UIViewController] = [UIStoryboard(name: "Main", bundle: nil) .

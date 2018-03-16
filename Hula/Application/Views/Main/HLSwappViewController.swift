@@ -41,6 +41,8 @@ class HLSwappViewController: UIViewController {
     @IBOutlet weak var threeDotsView: UIView!
     @IBOutlet weak var addTradeRoomBtn: HLRoundedButton!
     @IBOutlet weak var chatButton: HLRoundedButton!
+    
+    @IBOutlet weak var pastChatCountLbl: UILabel!
     var initialOtherUserX:CGFloat = 0.0
     
     var selectedScreen = 0
@@ -73,7 +75,10 @@ class HLSwappViewController: UIViewController {
         self.mainCentralLabel.alpha = 0;
         
         self.chatCountLbl.layer.cornerRadius = 6.5
+        self.pastChatCountLbl.layer.cornerRadius = 6.5
+        
         self.chatCountLbl.clipsToBounds = true
+        self.pastChatCountLbl.clipsToBounds = true
         
         
         self.currentTradesBtn.alpha = 1;
@@ -473,6 +478,7 @@ class HLSwappViewController: UIViewController {
                 self.currentTradesBtn.alpha = 0;
                 self.pastTradesBtn.alpha = 0
                 self.tradeModeLine.alpha = 0
+                self.pastChatCountLbl.isHidden = true
             }
             self.threeDotsView.isHidden = true;
             
@@ -610,6 +616,8 @@ class HLSwappViewController: UIViewController {
                     self.pastTradesBtn.alpha = 0
                     self.tradeModeLine.alpha = 0
                     self.chatCountLbl.isHidden = true
+                    self.pastChatCountLbl.isHidden = true
+                    
                 }
             }
             
@@ -638,12 +646,42 @@ class HLSwappViewController: UIViewController {
                 self.currentTradesBtn.alpha = 1;
                 self.pastTradesBtn.alpha = 1
                 self.tradeModeLine.alpha = 1
+                self.pastChatCountLbl.isHidden = true
             }
             self.chatCountLbl.isHidden = true
             
-            
-            
+            var chat_count = 0
+            var other_user_id = ""
+            for oldTrade in HLDataManager.sharedInstance.arrPastTrades {
+                let thisTrade: NSDictionary = oldTrade
+                
+                // check chat counter
+                if (HulaUser.sharedInstance.userId == thisTrade.object(forKey: "owner_id") as! String){
+                    // I am the owner
+                    other_user_id = thisTrade.object(forKey: "other_id") as! String
+                    if let ch_c = thisTrade.object(forKey: "owner_unread") as? Int{
+                        chat_count = ch_c
+                    }
+                } else {
+                    other_user_id = thisTrade.object(forKey: "owner_id") as! String
+                    if let ch_c = thisTrade.object(forKey: "other_unread") as? Int{
+                        chat_count = ch_c
+                    }
+                }
+            }
+            if chat_count > 0 {
+                self.pastChatCountLbl.isHidden = false
+                self.pastChatCountLbl.text = "\(chat_count)"
+                print("chat_count")
+                print(chat_count)
+                print("other_user_id")
+                print(other_user_id)
+            } else {
+                
+                self.pastChatCountLbl.isHidden = true
+            }
         }
+        
     }
     
     func tradeCanBeClosed(_ trade:NSDictionary) -> Bool{
