@@ -174,6 +174,8 @@ class HLProductDetailViewController: BaseViewController, UIScrollViewDelegate, U
             if let im_ur = pr.object(forKey: "image_url") as? String {
                 let thumb = commonUtils.getThumbFor(url: im_ur)
                 cell.productImage.loadImageFromURL(urlString:thumb)
+            } else {
+                cell.productImage.loadImageFromURL(urlString: HulaConstants.noProductThumb)
             }
             
             if let st = pr.object(forKey: "status") as? String{

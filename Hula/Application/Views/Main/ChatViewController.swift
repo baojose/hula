@@ -161,6 +161,11 @@ class ChatViewController: UIViewController {
     
     
     @IBAction func closeChatAction(_ sender: Any) {
+
+        HLDataManager.sharedInstance.getTrades{(succ) in
+            // trades refreshed
+            print("Trades loaded from chat")
+        }
         DispatchQueue.main.async(execute: {
             self.dismiss(animated: true, completion: nil)
         })

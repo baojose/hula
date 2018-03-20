@@ -165,6 +165,8 @@ class HLSellerInfoViewController: BaseViewController, UITableViewDelegate, UITab
             
             if let im_ur = pr.object(forKey: "image_url") as? String {
                 cell.productImage.loadImageFromURL(urlString:im_ur)
+            } else {
+                cell.productImage.loadImageFromURL(urlString: HulaConstants.noProductThumb)
             }
         }
         return cell
