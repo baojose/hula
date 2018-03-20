@@ -186,9 +186,10 @@ class HLBarterScreenViewController: BaseViewController {
                 // my turn
                 if HLDataManager.sharedInstance.onboardingTutorials.object(forKey: "barter_my_turn") as? String == nil{
                     CommonUtils.sharedInstance.showTutorial(arrayTips: [
-                        HulaTip(delay: 2, view: self.otherProductsCollection, text: "Here is their stuff. Drag & drop what you want. Tap on the product to get more info."),
+                        HulaTip(delay: 2, view: self.otherProductsCollection, text: "Here is their stuff. Tap on the product to get more info and ask for a live video to check it."),
+                        HulaTip(delay: 0.4, view: self.otherSelectedProductsCollection, text: "Drag & drop here what you want."),
                         HulaTip(delay: 0.4, view: self.myProductsCollection, text: "Here is your stuff."),
-                        HulaTip(delay: 0.4, view: self.sendOfferFakeView, text: "Once you select what you want, find out if the other trader interested. Click the button below to send a notification!")
+                        HulaTip(delay: 0.4, view: self.sendOfferFakeView, text: "Once you've selected what you want, find out if the other trader is interested. Click the button below to send a notification!")
                         ], named: "barter_my_turn")
                     //print(HLDataManager.sharedInstance.onboardingTutorials)
                 }
@@ -197,7 +198,7 @@ class HLBarterScreenViewController: BaseViewController {
                 if HLDataManager.sharedInstance.onboardingTutorials.object(forKey: "barter_other_turn") as? String  == nil{
                     CommonUtils.sharedInstance.showTutorial(arrayTips: [
                         HulaTip(delay: 2, view: self.sendOfferFakeView, text: "This trading is waiting for the other user to select the items he wants or accept your offer. As soon as the offer is ready you will be notified."),
-                        HulaTip(delay: 0.5, view: self.otherProductsCollection, text: "Tap on any product to get more details or ask the owner for a video-proof."),
+                        HulaTip(delay: 0.5, view: self.otherProductsCollection, text: "Tap on the product to get more info and ask for a live video to check it."),
                         HulaTip(delay: 0.4, view: self.ChatFakeView, text: "Start chat here if you need to talk.")
                         ], named: "barter_other_turn")
                 }
@@ -301,19 +302,27 @@ class HLBarterScreenViewController: BaseViewController {
     }
     
     override func viewDidAppear(_ animated: Bool) {
-        HLDataManager.sharedInstance.ga("barter_screen")
+        if let swappPageVC = self.parent as? HLSwappPageViewController{
+            if ( swappPageVC.arrTrades.count == 0 ){
+                //print("yendo")
+                DispatchQueue.main.async {
+                    swappPageVC.goTo(page: 0)
+                }
+            } else {
+                HLDataManager.sharedInstance.ga("barter_screen")
+            }
+        }
     }
     
     override func viewWillAppear(_ animated: Bool) {
-        if Device.IS_IPHONE_X {
-            self.mainViewHolder.frame.origin.x = 25
-            self.mainViewHolder.frame.size.width = self.view.frame.width - 50
-        }
-        
         if let swappPageVC = self.parent as? HLSwappPageViewController{
             self.addMoneyBtn1.isHidden = false
             self.addMoneyBtn2.isHidden = false
             if ( swappPageVC.arrTrades.count > 0 ){
+                if Device.IS_IPHONE_X {
+                    self.mainViewHolder.frame.origin.x = 25
+                    self.mainViewHolder.frame.size.width = self.view.frame.width - 50
+                }
                 if !alreadyLoaded{
                     loadProductsArrays();
                 }
@@ -325,7 +334,6 @@ class HLBarterScreenViewController: BaseViewController {
             } else {
                 self.addMoneyBtn1.isHidden = true
                 self.addMoneyBtn2.isHidden = true
-                
             }
         }
         

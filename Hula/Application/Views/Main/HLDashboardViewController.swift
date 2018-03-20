@@ -145,7 +145,7 @@ class HLDashboardViewController: BaseViewController {
                                     // show empty rooms tutorial
                                     if HLDataManager.sharedInstance.onboardingTutorials.object(forKey: "dashboard_empty") as? String == nil {
                                         CommonUtils.sharedInstance.showTutorial(arrayTips: [
-                                            HulaTip(delay: 1, view: self.mainCollectionView, text: "You're in the Trade Room!\nto start trading, start exchanging."),
+                                            HulaTip(delay: 1, view: self.mainCollectionView, text: "You're in the Trade Room!\nTo start trading, start exchanging."),
                                             HulaTip(delay: 0.5, view: self.fakeAddTradeView, text: "Need more trading rooms? tap here to add more spaces!")
                                         ], named: "dashboard_empty")
                                     }

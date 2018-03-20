@@ -15,13 +15,15 @@ class HLFinalFeedbackViewController: UIViewController {
     var bad_str: String = ""
     var trade_id_closed : String = ""
     var user_id_closed : String = ""
-    var points: Int = 3
+    var points: Int = 0
     let first_copy : String = "We would love to hear how your trade was. Please rate it from one to five stars:"
     let second_copy : String = "What did you love?"
-    let third_copy : String = "What went wrong?"
+    let third_copy : String = "What went wrong? \nLeave blank if none"
+    let right_copies : [String] = ["Fair deal", "Easy communication", "Smooth process", "Good state of products", "Fast delivery", "Other"]
     let wrong_copies : [String] = ["Late arrival", "Bad estate of product", "Annoying negotiation", "Difficult communication", "Complicated process", "Other"]
     var step : Int = 0
     
+    @IBOutlet weak var backBtn: UIButton!
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -39,6 +41,7 @@ class HLFinalFeedbackViewController: UIViewController {
             bt?.setTitleColor( .white, for: .selected)
             bt?.clipsToBounds = true
         }
+        backBtn.isHidden = true
     }
 
     override func didReceiveMemoryWarning() {
@@ -80,81 +83,136 @@ class HLFinalFeedbackViewController: UIViewController {
         
     }
     
+    @IBAction func backStepAction(_ sender: Any) {
+        step -= 1;
+        step = max(0, step)
+        if step == 0 {
+            setupStep0()
+        } else {
+            if step == 1 {
+                setupStep1()
+            } else {
+                if step == 2 {
+                    setupStep2()
+                }
+            }
+        }
+    }
     
     @IBAction func okButtonAction(_ sender: Any) {
+        if points == 0 {
+            for i in 1 ... 5 {
+                let star = self.view.viewWithTag(i) as! UIImageView
+                star.bouncer()
+            }
+            return
+        }
+        
+        backBtn.isHidden = false
         if step == 0 {
             step = 1
-            for i in 101 ..< 107{
-                let bt = self.view.viewWithTag(i) as? UIButton
-                UIView.animate(withDuration: 0.2 + Double(i - 100)/9, animations: {
-                    bt?.alpha = 1
-                })
-            }
-            for i in 1 ..< 6{
-                let st = self.view.viewWithTag(i)
-                UIView.animate(withDuration: Double(i)/10, animations: {
-                    st?.alpha = 0
-                })
-                let bt = self.view.viewWithTag(i+10)
-                bt?.alpha = 0
-            }
-            mainLabel.text = second_copy
+            setupStep1()
         } else {
             if step == 1 {
                 step = 2
-                good_str = ""
-                for i in 101 ..< 107{
-                    let st = self.view.viewWithTag(i) as? UIButton
-                    if (st?.isSelected)! {
-                        good_str = "\(good_str) \(st?.titleLabel?.text ?? "")"
-                    }
-                    UIView.animate(withDuration: Double(i-100)/10, animations: {
-                        st?.alpha = 0
-                    }, completion: { (success) in
-                        st?.setTitle(self.wrong_copies[i - 101], for: .normal)
-                        UIView.animate(withDuration: 0.3, delay: 0.5, options: [], animations: {
-                            st?.alpha = 1
-                        })
-                        
-                        st?.isSelected = false
-                    })
-                }
-                mainLabel.text = third_copy
+                setupStep2()
             } else {
                 if step == 2 {
-                    
-                    bad_str = ""
-                    for i in 101 ..< 107{
-                        let st = self.view.viewWithTag(i) as? UIButton
-                        if (st?.isSelected)! {
-                            bad_str = "\(bad_str) \(st?.titleLabel?.text ?? "")"
-                        }
-                    }
-                    // send data
-                    sendFeedback()
-                    
+                    step = 3
+                    setupStep3()
                 }
             }
         }
         
         
     }
-    
+    func setupStep0(){
+        backBtn.isHidden = true
+        for i in 101 ..< 107{
+            let bt = self.view.viewWithTag(i) as? UIButton
+            UIView.animate(withDuration: 0.2 + Double(i - 100)/9, animations: {
+                bt?.alpha = 0
+            })
+        }
+        for i in 1 ..< 6{
+            let st = self.view.viewWithTag(i)
+            UIView.animate(withDuration: Double(i)/10, animations: {
+                st?.alpha = 1
+            })
+            let bt = self.view.viewWithTag(i+10)
+            bt?.alpha = 1
+        }
+        mainLabel.text = first_copy
+    }
+    func setupStep1(){
+        for i in 101 ..< 107{
+            let bt = self.view.viewWithTag(i) as? UIButton
+            UIView.animate(withDuration: 0.2 + Double(i - 100)/9, animations: {
+                bt?.alpha = 1
+            }, completion: { (success) in
+                bt?.setTitle(self.right_copies[i - 101], for: .normal)
+                UIView.animate(withDuration: 0.3, delay: 0.5, options: [], animations: {
+                    bt?.alpha = 1
+                })
+                bt?.isSelected = false
+            })
+        }
+        for i in 1 ..< 6{
+            let st = self.view.viewWithTag(i)
+            UIView.animate(withDuration: Double(i)/10, animations: {
+                st?.alpha = 0
+            })
+            let bt = self.view.viewWithTag(i+10)
+            bt?.alpha = 0
+        }
+        mainLabel.text = second_copy
+    }
+    func setupStep2(){
+        good_str = ""
+        for i in 101 ..< 107{
+            let st = self.view.viewWithTag(i) as? UIButton
+            if (st?.isSelected)! {
+                good_str = "\(good_str) \(st?.titleLabel?.text ?? "")"
+            }
+            UIView.animate(withDuration: Double(i-100)/10, animations: {
+                st?.alpha = 0
+            }, completion: { (success) in
+                st?.setTitle(self.wrong_copies[i - 101], for: .normal)
+                UIView.animate(withDuration: 0.3, delay: 0.5, options: [], animations: {
+                    st?.alpha = 1
+                })
+                
+                st?.isSelected = false
+            })
+        }
+        mainLabel.text = third_copy
+    }
+    func setupStep3(){
+        bad_str = ""
+        for i in 101 ..< 107{
+            let st = self.view.viewWithTag(i) as? UIButton
+            if (st?.isSelected)! {
+                bad_str = "\(bad_str) \(st?.titleLabel?.text ?? "")"
+            }
+        }
+        // send data
+        sendFeedback()
+    }
     
     func sendFeedback(){
-            let queryURL = HulaConstants.apiURL + "feedback"
-            let comments = "\(good_str). \(bad_str)"
-            let dataString:String = "trade_id=\(self.trade_id_closed)&user_id=\(self.user_id_closed)&comments=\(comments)&val=\(points)"
-            print(dataString)
-            HLDataManager.sharedInstance.httpPost(urlstr: queryURL, postString: dataString, isPut: false, taskCallback: { (ok, json) in
-                if (ok){
-                    print(json!)
-                    DispatchQueue.main.async {
-                        self.dismiss(animated: true, completion: {
-                        })
-                    }
+        let queryURL = HulaConstants.apiURL + "feedback"
+        let comments = "\(good_str). \(bad_str)"
+        let dataString:String = "trade_id=\(self.trade_id_closed)&user_id=\(self.user_id_closed)&comments=\(comments)&val=\(points)"
+        print(dataString)
+        HLDataManager.sharedInstance.httpPost(urlstr: queryURL, postString: dataString, isPut: false, taskCallback: { (ok, json) in
+            if (ok){
+                print(json!)
+                DispatchQueue.main.async {
+                    self.dismiss(animated: true, completion: {
+                    })
                 }
-            })
+            }
+        })
     }
 }
 

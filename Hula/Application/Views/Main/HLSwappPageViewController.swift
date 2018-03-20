@@ -13,6 +13,7 @@ class HLSwappPageViewController: UIPageViewController {
     weak var swappDelegate: SwappPageViewControllerDelegate?
     var currentTrade: NSDictionary?
     var arrTrades: [NSDictionary] = []
+    var arrPastTrades: [NSDictionary] = []
     var currentIndex: Int = 0
     
     var orderedViewControllers: [UIViewController] = [UIStoryboard(name: "Main", bundle: nil) .
@@ -117,6 +118,7 @@ extension HLSwappPageViewController: UIPageViewControllerDataSource, UIPageViewC
             
             // removed. Now index is controled by selection, not by pagination
             //self.currentIndex = index
+            
             
             if (index == 0){
                 if let dashboardVc = firstViewController as? HLDashboardViewController{
