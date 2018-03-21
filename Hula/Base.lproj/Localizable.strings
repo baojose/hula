@@ -116,8 +116,8 @@
 " Video uploaded" = " Video uploaded";
 "Video uploaded!" = "Video uploaded!";
 "Image options..." = "Image options...";
-"Close" = "Cerrar";
-"You" = "Tú";
+"Close" = "Close";
+"You" = "You";
 "Exchange completed" = "Exchange completed";
 "Trade canceled" = "Trade canceled";
 "Close the deal" = "Close the deal";
@@ -135,8 +135,8 @@
 "Annoying negotiation" = "Annoying negotiation";
 "Difficult communication" = "Difficult communication";
 "Complicated process" = "Complicated process";
-"NEAR YOU" = "CERCA DE TI";
-"%i products" = "%i productos";
+"NEAR YOU" = "NEAR YOU";
+"%i products" = "%i products";
 "Category search" = "Category search";
 "SELLER" = "SELLER";
 "USER'S INVENTORY" = "USER'S INVENTORY";
@@ -164,7 +164,7 @@
 "Delete image" = "Borrar imagen";
 "characters remaining" = "caracteres restantes";
 "Set image as default" = "Set image as default";
-"CURRENT:" = "ACTUAL:";
+"CURRENT:" = "CURRENT:";
 "Do you wanna change your profile picture?" = "Do you wanna change your profile picture?";
 "Email validation" = "Email validation";
 "If you're a real person with a real email, open your email and follow the instructions." = "If you're a real person with a real email, open your email and follow the instructions.";
@@ -193,8 +193,3 @@
 "not selected" = "not selected";
 "CURRENT ZIP CODE:" = "CURRENT ZIP CODE:";
 "Validate" = "Validate";
-
-
-
-
-
