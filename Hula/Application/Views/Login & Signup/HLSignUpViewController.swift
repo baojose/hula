@@ -18,9 +18,9 @@ class HLSignUpViewController: UserBaseViewController, UITextFieldDelegate  {
     @IBOutlet weak var inputFieldsView: UIView!
     @IBOutlet weak var signupErrorLabel: UILabel!
     
-    let descriptions = ["What is your name?", "What is your email address?", "Set a password for your account"]
-    let hints = ["This is your public identification", "We wont bother you with nonsense emails", "Use a non-obvious password with more than 5 characters"]
-    let placeholders = ["Nickname", "Email address", "Password"]
+    let descriptions = [NSLocalizedString("What is your name?", comment: ""), NSLocalizedString("What is your email address?", comment: ""), NSLocalizedString("Set a password for your account", comment: "")]
+    let hints = [NSLocalizedString("This is your public identification", comment: ""), NSLocalizedString("We wont bother you with nonsense emails", comment: ""), NSLocalizedString("Use a non-obvious password with more than 5 characters", comment: "")]
+    let placeholders = [NSLocalizedString("Nickname", comment: ""), NSLocalizedString("Email address", comment: ""), NSLocalizedString("Password", comment: "")]
     var currentStep = 0;
     var userEmail = ""
     var userNick = ""
@@ -86,7 +86,7 @@ class HLSignUpViewController: UserBaseViewController, UITextFieldDelegate  {
                 }
             }
         } else {
-            self.showError("This field cannot be empty. Please fill all the fields.")
+            self.showError(NSLocalizedString("This field cannot be empty. Please fill all the fields.", comment: ""))
         }
     }
     
@@ -110,7 +110,7 @@ class HLSignUpViewController: UserBaseViewController, UITextFieldDelegate  {
                     if dict["user"] == "found" {
                         
                         DispatchQueue.main.async {
-                            self.showError("Username has already been taken.")
+                            self.showError(NSLocalizedString("Username has already been taken.", comment: ""))
                             
                             
                             self.currentStep = 0

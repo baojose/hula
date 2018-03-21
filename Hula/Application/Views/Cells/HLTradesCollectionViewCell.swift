@@ -89,11 +89,11 @@ class HLTradesCollectionViewCell: UICollectionViewCell {
     @IBAction func tradeOptionsAction(_ sender: Any) {
         if (self.tradeId != "" && self.tradeStatus == "current"){
             if dbDelegate != nil {
-                let alert = UIAlertController(title: "Trading options",
+                let alert = UIAlertController(title: NSLocalizedString("Trading options", comment: ""),
                                               message: nil,
                                               preferredStyle: .actionSheet)
                 
-                let reportAction = UIAlertAction(title: "Report this user", style: .default, handler: { action -> Void in
+                let reportAction = UIAlertAction(title: NSLocalizedString("Report this user", comment: ""), style: .default, handler: { action -> Void in
                     
                     self.reportUser()
                     
@@ -101,12 +101,12 @@ class HLTradesCollectionViewCell: UICollectionViewCell {
                 alert.addAction(reportAction)
                 
                 
-                let removeAction = UIAlertAction(title: "Cancel this trade", style: .destructive, handler: { action -> Void in
+                let removeAction = UIAlertAction(title: NSLocalizedString("Cancel this trade", comment: ""), style: .destructive, handler: { action -> Void in
                     self.closeTrade()
                 })
                 alert.addAction(removeAction)
                 
-                let cancelAction = UIAlertAction(title: "Cancel", style: .cancel, handler: nil)
+                let cancelAction = UIAlertAction(title: NSLocalizedString("Cancel", comment: ""), style: .cancel, handler: nil)
                 
                 alert.addAction(cancelAction)
                 dbDelegate?.present(alert, animated: true)

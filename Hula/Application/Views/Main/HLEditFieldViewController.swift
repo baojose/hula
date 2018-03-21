@@ -13,8 +13,8 @@ class HLEditFieldViewController: BaseViewController, UITextFieldDelegate, UIText
     var userData:HulaUser = HulaUser.sharedInstance
     var locationManager = CLLocationManager()
     
-    var field_title:String = "Change data"
-    var field_label: String = "not selected"
+    var field_title:String = NSLocalizedString("Change data", comment: "")
+    var field_label: String = NSLocalizedString("not selected", comment: "")
     var field_previous_val: String = ""
     var field_new_val: String = ""
     var field_key: String = "userNick"
@@ -47,7 +47,7 @@ class HLEditFieldViewController: BaseViewController, UITextFieldDelegate, UIText
             grayLocationLabel.isHidden = false
             
             grayLocationLabel.text = HulaUser.sharedInstance.userLocationName
-            currentValueLabel.text = "CURRENT ZIP CODE: \(field_previous_val)"
+            currentValueLabel.text = NSLocalizedString("CURRENT ZIP CODE:", comment: "") + " \(field_previous_val)"
             newValueTextView.keyboardType = UIKeyboardType.numberPad
             
             if field_previous_val.count == 0{
@@ -59,13 +59,13 @@ class HLEditFieldViewController: BaseViewController, UITextFieldDelegate, UIText
                 remainigLabel.isHidden = true
                 grayLocationLabel.isHidden = true
                 
-                saveButton.setTitle("Validate", for: .normal)
+                saveButton.setTitle(NSLocalizedString("Validate", comment: ""), for: .normal)
                 newValueTextView.isEditable = false
             } else {
                 remainigLabel.isHidden = false
                 grayLocationLabel.isHidden = true
             }
-            currentValueLabel.text = "CURRENT: \(field_previous_val)"
+            currentValueLabel.text = NSLocalizedString("CURRENT:", comment: "") + " \(field_previous_val)"
             newValueTextView.keyboardType = UIKeyboardType.default
         }
         
@@ -102,7 +102,7 @@ class HLEditFieldViewController: BaseViewController, UITextFieldDelegate, UIText
             newValueTextView.text = newValueTextView.text.substring(to: index)
             theRemainingChars = 0
         }
-        remainigLabel.text = "\(theRemainingChars) characters remaining"
+        remainigLabel.text = "\(theRemainingChars) " + NSLocalizedString("characters remaining", comment: "")
         
         
         
@@ -176,10 +176,10 @@ class HLEditFieldViewController: BaseViewController, UITextFieldDelegate, UIText
         
         if (field_key == "userEmail"){
             HulaUser.sharedInstance.resendValidationMail()
-            let alert = UIAlertController(title: "Email validation", message: "We have just sent you an email to \(HulaUser.sharedInstance.userEmail!). Please follow the instructions provided on that message.",
+            let alert = UIAlertController(title: NSLocalizedString("Email validation", comment: ""), message: "We have just sent you an email to \(HulaUser.sharedInstance.userEmail!). Please follow the instructions provided on that message.",
                 preferredStyle: UIAlertControllerStyle.alert
             )
-            alert.addAction(UIAlertAction(title: "OK", style: UIAlertActionStyle.default, handler: nil))
+            alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: ""), style: UIAlertActionStyle.default, handler: nil))
             self.present(alert, animated: true, completion: nil)
         }
         

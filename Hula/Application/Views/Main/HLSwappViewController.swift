@@ -337,17 +337,17 @@ class HLSwappViewController: UIViewController {
     func manageDonationMessages(tradeStatus:HulaTrade, okStatus:String){
         
         if (tradeStatus.owner_products.count == 0) && (tradeStatus.other_products.count == 0){
-            showAlert(message:"Sorry, drag at least one item to send your offer.", trigger:"notrade", cancelVisible:false, okText:"Ok")
+            showAlert(message:NSLocalizedString("Sorry, drag at least one item to send your offer.", comment: ""), trigger:"notrade", cancelVisible:false, okText:"Ok")
             return
         }
         if tradeStatus.owner_id == HulaUser.sharedInstance.userId {
             
             // i am the owner
             if tradeStatus.owner_products.count == 0 && tradeStatus.owner_money == 0 {
-                showAlert(message:"No offer without an item from your side. Unless you wanna offer cash...", trigger:"notrade", cancelVisible:false, okText:"Ok")
+                showAlert(message:NSLocalizedString("No offer without an item from your side. Unless you wanna offer cash...", comment: ""), trigger:"notrade", cancelVisible:false, okText:NSLocalizedString("OK", comment: ""))
             } else {
                 if tradeStatus.other_products.count == 0 && tradeStatus.other_money == 0 {
-                    showAlert(message:"Are you giving your stuff away for free? If not, choose the item you want to exchange it with.", trigger:okStatus, cancelVisible:true, okText:"Ok!")
+                    showAlert(message:NSLocalizedString("Are you giving your stuff away for free? If not, choose the item you want to exchange it with.", comment: ""), trigger:okStatus, cancelVisible:true, okText:NSLocalizedString("OK!", comment: ""))
                 } else {
                     executeOfferOptions(tradeStatus, buttonTag: self.tempTag)
                 }
@@ -355,10 +355,10 @@ class HLSwappViewController: UIViewController {
         } else {
             // i am the other
             if tradeStatus.other_products.count == 0 && tradeStatus.other_money == 0 {
-                showAlert(message:"No offer without an item from your side. Unless you wanna offer cash...", trigger:"notrade", cancelVisible:false, okText:"Ok")
+                showAlert(message:NSLocalizedString("No offer without an item from your side. Unless you wanna offer cash...", comment: ""), trigger:"notrade", cancelVisible:false, okText: NSLocalizedString("OK", comment: ""))
             } else {
                 if tradeStatus.owner_products.count == 0 && tradeStatus.owner_money == 0 {
-                    showAlert(message:"Are you giving your stuff away for free? If not, choose something you want to exchange it with.", trigger:okStatus, cancelVisible:true, okText:"Ok!")
+                    showAlert(message:NSLocalizedString("Are you giving your stuff away for free? If not, choose something you want to exchange it with.", comment: ""), trigger:okStatus, cancelVisible:true, okText:NSLocalizedString("OK!", comment: ""))
                 } else {
                     executeOfferOptions(tradeStatus, buttonTag: self.tempTag)
                 }
@@ -367,7 +367,7 @@ class HLSwappViewController: UIViewController {
     }
     
     func manageConfirmation(tradeStatus:HulaTrade, okStatus:String){
-        showAlert(message:"You are about to close the deal. Confirm?", trigger:okStatus, cancelVisible:true, okText:"Yes!")
+        showAlert(message:NSLocalizedString("You are about to close the deal. Confirm?", comment: ""), trigger:okStatus, cancelVisible:true, okText: NSLocalizedString("Yes!", comment: ""))
     }
     
     func showAlert(message:String, trigger:String, cancelVisible:Bool,  okText:String){
@@ -430,14 +430,14 @@ class HLSwappViewController: UIViewController {
                     viewController.isCancelVisible = false
                     
                     if buttonTag == self.kTagCloseDeal {
-                        viewController.message = "You accepted the deal. Now meet the trader and exchange your stuff."
+                        viewController.message = NSLocalizedString("You accepted the deal. Now meet the trader and exchange your stuff.", comment: "")
                         viewController.trigger = "deal_review"
                     } else {
                         if buttonTag == self.kTagProductsReceived {
-                            viewController.message = "Great! Enjoy your stuff and many thanks for using HULA.\nIn order to free up this trading room, this trade will be moved to your past trades tab."
+                            viewController.message = NSLocalizedString("Great! Enjoy your stuff and many thanks for using HULA.\nIn order to free up this trading room, this trade will be moved to your past trades tab.", comment: "")
                             viewController.trigger = "deal_closed"
                         } else {
-                            viewController.message = "Your offer has been sent with your changes.\nPlease allow 72 hours for the user to reply."
+                            viewController.message = NSLocalizedString("Your offer has been sent with your changes.\nPlease allow 72 hours for the user to reply.", comment: "")
                         }
                     }
                     self.present(viewController, animated: true)
@@ -521,7 +521,7 @@ class HLSwappViewController: UIViewController {
                             self.remainingTimeLabel.alpha = 0
                             self.threeDotsView.isHidden = true
                             
-                            self.sendOfferBtn.setTitle( "I received my stuff", for: .normal)
+                            self.sendOfferBtn.setTitle( NSLocalizedString("I received my stuff", comment: ""), for: .normal)
                             self.sendOfferBtn.tag = kTagProductsReceived
                         } else {
                             // still bartering
@@ -532,7 +532,7 @@ class HLSwappViewController: UIViewController {
                                     
                                     self.sendOfferBtn.alpha = 0
                                     self.mainCentralLabel.alpha=1;
-                                    self.mainCentralLabel.text = "Waiting for user reply"
+                                    self.mainCentralLabel.text = NSLocalizedString("Waiting for user reply", comment: "")
                                     let h_str = thisTrade.object(forKey: "last_update") as! String
                                     let date = h_str.dateFromISO8601?.addingTimeInterval(HulaConstants.courtesyTime * 60.0 * 60.0)
                                     //print(date)
@@ -547,7 +547,7 @@ class HLSwappViewController: UIViewController {
                                     }
                                     
                                     self.remainingTimeLabel.alpha = 1
-                                    self.remainingTimeLabel.text = "Remaining time for response: \(str_hours)"
+                                    self.remainingTimeLabel.text = NSLocalizedString("Remaining time for response:", comment: "") + " \(str_hours)"
                                     self.threeDotsView.isHidden = false;
                                     
                                 } else {
@@ -556,11 +556,11 @@ class HLSwappViewController: UIViewController {
                                     self.threeDotsView.isHidden = true;
                                     if self.tradeCanBeClosed(thisTrade) {
                                         // can be closed
-                                        self.sendOfferBtn.setTitle( "Accept trade", for: .normal)
+                                        self.sendOfferBtn.setTitle( NSLocalizedString("Accept trade", comment: ""), for: .normal)
                                         self.sendOfferBtn.tag = kTagCloseDeal
                                         
                                     } else {
-                                        self.sendOfferBtn.setTitle( "Send offer", for: .normal)
+                                        self.sendOfferBtn.setTitle( NSLocalizedString("Send offer", comment: ""), for: .normal)
                                         self.sendOfferBtn.tag = 1
                                     }
                                 }
@@ -729,8 +729,8 @@ class HLSwappViewController: UIViewController {
         
         viewController.delegate = self as AlertDelegate
         viewController.isCancelVisible = true
-        viewController.message = "Do you need more rooms? Spread the word! Share HULA with your friends and get up to 5 trade rooms."
-        viewController.okButtonText = "Share Hula"
+        viewController.message = NSLocalizedString("Do you need more rooms? Spread the word! Share HULA with your friends and get up to 5 trade rooms.", comment: "")
+        viewController.okButtonText = NSLocalizedString("Share Hula", comment: "")
         viewController.trigger = "share"
         self.present(viewController, animated: true)
 
@@ -811,12 +811,12 @@ extension HLSwappViewController: AlertDelegate{
     
     func shareHula(){
         
-        let alert = UIAlertController(title: "Sharing", message: "Please choose a sharing method", preferredStyle: UIAlertControllerStyle.alert)
+        let alert = UIAlertController(title: NSLocalizedString("Sharing", comment: ""), message: NSLocalizedString("Please choose a sharing method", comment: ""), preferredStyle: UIAlertControllerStyle.alert)
         alert.addAction(UIAlertAction(title: "Facebook", style: UIAlertActionStyle.default){
             UIAlertAction in
             self.shareHulaFB()
         })
-        alert.addAction(UIAlertAction(title: "Other", style: UIAlertActionStyle.default){
+        alert.addAction(UIAlertAction(title: NSLocalizedString("Other", comment: ""), style: UIAlertActionStyle.default){
             UIAlertAction in
             self.shareHulaStandard()
         })
@@ -842,7 +842,7 @@ extension HLSwappViewController: AlertDelegate{
         }
     }
     func shareHulaStandard(){
-        let text = "Hey, I trade on HULA! I get what I want and give what I don't. https://hula.trading"
+        let text = NSLocalizedString("Hey, I trade on HULA! I get what I want and give what I don't. https://hula.trading", comment: "")
         
         // set up activity view controller
         let textToShare = [ text ]
@@ -891,7 +891,7 @@ extension HLSwappViewController: AlertDelegate{
         
         if response != "ok" && response != "cancel"{
             let queryURL = HulaConstants.apiURL + "feedback"
-            let comments = "Deal closed. Thank you"
+            let comments = NSLocalizedString("Deal closed. Thank you", comment: "")
             let dataString:String = "trade_id=\(self.trade_id_closed)&user_id=\(self.user_id_closed)&comments=\(comments)&val=\(response)"
             //print(dataString)
             HLDataManager.sharedInstance.httpPost(urlstr: queryURL, postString: dataString, isPut: false, taskCallback: { (ok, json) in

@@ -155,7 +155,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             //print("aps")
             //print(aps)
             if let text = aps.object(forKey: "alert") as? String{
-                let banner = Banner(title: "Notification", subtitle: text, backgroundColor: HulaConstants.appMainColor)
+                let banner = Banner(title: NSLocalizedString("Notification", comment: ""), subtitle: text, backgroundColor: HulaConstants.appMainColor)
                 banner.dismissesOnTap = true
                 banner.didTapBlock = {
                     //print("tapped")

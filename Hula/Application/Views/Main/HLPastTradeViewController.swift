@@ -46,14 +46,14 @@ class HLPastTradeViewController: UIViewController, UICollectionViewDelegate, UIC
         //print (thisTrade)
         let lastUpdate = thisTrade.last_update as NSDate
         dateLabel.text = CommonUtils.sharedInstance.timeAgoSinceDate(date: lastUpdate, numericDates: false)
-        var tradeStatus = "Exchange completed"
+        var tradeStatus = NSLocalizedString("Exchange completed", comment: "")
         //print(thisTrade.status)
         if (thisTrade.status == HulaConstants.cancel_status){
-            tradeStatus = "Trade canceled"
+            tradeStatus = NSLocalizedString("Trade canceled", comment: "")
         }
         if (thisTrade.status == HulaConstants.review_status){
-            tradeStatus = "Close the deal"
-            dateLabel.text = "We recommend confirming this trade only after exchanging stuff"
+            tradeStatus = NSLocalizedString("Close the deal", comment: "")
+            dateLabel.text = NSLocalizedString("We recommend confirming this trade only after exchanging stuff", comment: "")
         }
         mainLabel.text = tradeStatus
         

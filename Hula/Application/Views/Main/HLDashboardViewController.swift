@@ -145,15 +145,15 @@ class HLDashboardViewController: BaseViewController {
                                     // show empty rooms tutorial
                                     if HLDataManager.sharedInstance.onboardingTutorials.object(forKey: "dashboard_empty") as? String == nil {
                                         CommonUtils.sharedInstance.showTutorial(arrayTips: [
-                                            HulaTip(delay: 1, view: self.mainCollectionView, text: "You're in the Trade Room!\nTo start trading, start exchanging."),
-                                            HulaTip(delay: 0.5, view: self.fakeAddTradeView, text: "Need more trading rooms? tap here to add more spaces!")
+                                            HulaTip(delay: 1, view: self.mainCollectionView, text: NSLocalizedString("You're in the Trade Room!\nTo start trading, start exchanging.", comment: "")),
+                                            HulaTip(delay: 0.5, view: self.fakeAddTradeView, text: NSLocalizedString("Need more trading rooms? tap here to add more spaces!", comment: ""))
                                         ], named: "dashboard_empty")
                                     }
                                 } else {
                                     // show full rooms tutorial
                                     if HLDataManager.sharedInstance.onboardingTutorials.object(forKey: "dashboard_full") as? String == nil {
                                         CommonUtils.sharedInstance.showTutorial(arrayTips: [
-                                            HulaTip(delay: 1, view: self.fakeFirstTradeView, text: "Welcome to your first trade! Get some advice. Click on the Trade Room you used.")
+                                            HulaTip(delay: 1, view: self.fakeFirstTradeView, text: NSLocalizedString("Welcome to your first trade! Get some advice. Click on the Trade Room you used.", comment: ""))
                                             ], named: "dashboard_full")
                                     }
                                 }
@@ -178,10 +178,10 @@ class HLDashboardViewController: BaseViewController {
         let viewController = self.storyboard?.instantiateViewController(withIdentifier: "alertView") as! AlertViewController
         viewController.delegate = self
         viewController.isCancelVisible = true
-        viewController.cancelButtonText = "Don't cancel"
-        viewController.okButtonText = "Cancel"
+        viewController.cancelButtonText = NSLocalizedString("Don't cancel", comment: "")
+        viewController.okButtonText = NSLocalizedString("Cancel", comment: "")
         viewController.trigger = "cancelconfirm"
-        viewController.message = "Cancel this trade?"
+        viewController.message = NSLocalizedString("Cancel this trade?", comment: "")
         self.present(viewController, animated: true)
         
     }
@@ -198,7 +198,7 @@ class HLDashboardViewController: BaseViewController {
                     
                     viewController.delegate = self
                     viewController.isCancelVisible = false
-                    viewController.message = "The user has been reported. We will review the user behavior and take necessary actions. Thanks for keeping Hula trustworthy."
+                    viewController.message = NSLocalizedString("The user has been reported. We will review the user behavior and take necessary actions. Thanks for keeping Hula trustworthy.", comment: "")
                     
                     self.present(viewController, animated: true)
                     
@@ -233,11 +233,11 @@ extension HLDashboardViewController: AlertDelegate{
                         //print(json!)
                         DispatchQueue.main.async {
                             
-                            let alert = UIAlertController(title: "Trade cancelled", message: "Help us to improve, tell us why:", preferredStyle: UIAlertControllerStyle.actionSheet)
-                            alert.addAction(UIAlertAction(title: "Not interested anymore", style: UIAlertActionStyle.default, handler: nil))
-                            alert.addAction(UIAlertAction(title: "Unhappy with trader", style: UIAlertActionStyle.default, handler: nil))
-                            alert.addAction(UIAlertAction(title: "Product deleted", style: UIAlertActionStyle.default, handler: nil))
-                            alert.addAction(UIAlertAction(title: "Other", style: UIAlertActionStyle.default, handler: nil))
+                            let alert = UIAlertController(title: NSLocalizedString("Trade cancelled", comment: ""), message: NSLocalizedString("Help us to improve, tell us why:", comment: ""), preferredStyle: UIAlertControllerStyle.actionSheet)
+                            alert.addAction(UIAlertAction(title: NSLocalizedString("Not interested anymore", comment: ""), style: UIAlertActionStyle.default, handler: nil))
+                            alert.addAction(UIAlertAction(title: NSLocalizedString("Unhappy with trader", comment: ""), style: UIAlertActionStyle.default, handler: nil))
+                            alert.addAction(UIAlertAction(title: NSLocalizedString("Product deleted", comment: ""), style: UIAlertActionStyle.default, handler: nil))
+                            alert.addAction(UIAlertAction(title: NSLocalizedString("Other", comment: ""), style: UIAlertActionStyle.default, handler: nil))
                             self.present(alert, animated: true, completion: nil)
                             self.last_trade_request = 0
                             self.refreshCollectionViewData()
@@ -389,7 +389,7 @@ extension HLDashboardViewController: UICollectionViewDelegate, UICollectionViewD
             //print("Empty row \(indexPath.row)")
             cell.isEmptyRoom = true
             cell.tradeId = "";
-            cell.emptyRoomLabel.text = "Empty Trade Room"
+            cell.emptyRoomLabel.text = NSLocalizedString("Empty Trade Room", comment: "")
             cell.myImage.isHidden = true
             cell.userImage.image = nil
             cell.userImage.isHidden = true

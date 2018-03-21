@@ -273,7 +273,7 @@ extension ChatViewController: UITableViewDelegate, UITableViewDataSource{
         if let comments = sortedChat.object(forKey: sectionKeys[indexPath.section]) as? [NSDictionary]{
             
             let data:NSDictionary = comments[indexPath.row]
-            cell.userNameLabel.text = "You"
+            cell.userNameLabel.text = NSLocalizedString("You", comment: "")
             cell.messageText.text = data.object(forKey: "message") as! String
             let user_id = data.object(forKey: "user_id") as! String
             if (user_id == HulaUser.sharedInstance.userId){

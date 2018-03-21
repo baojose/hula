@@ -56,9 +56,9 @@ class HLEditProductMainViewController: BaseViewController, ProductPictureDelegat
         redrawProductImages()
     }
     @IBAction func deleteProductAction(_ sender: Any) {
-        let alert = UIAlertController(title: "Delete product", message: "Think twice before deleting it!", preferredStyle: UIAlertControllerStyle.alert)
-        alert.addAction(UIAlertAction(title: "Cancel", style: UIAlertActionStyle.default, handler: nil))
-        alert.addAction(UIAlertAction(title: "Delete", style: UIAlertActionStyle.destructive, handler: {UIAlertAction in
+        let alert = UIAlertController(title: NSLocalizedString("Delete product", comment: ""), message: NSLocalizedString("Think twice before deleting it!", comment: ""), preferredStyle: UIAlertControllerStyle.alert)
+        alert.addAction(UIAlertAction(title: NSLocalizedString("Cancel", comment: ""), style: UIAlertActionStyle.default, handler: nil))
+        alert.addAction(UIAlertAction(title: NSLocalizedString("Delete", comment: ""), style: UIAlertActionStyle.destructive, handler: {UIAlertAction in
             //print("Deleting product")
             self.spinner = HLSpinnerUIView()
             self.view.addSubview(self.spinner)
@@ -126,27 +126,27 @@ class HLEditProductMainViewController: BaseViewController, ProductPictureDelegat
             
         case 10:
             // Title
-            title = "Choose a title for your product"
+            title = NSLocalizedString("Choose a title for your product", comment: "")
             previous = product.productName
-            label = "Title"
+            label = NSLocalizedString("Title", comment: "")
             item_toUpdate = "title"
         case 20:
             // Category
-            title = "Select a category"
+            title = NSLocalizedString("Select a category", comment: "")
             previous = categoryNameLabel.text!
-            label = "Category"
+            label = NSLocalizedString("Category", comment: "")
             item_toUpdate = "category"
         case 30:
             // Condition
-            title = "Change your product condition"
+            title = NSLocalizedString("Change your product condition", comment: "")
             previous = productConditionLabel.text!
-            label = "Condition"
+            label = NSLocalizedString("Condition", comment: "")
             item_toUpdate = "condition"
         case 40:
             // Description
-            title = "Change description"
+            title = NSLocalizedString("Change description", comment: "")
             previous = product.productDescription
-            label = "Description"
+            label = NSLocalizedString("Description", comment: "")
             item_toUpdate = "description"
         default:
             // nada
@@ -275,10 +275,10 @@ extension HLEditProductMainViewController {
         image_dismissing = true
     }
     func optionsFullscreenImage(_ sender: UIGestureRecognizer) {
-        let alertController = UIAlertController(title: "Image options...", message: nil, preferredStyle: .actionSheet)
+        let alertController = UIAlertController(title: NSLocalizedString("Image options...", comment: ""), message: nil, preferredStyle: .actionSheet)
         
         
-        let editButton = UIAlertAction(title: "Try another image", style: .default, handler: { (action) -> Void in
+        let editButton = UIAlertAction(title: NSLocalizedString("Try another image", comment: ""), style: .default, handler: { (action) -> Void in
             print("Close")
             
             let cameraViewController = self.storyboard?.instantiateViewController(withIdentifier: "productPictureEdit") as! HLProductPictureEditViewController
@@ -291,7 +291,7 @@ extension HLEditProductMainViewController {
         
         
         if (self.currentEditingIndex != 0){
-            let setDefaultButton = UIAlertAction(title: "Set as featured image", style: .default, handler: { (action) -> Void in
+            let setDefaultButton = UIAlertAction(title: NSLocalizedString("Set as featured image", comment: ""), style: .default, handler: { (action) -> Void in
                 //swap(&self.product.arrProductPhotoLink[0], &self.product.arrProductPhotoLink[self.currentEditingIndex])
                 let a = self.product.arrProductPhotoLink[0]
                 let b = self.product.arrProductPhotoLink[self.currentEditingIndex]
@@ -305,7 +305,7 @@ extension HLEditProductMainViewController {
         }
         
         
-        let  deleteButton = UIAlertAction(title: "Delete image", style: .destructive, handler: { (action) -> Void in
+        let  deleteButton = UIAlertAction(title: NSLocalizedString("Delete image", comment: ""), style: .destructive, handler: { (action) -> Void in
             //print("Delete button tapped")
             if (self.dataManager.newProduct.arrProductPhotos.count > self.currentEditingIndex){
                 self.dataManager.newProduct.arrProductPhotos.removeObject(at: self.currentEditingIndex);
@@ -319,7 +319,7 @@ extension HLEditProductMainViewController {
         })
         alertController.addAction(deleteButton)
         
-        let cancelButton = UIAlertAction(title: "Cancel", style: .cancel, handler: { (action) -> Void in
+        let cancelButton = UIAlertAction(title: NSLocalizedString("Cancel", comment: ""), style: .cancel, handler: { (action) -> Void in
             //print("Cancel button tapped")
         })
         alertController.addAction(cancelButton)

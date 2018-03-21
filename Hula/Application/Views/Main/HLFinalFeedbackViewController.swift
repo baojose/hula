@@ -16,11 +16,11 @@ class HLFinalFeedbackViewController: UIViewController {
     var trade_id_closed : String = ""
     var user_id_closed : String = ""
     var points: Int = 0
-    let first_copy : String = "We would love to hear how your trade was. Please rate it from one to five stars:"
-    let second_copy : String = "What did you love?"
-    let third_copy : String = "What went wrong? \nLeave blank if none"
-    let right_copies : [String] = ["Fair deal", "Easy communication", "Smooth process", "Good state of products", "Fast delivery", "Other"]
-    let wrong_copies : [String] = ["Late arrival", "Bad estate of product", "Annoying negotiation", "Difficult communication", "Complicated process", "Other"]
+    let first_copy : String = NSLocalizedString("We would love to hear how your trade was. Please rate it from one to five stars:", comment: "")
+    let second_copy : String = NSLocalizedString("What did you love?", comment: "")
+    let third_copy : String = NSLocalizedString("What went wrong? \nLeave blank if none", comment: "")
+    let right_copies : [String] = [NSLocalizedString("Fair deal", comment: ""), NSLocalizedString("Easy communication", comment: ""), NSLocalizedString("Smooth process", comment: ""), NSLocalizedString("Good state of products", comment: ""), NSLocalizedString("Fast delivery", comment: ""), NSLocalizedString("Other", comment: "")]
+    let wrong_copies : [String] = [NSLocalizedString("Late arrival", comment: ""), NSLocalizedString("Bad estate of product", comment: ""), NSLocalizedString("Annoying negotiation", comment: ""), NSLocalizedString("Difficult communication", comment: ""), NSLocalizedString("Complicated process", comment: ""), NSLocalizedString("Other", comment: "")]
     var step : Int = 0
     
     @IBOutlet weak var backBtn: UIButton!

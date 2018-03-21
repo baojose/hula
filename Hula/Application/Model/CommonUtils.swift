@@ -145,57 +145,57 @@ class CommonUtils: NSObject, EasyTipViewDelegate, UIGestureRecognizerDelegate {
         let components = calendar.dateComponents(unitFlags, from: earliest as Date,  to: latest as Date)
         
         if (components.year! >= 2) {
-            return "\(components.year!) years ago"
+            return "\(components.year!) " + NSLocalizedString("years ago", comment: "")
         } else if (components.year! >= 1){
             if (numericDates){
-                return "1 year ago"
+                return NSLocalizedString("1 year ago", comment: "")
             } else {
-                return "Last year"
+                return NSLocalizedString("Last year", comment: "")
             }
         } else if (components.month! >= 2) {
-            return "\(components.month!) months ago"
+            return "\(components.month!) " + NSLocalizedString("months ago", comment: "")
         } else if (components.month! >= 1){
             if (numericDates){
-                return "1 month ago"
+                return NSLocalizedString("1 month ago", comment: "")
             } else {
-                return "Last month"
+                return NSLocalizedString("Last month", comment: "")
             }
         } else if (components.weekOfYear! >= 2) {
-            return "\(components.weekOfYear!) weeks ago"
+            return "\(components.weekOfYear!) " + NSLocalizedString("weeks ago", comment: "")
         } else if (components.weekOfYear! >= 1){
             if (numericDates){
-                return "1 week ago"
+                return NSLocalizedString("1 week ago", comment: "")
             } else {
-                return "Last week"
+                return NSLocalizedString("Last week", comment: "")
             }
         } else if (components.day! >= 2) {
-            return "\(components.day!) days ago"
+            return "\(components.day!) " + NSLocalizedString("days ago", comment: "")
         } else if (components.day! >= 1){
             if (numericDates){
-                return "1 day ago"
+                return NSLocalizedString("1 day ago", comment: "")
             } else {
-                return "Yesterday"
+                return NSLocalizedString("Yesterday", comment: "")
             }
         } else if (components.hour! >= 2) {
-            return "\(components.hour!) hours ago"
+            return "\(components.hour!) " + NSLocalizedString("hours ago", comment: "")
         } else if (components.hour! >= 1){
             if (numericDates){
-                return "1 hour ago"
+                return NSLocalizedString("1 hour ago", comment: "")
             } else {
-                return "An hour ago"
+                return NSLocalizedString("An hour ago", comment: "")
             }
         } else if (components.minute! >= 2) {
-            return "\(components.minute!) minutes ago"
+            return "\(components.minute!) " + NSLocalizedString("minutes ago", comment: "")
         } else if (components.minute! >= 1){
             if (numericDates){
-                return "1 minute ago"
+                return NSLocalizedString("1 minute ago", comment: "")
             } else {
-                return "A minute ago"
+                return NSLocalizedString("A minute ago", comment: "")
             }
         } else if (components.second! >= 3) {
-            return "\(components.second!) seconds ago"
+            return "\(components.second!) seconds ago" + NSLocalizedString("seconds ago", comment: "")
         } else {
-            return "Just now"
+            return NSLocalizedString("Just now", comment: "")
         }
         
     }

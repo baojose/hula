@@ -20,12 +20,12 @@ class HLWelcomeViewController: UserBaseViewController, CLLocationManagerDelegate
     @IBOutlet weak var messagesView: UIView!
     
     var step: Int = 0;
-    var title1:String = "Up for push notifications?"
-    var title2:String = "Allow HULA to access your location"
-    var description1:String = "Notifications may include alerts when a user sends you a message."
-    var description2:String = "Find what you need near you!"
-    var button1:String = "Notify me"
-    var button2:String = "Use my location"
+    var title1:String = NSLocalizedString("Up for push notifications?", comment: "")
+    var title2:String = NSLocalizedString("Allow HULA to access your location", comment: "")
+    var description1:String = NSLocalizedString("Notifications may include alerts when a user sends you a message.", comment: "")
+    var description2:String = NSLocalizedString("Find what you need near you!", comment: "")
+    var button1:String = NSLocalizedString("Notify me", comment: "")
+    var button2:String = NSLocalizedString("Use my location", comment: "")
     var messagesViewPosition:CGPoint = CGPoint(x:0, y:0)
     
     override func viewDidLoad() {
@@ -121,8 +121,8 @@ class HLWelcomeViewController: UserBaseViewController, CLLocationManagerDelegate
                 //self.closeIdentification()
                 case .denied:
                     print("Not authorized")
-                    let alert = UIAlertController(title: "Allow HULA to access your location while you use the app?", message: "HULA uses this to help you to find stuff you like nearby, connect to other users and more. Go to Settings and turn on location for Hula.", preferredStyle: UIAlertControllerStyle.alert)
-                    alert.addAction(UIAlertAction(title: "OK", style: UIAlertActionStyle.default, handler: nil))
+                    let alert = UIAlertController(title: NSLocalizedString("Allow HULA to access your location while you use the app?", comment: ""), message: NSLocalizedString("HULA uses this to help you to find stuff you like nearby, connect to other users and more. Go to Settings and turn on location for Hula.", comment: ""), preferredStyle: UIAlertControllerStyle.alert)
+                    alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: ""), style: UIAlertActionStyle.default, handler: nil))
                     self.present(alert, animated: true, completion: {
                         self.closeIdentification()
                     })
