@@ -45,7 +45,7 @@ class NewPaswordViewController: UIViewController {
             
             viewController.delegate = self as AlertDelegate
             viewController.isCancelVisible = false
-            viewController.message = "Your new password is too short."
+            viewController.message = NSLocalizedString("Your new password is too short.", comment: "")
             self.present(viewController, animated: true)
             return
         }
@@ -55,7 +55,7 @@ class NewPaswordViewController: UIViewController {
             
             viewController.delegate = self as AlertDelegate
             viewController.isCancelVisible = false
-            viewController.message = "Your previous password is too short."
+            viewController.message = NSLocalizedString("Your previous password is too short.", comment: "")
             self.present(viewController, animated: true)
             return
         }
@@ -65,7 +65,7 @@ class NewPaswordViewController: UIViewController {
             
             viewController.delegate = self as AlertDelegate
             viewController.isCancelVisible = false
-            viewController.message = "Passwords do not match."
+            viewController.message = NSLocalizedString("Passwords do not match.", comment: "")
             self.present(viewController, animated: true)
             return
         }

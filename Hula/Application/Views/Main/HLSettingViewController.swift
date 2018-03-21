@@ -67,7 +67,7 @@ class HLSettingViewController: BaseViewController {
             userNameLabel.text = userData.userNick
             self.removeAlertIcon(fromView: self.nameView)
         } else {
-            userNameLabel.text = "Name"
+            userNameLabel.text = NSLocalizedString("Name", comment: "")
             self.addAlertIcon(toView: self.nameView)
         }
         
@@ -79,14 +79,14 @@ class HLSettingViewController: BaseViewController {
             userFullNameLabel.text = userData.userName
             self.removeAlertIcon(fromView: self.fullNameView)
         } else {
-            userFullNameLabel.text = "Full name"
+            userFullNameLabel.text = NSLocalizedString("Full name", comment: "")
             self.addAlertIcon(toView: self.fullNameView)
         }
         if (userData.userBio.count>1){
             userBioLabel.text = userData.userBio
             self.removeAlertIcon(fromView: self.bioView)
         } else {
-            userBioLabel.text = "About you"
+            userBioLabel.text = NSLocalizedString("About you", comment: "")
             self.addAlertIcon(toView: self.bioView)
         }
         
@@ -94,7 +94,7 @@ class HLSettingViewController: BaseViewController {
             locationLabel.text = userData.userLocationName
             self.removeAlertIcon(fromView: self.locationView)
         } else {
-            locationLabel.text = "Location"
+            locationLabel.text = NSLocalizedString("Location", comment: "")
             self.addAlertIcon(toView: self.locationView)
         }
     }
@@ -107,7 +107,7 @@ class HLSettingViewController: BaseViewController {
         
         viewController.delegate = self
         viewController.isCancelVisible = true
-        viewController.message = "Are you sure you want to log out?"
+        viewController.message = NSLocalizedString("Are you sure you want to log out?", comment: "")
         
         self.parent?.navigationController?.present(viewController, animated: true)
         
@@ -126,44 +126,44 @@ class HLSettingViewController: BaseViewController {
             selectedImageTapped()
         case 1:
             // Name
-            title = "Change your nickname"
+            title = NSLocalizedString("Change your nickname", comment: "")
             previous = userData.userNick
-            label = "Nickname"
+            label = NSLocalizedString("Nickname", comment: "")
             item_toUpdate = "userNick"
             remChar = 40
         case 2:
             // Full name
-            title = "Validate your email"
+            title = NSLocalizedString("Validate your email", comment: "")
             previous = userData.userEmail
-            label = "Email"
+            label = NSLocalizedString("Email", comment: "")
             item_toUpdate = "userEmail"
             remChar = 120
         case 25:
             // Full name
-            title = "Change your full name"
+            title = NSLocalizedString("Change your full name", comment: "")
             previous = userData.userName
-            label = "Full name"
+            label = NSLocalizedString("Full name", comment: "")
             item_toUpdate = "userName"
             remChar = 120
         case 3:
             // Bio
-            title = "Change your bio"
+            title = NSLocalizedString("Change your bio", comment: "")
             previous = userData.userBio
-            label = "Bio"
+            label = NSLocalizedString("Bio", comment: "")
             item_toUpdate = "userBio"
             remChar = 200
         case 4:
             // Location
-            title = "Change zip code"
+            title = NSLocalizedString("Change zip code", comment: "")
             previous = userData.zip
-            label = "Zip code"
+            label = NSLocalizedString("Zip code", comment: "")
             item_toUpdate = "zip"
             remChar = 80
         case 5:
             // Password
-            title = "Change your password"
+            title = NSLocalizedString("Change your password", comment: "")
             previous = ""
-            label = "Password"
+            label = NSLocalizedString("Password", comment: "")
             item_toUpdate = "userPassword"
             remChar = 40
         default:
@@ -305,16 +305,16 @@ extension HLSettingViewController{
         image_dismissing = true
     }
     func optionsFullscreenImage(_ sender: UIGestureRecognizer) {
-        let alertController = UIAlertController(title: "Do you wanna change your profile picture?", message: nil, preferredStyle: .actionSheet)
+        let alertController = UIAlertController(title: NSLocalizedString("Do you wanna change your profile picture?", comment: ""), message: nil, preferredStyle: .actionSheet)
         
         
-        let  editButton = UIAlertAction(title: "Change image", style: .destructive, handler: { (action) -> Void in
+        let  editButton = UIAlertAction(title: NSLocalizedString("Change image", comment: ""), style: .destructive, handler: { (action) -> Void in
             self.openCameraVC();
             
         })
         alertController.addAction(editButton)
         
-        let cancelButton = UIAlertAction(title: "Close", style: .cancel, handler: { (action) -> Void in
+        let cancelButton = UIAlertAction(title: NSLocalizedString("Close", comment: ""), style: .cancel, handler: { (action) -> Void in
             //print("Cancel button tapped")
             self.dismissFullscreenImageDirect()
         })

@@ -197,7 +197,7 @@ class HLCompleteProductProfileViewController: BaseViewController, UIScrollViewDe
             desciptionTxtField.text = str.substring(to: index)
             theRemainingChars = 0
         }
-        charactersRemainingLabel.text = "\(theRemainingChars) characters remaining"
+        charactersRemainingLabel.text = "\(theRemainingChars) " + NSLocalizedString("characters remaining", comment: "")
     }
     
     @IBAction func backAction(_ sender: Any) {

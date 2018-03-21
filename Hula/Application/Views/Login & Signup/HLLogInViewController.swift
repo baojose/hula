@@ -106,7 +106,7 @@ class HLLogInViewController: UserBaseViewController, UITextFieldDelegate {
         //print(loginOk)
         if (loginOk == "ok"){
             DispatchQueue.main.async {
-                self.errorMessageLabel.text = "User logged in"
+                self.errorMessageLabel.text = NSLocalizedString("User logged in", comment: "")
                 let storyBoard : UIStoryboard = UIStoryboard(name: "Main", bundle:nil)
                 let nextViewController = storyBoard.instantiateViewController(withIdentifier: "welcome") as! HLWelcomeViewController
                 //self.present(nextViewController, animated:true, completion:nil)

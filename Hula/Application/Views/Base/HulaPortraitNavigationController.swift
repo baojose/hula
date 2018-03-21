@@ -52,7 +52,7 @@ class HulaPortraitNavigationController: UINavigationController {
             }
         } else {
             print("user not logged in!")
-            let banner = Banner(title: "Trade mode disabled", subtitle: "You have to be logged in to enter into trade mode", backgroundColor: HulaConstants.appMainColor)
+            let banner = Banner(title: NSLocalizedString("Trade mode disabled", comment: ""), subtitle: NSLocalizedString("You have to be logged in to enter into trade mode", comment: ""), backgroundColor: HulaConstants.appMainColor)
             banner.dismissesOnTap = true
             banner.show(duration: 5.0)
         }

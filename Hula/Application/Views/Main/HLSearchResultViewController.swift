@@ -49,7 +49,7 @@ class HLSearchResultViewController: BaseViewController, UITableViewDataSource, U
         if self.searchByCategory {
             var category_name = categoryToSearch.object(forKey: "name") as? String
             if (category_name == nil){
-                category_name = "Category search"
+                category_name = NSLocalizedString("Category search", comment: "")
             }
             screenTitle.text = category_name
         } else {

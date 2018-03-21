@@ -153,7 +153,7 @@ class HLProfileViewController: BaseViewController {
     }
     
     @IBAction func validateAction(_ sender: Any) {
-        let alert = UIAlertController(title: "Select a validation method",
+        let alert = UIAlertController(title: NSLocalizedString("Select a validation method", comment: ""),
                                        message: nil,
                                        preferredStyle: .actionSheet)
         
@@ -188,7 +188,7 @@ class HLProfileViewController: BaseViewController {
         }
         
         
-        let cancelAction = UIAlertAction(title: "Cancel",
+        let cancelAction = UIAlertAction(title: NSLocalizedString("Cancel", comment: ""),
                                            style: .cancel, handler: nil)
         
         alert.addAction(cancelAction)
@@ -242,7 +242,7 @@ class HLProfileViewController: BaseViewController {
     func emailValidate(){
         
         HulaUser.sharedInstance.resendValidationMail()
-        let alert = UIAlertController(title: "Email validation", message: "If you're a real person with a real email, open your email and follow the instructions.",
+        let alert = UIAlertController(title: NSLocalizedString("Email validation", comment: ""), message: NSLocalizedString("If you're a real person with a real email, open your email and follow the instructions.", comment: ""),
             preferredStyle: UIAlertControllerStyle.alert
         )
         alert.addAction(UIAlertAction(title: "OK", style: UIAlertActionStyle.default, handler: nil))
@@ -440,10 +440,10 @@ class HLProfileViewController: BaseViewController {
         image_dismissing = true
     }
     func optionsFullscreenImage(_ sender: UIGestureRecognizer) {
-        let alertController = UIAlertController(title: "Do you wanna change your profile picture?", message: nil, preferredStyle: .actionSheet)
+        let alertController = UIAlertController(title: NSLocalizedString("Do you wanna change your profile picture?", comment: ""), message: nil, preferredStyle: .actionSheet)
         
         
-        let  editButton = UIAlertAction(title: "Change image", style: .destructive, handler: { (action) -> Void in
+        let  editButton = UIAlertAction(title: NSLocalizedString("Change image", comment: ""), style: .destructive, handler: { (action) -> Void in
             //print("Delete button tapped")
             let cameraViewController = self.storyboard?.instantiateViewController(withIdentifier: "selectPictureGeneral") as! HLPictureSelectViewController
             cameraViewController.originalProfileVC = self
@@ -453,7 +453,7 @@ class HLProfileViewController: BaseViewController {
         })
         alertController.addAction(editButton)
         
-        let cancelButton = UIAlertAction(title: "Close", style: .cancel, handler: { (action) -> Void in
+        let cancelButton = UIAlertAction(title: NSLocalizedString("Close", comment: ""), style: .cancel, handler: { (action) -> Void in
             //print("Cancel button tapped")
             self.dismissFullscreenImageDirect()
         })

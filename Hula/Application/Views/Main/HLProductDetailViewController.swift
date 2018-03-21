@@ -112,13 +112,13 @@ class HLProductDetailViewController: BaseViewController, UIScrollViewDelegate, U
         self.setUpProductImagesScrollView()
         
         // product owner image
-        sellerLabel.attributedText = commonUtils.attributedStringWithTextSpacing("SELLER", 2.33)
+        sellerLabel.attributedText = commonUtils.attributedStringWithTextSpacing(NSLocalizedString("SELLER", comment: ""), 2.33)
         commonUtils.circleImageView(sellerImageView)
         sellerImageView.loadImageFromURL(urlString: HulaConstants.apiURL + "users/" + currentProduct.productOwner + "/image")
         
         
         // user inventory
-        userInventoryLabel.attributedText = commonUtils.attributedStringWithTextSpacing("USER'S INVENTORY", 2.33)
+        userInventoryLabel.attributedText = commonUtils.attributedStringWithTextSpacing(NSLocalizedString("USER'S INVENTORY", comment: ""), 2.33)
         
         
         // start bartering item button
@@ -129,9 +129,9 @@ class HLProductDetailViewController: BaseViewController, UIScrollViewDelegate, U
             self.sellerFeedback = userfeedback
             self.sellerNameLabel.text = user.userNick;
             if HLDataManager.sharedInstance.amITradingWith(user.userId){
-                self.tradeWithUserButton.setTitle("Currently trading with \(user.userNick!)", for: .normal)
+                self.tradeWithUserButton.setTitle(NSLocalizedString("Currently trading with", comment: "") + " \(user.userNick!)", for: .normal)
             } else {
-                self.tradeWithUserButton.setTitle("Trade with \(user.userNick!)", for: .normal)
+                self.tradeWithUserButton.setTitle(NSLocalizedString("Trade with", comment: "") + " \(user.userNick!)", for: .normal)
             }
             self.sellerFeedbackLabel.text = user.getFeedback();
             self.sellerProducts = prods
@@ -294,24 +294,24 @@ class HLProductDetailViewController: BaseViewController, UIScrollViewDelegate, U
         viewController.delegate = self
         if (HulaUser.sharedInstance.numProducts == 0){
             viewController.isCancelVisible = true
-            viewController.cancelButtonText = "Add stuff"
+            viewController.cancelButtonText = NSLocalizedString("Add stuff", comment: "")
             viewController.trigger = "noproduct"
-            viewController.message = "Sorry! If you want to trade, you have to upload your stuff."
+            viewController.message = NSLocalizedString("Sorry! If you want to trade, you have to upload your stuff.", comment: "")
         } else {
             if HLDataManager.sharedInstance.myRoomsFull() {
                 viewController.isCancelVisible = false
                 viewController.trigger = "fullrooms"
-                viewController.message = "Sorry! your Trade Rooms are busy. Turn your phone, get in the Trade Room and request a new one."
+                viewController.message = NSLocalizedString("Sorry! your Trade Rooms are busy. Turn your phone, get in the Trade Room and request a new one.", comment: "")
             } else {
                 viewController.isCancelVisible = true
-                viewController.okButtonText = "Accept"
+                viewController.okButtonText = NSLocalizedString("Accept", comment: "")
                 viewController.trigger = ""
-                viewController.message = "You're about to start a trade. One room will be reserved for this negotiation until it's finished."
+                viewController.message = NSLocalizedString("You're about to start a trade. One room will be reserved for this negotiation until it's finished.", comment: "")
             }
         }
         
         if let btTitle = sender.titleLabel?.text {
-            if btTitle.range(of:"Currently trading") != nil {
+            if btTitle.range(of: NSLocalizedString("Currently trading", comment: "")) != nil {
                 if let pnc = self.navigationController?.navigationController as? HulaPortraitNavigationController {
                     pnc.openSwapView()
                     return

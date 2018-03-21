@@ -78,7 +78,7 @@ class HLSellerInfoViewController: BaseViewController, UITableViewDelegate, UITab
         self.declineTradeBtn.isHidden = true
         self.acceptTradeBtn.isHidden = true
         if HLDataManager.sharedInstance.amITradingWith(user.userId){
-            self.tradeWithUserButton.setTitle("Currently trading with \(user.userNick!)", for: .normal)
+            self.tradeWithUserButton.setTitle(NSLocalizedString("Currently trading with", comment: "") + " \(user.userNick!)", for: .normal)
         } else {
             if HLDataManager.sharedInstance.amIOfferedToTradeWith(user.userId){
                 // first offer
@@ -94,7 +94,7 @@ class HLSellerInfoViewController: BaseViewController, UITableViewDelegate, UITab
                 self.acceptTradeBtn.layer.borderColor = UIColor.white.cgColor
                 self.acceptTradeBtn.layer.borderWidth = 1.0
             } else {
-                self.tradeWithUserButton.setTitle("Trade with \(user.userNick!)", for: .normal)
+                self.tradeWithUserButton.setTitle(NSLocalizedString("Trade with", comment: "") + " \(user.userNick!)", for: .normal)
             }
         }
         sellerLocationLabel.text = user.userLocationName
@@ -132,7 +132,7 @@ class HLSellerInfoViewController: BaseViewController, UITableViewDelegate, UITab
     func initView(){
         commonUtils.circleImageView(profileImage)
         
-        lblOtherItemInStock.attributedText = commonUtils.attributedStringWithTextSpacing("OTHER ITEMS IN STOCK", 2.33)
+        lblOtherItemInStock.attributedText = commonUtils.attributedStringWithTextSpacing(NSLocalizedString("OTHER ITEMS IN STOCK", comment: ""), 2.33)
         
         var newFrame: CGRect! = sellerProductTableView.frame
         newFrame.size.height = CGFloat(userProducts.count) * 129 + 200;
@@ -196,19 +196,19 @@ class HLSellerInfoViewController: BaseViewController, UITableViewDelegate, UITab
             viewController.delegate = self
             if (HulaUser.sharedInstance.numProducts == 0){
                 viewController.isCancelVisible = true
-                viewController.cancelButtonText = "Add stuff"
+                viewController.cancelButtonText = NSLocalizedString("Add stuff", comment: "")
                 viewController.trigger = "noproduct"
-                viewController.message = "Sorry! If you want to trade, you have to upload your stuff."
+                viewController.message = NSLocalizedString("Sorry! If you want to trade, you have to upload your stuff.", comment: "")
             } else {
                 if HLDataManager.sharedInstance.myRoomsFull() {
                     viewController.isCancelVisible = false
                     viewController.trigger = "fullrooms"
-                    viewController.message = "Sorry! your Trade Rooms are busy. Turn your phone, get in the Trade Room and request a new one."
+                    viewController.message = NSLocalizedString("Sorry! your Trade Rooms are busy. Turn your phone, get in the Trade Room and request a new one.", comment: "")
                 } else {
                     viewController.isCancelVisible = true
-                    viewController.okButtonText = "Accept"
+                    viewController.okButtonText = NSLocalizedString("Accept", comment: "")
                     viewController.trigger = ""
-                    viewController.message = "You're about to start a trade. One room will be reserved for this negotiation until it's finished."
+                    viewController.message = NSLocalizedString("You're about to start a trade. One room will be reserved for this negotiation until it's finished.", comment: "")
                 }
             }
             self.present(viewController, animated: true)

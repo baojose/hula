@@ -245,10 +245,10 @@ class HLPostProductViewController: BaseViewController, UITextFieldDelegate {
         image_dismissing = true
     }
     func optionsFullscreenImage(_ sender: UIGestureRecognizer) {
-        let alertController = UIAlertController(title: "Image options...", message: nil, preferredStyle: .actionSheet)
+        let alertController = UIAlertController(title:  NSLocalizedString("Image options...", comment: ""), message: nil, preferredStyle: .actionSheet)
         
         
-        let editButton = UIAlertAction(title: "Try another image", style: .default, handler: { (action) -> Void in
+        let editButton = UIAlertAction(title:  NSLocalizedString("Try another image", comment: ""), style: .default, handler: { (action) -> Void in
             print("Close")
             self.dataManager.newProduct.arrProductPhotos.removeObject(at: self.currentEditingIndex);
             self.presentingViewController?.dismiss(animated: true, completion: nil)
@@ -257,7 +257,7 @@ class HLPostProductViewController: BaseViewController, UITextFieldDelegate {
         
         
         if (self.currentEditingIndex != 0){
-            let setDefaultButton = UIAlertAction(title: "Set as featured image", style: .default, handler: { (action) -> Void in
+            let setDefaultButton = UIAlertAction(title:  NSLocalizedString("Set as featured image", comment: ""), style: .default, handler: { (action) -> Void in
                 swap(&self.dataManager.newProduct.arrProductPhotos[0], &self.dataManager.newProduct.arrProductPhotos[self.currentEditingIndex])
                 self.dismissFullscreenImageDirect( )
                 self.setupImagesBoxes()
@@ -266,7 +266,7 @@ class HLPostProductViewController: BaseViewController, UITextFieldDelegate {
         }
         
         
-        let  deleteButton = UIAlertAction(title: "Delete image", style: .destructive, handler: { (action) -> Void in
+        let  deleteButton = UIAlertAction(title:  NSLocalizedString("Delete image", comment: ""), style: .destructive, handler: { (action) -> Void in
             //print("Delete button tapped")
             self.dataManager.newProduct.arrProductPhotos.removeObject(at: self.currentEditingIndex);
             self.dismissFullscreenImageDirect( )
@@ -274,7 +274,7 @@ class HLPostProductViewController: BaseViewController, UITextFieldDelegate {
         })
         alertController.addAction(deleteButton)
         
-        let cancelButton = UIAlertAction(title: "Cancel", style: .cancel, handler: { (action) -> Void in
+        let cancelButton = UIAlertAction(title: NSLocalizedString("Cancel", comment: ""), style: .cancel, handler: { (action) -> Void in
             //print("Cancel button tapped")
         })
         alertController.addAction(cancelButton)

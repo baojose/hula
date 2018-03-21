@@ -50,7 +50,7 @@ class HLProductEditTextViewController: BaseViewController, UITextViewDelegate {
         
         
         editPageTitleLabel.text = pageTitle
-        currentTextLabel.text = "CURRENT: \(originalText)"
+        currentTextLabel.text = NSLocalizedString("CURRENT:", comment: "") + " \(originalText)"
         editableTextView.text = originalText
         if (self.product.productCondition == "new"){
             setBtnStatus(button:conditionNewBtn, selected:true)

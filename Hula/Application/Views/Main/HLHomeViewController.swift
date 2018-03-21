@@ -103,7 +103,7 @@ class HLHomeViewController: BaseViewController, UIScrollViewDelegate, UITextFiel
         label.textColor = UIColor(red: 70.0/255, green: 70.0/255, blue: 70.0/255, alpha: 1.0)
         label.backgroundColor = UIColor.clear
         label.font = UIFont(name: "HelveticaNeue", size: 12)
-        label.attributedText = commonUtils.attributedStringWithTextSpacing("NEAR YOU", 2.33)
+        label.attributedText = commonUtils.attributedStringWithTextSpacing(NSLocalizedString("NEAR YOU", comment: ""), 2.33)
         view.addSubview(label)
         
         let lineLabel = UILabel(frame: CGRect(x: 0, y: tableView.sectionHeaderHeight - 1, width: tableView.frame.size.width, height: 1))
@@ -140,7 +140,7 @@ class HLHomeViewController: BaseViewController, UIScrollViewDelegate, UITextFiel
             
             cell.categoryName.attributedText = commonUtils.attributedStringWithTextSpacing(category.object(forKey: "name") as! String, CGFloat(2.33))
             cell.categoryImage.image = UIImage.init(named: category.object(forKey: "icon") as! String)
-            cell.categoryProductNum.text = String(format:"%i products", (category.object(forKey: "num_products") as! Int))
+            cell.categoryProductNum.text = String(format:NSLocalizedString("%i products", comment: ""), (category.object(forKey: "num_products") as! Int))
 
             return cell
         }

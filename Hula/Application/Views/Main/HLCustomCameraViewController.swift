@@ -202,12 +202,12 @@ class HLCustomCameraViewController: BaseViewController, UIImagePickerControllerD
         image_dismissing = true
     }
     func optionsFullscreenImage(_ sender: UIGestureRecognizer) {
-        let alertController = UIAlertController(title: "Image options...", message: nil, preferredStyle: .actionSheet)
+        let alertController = UIAlertController(title: NSLocalizedString("Image options...", comment: ""), message: nil, preferredStyle: .actionSheet)
         
         
         
         if (self.currentEditingIndex != 0){
-            let setDefaultButton = UIAlertAction(title: "Set image as default", style: .default, handler: { (action) -> Void in
+            let setDefaultButton = UIAlertAction(title: NSLocalizedString("Set image as default", comment: ""), style: .default, handler: { (action) -> Void in
                 swap(&self.dataManager.newProduct.arrProductPhotos[0], &self.dataManager.newProduct.arrProductPhotos[self.currentEditingIndex])
                 self.dismissFullscreenImageDirect( )
                 self.initData()
@@ -216,7 +216,7 @@ class HLCustomCameraViewController: BaseViewController, UIImagePickerControllerD
         }
         
         
-        let  deleteButton = UIAlertAction(title: "Delete image", style: .destructive, handler: { (action) -> Void in
+        let  deleteButton = UIAlertAction(title: NSLocalizedString("Delete image", comment: ""), style: .destructive, handler: { (action) -> Void in
             //print("Delete button tapped")
             self.dataManager.newProduct.arrProductPhotos.removeObject(at: self.currentEditingIndex);
             self.dismissFullscreenImageDirect( )
@@ -224,7 +224,7 @@ class HLCustomCameraViewController: BaseViewController, UIImagePickerControllerD
         })
         alertController.addAction(deleteButton)
         
-        let cancelButton = UIAlertAction(title: "Cancel", style: .cancel, handler: { (action) -> Void in
+        let cancelButton = UIAlertAction(title: NSLocalizedString("Cancel", comment: ""), style: .cancel, handler: { (action) -> Void in
             //print("Cancel button tapped")
         })
         

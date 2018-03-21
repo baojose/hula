@@ -186,10 +186,10 @@ class HLBarterScreenViewController: BaseViewController {
                 // my turn
                 if HLDataManager.sharedInstance.onboardingTutorials.object(forKey: "barter_my_turn") as? String == nil{
                     CommonUtils.sharedInstance.showTutorial(arrayTips: [
-                        HulaTip(delay: 2, view: self.otherProductsCollection, text: "Here is their stuff. Tap on the product to get more info and ask for a live video to check it."),
-                        HulaTip(delay: 0.4, view: self.otherSelectedProductsCollection, text: "Drag & drop here what you want."),
-                        HulaTip(delay: 0.4, view: self.myProductsCollection, text: "Here is your stuff."),
-                        HulaTip(delay: 0.4, view: self.sendOfferFakeView, text: "Once you've selected what you want, find out if the other trader is interested. Click the button below to send a notification!")
+                        HulaTip(delay: 2, view: self.otherProductsCollection, text: NSLocalizedString("Here is their stuff. Tap on the product to get more info and ask for a live video to check it.", comment: "")),
+                        HulaTip(delay: 0.4, view: self.otherSelectedProductsCollection, text: NSLocalizedString("Drag & drop here what you want.", comment: "")),
+                        HulaTip(delay: 0.4, view: self.myProductsCollection, text: NSLocalizedString("Here is your stuff.", comment: "")),
+                        HulaTip(delay: 0.4, view: self.sendOfferFakeView, text: NSLocalizedString("Once you've selected what you want, find out if the other trader is interested. Click the button below to send a notification!", comment: ""))
                         ], named: "barter_my_turn")
                     //print(HLDataManager.sharedInstance.onboardingTutorials)
                 }
@@ -197,9 +197,9 @@ class HLBarterScreenViewController: BaseViewController {
                 // other's turn
                 if HLDataManager.sharedInstance.onboardingTutorials.object(forKey: "barter_other_turn") as? String  == nil{
                     CommonUtils.sharedInstance.showTutorial(arrayTips: [
-                        HulaTip(delay: 2, view: self.sendOfferFakeView, text: "This trading is waiting for the other user to select the items he wants or accept your offer. As soon as the offer is ready you will be notified."),
-                        HulaTip(delay: 0.5, view: self.otherProductsCollection, text: "Tap on the product to get more info and ask for a live video to check it."),
-                        HulaTip(delay: 0.4, view: self.ChatFakeView, text: "Start chat here if you need to talk.")
+                        HulaTip(delay: 2, view: self.sendOfferFakeView, text: NSLocalizedString("This trading is waiting for the other user to select the items he wants or accept your offer. As soon as the offer is ready you will be notified.", comment: "")),
+                        HulaTip(delay: 0.5, view: self.otherProductsCollection, text: NSLocalizedString("Tap on the product to get more info and ask for a live video to check it.", comment: "")),
+                        HulaTip(delay: 0.4, view: self.ChatFakeView, text: NSLocalizedString("Start chat here if you need to talk.", comment: ""))
                         ], named: "barter_other_turn")
                 }
             }
@@ -235,9 +235,9 @@ class HLBarterScreenViewController: BaseViewController {
             
             if !found && pr_id != "" {
                 //self.animateDisolveProduct(pr_id, type: type)
-                let tmp_prod = HulaProduct(id: pr_id, name: "Deleted product", image: CommonUtils.sharedInstance.productImageURL(productId: pr_id))
+                let tmp_prod = HulaProduct(id: pr_id, name: NSLocalizedString("Deleted product", comment: ""), image: CommonUtils.sharedInstance.productImageURL(productId: pr_id))
                 tmp_prod.productStatus = "deleted"
-                tmp_prod.productDescription = "This product is not available anymore."
+                tmp_prod.productDescription = NSLocalizedString("This product is not available anymore.", comment: "")
                 tmp_prod.tradeStatus = 2
                 final_arr.append(tmp_prod)
                 

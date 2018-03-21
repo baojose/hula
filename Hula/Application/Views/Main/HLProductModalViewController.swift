@@ -63,7 +63,7 @@ class HLProductModalViewController: UIViewController, UIImagePickerControllerDel
         if product.productDescription.count > 0 {
             productDescriptionLabel.text = product.productDescription
         } else {
-            productDescriptionLabel.text = "No product description provided."
+            productDescriptionLabel.text = NSLocalizedString("No product description provided.", comment: "")
         }
         self.setupVideoButtons()
         
@@ -73,7 +73,7 @@ class HLProductModalViewController: UIViewController, UIImagePickerControllerDel
         if product.trading_count > 1 {
             self.multipleDealsImg.isHidden = false
             self.multipleDealLbl.isHidden = false
-            self.multipleDealLbl.text = "\(product.trading_count!) trades"
+            self.multipleDealLbl.text = "\(product.trading_count!) " + NSLocalizedString("trades", comment: "")
         }
         
         // item height and position reset
@@ -168,16 +168,16 @@ class HLProductModalViewController: UIViewController, UIImagePickerControllerDel
                         // video was requested and is available
                         videoStatusImg.image = UIImage(named: "video-player-icon-red")
                         videoStatusImg2.image = UIImage(named: "video-player-icon-red")
-                        videoStatusLbl.text = "Video proof available"
-                        videoBtn.setTitle(" Play video", for: .normal)
+                        videoStatusLbl.text = NSLocalizedString("Video proof available", comment: "")
+                        videoBtn.setTitle(NSLocalizedString(" Play video", comment: ""), for: .normal)
                         videoBtn.setImage(UIImage(named: "video-player-icon-red"), for: .normal)
                         videoBtn.tag = 43909
                     } else {
                         // video is still pending recod
                         videoStatusImg.image = UIImage(named: "video-requested-red")
                         videoStatusImg2.image = UIImage(named: "video-requested-red")
-                        videoBtn.setTitle(" Waiting for video proof...", for: .normal)
-                        videoStatusLbl.text = "Video proof requested"
+                        videoBtn.setTitle(NSLocalizedString(" Waiting for video proof...", comment: ""), for: .normal)
+                        videoStatusLbl.text = NSLocalizedString("Video proof requested", comment: "")
                         videoBtn.tag = -43904
                     }
                 } else {
@@ -194,16 +194,16 @@ class HLProductModalViewController: UIViewController, UIImagePickerControllerDel
                     // I've already recorded a video
                     videoStatusImg.image = UIImage(named: "video-player-icon-red")
                     videoStatusImg2.image = UIImage(named: "video-player-icon-red")
-                    videoStatusLbl.text = "Video proof available"
-                    videoBtn.setTitle(" Play video", for: .normal)
+                    videoStatusLbl.text = NSLocalizedString("Video proof available", comment: "")
+                    videoBtn.setTitle(NSLocalizedString(" Play video", comment: ""), for: .normal)
                     videoBtn.setImage(UIImage(named: "video-player-icon-red"), for: .normal)
                     videoBtn.tag = 43909
                 } else {
                     // video is still pending recod
                     videoStatusImg.image = UIImage(named: "video-requested-red")
                     videoStatusImg2.image = UIImage(named: "video-requested-red")
-                    videoStatusLbl.text = "User waiting for video proof"
-                    videoBtn.setTitle(" Record video proof", for: .normal)
+                    videoStatusLbl.text = NSLocalizedString("User waiting for video proof", comment: "")
+                    videoBtn.setTitle(NSLocalizedString(" Record video proof", comment: ""), for: .normal)
                     videoBtn.tag = 43904
                 }
             }
@@ -238,7 +238,7 @@ class HLProductModalViewController: UIViewController, UIImagePickerControllerDel
                                         let alert = self.storyboard?.instantiateViewController(withIdentifier: "alertView") as! AlertViewController
                                         alert.delegate = self as AlertDelegate
                                         alert.isCancelVisible = false
-                                        alert.message = "You have requested a video for this product. You will receive a notification when the user uploads it."
+                                        alert.message = NSLocalizedString("You have requested a video for this product. You will receive a notification when the user uploads it.", comment: "")
                                         alert.trigger = "video_request"
                                         self.present(alert, animated: true)
                                     }
@@ -252,7 +252,7 @@ class HLProductModalViewController: UIViewController, UIImagePickerControllerDel
                             let alert = self.storyboard?.instantiateViewController(withIdentifier: "alertView") as! AlertViewController
                             alert.delegate = self as AlertDelegate
                             alert.isCancelVisible = false
-                            alert.message = "This product is already waiting for a video proof. The owner will record a video and you will be notified."
+                            alert.message = NSLocalizedString("This product is already waiting for a video proof. The owner will record a video and you will be notified.", comment: "")
                             alert.trigger = "video_request"
                             self.present(alert, animated: true)
                         }
@@ -346,8 +346,8 @@ class HLProductModalViewController: UIViewController, UIImagePickerControllerDel
             videoPath = NSURL(string: path )
             videoData?.write(toFile: path, atomically: false)
             //self.dismiss(animated: true, completion: nil)
-            notify("Uploading video...")
-            videoBtn.setTitle(" Uploading", for: .normal)
+            notify(NSLocalizedString("Uploading video...", comment: ""))
+            videoBtn.setTitle(NSLocalizedString(" Uploading", comment: ""), for: .normal)
             // three-dots animation
             
             HLDataManager.sharedInstance.uploadVideo(path, productId: product.productId, tradeId: self.currentTradeId, taskCallback: { (success, json) in
@@ -360,10 +360,10 @@ class HLProductModalViewController: UIViewController, UIImagePickerControllerDel
                             self.product.video_url[self.currentTradeId] = HulaConstants.staticServerURL + vp
                         }
                     }
-                    self.videoBtn.setTitle(" Video uploaded", for: .normal)
+                    self.videoBtn.setTitle(NSLocalizedString(" Video uploaded", comment: ""), for: .normal)
                     self.videoBtn.setImage(UIImage(named: "video-player-icon-red"), for: .normal)
                     self.videoBtn.tag = 43909
-                    self.notify("Video uploaded!")
+                    self.notify(NSLocalizedString("Video uploaded!", comment: ""))
                     //self.setupVideoButtons()
                     self.refreshProduct()
                 }
@@ -488,9 +488,9 @@ extension HLProductModalViewController {
         image_dismissing = true
     }
     func optionsFullscreenImage(_ sender: UIGestureRecognizer) {
-        let alertController = UIAlertController(title: "Image options...", message: nil, preferredStyle: .actionSheet)
+        let alertController = UIAlertController(title: NSLocalizedString("Image options...", comment: ""), message: nil, preferredStyle: .actionSheet)
         
-        let cancelButton = UIAlertAction(title: "Close", style: .cancel, handler: { (action) -> Void in
+        let cancelButton = UIAlertAction(title: NSLocalizedString("Close", comment: ""), style: .cancel, handler: { (action) -> Void in
             //print("Cancel button tapped")
             self.dismissFullscreenImageDirect( )
         })

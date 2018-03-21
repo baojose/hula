@@ -20,8 +20,8 @@ class AlertViewController: UIViewController {
     var message:String = ""
     var delegate:AlertDelegate?
     var isCancelVisible = true
-    var okButtonText = "OK"
-    var cancelButtonText = "Cancel"
+    var okButtonText = NSLocalizedString("OK", comment: "")
+    var cancelButtonText = NSLocalizedString("Cancel", comment: "")
     var trigger:String = ""
     var starsVisible:Bool = false
     var points:Int = 0;
