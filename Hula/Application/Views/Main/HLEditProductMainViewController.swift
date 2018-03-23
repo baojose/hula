@@ -101,6 +101,10 @@ class HLEditProductMainViewController: BaseViewController, ProductPictureDelegat
         default:
             im = nil
         }
+        
+        if currentEditingIndex == 3 && product.arrProductPhotoLink.count < 4 {
+            im = nil
+        }
         if im != nil{
             fullScreenImage(image: im!, index: currentEditingIndex)
         } else {
@@ -186,13 +190,14 @@ class HLEditProductMainViewController: BaseViewController, ProductPictureDelegat
         }
         
         
-        if product.arrProductPhotoLink.count > 0 {
+        if product.arrProductPhotoLink.count > 0 && product.arrProductPhotoLink[0].count > 0 {
             product.productImage = product.arrProductPhotoLink[0]
             productImage.loadImageFromURL(urlString: product.arrProductPhotoLink[0])
         } else {
             productImage.loadImageFromURL(urlString: HulaConstants.noProductThumb)
             //prodImg1.loadImageFromURL(urlString: HulaConstants.noProductThumb)
         }
+        numPicturesLabel.text = "\(product.arrProductPhotoLink.count)"
     }
     
     func imageUploaded(path: String, pos: Int){
@@ -306,12 +311,14 @@ extension HLEditProductMainViewController {
         
         
         let  deleteButton = UIAlertAction(title: NSLocalizedString("Delete image", comment: ""), style: .destructive, handler: { (action) -> Void in
-            //print("Delete button tapped")
-            if (self.dataManager.newProduct.arrProductPhotos.count > self.currentEditingIndex){
-                self.dataManager.newProduct.arrProductPhotos.removeObject(at: self.currentEditingIndex);
+            print("Delete button tapped")
+            print("self.currentEditingIndex \(self.currentEditingIndex)")
+            print("self.dataManager.newProduct.arrProductPhotos \(self.dataManager.newProduct.arrProductPhotos)")
+            if (self.product.arrProductPhotos.count > self.currentEditingIndex){
+                self.product.arrProductPhotos.removeObject(at: self.currentEditingIndex);
             }
-            if (self.dataManager.newProduct.arrProductPhotoLink.count > self.currentEditingIndex){
-                self.dataManager.newProduct.arrProductPhotoLink.remove(at: self.currentEditingIndex);
+            if (self.product.arrProductPhotoLink.count > self.currentEditingIndex){
+                self.product.arrProductPhotoLink.remove(at: self.currentEditingIndex);
             }
             self.dismissFullscreenImageDirect( )
             self.redrawProductImages()
