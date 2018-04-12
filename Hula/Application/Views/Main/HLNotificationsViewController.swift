@@ -88,7 +88,7 @@ class HLNotificationsViewController: BaseViewController, UITableViewDelegate, UI
         let cell = tableView.dequeueReusableCell(withIdentifier: "NotificationsCategoryCell") as! HLHomeNotificationsTableViewCell
         let notification : NSDictionary = HLDataManager.sharedInstance.arrNotifications.object(at: indexPath.row) as! NSDictionary
         
-        let is_old = false
+        var is_old = false
         
         if let is_read = notification.object(forKey: "is_read") as? Bool{
         
@@ -104,8 +104,11 @@ class HLNotificationsViewController: BaseViewController, UITableViewDelegate, UI
             
             let date = notification.object(forKey: "date") as? String
             let realdate = CommonUtils.sharedInstance.isoDateToNSDate(date: date!)
-            //let days_since = daysBetween(start: realdate as Date, end: NSDate() )
-            //print(days_since);
+            let days_since = daysBetween(start: realdate as Date, end: NSDate() as Date )
+            print(days_since);
+            if days_since > 3 {
+                is_old = true;
+            }
             cell.newTradeActionView.isHidden = true
             if let type = notification.object(forKey: "type") as? String{
                 if (type == "start"){
