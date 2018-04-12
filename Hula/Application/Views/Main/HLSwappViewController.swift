@@ -597,7 +597,11 @@ class HLSwappViewController: UIViewController {
                                 if let nick = dict["nick"] {
                                     //print(nick)
                                     DispatchQueue.main.async {
-                                        self.otherUserNick.text = nick
+                                        if nick.count < 17 {
+                                            self.otherUserNick.text = nick
+                                        } else {
+                                            self.otherUserNick.text = String( nick.prefix(15) ) + "...";
+                                        }
                                     }
                                 }
                             }

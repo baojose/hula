@@ -594,7 +594,7 @@
 "mb1-uf-rcq.normalTitle" = ">80";
 
 /* Class = "UIButton"; normalTitle = "Accept"; ObjectID = "mf6-wE-Gjd"; */
-"mf6-wE-Gjd.normalTitle" = "Aceptar";
+"mf6-wE-Gjd.normalTitle" = "Ver oferta";
 
 /* Class = "UILabel"; text = "To turn around the life of your stuff, turn your phone."; ObjectID = "n02-Pb-vCI"; */
 "n02-Pb-vCI.text" = "To turn around the life of your stuff, turn your phone.";

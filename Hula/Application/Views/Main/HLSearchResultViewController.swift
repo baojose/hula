@@ -21,6 +21,7 @@ class HLSearchResultViewController: BaseViewController, UITableViewDataSource, U
     var keywordToSearch: String = ""
     var productsResults: NSMutableDictionary = [:]
     var productsList: NSArray = []
+    var foundUsersList: NSArray = []
     var usersList: NSDictionary = [:]
     var spinner: HLSpinnerUIView!
     var filteredList: [HulaProduct] = []
@@ -102,50 +103,83 @@ class HLSearchResultViewController: BaseViewController, UITableViewDataSource, U
         let cell = tableView.dequeueReusableCell(withIdentifier: "homeProductCell") as! HLProductTableViewCell
         
         let product = filteredList[indexPath.row]
+        
+        
         //print(product)
         cell.productName.text = product.productName
-        
-        if product.trading_count > 0 {
-            cell.isMultipleTrades.isHidden = false
-        } else {
-            cell.isMultipleTrades.isHidden = true
-        }
         let prod_thumb = commonUtils.getThumbFor(url: product.productImage)
         cell.productImage.loadImageFromURL(urlString: prod_thumb)
-        let user_id = product.productOwner as String;
-        if let user = self.usersList.object(forKey: user_id) as? NSDictionary {
-            //print(user)
-            cell.productOwnerName.text = user.object(forKey: "nick") as? String
-            if let user_img = user.object(forKey: "image") as? String{
-                let thumb = commonUtils.getThumbFor(url: user_img)
-                cell.productOwnerImage.loadImageFromURL(urlString: thumb)
-            }
-            let up = user.object(forKey: "feedback_points") as? Float
-            let uc = user.object(forKey: "feedback_count") as? Float
-            if (up != nil) && (uc != nil) && (uc != 0) {
-                let perc_trade = round( up! / uc! * 100)
-                cell.productTradeRate.text = "\(perc_trade)%"
+        
+        if product.productCategoryId == "xx_user" {
+            commonUtils.circleImageView(cell.productImage);
+            
+            cell.productOwnerName.isHidden = true;
+            cell.productTradeRate.isHidden = true;
+            cell.productDistance.isHidden = true;
+            cell.isMultipleTrades.isHidden = true;
+            cell.productOwnerImage.isHidden = true;
+        } else {
+            cell.productImage.layer.cornerRadius = 0
+            
+            cell.productTradeRate.isHidden = false;
+            cell.productDistance.isHidden = false;
+            cell.productOwnerImage.isHidden = false;
+            cell.productOwnerName.isHidden = false;
+            
+            if product.trading_count > 0 {
+                cell.isMultipleTrades.isHidden = false
             } else {
-                cell.productTradeRate.text = "-"
+                cell.isMultipleTrades.isHidden = true
             }
             
-            if let loc = user.object(forKey: "location") as? [Float]{
-                let userloc = CLLocation(latitude: Double( loc[0]), longitude:  Double(loc[1]) )
-                cell.productDistance.text = "(" + commonUtils.getDistanceFrom(loc: userloc) + ")"
-            } else {
-                cell.productDistance.text = "-"
+            let user_id = product.productOwner as String;
+            if let user = self.usersList.object(forKey: user_id) as? NSDictionary {
+                //print(user)
+                cell.productOwnerName.text = user.object(forKey: "nick") as? String
+                if let user_img = user.object(forKey: "image") as? String{
+                    let thumb = commonUtils.getThumbFor(url: user_img)
+                    cell.productOwnerImage.loadImageFromURL(urlString: thumb)
+                }
+                let up = user.object(forKey: "feedback_points") as? Float
+                let uc = user.object(forKey: "feedback_count") as? Float
+                if (up != nil) && (uc != nil) && (uc != 0) {
+                    let perc_trade = round( up! / uc! * 100)
+                    cell.productTradeRate.text = "\(perc_trade)%"
+                } else {
+                    cell.productTradeRate.text = "-"
+                }
+                
+                if let loc = user.object(forKey: "location") as? [Float]{
+                    let userloc = CLLocation(latitude: Double( loc[0]), longitude:  Double(loc[1]) )
+                    cell.productDistance.text = "(" + commonUtils.getDistanceFrom(loc: userloc) + ")"
+                } else {
+                    cell.productDistance.text = "-"
+                }
             }
+            
+            commonUtils.circleImageView(cell.productOwnerImage)
         }
-        
-        commonUtils.circleImageView(cell.productOwnerImage)
         return cell
     }
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath){
-        let viewController = self.storyboard?.instantiateViewController(withIdentifier: "productDetailPage") as! HLProductDetailViewController
-        
         let product = filteredList[indexPath.row]
-        viewController.productData = product
-        self.navigationController?.pushViewController(viewController, animated: true)
+        
+        if product.productCategoryId == "xx_user" {
+            // not a product, but a user!!!
+            HLDataManager.sharedInstance.getUserProfile(userId: product.productId, taskCallback: {(user, prods, userfeedback) in
+                let storyboard = UIStoryboard(name: "Main", bundle: nil)
+                let myModalViewController = storyboard.instantiateViewController(withIdentifier: "sellerInfoPage") as! HLSellerInfoViewController
+                myModalViewController.user = user
+                myModalViewController.userProducts = prods
+                myModalViewController.userFeedback = userfeedback
+                self.navigationController?.pushViewController(myModalViewController, animated: true)
+            });
+        } else {
+            let viewController = self.storyboard?.instantiateViewController(withIdentifier: "productDetailPage") as! HLProductDetailViewController
+            
+            viewController.productData = product
+            self.navigationController?.pushViewController(viewController, animated: true)
+        }
     }
     
     private var finishedLoadingInitialTableCells = false
@@ -194,10 +228,11 @@ class HLSearchResultViewController: BaseViewController, UITableViewDataSource, U
                 DispatchQueue.main.async {
                     if let dictionary = json as? [String: Any] {
                         self.spinner.hide()
-                        //print(dictionary)
+                        print(dictionary)
                         if let products = dictionary["products"] as? NSArray {
                             //print(products)
                             self.productsList = products
+                            self.foundUsersList = dictionary["found_users"] as! NSArray
                         }
                         if let users = dictionary["users"] as? NSDictionary {
                             //print(products)
@@ -248,6 +283,21 @@ class HLSearchResultViewController: BaseViewController, UITableViewDataSource, U
             }
             
         }
+        
+        
+        for us in (foundUsersList as? [NSDictionary])!{
+            let hprod = HulaProduct()
+            hprod.productName = String(NSLocalizedString("User", comment: "")) + ": " + (us["name"] as! String)
+                + "\n(" + (us["nick"] as! String) + ")";
+            hprod.productDescription = us["nick"] as! String;
+            hprod.productImage = us["image"] as! String;
+            hprod.productId = us["_id"] as! String;
+            hprod.productCategoryId = "xx_user";
+            filteredList.append(hprod)
+        }
+        
+        
+        
         //print(filteredList)
         productsTableView.reloadData()
     }
