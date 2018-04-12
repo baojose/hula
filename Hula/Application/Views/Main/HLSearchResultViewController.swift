@@ -232,7 +232,11 @@ class HLSearchResultViewController: BaseViewController, UITableViewDataSource, U
                         if let products = dictionary["products"] as? NSArray {
                             //print(products)
                             self.productsList = products
-                            self.foundUsersList = dictionary["found_users"] as! NSArray
+                            if let ful = dictionary["found_users"] as? NSArray {
+                                self.foundUsersList = ful;
+                            } else {
+                                self.foundUsersList = [];
+                            }
                         }
                         if let users = dictionary["users"] as? NSDictionary {
                             //print(products)
