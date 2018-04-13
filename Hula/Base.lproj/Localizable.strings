@@ -6,9 +6,9 @@
  Copyright © 2018 star. All rights reserved.
  */
 "Incorrect login. Please try again." = "Incorrect login. Please try again.";
-"Facebook login error" = "Facebook login error.”;
+"Facebook login error" = "Facebook login error.";
 "User email already exists! Please use the login form." = "User email already exists! Please use the login form.";
-"Server response unexpected" = "Server response unexpected.”;
+"Server response unexpected" = "Server response unexpected.";
 "miles" = "miles";
 "Notification" = "Notification";
 "years ago" = "years ago";
@@ -36,7 +36,7 @@
 "Cancel this trade" = "Cancel this trade";
 "Cancel" = "Cancel";
 "Trade mode disabled" = "Trade mode disabled";
-"You have to be logged in to enter into trade mode" = "You have to be logged in to enter into trade mode.”;
+"You have to be logged in to enter into trade mode" = "You have to be logged in to enter into trade mode.";
 "OK" = "OK";
 "Up for push notifications?" = "Up for push notifications?";
 "Allow HULA to access your location" = "Allow HULA to access your location";
