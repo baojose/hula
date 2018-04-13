@@ -79,14 +79,16 @@ class HLNotificationsViewController: BaseViewController, UITableViewDelegate, UI
     func numberOfSections(in tableView: UITableView) -> Int {
         return 1
     }
-    
+    func daysBetween(start: Date, end: Date) -> Int {
+        return Calendar.current.dateComponents([.day], from: start, to: end).day!
+    }
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
 
         
         let cell = tableView.dequeueReusableCell(withIdentifier: "NotificationsCategoryCell") as! HLHomeNotificationsTableViewCell
         let notification : NSDictionary = HLDataManager.sharedInstance.arrNotifications.object(at: indexPath.row) as! NSDictionary
         
-        
+        var is_old = false
         
         if let is_read = notification.object(forKey: "is_read") as? Bool{
         
@@ -100,13 +102,19 @@ class HLNotificationsViewController: BaseViewController, UITableViewDelegate, UI
                 cell.backgroundColor = UIColor(red: 1, green: 1, blue: 1, alpha: 1)
             }
             
-            
+            let date = notification.object(forKey: "date") as? String
+            let realdate = CommonUtils.sharedInstance.isoDateToNSDate(date: date!)
+            let days_since = daysBetween(start: realdate as Date, end: NSDate() as Date )
+            print(days_since);
+            if days_since > 3 {
+                is_old = true;
+            }
             cell.newTradeActionView.isHidden = true
             if let type = notification.object(forKey: "type") as? String{
                 if (type == "start"){
                     cell.rotationIcon.isHidden = true
                     cell.forwardIcon.isHidden = false
-                    if !is_read {
+                    if !is_read && !is_old {
                         
                         cell.rejectBtn.tag = indexPath.row;
                         cell.rejectBtn.addTarget(self, action: #selector(rejectBtnTapped), for: .touchUpInside)
@@ -221,6 +229,8 @@ class HLNotificationsViewController: BaseViewController, UITableViewDelegate, UI
                     let storyboard = UIStoryboard(name: "Main", bundle: nil)
                     let myModalViewController = storyboard.instantiateViewController(withIdentifier: "sellerInfoPage") as! HLSellerInfoViewController
                     myModalViewController.user = user
+                    myModalViewController.userProducts = prods
+                    myModalViewController.userFeedback = userfeedback
                     myModalViewController.modalPresentationStyle = UIModalPresentationStyle.fullScreen
                     myModalViewController.modalTransitionStyle = UIModalTransitionStyle.coverVertical
                     self.navigationController?.pushViewController(myModalViewController, animated: true)

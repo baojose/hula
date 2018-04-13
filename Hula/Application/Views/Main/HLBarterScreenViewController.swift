@@ -166,8 +166,8 @@ class HLBarterScreenViewController: BaseViewController {
             
             if (self.thisTrade.turn_user_id == HulaUser.sharedInstance.userId && thisTrade.num_bids == 1){
                 // first turn
-                self.addMoneyBtn1.alpha = 0
-                self.addMoneyBtn2.alpha = 0
+                self.addMoneyBtn1.alpha = 0.3
+                self.addMoneyBtn2.alpha = 0.3
             } else {
                 self.addMoneyBtn1.alpha = 1
                 self.addMoneyBtn2.alpha = 1
@@ -182,26 +182,23 @@ class HLBarterScreenViewController: BaseViewController {
             
             
             // TUTORIAL
+            
+            
+            if HLDataManager.sharedInstance.onboardingTutorials.object(forKey: "barter_any_turn") as? String == nil{
+                CommonUtils.sharedInstance.showTutorial(arrayTips: [
+                    HulaTip(delay: 2, view: self.otherProductsCollection, text: NSLocalizedString("Here is their stuff.", comment: "")),
+                    HulaTip(delay: 0.4, view: self.otherSelectedProductsCollection, text: NSLocalizedString("Drag & drop here what you want.", comment: "")),
+                    HulaTip(delay: 0.5, view: self.otherProductsCollection, text: NSLocalizedString("Tap on the product to get more info and ask for a live video to check it.", comment: "")),
+                    HulaTip(delay: 0.4, view: self.myProductsCollection, text: NSLocalizedString("Here is your stuff.", comment: "")),
+                    HulaTip(delay: 0.4, view: self.sendOfferFakeView, text: NSLocalizedString("Once you've selected what you want, find out if the other trader is interested. Click the button below to send a notification!", comment: "")),
+                    HulaTip(delay: 0.4, view: self.ChatFakeView, text: NSLocalizedString("Start chat here if you need to talk.", comment: ""))
+                    ], named: "barter_any_turn")
+                //print(HLDataManager.sharedInstance.onboardingTutorials)
+            }
             if self.thisTrade.turn_user_id == HulaUser.sharedInstance.userId{
                 // my turn
-                if HLDataManager.sharedInstance.onboardingTutorials.object(forKey: "barter_my_turn") as? String == nil{
-                    CommonUtils.sharedInstance.showTutorial(arrayTips: [
-                        HulaTip(delay: 2, view: self.otherProductsCollection, text: NSLocalizedString("Here is their stuff. Tap on the product to get more info and ask for a live video to check it.", comment: "")),
-                        HulaTip(delay: 0.4, view: self.otherSelectedProductsCollection, text: NSLocalizedString("Drag & drop here what you want.", comment: "")),
-                        HulaTip(delay: 0.4, view: self.myProductsCollection, text: NSLocalizedString("Here is your stuff.", comment: "")),
-                        HulaTip(delay: 0.4, view: self.sendOfferFakeView, text: NSLocalizedString("Once you've selected what you want, find out if the other trader is interested. Click the button below to send a notification!", comment: ""))
-                        ], named: "barter_my_turn")
-                    //print(HLDataManager.sharedInstance.onboardingTutorials)
-                }
             } else {
                 // other's turn
-                if HLDataManager.sharedInstance.onboardingTutorials.object(forKey: "barter_other_turn") as? String  == nil{
-                    CommonUtils.sharedInstance.showTutorial(arrayTips: [
-                        HulaTip(delay: 2, view: self.sendOfferFakeView, text: NSLocalizedString("This trading is waiting for the other user to select the items he wants or accept your offer. As soon as the offer is ready you will be notified.", comment: "")),
-                        HulaTip(delay: 0.5, view: self.otherProductsCollection, text: NSLocalizedString("Tap on the product to get more info and ask for a live video to check it.", comment: "")),
-                        HulaTip(delay: 0.4, view: self.ChatFakeView, text: NSLocalizedString("Start chat here if you need to talk.", comment: ""))
-                        ], named: "barter_other_turn")
-                }
             }
             
             
@@ -316,8 +313,8 @@ class HLBarterScreenViewController: BaseViewController {
     
     override func viewWillAppear(_ animated: Bool) {
         if let swappPageVC = self.parent as? HLSwappPageViewController{
-            self.addMoneyBtn1.isHidden = false
-            self.addMoneyBtn2.isHidden = false
+            self.addMoneyBtn1.alpha = 1
+            self.addMoneyBtn2.alpha = 1
             if ( swappPageVC.arrTrades.count > 0 ){
                 if Device.IS_IPHONE_X {
                     self.mainViewHolder.frame.origin.x = 25
@@ -332,8 +329,8 @@ class HLBarterScreenViewController: BaseViewController {
                     }
                 }
             } else {
-                self.addMoneyBtn1.isHidden = true
-                self.addMoneyBtn2.isHidden = true
+                self.addMoneyBtn1.alpha = 0.3
+                self.addMoneyBtn2.alpha = 0.3
             }
         }
         

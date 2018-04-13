@@ -242,8 +242,8 @@ class CommonUtils: NSObject, EasyTipViewDelegate, UIGestureRecognizerDelegate {
                     bgViewToRemove.removeFromSuperview()
                 }
                 bgViewToRemove = UIView(frame: vc.view.frame)
-                bgViewToRemove.frame.size.width = max(vc.view.frame.width, vc.view.frame.height)
-                bgViewToRemove.frame.size.height = max(vc.view.frame.width, vc.view.frame.height)
+                bgViewToRemove.frame.size.width = max(vc.view.frame.width, vc.view.frame.height) + 100
+                bgViewToRemove.frame.size.height = max(vc.view.frame.width, vc.view.frame.height) + 100
                 bgViewToRemove.backgroundColor = UIColor(red: 0, green: 0, blue: 0, alpha: 0.3)
                 
                 let tap = UITapGestureRecognizer(target: self, action: #selector(removeEasyTips))

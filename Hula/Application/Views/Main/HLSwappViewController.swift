@@ -578,7 +578,7 @@ class HLSwappViewController: UIViewController {
                         //print("Bids: \(bids.count)")
                         if (bids.count == 1 && thisTrade.object(forKey: "turn_user_id") as? String == HulaUser.sharedInstance.userId ){
                             // first turn
-                            self.chatButton.alpha = 0
+                            self.chatButton.alpha = 0.3
                         } else {
                             self.chatButton.alpha = 1
                         }
@@ -597,13 +597,18 @@ class HLSwappViewController: UIViewController {
                                 if let nick = dict["nick"] {
                                     //print(nick)
                                     DispatchQueue.main.async {
-                                        self.otherUserNick.text = nick
+                                        if nick.count < 17 {
+                                            self.otherUserNick.text = nick
+                                        } else {
+                                            self.otherUserNick.text = String( nick.prefix(15) ) + "...";
+                                        }
                                     }
                                 }
                             }
                         })
                     }
                 } else {
+                    // no trades
                     self.addTradeRoomBtn.alpha = 0
                     self.mainCentralLabel.alpha = 0
                     self.myUserView.frame.origin.x = 0
@@ -623,6 +628,8 @@ class HLSwappViewController: UIViewController {
             
             
         } else {
+            // index == 0
+            
             last_index_setup = 0
             UIView.animate(withDuration: 0.3) {
                 /*
@@ -631,7 +638,7 @@ class HLSwappViewController: UIViewController {
                 self.nextTradeBtn.alpha = 1
                  */
                 if HulaUser.sharedInstance.maxTrades >= 5{
-                    self.addTradeRoomBtn.alpha = 0
+                    self.addTradeRoomBtn.alpha = 0.3
                 } else {
                     self.addTradeRoomBtn.alpha = 1;
                 }

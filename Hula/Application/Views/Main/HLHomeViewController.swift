@@ -169,7 +169,7 @@ class HLHomeViewController: BaseViewController, UIScrollViewDelegate, UITextFiel
         isSearching = true
         self.searchProduct(textField.text!)
         UIView.animate(withDuration: 0.3, animations: {
-            let newSize = CGSize(width: self.boxRoundedOriginalSize.width - 60, height: self.boxRoundedOriginalSize.height)
+            let newSize = CGSize(width: self.boxRoundedOriginalSize.width - 70, height: self.boxRoundedOriginalSize.height)
             self.cancelButton.alpha = 1
             self.boxRoundedView.frame.size = newSize
         })

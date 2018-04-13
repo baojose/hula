@@ -11,6 +11,9 @@ import UIKit
 class HLFinalFeedbackViewController: UIViewController {
 
     @IBOutlet weak var mainLabel: UILabel!
+    @IBOutlet weak var userImage: UIImageView!
+    
+    
     var good_str: String = ""
     var bad_str: String = ""
     var trade_id_closed : String = ""
@@ -24,6 +27,7 @@ class HLFinalFeedbackViewController: UIViewController {
     var step : Int = 0
     
     @IBOutlet weak var backBtn: UIButton!
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -42,6 +46,10 @@ class HLFinalFeedbackViewController: UIViewController {
             bt?.clipsToBounds = true
         }
         backBtn.isHidden = true
+        
+        userImage.loadImageFromURL(urlString: CommonUtils.sharedInstance.userImageURL(userId: self.user_id_closed ));
+        CommonUtils.sharedInstance.circleImageView(userImage);
+        
     }
 
     override func didReceiveMemoryWarning() {

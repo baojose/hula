@@ -87,10 +87,10 @@
 "6MQ-Hh-SjO.normalTitle" = "Utiliza otras palabras";
 
 /* Class = "UIButton"; normalTitle = "Accept trade"; ObjectID = "6mC-3f-4yX"; */
-"6mC-3f-4yX.normalTitle" = "Aceptar intercambio";
+"6mC-3f-4yX.normalTitle" = "Ver oferta";
 
 /* Class = "UIButton"; normalTitle = "Decline trade"; ObjectID = "73w-eh-HUY"; */
-"73w-eh-HUY.normalTitle" = "Rechazar intercambio";
+"73w-eh-HUY.normalTitle" = "Rechazar";
 
 /* Class = "UILabel"; text = "Name of the product a bit large"; ObjectID = "77G-uo-99a"; */
 "77G-uo-99a.text" = "Nombre del producto un poco más largo";

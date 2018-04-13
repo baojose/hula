@@ -35,6 +35,7 @@ class HLProductModalViewController: UIViewController, UIImagePickerControllerDel
     @IBOutlet weak var videoBtnHolder: UIView!
     @IBOutlet weak var videoStatusLbl: UILabel!
     
+    
     let imagePicker = UIImagePickerController()
     var videoPath: NSURL? = nil
     var image_dismissing : Bool = false
@@ -94,6 +95,14 @@ class HLProductModalViewController: UIViewController, UIImagePickerControllerDel
     override func viewDidAppear(_ animated: Bool) {
         
         HLDataManager.sharedInstance.ga("product_detail_barter")
+        
+        if HLDataManager.sharedInstance.onboardingTutorials.object(forKey: "product_modal") as? String == nil{
+            CommonUtils.sharedInstance.showTutorial(arrayTips: [
+                HulaTip(delay: 2, view: self.videoBtn, text: NSLocalizedString("You can request a video-proof for this product.", comment: ""))
+                ], named: "product_modal")
+            //print(HLDataManager.sharedInstance.onboardingTutorials)
+        }
+        
     }
     
     override func didReceiveMemoryWarning() {
