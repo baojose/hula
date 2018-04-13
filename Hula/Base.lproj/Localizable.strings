@@ -1,42 +1,42 @@
-/* 
-  Localizable.strings
-  Hula
-
-  Created by Juan Searle FC on 01/03/2018.
-  Copyright © 2018 star. All rights reserved.
-*/
+/*
+ Localizable.strings
+ Hula
+ 
+ Created by Juan Searle FC on 01/03/2018.
+ Copyright © 2018 star. All rights reserved.
+ */
 "Incorrect login. Please try again." = "Incorrect login. Please try again.";
-"Facebook login error" = "Facebook login error";
+"Facebook login error" = "Facebook login error.”;
 "User email already exists! Please use the login form." = "User email already exists! Please use the login form.";
-"Server response unexpected" = "Server response unexpected";
+"Server response unexpected" = "Server response unexpected.”;
 "miles" = "miles";
 "Notification" = "Notification";
 "years ago" = "years ago";
 "1 year ago" = "1 year ago";
-"Last year" = "Last year";
+"Last year" = "last year";
 "months ago" = "months ago";
 "1 month ago" = "1 month ago";
-"Last month" = "Last month";
+"Last month" = "last month";
 "weeks ago" = "weeks ago";
 "1 week ago" = "1 week ago";
-"Last week" = "Last week";
+"Last week" = "last week";
 "days ago" = "days ago";
 "1 day ago" = "1 day ago";
-"Yesterday" = "Yesterday";
+"Yesterday" = "yesterday";
 "hours ago" = "hours ago";
 "1 hour ago" = "1 hour ago";
-"An hour ago" = "An hour ago";
+"An hour ago" = "an hour ago";
 "minutes ago" = "minutes ago";
 "1 minute ago" = "1 minute ago";
-"A minute ago" = "A minute ago";
+"A minute ago" = "a minute ago";
 "seconds ago" = "seconds ago";
-"Just now" = "Just now";
+"Just now" = "just now";
 "Trading options" = "Trading options";
 "Report this user" = "Report this user";
 "Cancel this trade" = "Cancel this trade";
 "Cancel" = "Cancel";
 "Trade mode disabled" = "Trade mode disabled";
-"You have to be logged in to enter into trade mode" = "You have to be logged in to enter into trade mode";
+"You have to be logged in to enter into trade mode" = "You have to be logged in to enter into trade mode.”;
 "OK" = "OK";
 "Up for push notifications?" = "Up for push notifications?";
 "Allow HULA to access your location" = "Allow HULA to access your location";
@@ -45,34 +45,34 @@
 "Notify me" = "Notify me";
 "Use my location" = "Use my location";
 "Allow HULA to access your location while you use the app?" = "Allow HULA to access your location while you use the app?";
-"HULA uses this to help you to find stuff you like nearby, connect to other users and more. Go to Settings and turn on location for Hula." = "HULA uses this to help you to find stuff you like nearby, connect to other users and more. Go to Settings and turn on location for Hula.";
+"HULA uses this to help you to find stuff you like nearby, connect to other users and more. Go to Settings and turn on location for Hula." = "HULA uses this to help you find stuff you like nearby, connect to other users and more. Go to Settings and turn on location for Hula.";
 "What is your name?" = "What is your name?";
 "What is your email address?" = "What is your email address?";
 "Set a password for your account" = "Set a password for your account";
 "This is your public identification" = "This is your public identification";
-"We wont bother you with nonsense emails" = "We wont bother you with nonsense emails";
-"Use a non-obvious password with more than 5 characters" = "Use a non-obvious password with more than 5 characters";
+"We wont bother you with nonsense emails" = "We won’t bother you with nonsense emails";
+"Use a non-obvious password with more than 5 characters" = "Use a non-obvious password with more than 5 characters.”;
 "Nickname" = "Nickname";
 "Email address" = "Email address";
 "Password" = "Password";
-"This field cannot be empty. Please fill all the fields." = "This field cannot be empty. Please fill all the fields.";
+"This field cannot be empty. Please fill all the fields." = "This field cannot be empty. Please fill in all the fields.";
 "Username has already been taken." = "Username has already been taken.";
 "User logged in" = "User logged in";
 "You're in the Trade Room!\nTo start trading, start exchanging." = "You're in the Trade Room!\nTo start trading, start exchanging.";
-"Need more trading rooms? tap here to add more spaces!" = "Need more trading rooms? tap here to add more spaces!";
+"Need more trading rooms? tap here to add more spaces!" = "Need more Trade Rooms? Tap here to add more spaces!";
 "Welcome to your first trade! Get some advice. Click on the Trade Room you used." = "Welcome to your first trade! Get some advice. Click on the Trade Room you used.";
-"Don't cancel" = "Don't cancel";
+"Don't cancel" = "Don't cancel.”;
 "Cancel this trade?" = "Cancel this trade?";
 "The user has been reported. We will review the user behavior and take necessary actions. Thanks for keeping Hula trustworthy." = "The user has been reported. We will review the user behavior and take necessary actions. Thanks for keeping Hula trustworthy.";
-"Trade cancelled" = "Trade cancelled";
-"Help us to improve, tell us why:" = "Help us to improve, tell us why:";
+"Trade cancelled" = "Trade canceled”;
+"Help us to improve, tell us why:" = "Help us improve, tell us why:";
 "Not interested anymore" = "Not interested anymore";
 "Unhappy with trader" = "Unhappy with trader";
 "Product deleted" = "Product deleted";
 "Other" = "Other";
 "Empty Trade Room" = "Empty Trade Room";
 "Here is their stuff. Tap on the product to get more info and ask for a live video to check it." = "Here is their stuff. Tap on the product to get more info and ask for a live video to check it.";
-"Drag & drop here what you want." = "Drag & drop here what you want.";
+"Drag & drop here what you want." = "Drag & drop what you want here.”;
 "Here is your stuff." = "Here is your stuff.";
 "Once you've selected what you want, find out if the other trader is interested. Click the button below to send a notification!" = "Once you've selected what you want, find out if the other trader is interested. Click the button below to send a notification!";
 "This trading is waiting for the other user to select the items he wants or accept your offer. As soon as the offer is ready you will be notified." = "This trading is waiting for the other user to select the items he wants or accept your offer. As soon as the offer is ready you will be notified.";
@@ -80,29 +80,29 @@
 "Start chat here if you need to talk." = "Start chat here if you need to talk.";
 "This product is not available anymore." = "This product is not available anymore.";
 "Deleted product" = "Deleted product";
-"Sorry, drag at least one item to send your offer." = "Sorry, drag at least one item to send your offer.";
+"Sorry, drag at least one item to send your offer." = "You have to drag at least one item to send your offer.";
 "No offer without an item from your side. Unless you wanna offer cash..." = "No offer without an item from your side. Unless you wanna offer cash...";
 "Are you giving your stuff away for free? If not, choose the item you want to exchange it with." = "Are you giving your stuff away for free? If not, choose the item you want to exchange it with.";
 "You are about to close the deal. Confirm?" = "You are about to close the deal. Confirm?";
 "Yes!" = "Yes!";
 "OK!" = "OK!";
 "You accepted the deal. Now meet the trader and exchange your stuff." = "You accepted the deal. Now meet the trader and exchange your stuff.";
-"Great! Enjoy your stuff and many thanks for using HULA.\nIn order to free up this trading room, this trade will be moved to your past trades tab." = "Great! Enjoy your stuff and many thanks for using HULA.\nIn order to free up this trading room, this trade will be moved to your past trades tab.";
+"Great! Enjoy your stuff and many thanks for using HULA.\nIn order to free up this trading room, this trade will be moved to your past trades tab." = "Great! Enjoy your stuff and many thanks for using HULA.\nIn order to free up this Trade Room, this trade will be moved to your past trades tab.";
 "Your offer has been sent with your changes.\nPlease allow 72 hours for the user to reply." = "Your offer has been sent with your changes.\nPlease allow 72 hours for the user to reply.";
 "I received my stuff" = "I received my stuff";
 "Waiting for user reply" = "Waiting for user reply";
 "Remaining time for response:" = "Remaining time for response:";
 "Accept trade" = "Accept trade";
 "Send offer" = "Send offer";
-"Do you need more rooms? Spread the word! Share HULA with your friends and get up to 5 trade rooms." = "Do you need more rooms? Spread the word! Share HULA with your friends and get up to 5 trade rooms.";
+"Do you need more rooms? Spread the word! Share HULA with your friends and get up to 5 trade rooms." = "Do you need more rooms? Spread the word! Share HULA with your friends and get up to 5 Trade Rooms.";
 "Share Hula" = "Share Hula";
 "Sharing" = "Sharing";
 "Please choose a sharing method" = "Please choose a sharing method";
 "Other" = "Other";
 "Hey, I trade on HULA! I get what I want and give what I don't. https://hula.trading" = "Hey, I trade on HULA! I get what I want and give what I don't. https://hula.trading";
-"Deal closed. Thank you" = "Deal closed. Thank you";
+"Deal closed. Thank you" = "Deal closed. Thank you.”;
 "No product description provided." = "No product description provided.";
-"trades" = "trades";
+"trades" = "Trades";
 "Video proof available" = "Video proof available";
 " Play video" = " Play video";
 " Waiting for video proof..." = " Waiting for video proof...";
@@ -121,17 +121,17 @@
 "Exchange completed" = "Exchange completed";
 "Trade canceled" = "Trade canceled";
 "Close the deal" = "Close the deal";
-"We recommend confirming this trade only after exchanging stuff" = "We recommend confirming this trade only after exchanging stuff";
-"We would love to hear how your trade was. Please rate it from one to five stars:" = "We would love to hear how your trade was. Please rate it from one to five stars:";
+"We recommend confirming this trade only after exchanging stuff" = "We recommend confirming this trade only after having exchanged stuff.”;
+"We would love to hear how your trade was. Please rate it from one to five stars:" = "We would love to hear how your trade went. Please rate it from one to five stars:";
 "What did you love?" = "What did you love?";
-"What went wrong? \nLeave blank if none" = "What went wrong? \nLeave blank if none";
+"What went wrong? \nLeave blank if none" = "What went wrong? \nLeave blank if nothing.”;
 "Fair deal" = "Fair deal";
 "Easy communication" = "Easy communication";
 "Smooth process" = "Smooth process";
-"Good state of products" = "Good state of products";
+"Good state of products" = "Good state of product";
 "Fast delivery" = "Fast delivery";
 "Late arrival" = "Late arrival";
-"Bad estate of product" = "Bad estate of product";
+"Bad estate of product" = "Bad state of product";
 "Annoying negotiation" = "Annoying negotiation";
 "Difficult communication" = "Difficult communication";
 "Complicated process" = "Complicated process";
@@ -161,8 +161,8 @@
 "Description" = "Description";
 "Try another image" = "Try another image";
 "Set as featured image" = "Set as featured image";
-"Delete image" = "Borrar imagen";
-"characters remaining" = "caracteres restantes";
+"Delete image" = "Delete image";
+"characters remaining" = "Characters remaining";
 "Set image as default" = "Set image as default";
 "CURRENT:" = "CURRENT:";
 "Do you wanna change your profile picture?" = "Do you wanna change your profile picture?";
@@ -193,3 +193,4 @@
 "not selected" = "not selected";
 "CURRENT ZIP CODE:" = "CURRENT ZIP CODE:";
 "Validate" = "Validate";
+
