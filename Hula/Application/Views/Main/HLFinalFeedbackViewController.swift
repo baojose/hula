@@ -31,6 +31,7 @@ class HLFinalFeedbackViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        CommonUtils.sharedInstance.circleImageView(userImage);
         mainLabel.text = first_copy
         // Do any additional setup after loading the view.
         for i in 101 ..< 107{
@@ -48,7 +49,6 @@ class HLFinalFeedbackViewController: UIViewController {
         backBtn.isHidden = true
         
         userImage.loadImageFromURL(urlString: CommonUtils.sharedInstance.userImageURL(userId: self.user_id_closed ));
-        CommonUtils.sharedInstance.circleImageView(userImage);
         
     }
 

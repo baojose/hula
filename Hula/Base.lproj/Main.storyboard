@@ -2598,6 +2598,10 @@ recycle!</string>
                                         <rect key="frame" x="325" y="374" width="18" height="17"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES"/>
                                     </view>
+                                    <view contentMode="scaleToFill" id="DkJ-5u-7SA">
+                                        <rect key="frame" x="325" y="179" width="18" height="17"/>
+                                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                    </view>
                                     <view contentMode="scaleToFill" misplaced="YES" id="ug2-dl-0Jj">
                                         <rect key="frame" x="325" y="24" width="18" height="17"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMaxY="YES"/>
@@ -2742,6 +2746,7 @@ recycle!</string>
                     <size key="freeformSize" width="667" height="375"/>
                     <connections>
                         <outlet property="fakeAddTradeView" destination="IQF-bu-HNY" id="MeC-nZ-tnm"/>
+                        <outlet property="fakeCenterView" destination="DkJ-5u-7SA" id="RY7-WM-wJk"/>
                         <outlet property="fakeFirstTradeView" destination="ug2-dl-0Jj" id="lra-8K-Egj"/>
                         <outlet property="landscapeView" destination="xYF-M1-jng" id="wdr-x4-BrF"/>
                         <outlet property="mainCollectionView" destination="8xi-f5-Icc" id="mcC-0q-DPg"/>
@@ -4373,15 +4378,15 @@ recycle!</string>
                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                             </view>
                             <view contentMode="scaleToFill" misplaced="YES" id="cWv-3i-4jv">
-                                <rect key="frame" x="0.0" y="993" width="375" height="60"/>
+                                <rect key="frame" x="0.0" y="996" width="375" height="60"/>
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
                                 <subviews>
                                     <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" image="img_footer_bg" id="LdG-27-lok">
-                                        <rect key="frame" x="0.0" y="8" width="375" height="60"/>
+                                        <rect key="frame" x="0.0" y="2" width="375" height="60"/>
                                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                     </imageView>
                                     <button opaque="NO" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" id="rhF-WE-8jz">
-                                        <rect key="frame" x="34" y="19" width="307" height="38"/>
+                                        <rect key="frame" x="34" y="13" width="307" height="38"/>
                                         <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
                                         <fontDescription key="fontDescription" name="HelveticaNeue-Light" family="Helvetica Neue" pointSize="16"/>
                                         <state key="normal" title="Trade with User">
@@ -6890,7 +6895,7 @@ recycle!</string>
                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                             </view>
                             <view contentMode="scaleToFill" misplaced="YES" id="G1P-cx-uQ5">
-                                <rect key="frame" x="0.0" y="455" width="320" height="60"/>
+                                <rect key="frame" x="0.0" y="458" width="320" height="60"/>
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
                                 <subviews>
                                     <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="img_footer_bg" id="SnR-en-6xi">
@@ -7620,7 +7625,7 @@ recycle!</string>
                                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" id="gsP-GX-3UN">
                                                 <rect key="frame" x="2" y="216" width="94" height="30"/>
                                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                                <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="17"/>
+                                                <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="13"/>
                                                 <state key="normal" title="Full screen">
                                                     <color key="titleColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                                 </state>

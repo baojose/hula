@@ -154,7 +154,9 @@ class HLProductModalViewController: UIViewController, UIImagePickerControllerDel
     }
     
     func setupVideoButtons(){
-        if calledFrom == 1 || calledFrom == 4 || !isTradeAgreed {
+        print("Called from: \(calledFrom)")
+        hideVideoBtn = false
+        if calledFrom == 1 {
             hideVideoBtn = true
             videoStatusImg.isHidden = true;
             videoStatusImg2.isHidden = true;

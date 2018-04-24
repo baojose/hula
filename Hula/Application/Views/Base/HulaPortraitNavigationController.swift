@@ -27,7 +27,7 @@ class HulaPortraitNavigationController: UINavigationController {
     
     
     func rotated() {
-        
+        print("##########     Rotated!!!")
         
         let appDelegate = UIApplication.shared.delegate as! AppDelegate
         if UIDeviceOrientationIsLandscape(UIDevice.current.orientation) && appDelegate.allowRotation {
