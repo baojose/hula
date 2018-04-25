@@ -51,7 +51,7 @@
 "Set a password for your account" = "Set a password for your account";
 "This is your public identification" = "This is your public identification";
 "We wont bother you with nonsense emails" = "We won’t bother you with nonsense emails";
-"Use a non-obvious password with more than 5 characters" = "Use a non-obvious password with more than 5 characters.”;
+"Use a non-obvious password with more than 5 characters" = "Use a non-obvious password with more than 5 characters.";
 "Nickname" = "Nickname";
 "Email address" = "Email address";
 "Password" = "Password";
@@ -61,10 +61,10 @@
 "You're in the Trade Room!\nTo start trading, start exchanging." = "You're in the Trade Room!\nTo start trading, start exchanging.";
 "Need more trading rooms? tap here to add more spaces!" = "Need more Trade Rooms? Tap here to add more spaces!";
 "Welcome to your first trade! Get some advice. Click on the Trade Room you used." = "Welcome to your first trade! Get some advice. Click on the Trade Room you used.";
-"Don't cancel" = "Don't cancel.”;
+"Don't cancel" = "Don't cancel.";
 "Cancel this trade?" = "Cancel this trade?";
 "The user has been reported. We will review the user behavior and take necessary actions. Thanks for keeping Hula trustworthy." = "The user has been reported. We will review the user behavior and take necessary actions. Thanks for keeping Hula trustworthy.";
-"Trade cancelled" = "Trade canceled”;
+"Trade cancelled" = "Trade canceled";
 "Help us to improve, tell us why:" = "Help us improve, tell us why:";
 "Not interested anymore" = "Not interested anymore";
 "Unhappy with trader" = "Unhappy with trader";
@@ -72,7 +72,7 @@
 "Other" = "Other";
 "Empty Trade Room" = "Empty Trade Room";
 "Here is their stuff. Tap on the product to get more info and ask for a live video to check it." = "Here is their stuff. Tap on the product to get more info and ask for a live video to check it.";
-"Drag & drop here what you want." = "Drag & drop what you want here.”;
+"Drag & drop here what you want." = "Drag & drop what you want here.";
 "Here is your stuff." = "Here is your stuff.";
 "Once you've selected what you want, find out if the other trader is interested. Click the button below to send a notification!" = "Once you've selected what you want, find out if the other trader is interested. Click the button below to send a notification!";
 "This trading is waiting for the other user to select the items he wants or accept your offer. As soon as the offer is ready you will be notified." = "This trading is waiting for the other user to select the items he wants or accept your offer. As soon as the offer is ready you will be notified.";
@@ -100,7 +100,7 @@
 "Please choose a sharing method" = "Please choose a sharing method";
 "Other" = "Other";
 "Hey, I trade on HULA! I get what I want and give what I don't. https://hula.trading" = "Hey, I trade on HULA! I get what I want and give what I don't. https://hula.trading";
-"Deal closed. Thank you" = "Deal closed. Thank you.”;
+"Deal closed. Thank you" = "Deal closed. Thank you.";
 "No product description provided." = "No product description provided.";
 "trades" = "Trades";
 "Video proof available" = "Video proof available";
@@ -121,10 +121,10 @@
 "Exchange completed" = "Exchange completed";
 "Trade canceled" = "Trade canceled";
 "Close the deal" = "Close the deal";
-"We recommend confirming this trade only after exchanging stuff" = "We recommend confirming this trade only after having exchanged stuff.”;
+"We recommend confirming this trade only after exchanging stuff" = "We recommend confirming this trade only after having exchanged stuff.";
 "We would love to hear how your trade was. Please rate it from one to five stars:" = "We would love to hear how your trade went. Please rate it from one to five stars:";
 "What did you love?" = "What did you love?";
-"What went wrong? \nLeave blank if none" = "What went wrong? \nLeave blank if nothing.”;
+"What went wrong? \nLeave blank if none" = "What went wrong? \nLeave blank if nothing.";
 "Fair deal" = "Fair deal";
 "Easy communication" = "Easy communication";
 "Smooth process" = "Smooth process";
