@@ -14,6 +14,7 @@ class HLDashboardViewController: BaseViewController {
     
     @IBOutlet weak var fakeFirstTradeView: UIView!
     @IBOutlet weak var fakeAddTradeView: UIView!
+    @IBOutlet weak var fakeCenterView: UIView!
     @IBOutlet weak var landscapeView: UIView!
     @IBOutlet weak var portraitView: UIView!
     @IBOutlet weak var mainCollectionView: UICollectionView!
@@ -134,29 +135,18 @@ class HLDashboardViewController: BaseViewController {
                             self.mainCollectionView.reloadData()
                             self.mainCollectionView.scrollToItem(at: IndexPath(row: 0, section: 0) , at: .top, animated: true)
                         
-                        
                             //HLDataManager.sharedInstance.onboardingTutorials = [:]
                             // TUTORIAL
                             //print("tuto")
                             //print(HLDataManager.sharedInstance.tradeMode)
                             //print(HLDataManager.sharedInstance.arrCurrentTrades.count)
                             if (HLDataManager.sharedInstance.tradeMode == "current"){
-                                if (HLDataManager.sharedInstance.arrCurrentTrades.count == 0){
-                                    // show empty rooms tutorial
-                                    if HLDataManager.sharedInstance.onboardingTutorials.object(forKey: "dashboard_empty") as? String == nil {
-                                        CommonUtils.sharedInstance.showTutorial(arrayTips: [
-                                            HulaTip(delay: 1, view: self.mainCollectionView, text: NSLocalizedString("You're in the Trade Room!\nTo start trading, start exchanging.", comment: ""))
-                                        ], named: "dashboard_empty")
-                                    }
-                                } else {
-                                    // show full rooms tutorial
-                                    if HLDataManager.sharedInstance.onboardingTutorials.object(forKey: "dashboard_mix") as? String == nil {
-                                        CommonUtils.sharedInstance.showTutorial(arrayTips: [
-                                            HulaTip(delay: 1, view: self.mainCollectionView, text: NSLocalizedString("You're in the Trade Room!\nTo start trading, start exchanging.", comment: "")),
-                                            HulaTip(delay: 1, view: self.fakeFirstTradeView, text: NSLocalizedString("Welcome to your first trade! Get some advice. Click on the Trade Room you used.", comment: "")),
-                                            HulaTip(delay: 0.5, view: self.fakeAddTradeView, text: NSLocalizedString("Need more trading rooms? tap here to add more spaces!", comment: ""))
-                                            ], named: "dashboard_mix")
-                                    }
+                                if HLDataManager.sharedInstance.onboardingTutorials.object(forKey: "dashboard_mix") as? String == nil {
+                                    CommonUtils.sharedInstance.showTutorial(arrayTips: [
+                                        HulaTip(delay: 1, view: self.fakeCenterView, text: NSLocalizedString("You're in the Trade Room!\nTo start trading, start exchanging.", comment: "")),
+                                        HulaTip(delay: 0.5, view: self.fakeFirstTradeView, text: NSLocalizedString("Welcome to your first trade! Get some advice. Click on the Trade Room you used.", comment: "")),
+                                        HulaTip(delay: 0.5, view: self.fakeAddTradeView, text: NSLocalizedString("Need more trading rooms? tap here to add more spaces!", comment: ""))
+                                        ], named: "dashboard_mix")
                                 }
                             }
                         }
@@ -165,6 +155,8 @@ class HLDashboardViewController: BaseViewController {
             } else {
                 print("Recarga de trades demasiado pronto. Omitida.");
             }
+            
+            
             //self.mainCollectionView.reloadData()
             //isExpandedFlowLayoutUsed = false
         } else {

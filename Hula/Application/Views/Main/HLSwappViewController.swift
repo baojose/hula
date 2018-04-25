@@ -9,6 +9,7 @@
 import UIKit
 import SpriteKit
 import FacebookShare
+import CoreMotion
 
 class HLSwappViewController: UIViewController {
     
@@ -45,6 +46,8 @@ class HLSwappViewController: UIViewController {
     @IBOutlet weak var pastChatCountLbl: UILabel!
     var initialOtherUserX:CGFloat = 0.0
     
+    var motionManager = CMMotionManager();
+    
     var selectedScreen = 0
     var initialFrame:CGRect = CGRect(x:0, y:0, width: 191, height: 108)
     var prevUser: String = ""
@@ -55,6 +58,7 @@ class HLSwappViewController: UIViewController {
     var redirect: String = ""
     var backFromChat: Bool = false
     var tempTag: Int = 0
+    var detection_counter : Int = 0;
     
     let kTagCloseDeal: Int = 91053
     let kTagProductsReceived: Int = 90441
@@ -108,8 +112,7 @@ class HLSwappViewController: UIViewController {
         
         firstLoad = true
         
-        
-        
+        motionManager.accelerometerUpdateInterval = 0.6;
     }
     
     override func prefersHomeIndicatorAutoHidden() -> Bool {
@@ -118,6 +121,7 @@ class HLSwappViewController: UIViewController {
     }
     override func viewWillAppear(_ animated: Bool) {
         //print(UIDevice.current.orientation)
+        
         if (firstLoad) {
             firstLoad = false
             var isNeutral = true
@@ -155,6 +159,22 @@ class HLSwappViewController: UIViewController {
     }
     override func viewDidAppear(_ animated: Bool) {
         
+        motionManager.startAccelerometerUpdates(to: OperationQueue.current!){ (data, error) in
+            if let xc = data?.acceleration.x {
+                if abs( xc ) > 0.8 {
+                    // portrait mode
+                    self.detection_counter += 1
+                    if self.detection_counter > 3{
+                        if UIDeviceOrientationIsPortrait(UIDevice.current.orientation)  {
+                            let alert = UIAlertController(title: NSLocalizedString("Rotation lock is activated", comment: ""), message: NSLocalizedString("Please unlock your iPhone rotation lock. You can do it from the control center.", comment: ""), preferredStyle: UIAlertControllerStyle.alert)
+                            alert.addAction(UIAlertAction(title: "Ok", style: UIAlertActionStyle.default, handler: nil))
+                            self.present(alert, animated: true, completion: nil)
+                        }
+                    }
+                }
+            }
+            
+        }
         
         
         if !self.backFromChat {
@@ -169,6 +189,9 @@ class HLSwappViewController: UIViewController {
         } else {
             // Fallback on earlier versions
         }
+    }
+    override func viewWillDisappear(_ animated: Bool) {
+        motionManager.stopAccelerometerUpdates()
     }
 
     override func didReceiveMemoryWarning() {
@@ -888,7 +911,7 @@ extension HLSwappViewController: AlertDelegate{
         //viewController.starsVisible = true
         //viewController.trigger = "feedback_sent"
         viewController.trade_id_closed = self.trade_id_closed
-        viewController.user_id_closed = HulaUser.sharedInstance.userId
+        viewController.user_id_closed = self.user_id_closed
         self.present(viewController, animated: true)
         
     }

@@ -190,6 +190,7 @@ class HLBarterScreenViewController: BaseViewController {
                     HulaTip(delay: 0.4, view: self.otherSelectedProductsCollection, text: NSLocalizedString("Drag & drop here what you want.", comment: "")),
                     HulaTip(delay: 0.5, view: self.otherProductsCollection, text: NSLocalizedString("Tap on the product to get more info and ask for a live video to check it.", comment: "")),
                     HulaTip(delay: 0.4, view: self.myProductsCollection, text: NSLocalizedString("Here is your stuff.", comment: "")),
+                    HulaTip(delay: 0.4, view: self.addMoneyBtn1, text: NSLocalizedString("You can also offer money.", comment: "")),
                     HulaTip(delay: 0.4, view: self.sendOfferFakeView, text: NSLocalizedString("Once you've selected what you want, find out if the other trader is interested. Click the button below to send a notification!", comment: "")),
                     HulaTip(delay: 0.4, view: self.ChatFakeView, text: NSLocalizedString("Start chat here if you need to talk.", comment: ""))
                     ], named: "barter_any_turn")
