@@ -46,8 +46,8 @@
 "Use my location" = "Use my location";
 "Allow HULA to access your location while you use the app?" = "Allow HULA to access your location while you use the app?";
 "HULA uses this to help you to find stuff you like nearby, connect to other users and more. Go to Settings and turn on location for Hula." = "HULA uses this to help you find stuff you like nearby, connect to other users and more. Go to Settings and turn on location for Hula.";
-"What is your name?" = "What is your name?";
-"What is your email address?" = "What is your email address?";
+"What is your name?" = "What’s your name?";
+"What is your email address?" = "What’s your email address?";
 "Set a password for your account" = "Set a password for your account";
 "This is your public identification" = "This is your public identification";
 "We wont bother you with nonsense emails" = "We won’t bother you with nonsense emails";
@@ -60,7 +60,7 @@
 "User logged in" = "User logged in";
 "You're in the Trade Room!\nTo start trading, start exchanging." = "You're in the Trade Room!\nTo start trading, start exchanging.";
 "Need more trading rooms? tap here to add more spaces!" = "Need more Trade Rooms? Tap here to add more spaces!";
-"Welcome to your first trade! Get some advice. Click on the Trade Room you used." = "Welcome to your first trade! Get some advice. Click on the Trade Room you used.";
+"Welcome to your first trade! Get some advice. Click on the Trade Room you used." = "Welcome to your first trade. The Trade Room is all yours. Click here and start having fun!.";
 "Don't cancel" = "Don't cancel.";
 "Cancel this trade?" = "Cancel this trade?";
 "The user has been reported. We will review the user behavior and take necessary actions. Thanks for keeping Hula trustworthy." = "The user has been reported. We will review the user behavior and take necessary actions. Thanks for keeping Hula trustworthy.";
@@ -75,7 +75,7 @@
 "Drag & drop here what you want." = "Drag & drop what you want here.";
 "Here is your stuff." = "Here is your stuff.";
 "Once you've selected what you want, find out if the other trader is interested. Click the button below to send a notification!" = "Once you've selected what you want, find out if the other trader is interested. Click the button below to send a notification!";
-"This trading is waiting for the other user to select the items he wants or accept your offer. As soon as the offer is ready you will be notified." = "This trading is waiting for the other user to select the items he wants or accept your offer. As soon as the offer is ready you will be notified.";
+"This trading is waiting for the other user to select the items he wants or accept your offer. As soon as the offer is ready you will be notified." = "This trading is waiting for the other user to select the items he/she wants or accept your offer. As soon as the offer is ready you will be notified.";
 "Tap on the product to get more info and ask for a live video to check it." = "Tap on the product to get more info and ask for a live video to check it.";
 "Start chat here if you need to talk." = "Start chat here if you need to talk.";
 "This product is not available anymore." = "This product is not available anymore.";
@@ -144,7 +144,7 @@
 "Trade with" = "Trade with";
 "Add stuff" = "Add stuff";
 "Sorry! If you want to trade, you have to upload your stuff." = "Sorry! If you want to trade, you have to upload your stuff.";
-"Sorry! your Trade Rooms are busy. Turn your phone, get in the Trade Room and request a new one." = "Sorry! your Trade Rooms are busy. Turn your phone, get in the Trade Room and request a new one.";
+"Sorry! your Trade Rooms are busy. Turn your phone, get in the Trade Room and request a new one." = "Oops! Your Trade Rooms are busy. Turn your phone, click on “New Trade Room” and get a new one!";
 "Accept" = "Accept";
 "You're about to start a trade. One room will be reserved for this negotiation until it's finished." = "You're about to start a trade. One room will be reserved for this negotiation until it's finished.";
 "Currently trading" = "Currently trading";

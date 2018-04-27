@@ -59,7 +59,7 @@
 "Username has already been taken." = "El nombre de usuario ya existe.";
 "User logged in" = "El usuario inició sesión";
 "You're in the Trade Room!\nTo start trading, start exchanging." = "¡Estás en la Sala de Intercambio!\nPara empezar a intercambiar, empieza a negociar.";
-"Need more trading rooms? tap here to add more spaces!" = "¿Necesitas más Salas de Intercambio? Haz click aquí y añade más.”;
+"Need more trading rooms? tap here to add more spaces!" = "¿Necesitas más Salas de Intercambio? Haz click aquí y añade más.";
 "Welcome to your first trade! Get some advice. Click on the Trade Room you used." = "¡Bienvenido a tu primer intercambio! Te ofrecemos algunos consejos. Haz click en la Sala de Intercambio que utilizaste.";
 "Don't cancel" = "No canceles";
 "Cancel this trade?" = "¿Cancelar este intercambio?";
@@ -74,14 +74,14 @@
 "Here is their stuff. Tap on the product to get more info and ask for a live video to check it." = "Aquí están sus cosas. Haz click en los productos para más información y pide un vídeo para comprobar su estado.";
 "Drag & drop here what you want." = "Arrastra aquí lo que quieras.";
 "Here is your stuff." = "Aquí están tus cosas.";
-"Once you've selected what you want, find out if the other trader is interested. Click the button below to send a notification!" = “Si ya elegiste lo que quieres, descubre si el otro usuario está interesado. ¡Haz click en el botón de abajo para enviar una notificación!";
+"Once you've selected what you want, find out if the other trader is interested. Click the button below to send a notification!" = "Si ya elegiste lo que quieres, descubre si el otro usuario está interesado. ¡Haz click en el botón de abajo para enviar una notificación!";
 "This trading is waiting for the other user to select the items he wants or accept your offer. As soon as the offer is ready you will be notified." = "Este intercambio se activará cuando el otro usuario elija las cosas que quiere o acepte tu oferta. Te mandaremos una notificación cuando la oferta esté lista.";
 "Tap on the product to get more info and ask for a live video to check it." = "Haz click en los productos para más información y pide un vídeo para comprobar su estado.";
 "Start chat here if you need to talk." = "Aquí puedes activar el chat si necesitas hablar.";
 "This product is not available anymore." = "Este producto ya no está disponible.";
 "Deleted product" = "Producto eliminado";
 "Sorry, drag at least one item to send your offer." = "Lo sentimos, arrastra un producto por lo menos.";
-"No offer without an item from your side. Unless you wanna offer cash..." = "Sin producto no hay intercambio. O quieres ofrecer solo dinero…”;
+"No offer without an item from your side. Unless you wanna offer cash..." = "Sin producto no hay intercambio. O quieres ofrecer solo dinero…";
 "Are you giving your stuff away for free? If not, choose the item you want to exchange it with." = "¿Vas a dar tus cosas gratis? Si no es así, elige el producto que quieres intercambiar.";
 "You are about to close the deal. Confirm?" = "Vas a cerrar el trato, ¿estás de acuerdo?";
 "Yes!" = "¡Sí!";
@@ -193,3 +193,4 @@
 "not selected" = "no seleccionado";
 "CURRENT ZIP CODE:" = "CÓDIGO POSTAL ACTUAL:";
 "Validate" = "Validar";
+
