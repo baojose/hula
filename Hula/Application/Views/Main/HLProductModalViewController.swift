@@ -59,8 +59,8 @@ class HLProductModalViewController: UIViewController, UIImagePickerControllerDel
     func productSetup(){
         titleLabel.text = product.productName
         productDistance.text = CommonUtils.sharedInstance.getDistanceFrom(loc: product.productLocation)
-        productCategory.text = product.productCategory
-        productCondition.text = product.productCondition
+        productCategory.text = NSLocalizedString(product.productCategory, comment: "")
+        productCondition.text = NSLocalizedString(product.productCondition, comment: "")
         if product.productDescription.count > 0 {
             productDescriptionLabel.text = product.productDescription
         } else {

@@ -1249,6 +1249,7 @@ recycle!</string>
                                         <rect key="frame" x="0.0" y="0.0" width="320" height="457"/>
                                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                         <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                        <inset key="contentInset" minX="0.0" minY="0.0" maxX="0.0" maxY="150"/>
                                         <prototypes>
                                             <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" selectionStyle="gray" indentationWidth="10" reuseIdentifier="homeProductCell" id="iEF-J6-3Ld" customClass="HLProductTableViewCell" customModule="Hula" customModuleProvider="target">
                                                 <rect key="frame" x="0.0" y="48" width="320" height="129"/>
@@ -1680,95 +1681,11 @@ recycle!</string>
                                 <rect key="frame" x="0.0" y="0.0" width="320" height="70"/>
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxY="YES"/>
                                 <subviews>
-                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" usesAttributedText="YES" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="c4g-OY-fl1">
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="N O T I F I C A T I O N S" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="c4g-OY-fl1">
                                         <rect key="frame" x="56" y="17" width="208" height="55"/>
                                         <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
-                                        <attributedString key="attributedText">
-                                            <fragment content="N O">
-                                                <attributes>
-                                                    <color key="NSColor" red="0.27450980390000002" green="0.27450980390000002" blue="0.27450980390000002" alpha="1" colorSpace="calibratedRGB"/>
-                                                    <font key="NSFont" size="14" name="HelveticaNeue"/>
-                                                    <paragraphStyle key="NSParagraphStyle" alignment="center" lineBreakMode="wordWrapping" baseWritingDirection="natural" tighteningFactorForTruncation="0.0"/>
-                                                </attributes>
-                                            </fragment>
-                                            <fragment content=" ">
-                                                <attributes>
-                                                    <color key="NSColor" red="0.27450999999999998" green="0.27450999999999998" blue="0.27450999999999998" alpha="1" colorSpace="custom" customColorSpace="calibratedRGB"/>
-                                                    <font key="NSFont" size="14" name="HelveticaNeue"/>
-                                                    <paragraphStyle key="NSParagraphStyle" alignment="center" lineBreakMode="wordWrapping" baseWritingDirection="natural" tighteningFactorForTruncation="0.0"/>
-                                                </attributes>
-                                            </fragment>
-                                            <fragment content="T">
-                                                <attributes>
-                                                    <color key="NSColor" red="0.27450980390000002" green="0.27450980390000002" blue="0.27450980390000002" alpha="1" colorSpace="calibratedRGB"/>
-                                                    <font key="NSFont" size="14" name="HelveticaNeue"/>
-                                                    <paragraphStyle key="NSParagraphStyle" alignment="center" lineBreakMode="wordWrapping" baseWritingDirection="natural" tighteningFactorForTruncation="0.0"/>
-                                                </attributes>
-                                            </fragment>
-                                            <fragment content=" ">
-                                                <attributes>
-                                                    <color key="NSColor" red="0.27450999999999998" green="0.27450999999999998" blue="0.27450999999999998" alpha="1" colorSpace="custom" customColorSpace="calibratedRGB"/>
-                                                    <font key="NSFont" size="14" name="HelveticaNeue"/>
-                                                    <paragraphStyle key="NSParagraphStyle" alignment="center" lineBreakMode="wordWrapping" baseWritingDirection="natural" tighteningFactorForTruncation="0.0"/>
-                                                </attributes>
-                                            </fragment>
-                                            <fragment content="I">
-                                                <attributes>
-                                                    <color key="NSColor" red="0.27450980390000002" green="0.27450980390000002" blue="0.27450980390000002" alpha="1" colorSpace="calibratedRGB"/>
-                                                    <font key="NSFont" size="14" name="HelveticaNeue"/>
-                                                    <paragraphStyle key="NSParagraphStyle" alignment="center" lineBreakMode="wordWrapping" baseWritingDirection="natural" tighteningFactorForTruncation="0.0"/>
-                                                </attributes>
-                                            </fragment>
-                                            <fragment content=" ">
-                                                <attributes>
-                                                    <color key="NSColor" red="0.27450999999999998" green="0.27450999999999998" blue="0.27450999999999998" alpha="1" colorSpace="custom" customColorSpace="calibratedRGB"/>
-                                                    <font key="NSFont" size="14" name="HelveticaNeue"/>
-                                                    <paragraphStyle key="NSParagraphStyle" alignment="center" lineBreakMode="wordWrapping" baseWritingDirection="natural" tighteningFactorForTruncation="0.0"/>
-                                                </attributes>
-                                            </fragment>
-                                            <fragment content="F">
-                                                <attributes>
-                                                    <color key="NSColor" red="0.27450980390000002" green="0.27450980390000002" blue="0.27450980390000002" alpha="1" colorSpace="calibratedRGB"/>
-                                                    <font key="NSFont" size="14" name="HelveticaNeue"/>
-                                                    <paragraphStyle key="NSParagraphStyle" alignment="center" lineBreakMode="wordWrapping" baseWritingDirection="natural" tighteningFactorForTruncation="0.0"/>
-                                                </attributes>
-                                            </fragment>
-                                            <fragment content=" ">
-                                                <attributes>
-                                                    <color key="NSColor" red="0.27450999999999998" green="0.27450999999999998" blue="0.27450999999999998" alpha="1" colorSpace="custom" customColorSpace="calibratedRGB"/>
-                                                    <font key="NSFont" size="14" name="HelveticaNeue"/>
-                                                    <paragraphStyle key="NSParagraphStyle" alignment="center" lineBreakMode="wordWrapping" baseWritingDirection="natural" tighteningFactorForTruncation="0.0"/>
-                                                </attributes>
-                                            </fragment>
-                                            <fragment content="I">
-                                                <attributes>
-                                                    <color key="NSColor" red="0.27450980390000002" green="0.27450980390000002" blue="0.27450980390000002" alpha="1" colorSpace="calibratedRGB"/>
-                                                    <font key="NSFont" size="14" name="HelveticaNeue"/>
-                                                    <paragraphStyle key="NSParagraphStyle" alignment="center" lineBreakMode="wordWrapping" baseWritingDirection="natural" tighteningFactorForTruncation="0.0"/>
-                                                </attributes>
-                                            </fragment>
-                                            <fragment content=" ">
-                                                <attributes>
-                                                    <color key="NSColor" red="0.27450999999999998" green="0.27450999999999998" blue="0.27450999999999998" alpha="1" colorSpace="custom" customColorSpace="calibratedRGB"/>
-                                                    <font key="NSFont" size="14" name="HelveticaNeue"/>
-                                                    <paragraphStyle key="NSParagraphStyle" alignment="center" lineBreakMode="wordWrapping" baseWritingDirection="natural" tighteningFactorForTruncation="0.0"/>
-                                                </attributes>
-                                            </fragment>
-                                            <fragment content="C">
-                                                <attributes>
-                                                    <color key="NSColor" red="0.27450980390000002" green="0.27450980390000002" blue="0.27450980390000002" alpha="1" colorSpace="calibratedRGB"/>
-                                                    <font key="NSFont" size="14" name="HelveticaNeue"/>
-                                                    <paragraphStyle key="NSParagraphStyle" alignment="center" lineBreakMode="wordWrapping" baseWritingDirection="natural" tighteningFactorForTruncation="0.0"/>
-                                                </attributes>
-                                            </fragment>
-                                            <fragment content=" A T I O N S">
-                                                <attributes>
-                                                    <color key="NSColor" red="0.27450999999999998" green="0.27450999999999998" blue="0.27450999999999998" alpha="1" colorSpace="custom" customColorSpace="calibratedRGB"/>
-                                                    <font key="NSFont" size="14" name="HelveticaNeue"/>
-                                                    <paragraphStyle key="NSParagraphStyle" alignment="center" lineBreakMode="wordWrapping" baseWritingDirection="natural" tighteningFactorForTruncation="0.0"/>
-                                                </attributes>
-                                            </fragment>
-                                        </attributedString>
+                                        <fontDescription key="fontDescription" name="HelveticaNeue-Light" family="Helvetica Neue" pointSize="14"/>
+                                        <color key="textColor" red="0.27450980390000002" green="0.27450980390000002" blue="0.27450980390000002" alpha="1" colorSpace="calibratedRGB"/>
                                         <nil key="highlightedColor"/>
                                     </label>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="Ila-mX-Ibi">
@@ -1914,18 +1831,11 @@ recycle!</string>
                                                 <nil key="textColor"/>
                                                 <nil key="highlightedColor"/>
                                             </label>
-                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" usesAttributedText="YES" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="hof-A1-sXk">
+                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Y O U R   S T U F F" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="hof-A1-sXk">
                                                 <rect key="frame" x="56" y="17" width="208" height="55"/>
                                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
-                                                <attributedString key="attributedText">
-                                                    <fragment content="Y O U R   S T U F F">
-                                                        <attributes>
-                                                            <color key="NSColor" red="0.27450980390000002" green="0.27450980390000002" blue="0.27450980390000002" alpha="1" colorSpace="calibratedRGB"/>
-                                                            <font key="NSFont" size="14" name="HelveticaNeue"/>
-                                                            <paragraphStyle key="NSParagraphStyle" alignment="center" lineBreakMode="wordWrapping" baseWritingDirection="natural" tighteningFactorForTruncation="0.0"/>
-                                                        </attributes>
-                                                    </fragment>
-                                                </attributedString>
+                                                <fontDescription key="fontDescription" name="HelveticaNeue-Light" family="Helvetica Neue" pointSize="14"/>
+                                                <color key="textColor" red="0.27450980390000002" green="0.27450980390000002" blue="0.27450980390000002" alpha="1" colorSpace="calibratedRGB"/>
                                                 <nil key="highlightedColor"/>
                                             </label>
                                         </subviews>
@@ -4702,8 +4612,8 @@ recycle!</string>
                                                     <action selector="conditionOptionBtnClicked:" destination="CMj-OO-BMx" eventType="touchUpInside" id="Iee-ch-Jq3"/>
                                                 </connections>
                                             </button>
-                                            <button opaque="NO" tag="14" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" id="V2A-ci-OHh">
-                                                <rect key="frame" x="179" y="44" width="59" height="31"/>
+                                            <button opaque="NO" tag="14" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" id="V2A-ci-OHh">
+                                                <rect key="frame" x="179" y="44" width="83" height="31"/>
                                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                                 <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="16"/>
@@ -4727,7 +4637,7 @@ recycle!</string>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="fzj-KF-K1X" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="2122.5" y="-932.5"/>
+            <point key="canvasLocation" x="2122" y="-933"/>
         </scene>
         <!--Alert View Controller-->
         <scene sceneID="Lob-tG-3xR">
@@ -7548,7 +7458,7 @@ recycle!</string>
                                 <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES" heightSizable="YES" flexibleMaxY="YES"/>
                                 <subviews>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Loading..." textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="X1Y-CU-lWP">
-                                        <rect key="frame" x="18" y="1" width="335" height="41"/>
+                                        <rect key="frame" x="19" y="1" width="334" height="41"/>
                                         <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxY="YES"/>
                                         <fontDescription key="fontDescription" name="HelveticaNeue-Light" family="Helvetica Neue" pointSize="17"/>
                                         <color key="textColor" red="0.27450980390000002" green="0.27450980390000002" blue="0.27450980390000002" alpha="1" colorSpace="calibratedRGB"/>
@@ -7599,7 +7509,7 @@ recycle!</string>
                                                         <nil key="highlightedColor"/>
                                                     </label>
                                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" text="Category" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="MYV-eb-pJw">
-                                                        <rect key="frame" x="86" y="0.0" width="206" height="34"/>
+                                                        <rect key="frame" x="87" y="0.0" width="205" height="34"/>
                                                         <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxY="YES"/>
                                                         <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="13"/>
                                                         <color key="textColor" red="0.27450980390000002" green="0.27450980390000002" blue="0.27450980390000002" alpha="1" colorSpace="calibratedRGB"/>
@@ -7686,7 +7596,7 @@ recycle!</string>
                                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                             </imageView>
                                             <button opaque="NO" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" id="BJg-hV-1B4">
-                                                <rect key="frame" x="35" y="5" width="309" height="33"/>
+                                                <rect key="frame" x="36" y="5" width="308" height="33"/>
                                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
                                                 <state key="normal" title=" Request video" image="video-white-icon">
                                                     <color key="titleColor" white="1" alpha="1" colorSpace="calibratedWhite"/>

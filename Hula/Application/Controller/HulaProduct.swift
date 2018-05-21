@@ -27,6 +27,11 @@ class HulaProduct: NSObject {
     var video_requested : [String:Bool]!
     var video_url: [String:String]!
     var trading_count: Int!
+    var distance: Double {
+        get {
+            return productLocation.distance(from: HulaUser.sharedInstance.location)
+        }
+    }
     
     class var sharedInstance: HulaProduct {
         struct Static {
@@ -72,7 +77,7 @@ class HulaProduct: NSObject {
         self.trading_count = 0
     }
     override var description : String {
-        return "(Product id: \(self.productId!); name:   \(self.productName!))\n"
+        return "(Product id: \(self.productId!); name:   \(self.productName!); dist:   \(self.distance))\n"
     }
     
     func populate(with: NSDictionary){

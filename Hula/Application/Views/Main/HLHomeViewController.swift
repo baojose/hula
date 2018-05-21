@@ -137,8 +137,9 @@ class HLHomeViewController: BaseViewController, UIScrollViewDelegate, UITextFiel
         }else{
             let cell = tableView.dequeueReusableCell(withIdentifier: "homeCategoryCell") as! HLHomeCategoryTableViewCell
             let category : NSDictionary = dataManager.arrCategories.object(at: indexPath.row) as! NSDictionary
-            
-            cell.categoryName.attributedText = commonUtils.attributedStringWithTextSpacing(category.object(forKey: "name") as! String, CGFloat(2.33))
+            let cat_name = category.object(forKey: "name") as! String;
+            print("\"\(cat_name)\" = \"\(cat_name)\";");
+            cell.categoryName.attributedText = commonUtils.attributedStringWithTextSpacing(NSLocalizedString(cat_name, comment: ""), CGFloat(2.33))
             cell.categoryImage.image = UIImage.init(named: category.object(forKey: "icon") as! String)
             cell.categoryProductNum.text = String(format:NSLocalizedString("%i products", comment: ""), (category.object(forKey: "num_products") as! Int))
 
