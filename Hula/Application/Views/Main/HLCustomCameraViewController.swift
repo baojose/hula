@@ -47,10 +47,21 @@ class HLCustomCameraViewController: BaseViewController, UIImagePickerControllerD
     override func viewDidLoad() {
         super.viewDidLoad()
         picker.delegate = self
-        
-        self.initView()
-        self.initCamera()
-        self.beginSession()
+        if (PHPhotoLibrary.authorizationStatus() != .authorized){
+            PHPhotoLibrary.requestAuthorization({ (st) in
+                if st == .authorized {
+                    DispatchQueue.main.async {
+                        self.initView()
+                        self.initCamera()
+                    }
+                } else {
+                    self.showPermissionError()
+                }
+            })
+        } else {
+            self.initView()
+            self.initCamera()
+        }
         
         
         let appDelegate = UIApplication.shared.delegate as! AppDelegate
@@ -294,21 +305,53 @@ class HLCustomCameraViewController: BaseViewController, UIImagePickerControllerD
     // custom functions on VC
     
     func initCamera(){
-        selectFromCameraButton.isEnabled = false
-        selectFromCameraButton.alpha = 0.4
-        captureSession.sessionPreset = AVCaptureSessionPresetHigh
-        if let devices = AVCaptureDevice.devices() as? [AVCaptureDevice] {
-            // Loop through all the capture devices on this phone
-            for device in devices {
-                // Make sure this particular device supports video
-                if (device.hasMediaType(AVMediaTypeVideo)) {
-                    // Finally check the position and confirm we've got the back camera
-                    if(device.position == AVCaptureDevicePosition.back) {
-                        captureDevice = device
+        AVCaptureDevice.requestAccess(forMediaType: AVMediaTypeVideo) { response in
+            if response {
+                //access granted
+                
+                DispatchQueue.main.async {
+                    self.selectFromCameraButton.isEnabled = false
+                    self.selectFromCameraButton.alpha = 0.4
+                    self.captureSession.sessionPreset = AVCaptureSessionPresetHigh
+                    if let devices = AVCaptureDevice.devices() as? [AVCaptureDevice] {
+                        // Loop through all the capture devices on this phone
+                        for device in devices {
+                            // Make sure this particular device supports video
+                            if (device.hasMediaType(AVMediaTypeVideo)) {
+                                // Finally check the position and confirm we've got the back camera
+                                if(device.position == AVCaptureDevicePosition.back) {
+                                    self.captureDevice = device
+                                }
+                            }
+                        }
                     }
+                    self.beginSession()
                 }
+                
+            } else {
+                self.showPermissionError()
             }
         }
+        
+    }
+    func showPermissionError(){
+        let alert = UIAlertController(title: NSLocalizedString("Permission denied", comment: ""), message: "Please allow Hula access to your camera roll and camera.", preferredStyle: .alert)
+        
+        alert.addAction(UIAlertAction(title: "Open Settings", style: .default, handler: { (_) -> Void in
+            guard let settingsUrl = URL(string: UIApplicationOpenSettingsURLString) else {
+                return
+            }
+            if UIApplication.shared.canOpenURL(settingsUrl) {
+                if #available(iOS 10.0, *) {
+                    UIApplication.shared.open(settingsUrl, completionHandler: nil)
+                } else {
+                    // Fallback on earlier versions
+                }
+            }
+        }));
+        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
+        
+        self.present(alert, animated: true)
     }
     func beginSession() {
         if captureDevice == nil {

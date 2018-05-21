@@ -164,7 +164,8 @@ class HLSwappViewController: UIViewController {
                 if abs( xc ) > 0.8 {
                     // portrait mode
                     self.detection_counter += 1
-                    if self.detection_counter > 3{
+                    if self.detection_counter > 5{
+                        self.detection_counter = 0;
                         if UIDeviceOrientationIsPortrait(UIDevice.current.orientation)  {
                             let alert = UIAlertController(title: NSLocalizedString("Rotation lock is activated", comment: ""), message: NSLocalizedString("Please unlock your iPhone rotation lock. You can do it from the control center.", comment: ""), preferredStyle: UIAlertControllerStyle.alert)
                             alert.addAction(UIAlertAction(title: "Ok", style: UIAlertActionStyle.default, handler: nil))
@@ -192,6 +193,8 @@ class HLSwappViewController: UIViewController {
     }
     override func viewWillDisappear(_ animated: Bool) {
         motionManager.stopAccelerometerUpdates()
+        let app = UIApplication.shared.delegate as! AppDelegate
+        app.allowRotation = true;
     }
 
     override func didReceiveMemoryWarning() {

@@ -235,7 +235,7 @@ class HLProductModalViewController: UIViewController, UIImagePickerControllerDel
                     playVideo()
                 } else {
                     var vreq : Bool = false
-                    if let t = product.video_requested[currentTradeId] {
+                    if let t: Bool = product.video_requested[currentTradeId] {
                         vreq = t
                     }
                     

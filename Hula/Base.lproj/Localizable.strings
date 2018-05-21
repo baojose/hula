@@ -197,4 +197,7 @@
 "You can also offer money." = "You can also offer money.";
 "Rotation lock is activated" = "Rotation lock is activated";
 "Please unlock your iPhone rotation lock. You can do it from the control center." = "Please unlock your iPhone rotation lock. You can do it from the control center.";
+"Permission denied" = "Permission denied";
+"Please allow Hula access to your camera roll and camera." = "Please allow Hula access to your camera roll and camera.";
+"Open Settings" = "Open Settings";
 
