@@ -91,8 +91,8 @@ class HLProductDetailViewController: BaseViewController, UIScrollViewDelegate, U
         // product details
         productNameLabel.text = currentProduct.productName
         productDescriptionLabel.text = currentProduct.productDescription
-        productCategory.text = currentProduct.productCategory
-        productCondition.text = currentProduct.productCondition.capitalized
+        productCategory.text = NSLocalizedString(currentProduct.productCategory, comment: "")
+        productCondition.text = NSLocalizedString(currentProduct.productCondition, comment: "").capitalized
         productDistance.text = commonUtils.getDistanceFrom(loc: sellerUser.location)
 
         

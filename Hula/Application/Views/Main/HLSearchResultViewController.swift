@@ -50,9 +50,9 @@ class HLSearchResultViewController: BaseViewController, UITableViewDataSource, U
         if self.searchByCategory {
             var category_name = categoryToSearch.object(forKey: "name") as? String
             if (category_name == nil){
-                category_name = NSLocalizedString("Category search", comment: "")
+                category_name = "Category search"
             }
-            screenTitle.text = category_name
+            screenTitle.text = NSLocalizedString(category_name!, comment: "");
         } else {
             screenTitle.text = keywordToSearch
         }
@@ -148,13 +148,15 @@ class HLSearchResultViewController: BaseViewController, UITableViewDataSource, U
                 } else {
                     cell.productTradeRate.text = "-"
                 }
-                
+                cell.productDistance.text = "(" + commonUtils.getDistanceFrom(loc: product.productLocation) + ")"
+                /*
                 if let loc = user.object(forKey: "location") as? [Float]{
                     let userloc = CLLocation(latitude: Double( loc[0]), longitude:  Double(loc[1]) )
-                    cell.productDistance.text = "(" + commonUtils.getDistanceFrom(loc: userloc) + ")"
+                    
                 } else {
                     cell.productDistance.text = "-"
                 }
+ */
             }
             
             commonUtils.circleImageView(cell.productOwnerImage)
@@ -220,7 +222,10 @@ class HLSearchResultViewController: BaseViewController, UITableViewDataSource, U
         } else {
             
             let encodedKw = keywordToSearch.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)
-            queryURL = HulaConstants.apiURL + "products/search/" + encodedKw!
+            //let lat = HulaUser.sharedInstance.location.coordinate.latitude;
+            //let lng = HulaUser.sharedInstance.location.coordinate.longitude;
+            queryURL = HulaConstants.apiURL + "products/search/" + encodedKw!;
+            
         }
         print(queryURL)
         HLDataManager.sharedInstance.httpGet(urlstr: queryURL, taskCallback: { (ok, json) in
@@ -288,6 +293,9 @@ class HLSearchResultViewController: BaseViewController, UITableViewDataSource, U
             
         }
         
+        print(filteredList)
+        filteredList.sort { $0.distance < $1.distance  }
+        print(filteredList)
         
         for us in (foundUsersList as? [NSDictionary])!{
             let hprod = HulaProduct()

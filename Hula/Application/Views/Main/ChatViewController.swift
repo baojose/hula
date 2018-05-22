@@ -28,7 +28,7 @@ class ChatViewController: UIViewController {
         super.viewDidLoad()
 
         // Do any additional setup after loading the view.
-        self.updateData()
+        self.updateData(forze: true)
         //print(sortedChat)
         
         chatTextFrame.layer.cornerRadius = 15
@@ -83,7 +83,7 @@ class ChatViewController: UIViewController {
     }
     */
 
-    func refreshChat(){
+    func refreshChat(forze: Bool){
         //print("refreshing...")
         //print("trade id: \(trade_id)")
         let queryURL = HulaConstants.apiURL + "trades/\(trade_id)/chat"
@@ -95,7 +95,7 @@ class ChatViewController: UIViewController {
                 if let dictionary = json as? [NSDictionary] {
                     DispatchQueue.main.async(execute: {
                         self.chat = dictionary
-                        self.updateData()
+                        self.updateData(forze: forze)
                     })
                 } else {
                     
@@ -103,10 +103,20 @@ class ChatViewController: UIViewController {
                 
             }
         })
+        
+        
+        if UIDeviceOrientationIsPortrait(UIDevice.current.orientation) {
+            DispatchQueue.main.async(execute: {
+                self.dismiss(animated: true, completion: nil)
+            })
+        }
+        
     }
     
-    func updateData(){
+    func updateData(forze: Bool){
         let prev_co = self.chatTableView.contentOffset
+        let prev_sect = self.sectionKeys.count
+        let prev_chats = self.sortedChat.hashValue
         self.sectionKeys = []
         self.sortedChat = [:]
         for message in self.chat{
@@ -124,27 +134,34 @@ class ChatViewController: UIViewController {
             }
         }
         self.chatTableView.reloadData()
-        DispatchQueue.main.async(execute: {
-            self.chatTableView.setContentOffset(prev_co, animated: false)
-            self.chatTableView.setContentOffset(CGPoint(x:0, y:self.chatTableView.contentSize.height - self.chatTableView.frame.size.height), animated: true)
-        })
+        if (prev_sect != self.sectionKeys.count) || (prev_chats != self.sortedChat.hashValue) || forze {
+            print("refreshing chat...")
+            
+            DispatchQueue.main.async(execute: {
+                self.chatTableView.setContentOffset(prev_co, animated: false)
+                self.chatTableView.setContentOffset(CGPoint(x:0, y:self.chatTableView.contentSize.height - self.chatTableView.frame.size.height), animated: true)
+            })
+        }
     }
     
     
     @IBAction func sendChatTextAction(_ sender: Any) {
-        let tx = self.chatTextField.text
+        var tx = self.chatTextField.text!
+        if tx.count > 300 {
+            tx = String( tx.prefix(300)  );
+        }
         //print("Sending...")
         //print("trade id: \(self.trade_id)")
-        if (tx?.count)! > 0 {
+        if tx.count > 0 {
             let queryURL = HulaConstants.apiURL + "trades/\(self.trade_id)/chat"
-            HLDataManager.sharedInstance.httpPost(urlstr: queryURL, postString: "message=\(tx!)", isPut: false, taskCallback: { (ok, json) in
+            HLDataManager.sharedInstance.httpPost(urlstr: queryURL, postString: "message=\(tx)", isPut: false, taskCallback: { (ok, json) in
                 //print("done")
                 //print(ok)
                 if (ok){
                     if (json as? NSDictionary) != nil {
                         DispatchQueue.main.async(execute: {
                             self.chatTextField.text = ""
-                            self.refreshChat()
+                            self.refreshChat(forze:true)
                         })
                     } else {
                         
@@ -286,8 +303,10 @@ extension ChatViewController: UITableViewDelegate, UITableViewDataSource{
                 cell.leftUserImage.isHidden = false
                 cell.rightUserImage.isHidden = true
                 cell.leftUserImage.loadImageFromURL(urlString: CommonUtils.sharedInstance.userImageURL(userId: user_id))
-                cell.mainHolder.frame.origin.x = cell.frame.size.width - cell.mainHolder.frame.size.width - 182
+                cell.mainHolder.frame.origin.x = 121
                 //print(user_id)
+                //print("+++++ my message")
+                //print("+++++ pos: \(cell.mainHolder.frame.origin.x)")
             } else {
                 // other's message
                 cell.mainHolder.backgroundColor = UIColor(red: 0.9, green: 0.9, blue: 0.9, alpha: 1)
@@ -300,6 +319,7 @@ extension ChatViewController: UITableViewDelegate, UITableViewDataSource{
                 
                 
                 cell.mainHolder.frame.origin.x = 182
+                //print("+++++ others message")
                 
             }
         }
