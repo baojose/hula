@@ -5,6 +5,9 @@
  Created by Juan Searle FC on 01/03/2018.
  Copyright © 2018 star. All rights reserved.
  */
+
+"Rotation lock is activated" = "¿No te gira el teléfono? Bueno, no eres el único.";
+"Please unlock your iPhone rotation lock. You can do it from the control center." = "Desliza hacia arriba en la pantalla de tu iPhone y abre el Centro de Control. ¿Ves el candado con la flecha? Haz click en él para desactivar la Rotación de Pantalla.";
 "Incorrect login. Please try again." = "Login incorrecto. Por favor, inténtalo de nuevo.";
 "Facebook login error" = "Error de identificación en Facebook";
 "User email already exists! Please use the login form." = "El email del usuario ya existe. Por favor, utiliza el formulario de identificación.";
@@ -120,8 +123,8 @@
 "You" = "Tú";
 "Exchange completed" = "Intercambio completado";
 "Trade canceled" = "Intercambio cancelado";
-"Close the deal" = "Cerrar el trato";
-"We recommend confirming this trade only after exchanging stuff" = "Recomendamos confirmar este intercambio después de recibir las cosas.";
+"Close the deal" = "AHORA… QUEDA E INTERCÁMBIALO";
+"We recommend confirming this trade only after exchanging stuff" = "Recomendamos confirmar el trato una vez tengas los productos. Queda con el usuario a través del chat.";
 "We would love to hear how your trade was. Please rate it from one to five stars:" = "Nos gustaría saber cómo ha sido tu intercambio. Por favor, valora tu experiencia de 1 a 5 estrellas:";
 "What did you love?" = "¿Qué te gustó?";
 "What went wrong? \nLeave blank if none" = "¿Algo no fue bien? \nDéjalo en blanco si no hay nada.";
@@ -193,4 +196,3 @@
 "not selected" = "no seleccionado";
 "CURRENT ZIP CODE:" = "CÓDIGO POSTAL ACTUAL:";
 "Validate" = "Validar";
-

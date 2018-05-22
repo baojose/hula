@@ -230,8 +230,8 @@
 /* Class = "UILabel"; text = "Please rotate this device to enter into swapp mode"; ObjectID = "JEP-vG-xao"; */
 "JEP-vG-xao.text" = "Gira el teléfono y entra en las Salas de Intercambio";
 
-/* Class = "UILabel"; text = "Save time with voice command.\n"; ObjectID = "K06-YE-JKq"; */
-"K06-YE-JKq.text" = "Ahorra tiempo con órdenes de voz.\n";
+/* Class = "UILabel"; text = "Be faster, use your phone's voice command."; ObjectID = "K06-YE-JKq"; */
+"K06-YE-JKq.text" = “EEs más rápido con el comando de voz de tu teléfono.”;
 
 /* Class = "UILabel"; text = "Refine"; ObjectID = "KL3-0c-Kpg"; */
 "KL3-0c-Kpg.text" = "Ajustar";
