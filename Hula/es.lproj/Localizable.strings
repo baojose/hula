@@ -5,9 +5,6 @@
  Created by Juan Searle FC on 01/03/2018.
  Copyright © 2018 star. All rights reserved.
  */
-
-"Rotation lock is activated" = "¿No te gira el teléfono? Bueno, no eres el único.";
-"Please unlock your iPhone rotation lock. You can do it from the control center." = "Desliza hacia arriba en la pantalla de tu iPhone y abre el Centro de Control. ¿Ves el candado con la flecha? Haz click en él para desactivar la Rotación de Pantalla.";
 "Incorrect login. Please try again." = "Login incorrecto. Por favor, inténtalo de nuevo.";
 "Facebook login error" = "Error de identificación en Facebook";
 "User email already exists! Please use the login form." = "El email del usuario ya existe. Por favor, utiliza el formulario de identificación.";
@@ -42,7 +39,7 @@
 "You have to be logged in to enter into trade mode" = "Tienes que haber iniciado sesión para entrar en la función de intercambio.";
 "OK" = "OK";
 "Up for push notifications?" = "¿Te gustaría recibir notificaciones?";
-"Allow HULA to access your location" = "Permite a HULA acceder a tu ubicación.";
+"Allow HULA to access your location" = "Permites a HULA acceder a tu ubicación.";
 "Notifications may include alerts when a user sends you a message." = "Las notificaciones también incluyen alertas cuando un usuario te envíe un mensaje.";
 "Find what you need near you!" = "¡Encuentra lo que necesitas cerca de ti!";
 "Notify me" = "Avísame";
@@ -62,7 +59,7 @@
 "Username has already been taken." = "El nombre de usuario ya existe.";
 "User logged in" = "El usuario inició sesión";
 "You're in the Trade Room!\nTo start trading, start exchanging." = "¡Estás en la Sala de Intercambio!\nPara empezar a intercambiar, empieza a negociar.";
-"Need more trading rooms? tap here to add more spaces!" = "¿Necesitas más Salas de Intercambio? Haz click aquí y añade más.";
+"Need more trading rooms? tap here to add more spaces!" = "¿Necesitas más Salas de Intercambio? ¡Haz click aquí y añade más!";
 "Welcome to your first trade! Get some advice. Click on the Trade Room you used." = "¡Bienvenido a tu primer intercambio! Te ofrecemos algunos consejos. Haz click en la Sala de Intercambio que utilizaste.";
 "Don't cancel" = "No canceles";
 "Cancel this trade?" = "¿Cancelar este intercambio?";
@@ -74,17 +71,17 @@
 "Product deleted" = "Producto eliminado";
 "Other" = "Otro";
 "Empty Trade Room" = "Sala de Intercambio vacía";
-"Here is their stuff. Tap on the product to get more info and ask for a live video to check it." = "Aquí están sus cosas. Haz click en los productos para más información y pide un vídeo para comprobar su estado.";
-"Drag & drop here what you want." = "Arrastra aquí lo que quieras.";
+"Here is their stuff." = "Aquí están las cosas del otro.";
+"Drag & drop here what you want." = "Arrastra aquí lo que quieres.";
 "Here is your stuff." = "Aquí están tus cosas.";
-"Once you've selected what you want, find out if the other trader is interested. Click the button below to send a notification!" = "Si ya elegiste lo que quieres, descubre si el otro usuario está interesado. ¡Haz click en el botón de abajo para enviar una notificación!";
+"Once you've selected what you want, find out if the other trader is interested. Click the button below to send a notification!" = "Cuando ya elegiste lo que quieres, descubre si el otro usuario está interesado. ¡Haz click en el botón de abajo para enviar una notificación!";
 "This trading is waiting for the other user to select the items he wants or accept your offer. As soon as the offer is ready you will be notified." = "Este intercambio se activará cuando el otro usuario elija las cosas que quiere o acepte tu oferta. Te mandaremos una notificación cuando la oferta esté lista.";
 "Tap on the product to get more info and ask for a live video to check it." = "Haz click en los productos para más información y pide un vídeo para comprobar su estado.";
 "Start chat here if you need to talk." = "Aquí puedes activar el chat si necesitas hablar.";
 "This product is not available anymore." = "Este producto ya no está disponible.";
 "Deleted product" = "Producto eliminado";
 "Sorry, drag at least one item to send your offer." = "Lo sentimos, arrastra un producto por lo menos.";
-"No offer without an item from your side. Unless you wanna offer cash..." = "Sin producto no hay intercambio. O quieres ofrecer solo dinero…";
+"No offer without an item from your side. Unless you wanna offer cash..." = "Sin producto no hay intercambio. ¿Quieres ofrecer solo dinero?";
 "Are you giving your stuff away for free? If not, choose the item you want to exchange it with." = "¿Vas a dar tus cosas gratis? Si no es así, elige el producto que quieres intercambiar.";
 "You are about to close the deal. Confirm?" = "Vas a cerrar el trato, ¿estás de acuerdo?";
 "Yes!" = "¡Sí!";
@@ -123,8 +120,8 @@
 "You" = "Tú";
 "Exchange completed" = "Intercambio completado";
 "Trade canceled" = "Intercambio cancelado";
-"Close the deal" = "AHORA… QUEDA E INTERCÁMBIALO";
-"We recommend confirming this trade only after exchanging stuff" = "Recomendamos confirmar el trato una vez tengas los productos. Queda con el usuario a través del chat.";
+"Close the deal" = "Cerrar el trato";
+"We recommend confirming this trade only after exchanging stuff" = "Recomendamos confirmar este intercambio después de recibir las cosas.";
 "We would love to hear how your trade was. Please rate it from one to five stars:" = "Nos gustaría saber cómo ha sido tu intercambio. Por favor, valora tu experiencia de 1 a 5 estrellas:";
 "What did you love?" = "¿Qué te gustó?";
 "What went wrong? \nLeave blank if none" = "¿Algo no fue bien? \nDéjalo en blanco si no hay nada.";
@@ -196,3 +193,32 @@
 "not selected" = "no seleccionado";
 "CURRENT ZIP CODE:" = "CÓDIGO POSTAL ACTUAL:";
 "Validate" = "Validar";
+"User" = "Usuario";
+"You can also offer money." = "También puedes ofrecer dinero.";
+"Rotation lock is activated" = "El bloqueo de giro está activo";
+"Please unlock your iPhone rotation lock. You can do it from the control center." = "Por favor desactiva el bloqueo de giro de tu iPhone. Puedes hacerlo desde el centro de control.";
+"Permission denied" = "Permiso denegado";
+"Please allow Hula access to your camera roll and camera." = "Por favor permite que Hula tenga acceso a tu cámara y a tus fotos.";
+"Open Settings" = "Abrir Ajustes";
+"Cars & bikes" = "Autos y Bicicletas";
+"Services" = "Servicios";
+"Clothing" = "Moda y Accesorios";
+"Electronics & mobile" = "Electrónica y Tecnología";
+"Furniture" = "Muebles y Decoración";
+"Art" = "Arte";
+"House & yard" = "Casa y Jardín";
+"Videogames" = "Videojuegos";
+"Collectible & hobbies" = "Coleccionables y Hobbies";
+"Music" = "Música";
+"Tools & repair" = "Herramientas y Bricolaje";
+"Photography" = "Fotografía";
+"Computers" = "Computadoras";
+"Sports" = "Deportes";
+"Jewelry" = "Joyería";
+"Camping & outdoors" = "Aventura y Camping";
+"Other" = "Otros";
+"You can request a video-proof for this product." = "Puedes solicitar una prueba de video del producto.";
+"New" = "Nuevo";
+"new" = "nuevo";
+"Used" = "Usado";
+"used" = "usado";

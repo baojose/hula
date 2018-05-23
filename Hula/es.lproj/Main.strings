@@ -9,7 +9,7 @@
 "0M1-Yi-uAO.text" = "Quedan 300 caracteres";
 
 /* Class = "UILabel"; text = "Drag here items you are interested in"; ObjectID = "0Oz-kA-vb9"; */
-"0Oz-kA-vb9.text" = "Arrastra aquí lo que quieres.”;
+"0Oz-kA-vb9.text" = "Arrastra aquí lo que quieres.";
 
 /* Class = "UILabel"; text = "Title"; ObjectID = "0PW-cd-uMp"; */
 "0PW-cd-uMp.text" = "Título";
@@ -48,7 +48,7 @@
 "3g5-BH-s9M.normalTitle" = "Proceso sencillo";
 
 /* Class = "UIButton"; normalTitle = "Got it! Continue"; ObjectID = "3ga-Xi-1ca"; */
-"3ga-Xi-1ca.normalTitle" = “¡Entendido! Continuar";
+"3ga-Xi-1ca.normalTitle" = "¡Entendido! Continuar";
 
 /* Class = "UITextField"; placeholder = "Search in Hula"; ObjectID = "3kb-gi-i78"; */
 "3kb-gi-i78.placeholder" = "Buscar en Hula";
@@ -174,7 +174,7 @@
 "Dkp-9k-b1z.normalTitle" = "Localízame";
 
 /* Class = "UILabel"; text = "In your own words:"; ObjectID = "DnK-No-ETh"; */
-"DnK-No-ETh.text" = “Con tus propias palabras:";
+"DnK-No-ETh.text" = "Con tus propias palabras:";
 
 /* Class = "UILabel"; text = "Picture"; ObjectID = "DnW-fr-J06"; */
 "DnW-fr-J06.text" = "Foto";
@@ -231,7 +231,7 @@
 "JEP-vG-xao.text" = "Gira el teléfono y entra en las Salas de Intercambio";
 
 /* Class = "UILabel"; text = "Be faster, use your phone's voice command."; ObjectID = "K06-YE-JKq"; */
-"K06-YE-JKq.text" = “EEs más rápido con el comando de voz de tu teléfono.”;
+"K06-YE-JKq.text" = "Es más rápido con el comando de voz de tu teléfono.";
 
 /* Class = "UILabel"; text = "Refine"; ObjectID = "KL3-0c-Kpg"; */
 "KL3-0c-Kpg.text" = "Ajustar";
@@ -342,7 +342,7 @@
 "VMG-ma-DBN.text" = "Sala de Intercambio vacía";
 
 /* Class = "UILabel"; text = "Oops!! No results near you"; ObjectID = "VMS-43-KGC"; */
-"VMS-43-KGC.text" = "No hay resultados cerca.”;
+"VMS-43-KGC.text" = "No hay resultados cerca.";
 
 /* Class = "UILabel"; text = "Name of the product a bit large"; ObjectID = "VaF-0k-0oD"; */
 "VaF-0k-0oD.text" = "Nombre del producto un poco más largo";
@@ -597,7 +597,7 @@
 "mf6-wE-Gjd.normalTitle" = "Aceptar";
 
 /* Class = "UILabel"; text = "To turn around the life of your stuff, turn your phone."; ObjectID = "n02-Pb-vCI"; */
-"n02-Pb-vCI.text" = “Gira tu teléfono para dar un giro a la vida de tus cosas.";
+"n02-Pb-vCI.text" = "Gira tu teléfono para dar un giro a la vida de tus cosas.";
 
 /* Class = "UIButton"; normalTitle = "Save"; ObjectID = "npo-6Q-8XI"; */
 "npo-6Q-8XI.normalTitle" = "Guardar";
