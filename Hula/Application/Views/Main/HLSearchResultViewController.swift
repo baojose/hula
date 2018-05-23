@@ -325,6 +325,8 @@ class HLSearchResultViewController: BaseViewController, UITableViewDataSource, U
         }
         
     }
+    
+    
 }
 extension HLSearchResultViewController: FiltersDelegate{
     

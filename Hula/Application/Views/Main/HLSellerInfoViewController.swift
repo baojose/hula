@@ -259,7 +259,54 @@ class HLSellerInfoViewController: BaseViewController, UITableViewDelegate, UITab
         }
         
     }
+    @IBAction func userOptionsAction(_ sender: Any) {
+        let alert = UIAlertController(title: NSLocalizedString("User options", comment: ""),
+                                      message: nil,
+                                      preferredStyle: .actionSheet)
+        
+        
+        
+        let removeAction = UIAlertAction(title: NSLocalizedString("Trade with this user", comment: ""), style: .default, handler: { action -> Void in
+            self.addToTradeAction( UIButton() )
+        })
+        alert.addAction(removeAction)
+        
+        let reportAction = UIAlertAction(title: NSLocalizedString("Report this user to the admins", comment: ""), style: .destructive, handler: { action -> Void in
+            self.reportUser()
+        })
+        alert.addAction(reportAction)
+        
+        let cancelAction = UIAlertAction(title: NSLocalizedString("Cancel", comment: ""), style: .cancel, handler: nil)
+        
+        alert.addAction(cancelAction)
+        self.present(alert, animated: true)
+    }
     
+    func reportUser(){
+        let queryURL = HulaConstants.apiURL + "users/report/\(user.userId!)"
+        print(queryURL)
+        HLDataManager.sharedInstance.httpGet(urlstr: queryURL, taskCallback: { (ok, json) in
+            if (ok){
+                //print(json!)
+                DispatchQueue.main.async {
+                    
+                    let viewController = self.storyboard?.instantiateViewController(withIdentifier: "alertView") as! AlertViewController
+                    
+                    viewController.delegate = self
+                    viewController.isCancelVisible = false
+                    viewController.trigger = "report"
+                    viewController.message = NSLocalizedString("Sorry to hear that. We'll take care of your complaint and we will get back to you within less than 24 hours. Feel free to email us to hello@hula.trading, we will be happy to help you and learn from our own mistakes. For you to have a good experience with HULA is our priority.", comment: "")
+                    
+                    self.present(viewController, animated: true)
+                    
+                    
+                }
+            } else {
+                // connection error
+                print("Connection error")
+            }
+        })
+    }
 }
 
 extension HLSellerInfoViewController: AlertDelegate{
@@ -269,6 +316,9 @@ extension HLSellerInfoViewController: AlertDelegate{
             return
         }
         if trigger == "fullrooms" {
+            return
+        }
+        if trigger == "report" {
             return
         }
         if response == "ok" {

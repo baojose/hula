@@ -222,3 +222,11 @@
 "new" = "nuevo";
 "Used" = "Usado";
 "used" = "usado";
+"Trade with this user" = "Negociar con este usuario";
+"Report this user to the admins" = "Denunciar este usuario a los admins";
+"The product has been reported. We will review this content and take necessary actions. Thanks for keeping Hula trustworthy." = "El producto ha sido denunciado. Revisaremos este contenido y tomaremos las medidas que sean necesarias. Gracias por hacer de Hula una herramienta confiable.";
+"Add product to barter screen" = "Añadir producto a la negociación";
+"Report this product as abusive" = "Denunciar este producto";
+"Sorry to hear that. We'll take care of your complaint and we will get back to you within less than 24 hours. Feel free to email us to hello@hula.trading, we will be happy to help you and learn from our own mistakes. For you to have a good experience with HULA is our priority." = "Sentimos lo que ha pasado. Tomaremos las medidas necesarias y te contestaremos en menos de 24 horas. No dudes en escribirnos a hello@hula.trading, estaremos encantados de aprender de nuestros errores. Tu experiencia en HULA es lo más importante para nosotros.";
+"Agree" = "Aceptar";
+
