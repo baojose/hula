@@ -331,6 +331,57 @@ class HLProductDetailViewController: BaseViewController, UIScrollViewDelegate, U
         }
     }
     */
+    
+    @IBAction func productOptionsAction(_ sender: Any) {
+                let alert = UIAlertController(title: NSLocalizedString("Product options", comment: ""),
+                                              message: nil,
+                                              preferredStyle: .actionSheet)
+        
+                
+                
+                let removeAction = UIAlertAction(title: NSLocalizedString("Add product to barter screen", comment: ""), style: .default, handler: { action -> Void in
+                    self.addToTradeAction( UIButton() )
+                })
+                alert.addAction(removeAction)
+        
+                let reportAction = UIAlertAction(title: NSLocalizedString("Report this product as abusive", comment: ""), style: .destructive, handler: { action -> Void in
+                    
+                    self.reportProduct()
+                    
+                })
+                alert.addAction(reportAction)
+        
+                let cancelAction = UIAlertAction(title: NSLocalizedString("Cancel", comment: ""), style: .cancel, handler: nil)
+                
+                alert.addAction(cancelAction)
+                self.present(alert, animated: true)
+    }
+    
+    func reportProduct(){
+        let queryURL = HulaConstants.apiURL + "products/report/\(currentProduct.productId!)"
+        print(queryURL)
+        HLDataManager.sharedInstance.httpGet(urlstr: queryURL, taskCallback: { (ok, json) in
+            if (ok){
+                //print(json!)
+                DispatchQueue.main.async {
+                    
+                    let viewController = self.storyboard?.instantiateViewController(withIdentifier: "alertView") as! AlertViewController
+                    
+                    viewController.delegate = self
+                    viewController.isCancelVisible = false
+                    viewController.trigger = "report"
+                    viewController.message = NSLocalizedString("The product has been reported. We will review this content and take necessary actions. Thanks for keeping Hula trustworthy.", comment: "")
+                    
+                    self.present(viewController, animated: true)
+                    
+                    
+                }
+            } else {
+                // connection error
+                print("Connection error")
+            }
+        })
+    }
 }
 
 extension HLProductDetailViewController: AlertDelegate{
@@ -340,6 +391,9 @@ extension HLProductDetailViewController: AlertDelegate{
             return
         }
         if trigger == "fullrooms" {
+            return
+        }
+        if trigger == "report" {
             return
         }
         if response == "ok" {

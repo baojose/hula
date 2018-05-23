@@ -17,7 +17,9 @@ class HLSignUpViewController: UserBaseViewController, UITextFieldDelegate  {
     @IBOutlet weak var nextButton: HLRoundedNextButton!
     @IBOutlet weak var inputFieldsView: UIView!
     @IBOutlet weak var signupErrorLabel: UILabel!
+    @IBOutlet weak var legallbl: UILabel!
     
+    @IBOutlet weak var legalbtn: UIButton!
     let descriptions = [NSLocalizedString("What is your name?", comment: ""), NSLocalizedString("What is your email address?", comment: ""), NSLocalizedString("Set a password for your account", comment: "")]
     let hints = [NSLocalizedString("This is your public identification", comment: ""), NSLocalizedString("We wont bother you with nonsense emails", comment: ""), NSLocalizedString("Use a non-obvious password with more than 5 characters", comment: "")]
     let placeholders = [NSLocalizedString("Nickname", comment: ""), NSLocalizedString("Email address", comment: ""), NSLocalizedString("Password", comment: "")]
@@ -40,6 +42,8 @@ class HLSignUpViewController: UserBaseViewController, UITextFieldDelegate  {
         nextButton.setup()
         resetStepTexts()
         HLDataManager.sharedInstance.ga("signup")
+        legalbtn.isHidden = true;
+        legallbl.isHidden = true;
     }
     
     override func didReceiveMemoryWarning() {
@@ -63,6 +67,9 @@ class HLSignUpViewController: UserBaseViewController, UITextFieldDelegate  {
                 signupField.text = ""
                 signupField.isSecureTextEntry = true
                 currentStep += 1
+                legalbtn.isHidden = false;
+                legallbl.isHidden = false;
+                nextButton.setTitle(NSLocalizedString("Agree", comment: ""), for: .normal)
                 resetStepTexts()
                 break
             case 2:
@@ -130,6 +137,9 @@ class HLSignUpViewController: UserBaseViewController, UITextFieldDelegate  {
         })
     }
 
+    @IBAction func gotoTermsConditionsAction(_ sender: Any) {
+        UIApplication.shared.openURL(URL(string: "https://hula.trading/legal.html")!)
+    }
     @IBAction func signupFieldChanged(_ sender: Any) {
         if (self.signupField.text!.count>4){
             nextButton.startAnimation()
