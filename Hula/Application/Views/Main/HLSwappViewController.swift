@@ -552,7 +552,8 @@ class HLSwappViewController: UIViewController {
                         } else {
                             // still bartering
                             
-                            if let current_user_turn = thisTrade.object(forKey: "turn_user_id") as? String{
+                            if let current_user_turn = thisTrade.object(forKey: "turn_user_id") as? String {
+                                
                                 if current_user_turn != HulaUser.sharedInstance.userId && false {
                                     // added "false" in order to avoid this case
                                     
@@ -582,15 +583,21 @@ class HLSwappViewController: UIViewController {
                                     // my turn!
                                     self.remainingTimeLabel.alpha = 0;
                                     self.threeDotsView.isHidden = true;
+                                    
+                                    self.sendOfferBtn.setTitle( NSLocalizedString("Accept", comment: ""), for: .normal)
+                                    self.sendOfferBtn.tag = 1
+                                    /*
                                     if self.tradeCanBeClosed(thisTrade) {
                                         // can be closed
                                         self.sendOfferBtn.setTitle( NSLocalizedString("Accept trade", comment: ""), for: .normal)
                                         self.sendOfferBtn.tag = kTagCloseDeal
                                         
                                     } else {
+                                        // send counter offer
                                         self.sendOfferBtn.setTitle( NSLocalizedString("Accept trade", comment: ""), for: .normal)
                                         self.sendOfferBtn.tag = 1
                                     }
+                                    */
                                 }
                             }
                         }

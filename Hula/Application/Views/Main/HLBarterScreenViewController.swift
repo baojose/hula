@@ -127,7 +127,7 @@ class HLBarterScreenViewController: BaseViewController {
             }
             
             if self.thisTrade.turn_user_id == HulaUser.sharedInstance.userId || true {
-                // "true for forcing always my turn
+                // "true  for forcing always my turn
                 // my turn
                 self.sectionCover.isHidden = true
                 self.addMoneyBtn1.isUserInteractionEnabled = true
@@ -186,7 +186,7 @@ class HLBarterScreenViewController: BaseViewController {
             
             if HLDataManager.sharedInstance.onboardingTutorials.object(forKey: "barter_any_turn") as? String == nil{
                 CommonUtils.sharedInstance.showTutorial(arrayTips: [
-                    HulaTip(delay: 2, view: self.otherProductsCollection, text: NSLocalizedString("Here is their stuff.", comment: "")),
+                    HulaTip(delay: 0.7, view: self.otherProductsCollection, text: NSLocalizedString("Here is their stuff.", comment: "")),
                     HulaTip(delay: 0.4, view: self.otherSelectedProductsCollection, text: NSLocalizedString("Drag & drop here what you want.", comment: "")),
                     HulaTip(delay: 0.5, view: self.otherProductsCollection, text: NSLocalizedString("Tap on the product to get more info and ask for a live video to check it.", comment: "")),
                     HulaTip(delay: 0.4, view: self.myProductsCollection, text: NSLocalizedString("Here is your stuff.", comment: "")),
@@ -415,7 +415,7 @@ class HLBarterScreenViewController: BaseViewController {
             otherp = generateProductArray(from: self.myTradedProducts).joined(separator:",");
             ownerp = generateProductArray(from: self.otherTradedProducts).joined(separator:",");
         }
-        let postStr = "other_products=\(otherp)&owner_products=\(ownerp)";
+        let postStr = "other_products=\(otherp)&owner_products=\(ownerp)&other_money=\(thisTrade.other_money)&owner_money=\(thisTrade.owner_money)";
         print(postStr)
         HLDataManager.sharedInstance.httpPost(urlstr: queryURL, postString: postStr, isPut: false, taskCallback:  { (ok, json) in
             if (ok){
@@ -450,7 +450,7 @@ class HLBarterScreenViewController: BaseViewController {
         let newTrade: HulaTrade = HulaTrade();
         newTrade.loadFrom(dict: dict);
         
-        if (newTrade.other_products != self.thisTrade.other_products) || (newTrade.owner_products != self.thisTrade.owner_products){
+        if (newTrade.other_products != self.thisTrade.other_products) || (newTrade.owner_products != self.thisTrade.owner_products) || (newTrade.owner_money - newTrade.other_money != self.thisTrade.owner_money - self.thisTrade.other_money){
             print ("trades are different. Updating interface");
             
             
@@ -1072,7 +1072,7 @@ extension HLBarterScreenViewController: HLBarterScreenDelegate{
 extension HLBarterScreenViewController: CalculatorDelegate{
     
     func amountSelected(amount:Int, side:String){
-        //print("Calculator amount: \(amount)")
+        print("Calculator amount: \(amount)")
         if (amount > 0){
             // amount valid
             let final_amount = Float(amount)
@@ -1101,12 +1101,23 @@ extension HLBarterScreenViewController: CalculatorDelegate{
             // if value is 0 then remove all money
             if (side == "owner"){
                 self.myTradedProducts = removeMoneyProduct(fromProducts:self.myTradedProducts)
+                if (thisTrade.owner_id == HulaUser.sharedInstance.userId){
+                    thisTrade.owner_money = 0
+                } else {
+                    thisTrade.other_money = 0
+                }
                 self.mySelectedProductsCollection.reloadData()
             } else {
-                self.myTradedProducts = removeMoneyProduct(fromProducts:self.myTradedProducts)
-                self.mySelectedProductsCollection.reloadData()
+                self.otherTradedProducts = removeMoneyProduct(fromProducts:self.otherTradedProducts)
+                if (thisTrade.owner_id == HulaUser.sharedInstance.userId){
+                    thisTrade.other_money = 0
+                } else {
+                    thisTrade.owner_money = 0
+                }
+                self.otherSelectedProductsCollection.reloadData()
             }
         }
+        self.updateLiveBarter()
     }
     
     func removeMoneyProduct(fromProducts:[HulaProduct]) -> [HulaProduct]{
