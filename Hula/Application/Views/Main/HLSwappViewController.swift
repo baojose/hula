@@ -553,7 +553,9 @@ class HLSwappViewController: UIViewController {
                             // still bartering
                             
                             if let current_user_turn = thisTrade.object(forKey: "turn_user_id") as? String{
-                                if current_user_turn != HulaUser.sharedInstance.userId {
+                                if current_user_turn != HulaUser.sharedInstance.userId && false {
+                                    // added "false" in order to avoid this case
+                                    
                                     // other user turn
                                     
                                     self.sendOfferBtn.alpha = 0
@@ -586,7 +588,7 @@ class HLSwappViewController: UIViewController {
                                         self.sendOfferBtn.tag = kTagCloseDeal
                                         
                                     } else {
-                                        self.sendOfferBtn.setTitle( NSLocalizedString("Send offer", comment: ""), for: .normal)
+                                        self.sendOfferBtn.setTitle( NSLocalizedString("Accept trade", comment: ""), for: .normal)
                                         self.sendOfferBtn.tag = 1
                                     }
                                 }
