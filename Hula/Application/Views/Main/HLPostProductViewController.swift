@@ -8,7 +8,7 @@
 
 import UIKit
 
-class HLPostProductViewController: BaseViewController, UITextFieldDelegate {
+class HLPostProductViewController: BaseViewController {
 
     
     
@@ -16,13 +16,11 @@ class HLPostProductViewController: BaseViewController, UITextFieldDelegate {
     @IBOutlet var secondImage: UIImageView!
     @IBOutlet var thirdImage: UIImageView!
     @IBOutlet var forthImage: UIImageView!
-    @IBOutlet var mainScrollView: UIScrollView!
     @IBOutlet var contentView: UIView!
     @IBOutlet weak var mainImageLabel: UILabel!
     
-    @IBOutlet var productTitleTxtField: UITextField!
+    @IBOutlet weak var categoriesTable: UITableView!
     
-    @IBOutlet weak var publishBtn: HLRoundedGradientButton!
     @IBOutlet weak var cameraButton1: UIButton!
     @IBOutlet weak var cameraButton2: UIButton!
     @IBOutlet weak var cameraButton3: UIButton!
@@ -57,7 +55,7 @@ class HLPostProductViewController: BaseViewController, UITextFieldDelegate {
         
         self.navigationController?.isNavigationBarHidden = false
         self.tabBarController?.tabBar.isHidden = false
-        
+        self.categoriesTable.delaysContentTouches = false;
         HLDataManager.sharedInstance.ga("product_create")
     }
     func initData(){
@@ -77,7 +75,7 @@ class HLPostProductViewController: BaseViewController, UITextFieldDelegate {
         setupImagesBoxes()
         
         
-        productTitleTxtField.text = self.dataManager.newProduct.productName
+        //productTitleTxtField.text = self.dataManager.newProduct.productName
     }
     func setupImagesBoxes(){
         let arrCameraButtons = NSMutableArray.init(capacity: 4)
@@ -116,6 +114,7 @@ class HLPostProductViewController: BaseViewController, UITextFieldDelegate {
                 let frameView: UIView! = arrImageFrameViews.object(at: i) as! UIView
                 frameView.isUserInteractionEnabled = true
                 let recognizer = UITapGestureRecognizer()
+                //recognizer.cancelsTouchesInView = false
                 recognizer.addTarget(self, action: #selector(HLPostProductViewController.selectedImageTapped))
                 frameView.addGestureRecognizer(recognizer)
                 if (i == 0){
@@ -146,11 +145,11 @@ class HLPostProductViewController: BaseViewController, UITextFieldDelegate {
         //publishBtn.setTitleColor(UIColor.lightGray, for: UIControlState.disabled)
         //publishBtn.setTitleColor(UIColor.white, for: UIControlState.normal)
         
-        productTitleTxtField.addTarget(self, action: #selector(textchange(_:)), for: UIControlEvents.editingChanged)
+        //productTitleTxtField.addTarget(self, action: #selector(textchange(_:)), for: UIControlEvents.editingChanged)
         //publishBtn.setup()
         self.changePublishBtnState("")
-        let tapGesture: UITapGestureRecognizer! = UITapGestureRecognizer.init(target: self, action: #selector(onTapScreen))
-        self.view.addGestureRecognizer(tapGesture)
+        //let tapGesture: UITapGestureRecognizer! = UITapGestureRecognizer.init(target: self, action: #selector(onTapScreen))
+        //self.view.addGestureRecognizer(tapGesture)
     }
     
     func selectedImageTapped(_ sender: UITapGestureRecognizer){
@@ -163,24 +162,8 @@ class HLPostProductViewController: BaseViewController, UITextFieldDelegate {
                 fullScreenImage(image:imageView, index: tappedIndex)
             }
         }
-        // selecting main image. Removed
-        /*
-        for i in 0 ..< 4{
-            let imgView: UIView! = arrImageFrameViews.object(at: i) as! UIView
-            UIView.animate(withDuration: 0.2, animations: {
-                imgView.backgroundColor = .white
-            })
-        }
-        UIView.animate(withDuration: 0.5, animations: {
-            sender.view?.backgroundColor = HulaConstants.appMainColor
-            self.mainImageLabel.center.x = (sender.view?.center.x)!
-        })
-        if (tappedIndex != 0){
-            print(tappedIndex)
-            swap(&dataManager.newProduct.arrProductPhotos[0], &dataManager.newProduct.arrProductPhotos[tappedIndex])
-        }
-         */
     }
+    
     func fullScreenImage(image: UIImage, index: Int) {
         print("opening full screen...")
         currentEditingIndex = index
@@ -289,11 +272,10 @@ class HLPostProductViewController: BaseViewController, UITextFieldDelegate {
             self.setupImagesBoxes()
         }
     }
-    func reDesignView(){
-        
-    }
+    
     func changePublishBtnState(_ string: String){
         self.dataManager.newProduct.productName = string
+        /*
         if dataManager.newProduct.arrProductPhotos.count != 0 && string.count != 0  {
             publishBtn.isEnabled = true
             //publishBtn.startAnimation()
@@ -301,13 +283,11 @@ class HLPostProductViewController: BaseViewController, UITextFieldDelegate {
             publishBtn.isEnabled = false
             //publishBtn.stopAnimation()
         }
+         */
     }
     func onTapScreen(){
-        productTitleTxtField.resignFirstResponder()
+        //productTitleTxtField.resignFirstResponder()
         
-        UIView.animate(withDuration: 0.3, animations: {
-            self.mainScrollView.contentOffset =  CGPoint(x: 0.0, y: 0.0)
-        })
     }
     @IBAction func cameraButtonTap(_ sender: Any) {
         print((sender as AnyObject).tag)
@@ -315,16 +295,12 @@ class HLPostProductViewController: BaseViewController, UITextFieldDelegate {
     }
     //#MARK - TextField Delegate
     func textFieldShouldBeginEditing(_ textField: UITextField) -> Bool{
-        UIView.animate(withDuration: 0.3, animations: {
-            self.mainScrollView.contentOffset =  CGPoint(x: 0.0, y: 195.0)
-        })
         return true
     }
     func textchange(_ textField:UITextField) {
         self.changePublishBtnState(textField.text!)
     }
     func textFieldShouldReturn(_ textField: UITextField) -> Bool{
-        mainScrollView.setContentOffset(CGPoint(x: 0.0, y: 0.0), animated: true)
         return textField.resignFirstResponder()
     }
     @IBAction func dismissToProductPage(_ sender: Any) {
@@ -332,11 +308,49 @@ class HLPostProductViewController: BaseViewController, UITextFieldDelegate {
         self.presentingViewController?.presentingViewController?.dismiss(animated: true, completion: nil)
     }
     @IBAction func publishNewProduct(_ sender: Any) {
-        if productTitleTxtField.text?.count != 0 {
-            dataManager.newProduct.productName = productTitleTxtField.text
-        }
+            dataManager.newProduct.productName = NSLocalizedString("Untitled product", comment: "")
         NotificationCenter.default.post(name: NSNotification.Name(rawValue: "uploadModeUpdateDesign"), object: nil)
         self.presentingViewController?.presentingViewController?.dismiss(animated: true, completion: nil)
     }
     
 }
+
+extension HLPostProductViewController: UITableViewDelegate, UITableViewDataSource{
+    func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat{
+        return 0
+    }
+    func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView?{
+        
+        let view = UIView(frame: CGRect(x: 0, y: 0, width: tableView.frame.size.width, height: 0))
+        return view
+    }
+    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat{
+        return 60.0
+    }
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        return dataManager.arrCategories.count
+    }
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        
+        let cell = tableView.dequeueReusableCell(withIdentifier: "completeProductProfileCategoryCell") as! HLHomeCategoryTableViewCell
+        let category : NSDictionary = dataManager.arrCategories.object(at: indexPath.row) as! NSDictionary
+        
+        cell.categoryName.attributedText = commonUtils.attributedStringWithTextSpacing(category.object(forKey: "name") as! String, CGFloat(2.33))
+        cell.categoryImage.image = UIImage.init(named: category.object(forKey: "icon") as! String)
+        
+        return cell
+    }
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        
+        let category : NSDictionary = dataManager.arrCategories.object(at: indexPath.row) as! NSDictionary
+        print(category)
+        dataManager.newProduct.productCategory = category.object(forKey: "_id") as! String
+        
+        dataManager.newProduct.productName = NSLocalizedString("Untitled product", comment: "")
+        NotificationCenter.default.post(name: NSNotification.Name(rawValue: "uploadModeUpdateDesign"), object: nil)
+        
+        self.presentingViewController?.presentingViewController?.dismiss(animated: true, completion: nil)
+    }
+    
+}
+

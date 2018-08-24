@@ -8,25 +8,15 @@
 
 import UIKit
 
-class HLCompleteProductProfileViewController: BaseViewController, UIScrollViewDelegate, UITableViewDelegate, UITableViewDataSource, UITextFieldDelegate {
+class HLCompleteProductProfileViewController: BaseViewController, UIScrollViewDelegate, UITextFieldDelegate {
 
-    @IBOutlet var mainScrollView: UIScrollView!
-    @IBOutlet var contentView: UIView!
-    @IBOutlet var categoryTableView: UITableView!
-    @IBOutlet var perkContainView: UIView!
+    @IBOutlet weak var productNameFld: UITextField!
     @IBOutlet var perkScrollView: UIScrollView!
     @IBOutlet var desciptionTxtField: UITextField!
     @IBOutlet var conditionNewBtn: UIButton!
     @IBOutlet var conditionUsedBtn: UIButton!
     @IBOutlet weak var doneBtn: HLRoundedGradientButton!
-    @IBOutlet weak var smallBackBtn: UIButton!
     
-    @IBOutlet var categoryMarkLabel: UILabel!
-    @IBOutlet var categoryMarkLineLabel: UILabel!
-    @IBOutlet var categoryMarkImage: UIImageView!
-    @IBOutlet var perkMarkLabel: UILabel!
-    @IBOutlet var perkMarkLineLabel: UILabel!
-    @IBOutlet var perkMarkImage: UIImageView!
     @IBOutlet weak var charactersRemainingLabel: UILabel!
     
     @IBOutlet weak var productReferenceImage: UIImageView!
@@ -54,8 +44,6 @@ class HLCompleteProductProfileViewController: BaseViewController, UIScrollViewDe
     }
     func initView(){
         
-        
-        smallBackBtn.alpha = 0
         commonUtils.circleImageView(productReferenceImage)
         if productImage != nil{
             productReferenceImage.image = productImage
@@ -63,43 +51,18 @@ class HLCompleteProductProfileViewController: BaseViewController, UIScrollViewDe
             productReferenceImage.loadImageFromURL(urlString: HLDataManager.sharedInstance.newProduct.productImage)
         }
         pageTitleLabel.attributedText = commonUtils.attributedStringWithTextSpacing(pageTitleLabel.text!, 2.33)
-        categoryTableView.frame.origin = CGPoint(x: 0.0, y: 0.0)
-        perkContainView.frame.origin = CGPoint(x: mainScrollView.frame.size.width, y: 0.0)
-        contentView.frame.origin = CGPoint(x: 0.0, y: 0)
+
         
-        mainScrollView.setContentOffset(CGPoint(x:0.0, y:0.0), animated: false)
-        self.changeMarkState(0)
         self.changeConditionState(conditionNewBtn.tag)
         
         //doneBtn.setup()
         desciptionTxtField.addTarget(self, action: #selector(textchange(_:)), for: UIControlEvents.editingChanged)
         let tapGesture: UITapGestureRecognizer! = UITapGestureRecognizer.init(target: self, action: #selector(onTapScreen))
-        perkContainView.addGestureRecognizer(tapGesture)
+        self.view.addGestureRecognizer(tapGesture)
         
-        perkScrollView.contentSize = CGSize(width: mainScrollView.frame.size.width, height: mainScrollView.frame.size.height+130)
+        //perkScrollView.contentSize = CGSize(width: mainScrollView.frame.size.width, height: mainScrollView.frame.size.height+130)
     }
     
-    func changeMarkState(_ mode: Int!){
-        if mode == 0 {
-            smallBackBtn.alpha = 0
-            categoryMarkLabel.textColor = HulaConstants.appMainColor
-            categoryMarkImage.image = UIImage.init(named: "icon_progress")
-            categoryMarkLineLabel.isHidden = false
-            perkMarkLabel.textColor = UIColor.lightGray
-            perkMarkImage.image = UIImage.init(named: "icon_unprogress")
-            perkMarkLineLabel.isHidden = true
-            currentMode = 0
-        }else if mode == 1{
-            smallBackBtn.alpha = 1
-            perkMarkLabel.textColor = HulaConstants.appMainColor
-            perkMarkImage.image = UIImage.init(named: "icon_progress")
-            perkMarkLineLabel.isHidden = false
-            categoryMarkLabel.textColor = UIColor.lightGray
-            categoryMarkImage.image = UIImage.init(named: "icon_checked")
-            categoryMarkLineLabel.isHidden = true
-            currentMode = 1
-        }
-    }
     @IBAction func newConditionClicked(_ sender: UIButton!) {
         self.changeConditionState(sender.tag)
     }
@@ -124,43 +87,6 @@ class HLCompleteProductProfileViewController: BaseViewController, UIScrollViewDe
             conditionNewBtn.setTitleColor(HulaConstants.appMainColor, for: UIControlState.normal)
             commonUtils.setRoundedRectBorderButton(conditionNewBtn, 1.0, HulaConstants.appMainColor, conditionNewBtn.frame.size.height / 2.0)
         }
-    }
-    //#MARK: - TableViewDelegate
-    func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat{
-        return 0
-    }
-    func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView?{
-        
-        let view = UIView(frame: CGRect(x: 0, y: 0, width: tableView.frame.size.width, height: 0))
-        return view
-    }
-    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat{
-        return 60.0
-    }
-    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return dataManager.arrCategories.count
-    }
-    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        
-        let cell = tableView.dequeueReusableCell(withIdentifier: "completeProductProfileCategoryCell") as! HLHomeCategoryTableViewCell
-        let category : NSDictionary = dataManager.arrCategories.object(at: indexPath.row) as! NSDictionary
-        
-        cell.categoryName.attributedText = commonUtils.attributedStringWithTextSpacing(category.object(forKey: "name") as! String, CGFloat(2.33))
-        cell.categoryImage.image = UIImage.init(named: category.object(forKey: "icon") as! String)
-        
-        return cell
-    }
-    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath){
-        let category : NSDictionary = dataManager.arrCategories.object(at: indexPath.row) as! NSDictionary
-        //print(category)
-        dataManager.newProduct.productCategory = category.object(forKey: "_id") as! String
-        
-        UIView.animate(withDuration: 0.3, animations: {
-            self.perkContainView.frame.origin.x = 0
-            self.categoryTableView.frame.origin.x = -self.mainScrollView.frame.size.width
-        })
-        //mainScrollView.setContentOffset(CGPoint(x:HulaConstants.screenWidth, y:0), animated: true)
-        self.changeMarkState(1)
     }
     func onTapScreen(){
         desciptionTxtField.resignFirstResponder()
@@ -200,21 +126,11 @@ class HLCompleteProductProfileViewController: BaseViewController, UIScrollViewDe
         charactersRemainingLabel.text = "\(theRemainingChars) " + NSLocalizedString("characters remaining", comment: "")
     }
     
-    @IBAction func backAction(_ sender: Any) {
-        if currentMode == 0{
-            self.dismissToPreviousPage(sender)
-        } else {
-            UIView.animate(withDuration: 0.3, animations: {
-                self.perkContainView.frame.origin.x = self.mainScrollView.frame.size.width
-                self.categoryTableView.frame.origin.x = 0
-            })
-            self.changeMarkState(0)
-        }
-    }
     @IBAction func doneBtnPRessed(_ sender: Any) {
         //print("Complete button pressed")
         //if (dataManager.newProduct.arrProductPhotoLink.count>0 || dataManager.newProduct.productImage != ""){
             dataManager.newProduct.productDescription = desciptionTxtField.text
+            dataManager.newProduct.productName = productNameFld.text
             dataManager.newProduct.productCondition = productCondition
             dataManager.uploadMode = true
             NotificationCenter.default.post(name: NSNotification.Name(rawValue: "uploadModeUpdateDesign"), object: nil)
