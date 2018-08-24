@@ -33,6 +33,7 @@ class HLSwappViewController: UIViewController {
     @IBOutlet weak var myUserView: UIView!
     @IBOutlet weak var bottomBarView: UIImageView!
     @IBOutlet weak var sendOfferBtn: HLRoundedButton!
+    @IBOutlet weak var otherOfferBtn: HLRoundedButton!
     @IBOutlet weak var remainingTimeLabel: UILabel!
     
     @IBOutlet weak var chatCountLbl: UILabel!
@@ -74,6 +75,7 @@ class HLSwappViewController: UIViewController {
         
         CommonUtils.sharedInstance.circleImageView(otherUserImage)
         self.sendOfferBtn.alpha = 0;
+        self.otherOfferBtn.alpha = 0;
         self.remainingTimeLabel.alpha = 0;
         self.addTradeRoomBtn.alpha = 1;
         self.mainCentralLabel.alpha = 0;
@@ -99,7 +101,7 @@ class HLSwappViewController: UIViewController {
         self.tradeModeLabel.transform = CGAffineTransform(rotationAngle: CGFloat(Double.pi));
         
         let threeDots = HLThreeDotsWaiting(size: CGSize(width:40, height:10))
-        let skView = SKView(frame: CGRect(x: 0, y: 0, width: 40, height: 10))
+        let skView = SKView(frame: CGRect(x: threeDotsView.frame.width/2 - 20, y: 0, width: 40, height: 10))
         //skView.showsFPS = true
         //skView.showsNodeCount = true
         skView.backgroundColor = UIColor(red: 0, green: 0, blue: 0, alpha: 0)
@@ -498,6 +500,7 @@ class HLSwappViewController: UIViewController {
                 self.myUserView.frame.origin.x = 0
                 self.otherUserView.frame.origin.x = self.view.frame.width - self.otherUserView.frame.width
                 self.sendOfferBtn.alpha = 1
+                self.otherOfferBtn.alpha = 1
                 
                 self.addTradeRoomBtn.alpha = 0;
                 self.mainCentralLabel.alpha = 0;
@@ -535,6 +538,7 @@ class HLSwappViewController: UIViewController {
                         // closed or removed trade!
                         
                         self.sendOfferBtn.alpha = 0
+                        self.otherOfferBtn.alpha = 0
                         self.mainCentralLabel.alpha = 0
                         self.remainingTimeLabel.alpha = 0
                         self.threeDotsView.isHidden = true
@@ -552,11 +556,15 @@ class HLSwappViewController: UIViewController {
                         } else {
                             // still bartering
                             
-                            if let current_user_turn = thisTrade.object(forKey: "turn_user_id") as? String{
-                                if current_user_turn != HulaUser.sharedInstance.userId {
+                            if let current_user_turn = thisTrade.object(forKey: "turn_user_id") as? String {
+                                
+                                if current_user_turn != HulaUser.sharedInstance.userId && false {
+                                    // added "false" in order to avoid this case
+                                    
                                     // other user turn
                                     
                                     self.sendOfferBtn.alpha = 0
+                                    self.otherOfferBtn.alpha = 0
                                     self.mainCentralLabel.alpha=1;
                                     self.mainCentralLabel.text = NSLocalizedString("Waiting for user reply", comment: "")
                                     let h_str = thisTrade.object(forKey: "last_update") as! String
@@ -577,18 +585,24 @@ class HLSwappViewController: UIViewController {
                                     self.threeDotsView.isHidden = false;
                                     
                                 } else {
+                                    self.threeDotsView.isHidden = false;
                                     // my turn!
                                     self.remainingTimeLabel.alpha = 0;
-                                    self.threeDotsView.isHidden = true;
+                                    
+                                    self.sendOfferBtn.setTitle( NSLocalizedString("Accept", comment: ""), for: .normal)
+                                    self.sendOfferBtn.tag = 1
+                                    /*
                                     if self.tradeCanBeClosed(thisTrade) {
                                         // can be closed
                                         self.sendOfferBtn.setTitle( NSLocalizedString("Accept trade", comment: ""), for: .normal)
                                         self.sendOfferBtn.tag = kTagCloseDeal
                                         
                                     } else {
-                                        self.sendOfferBtn.setTitle( NSLocalizedString("Send offer", comment: ""), for: .normal)
+                                        // send counter offer
+                                        self.sendOfferBtn.setTitle( NSLocalizedString("Accept trade", comment: ""), for: .normal)
                                         self.sendOfferBtn.tag = 1
                                     }
+                                    */
                                 }
                             }
                         }
@@ -640,6 +654,7 @@ class HLSwappViewController: UIViewController {
                     self.myUserView.frame.origin.x = 0
                     self.otherUserView.frame.origin.x = self.initialOtherUserX + 500
                     self.sendOfferBtn.alpha = 0
+                    self.otherOfferBtn.alpha = 0
                     self.chatButton.alpha = 0
                     self.remainingTimeLabel.alpha = 0;
                     self.threeDotsView.isHidden = true
@@ -672,6 +687,7 @@ class HLSwappViewController: UIViewController {
                 self.myUserView.frame.origin.x = -500
                 self.otherUserView.frame.origin.x = self.initialOtherUserX + 500
                 self.sendOfferBtn.alpha = 0
+                self.otherOfferBtn.alpha = 0
                 //self.mainCentralLabel.text = "Available Table Rooms"
                 self.chatButton.alpha = 0
                 self.remainingTimeLabel.alpha = 0;

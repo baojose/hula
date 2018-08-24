@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="13529" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" colorMatched="YES" initialViewController="omL-QY-oVG">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="13771" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" colorMatched="YES" initialViewController="omL-QY-oVG">
     <device id="retina4_0" orientation="portrait">
         <adaptation id="fullscreen"/>
     </device>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="13527"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="13772"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <customFonts key="customFonts">
@@ -2300,9 +2300,9 @@ recycle!</string>
                                     </button>
                                 </subviews>
                             </view>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" id="MyB-ee-C6Y" customClass="HLRoundedButton" customModule="Hula" customModuleProvider="target">
-                                <rect key="frame" x="233" y="334" width="200" height="32"/>
-                                <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES"/>
+                            <button opaque="NO" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" id="MyB-ee-C6Y" customClass="HLRoundedButton" customModule="Hula" customModuleProvider="target">
+                                <rect key="frame" x="190" y="334" width="130" height="32"/>
+                                <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxX="YES" flexibleMinY="YES"/>
                                 <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="17"/>
                                 <state key="normal" title="Send offer">
                                     <color key="titleColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
@@ -2311,6 +2311,18 @@ recycle!</string>
                                     <action selector="sendOfferAction:" destination="YHt-Pc-Ojx" eventType="touchUpInside" id="6ey-iZ-aXm"/>
                                 </connections>
                             </button>
+                            <button opaque="NO" userInteractionEnabled="NO" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" id="e0d-uC-Q0h" customClass="HLRoundedButton" customModule="Hula" customModuleProvider="target">
+                                <rect key="frame" x="348" y="334" width="130" height="32"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMinX="YES" widthSizable="YES" flexibleMinY="YES"/>
+                                <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="17"/>
+                                <state key="normal">
+                                    <color key="titleColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                </state>
+                            </button>
+                            <view contentMode="scaleToFill" misplaced="YES" id="t72-mw-2Co">
+                                <rect key="frame" x="348" y="345" width="130" height="10"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMinX="YES" widthSizable="YES" flexibleMinY="YES"/>
+                            </view>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" id="wOQ-jY-BBX" customClass="HLRoundedButton" customModule="Hula" customModuleProvider="target">
                                 <rect key="frame" x="486" y="332" width="36" height="36"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMinY="YES"/>
@@ -2376,10 +2388,6 @@ recycle!</string>
                                     <action selector="showPastTrades:" destination="YHt-Pc-Ojx" eventType="touchUpInside" id="vL3-bl-sZV"/>
                                 </connections>
                             </button>
-                            <view contentMode="scaleToFill" id="t72-mw-2Co">
-                                <rect key="frame" x="313" y="362" width="40" height="10"/>
-                                <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES"/>
-                            </view>
                             <view contentMode="scaleToFill" id="8Qd-eS-47d">
                                 <rect key="frame" x="0.0" y="0.0" width="667" height="377"/>
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -2476,6 +2484,7 @@ recycle!</string>
                         <outlet property="mainContainer" destination="MN8-Pi-VFB" id="niE-yO-Q0O"/>
                         <outlet property="mobileImage" destination="eQL-KX-96R" id="gaN-zQ-rjr"/>
                         <outlet property="myUserView" destination="KoC-IE-SVR" id="a6n-ur-Y7A"/>
+                        <outlet property="otherOfferBtn" destination="e0d-uC-Q0h" id="DVw-4U-7SC"/>
                         <outlet property="otherUserImage" destination="Ht0-c0-f1i" id="8aT-Kl-uzP"/>
                         <outlet property="otherUserNick" destination="aLx-VA-4WH" id="9HV-nN-XXy"/>
                         <outlet property="otherUserView" destination="mpW-pj-Piw" id="Bgm-3L-abD"/>
@@ -3235,12 +3244,12 @@ recycle!</string>
                                 <rect key="frame" x="0.0" y="66" width="320" height="449"/>
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                 <subviews>
-                                    <view contentMode="scaleToFill" id="ywx-rn-OU4">
-                                        <rect key="frame" x="0.0" y="0.0" width="320" height="643"/>
+                                    <view contentMode="scaleToFill" misplaced="YES" id="ywx-rn-OU4">
+                                        <rect key="frame" x="0.0" y="0.0" width="320" height="700"/>
                                         <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxY="YES"/>
                                         <subviews>
-                                            <view contentMode="scaleToFill" id="NwZ-s7-Yvj">
-                                                <rect key="frame" x="0.0" y="0.0" width="320" height="38"/>
+                                            <view contentMode="scaleToFill" misplaced="YES" id="NwZ-s7-Yvj">
+                                                <rect key="frame" x="0.0" y="-1" width="320" height="38"/>
                                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxY="YES"/>
                                                 <subviews>
                                                     <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="img_profile_seperate_bg" id="qIY-F4-W7h">
@@ -3264,8 +3273,8 @@ recycle!</string>
                                                 </subviews>
                                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
                                             </view>
-                                            <view contentMode="scaleToFill" id="9lc-Gv-mMd">
-                                                <rect key="frame" x="0.0" y="38" width="320" height="417"/>
+                                            <view contentMode="scaleToFill" misplaced="YES" id="9lc-Gv-mMd">
+                                                <rect key="frame" x="0.0" y="37" width="320" height="417"/>
                                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxY="YES"/>
                                                 <subviews>
                                                     <view contentMode="scaleToFill" id="9Ie-9K-MAs">
@@ -3519,8 +3528,8 @@ recycle!</string>
                                                 </subviews>
                                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                             </view>
-                                            <view contentMode="scaleToFill" id="S04-zn-l07">
-                                                <rect key="frame" x="0.0" y="452" width="320" height="38"/>
+                                            <view contentMode="scaleToFill" misplaced="YES" id="S04-zn-l07">
+                                                <rect key="frame" x="0.0" y="451" width="320" height="38"/>
                                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxY="YES"/>
                                                 <subviews>
                                                     <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="img_profile_seperate_bg" id="KuX-Y1-Ow4">
@@ -3544,8 +3553,45 @@ recycle!</string>
                                                 </subviews>
                                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
                                             </view>
-                                            <view contentMode="scaleToFill" id="uJS-TX-rSD">
-                                                <rect key="frame" x="0.0" y="490" width="320" height="60"/>
+                                            <view contentMode="scaleToFill" misplaced="YES" id="Z96-l4-Pkb">
+                                                <rect key="frame" x="0.0" y="542" width="320" height="60"/>
+                                                <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxY="YES"/>
+                                                <subviews>
+                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="3Vb-pp-Xpw">
+                                                        <rect key="frame" x="0.0" y="60" width="320" height="1"/>
+                                                        <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
+                                                        <color key="backgroundColor" red="0.92549019610000005" green="0.92549019610000005" blue="0.92549019610000005" alpha="1" colorSpace="calibratedRGB"/>
+                                                        <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                                        <nil key="textColor"/>
+                                                        <nil key="highlightedColor"/>
+                                                    </label>
+                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Share Hula!" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="Zoi-B4-ogF">
+                                                        <rect key="frame" x="65" y="8" width="210" height="44"/>
+                                                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                                        <fontDescription key="fontDescription" name="HelveticaNeue-Light" family="Helvetica Neue" pointSize="16"/>
+                                                        <color key="textColor" red="0.30196078430000001" green="0.30196078430000001" blue="0.30196078430000001" alpha="1" colorSpace="calibratedRGB"/>
+                                                        <nil key="highlightedColor"/>
+                                                    </label>
+                                                    <imageView userInteractionEnabled="NO" contentMode="center" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="twtr-share-large.png" id="dtb-5f-7Ox">
+                                                        <rect key="frame" x="23" y="15" width="29" height="29"/>
+                                                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
+                                                    </imageView>
+                                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" id="KBW-mB-ICF">
+                                                        <rect key="frame" x="8" y="8" width="304" height="44"/>
+                                                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                                        <fontDescription key="fontDescription" name="HelveticaNeue-Light" family="Helvetica Neue" pointSize="18"/>
+                                                        <state key="normal">
+                                                            <color key="titleColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                                        </state>
+                                                        <connections>
+                                                            <action selector="shareButton:" destination="oKo-re-riK" eventType="touchUpInside" id="8M4-YB-kII"/>
+                                                        </connections>
+                                                    </button>
+                                                </subviews>
+                                                <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                            </view>
+                                            <view contentMode="scaleToFill" misplaced="YES" id="uJS-TX-rSD">
+                                                <rect key="frame" x="0.0" y="489" width="320" height="60"/>
                                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxY="YES"/>
                                                 <subviews>
                                                     <imageView userInteractionEnabled="NO" contentMode="center" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="icon_help" id="2YQ-Jk-EbJ">
@@ -3581,8 +3627,8 @@ recycle!</string>
                                                 </subviews>
                                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                             </view>
-                                            <view contentMode="scaleToFill" id="p0Z-8x-W3t">
-                                                <rect key="frame" x="0.0" y="550" width="320" height="60"/>
+                                            <view contentMode="scaleToFill" misplaced="YES" id="p0Z-8x-W3t">
+                                                <rect key="frame" x="0.0" y="603" width="320" height="60"/>
                                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxY="YES"/>
                                                 <subviews>
                                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="HI1-pK-NXm">
@@ -3648,7 +3694,7 @@ recycle!</string>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="Cwc-lc-wM7" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="2537.5" y="2893.5"/>
+            <point key="canvasLocation" x="2537" y="2893"/>
         </scene>
         <!--Edit Field View Controller-->
         <scene sceneID="4Qm-dL-oCN">
@@ -7192,9 +7238,9 @@ recycle!</string>
                         <rect key="frame" x="0.0" y="0.0" width="667" height="375"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <view contentMode="scaleToFill" id="XYX-7I-QVA">
-                                <rect key="frame" x="322" y="367" width="24" height="18"/>
-                                <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMinY="YES"/>
+                            <view contentMode="scaleToFill" misplaced="YES" id="XYX-7I-QVA">
+                                <rect key="frame" x="182" y="367" width="24" height="18"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                             </view>
                             <view contentMode="scaleToFill" id="e24-Ji-y0r">
@@ -7972,6 +8018,7 @@ recycle!</string>
         <image name="temp_profile_1" width="30" height="30"/>
         <image name="temp_user" width="210" height="210"/>
         <image name="transparent_background_button_L" width="51" height="50"/>
+        <image name="twtr-share-large.png" width="50" height="50"/>
         <image name="type_line_login" width="321" height="32"/>
         <image name="video-player-icon-red" width="19" height="19"/>
         <image name="video-requested-red" width="19" height="19"/>
