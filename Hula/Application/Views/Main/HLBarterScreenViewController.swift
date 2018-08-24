@@ -572,7 +572,7 @@ class HLBarterScreenViewController: BaseViewController {
     }
     
     func updateProductsFromTrade(){
-        print("Updating products from trade...")
+        //print("Updating products from trade...")
         getUserProducts(user: HulaUser.sharedInstance.userId, taskCallback: {(result) in
             var ctr = 0;
             for tr_prod in self.myTradedProducts {
@@ -824,7 +824,6 @@ extension HLBarterScreenViewController: KDDragAndDropCollectionViewDataSource, U
         self.didTradeMutate = true
         self.mainSwapViewHolder?.controlSetupBottomBar(index: myTradeIndex + 1)
         
-        
     }
     func collectionView(_ collectionView: UICollectionView, deleteDataItemAtIndexPath indexPath : IndexPath) -> Void {
         switch collectionView.tag {
@@ -840,6 +839,8 @@ extension HLBarterScreenViewController: KDDragAndDropCollectionViewDataSource, U
         }
         self.didTradeMutate = true
         self.mainSwapViewHolder?.controlSetupBottomBar(index: myTradeIndex + 1)
+        
+        
     }
     
     func collectionView(_ collectionView: UICollectionView, moveDataItemFromIndexPath from: IndexPath, toIndexPath to : IndexPath) -> Void {
@@ -863,7 +864,7 @@ extension HLBarterScreenViewController: KDDragAndDropCollectionViewDataSource, U
             otherProducts.remove(at: from.item)
             otherProducts.insert(fromDataItem, at: to.item)
         default:
-            print("No product found!")
+            print("Error: No product found!")
             fromDataItem = myProducts[from.item]
             myProducts.remove(at: from.item)
             myProducts.insert(fromDataItem, at: to.item)
@@ -871,7 +872,6 @@ extension HLBarterScreenViewController: KDDragAndDropCollectionViewDataSource, U
         
         self.didTradeMutate = true
         self.mainSwapViewHolder?.controlSetupBottomBar(index: myTradeIndex + 1)
-        
     }
     
     func collectionView(_ collectionView: UICollectionView, indexPathForDataItem dataItem: AnyObject) -> IndexPath? {
