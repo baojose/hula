@@ -20,7 +20,7 @@ class HLCustomCameraViewController: BaseViewController, UIImagePickerControllerD
     @IBOutlet var imageView3: UIImageView!
     @IBOutlet var imageView4: UIImageView!
     
-    @IBOutlet weak var imgOverlay: UIImageView!
+    //@IBOutlet weak var imgOverlay: UIImageView!
     @IBOutlet weak var btnCapture: UIButton!
     
     @IBOutlet var cameraOptionView: UIView!
@@ -374,14 +374,16 @@ class HLCustomCameraViewController: BaseViewController, UIImagePickerControllerD
             print("no preview layer")
             return
         }
-        previewLayer.videoGravity = AVLayerVideoGravityResizeAspect
+        previewLayer.videoGravity = AVLayerVideoGravityResizeAspectFill
+        //previewLayer.videoGravity = AVLayerVideoGravityResizeAspect
         previewLayer.connection.videoOrientation = AVCaptureVideoOrientation.portrait
         viewCamera.layer.addSublayer(previewLayer)
-        previewLayer.frame = viewCamera.layer.frame
+        
+        previewLayer.frame = CGRect(x:0, y:0,  width: viewCamera.layer.frame.width, height:viewCamera.layer.frame.height);
         captureSession.startRunning()
         
         self.view.addSubview(navView)
-        self.view.addSubview(imgOverlay)
+        //self.view.addSubview(imgOverlay)
         self.view.addSubview(controlView)
     }
     

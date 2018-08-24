@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import FacebookShare
 
 class HLSettingViewController: BaseViewController {
 
@@ -189,6 +190,9 @@ class HLSettingViewController: BaseViewController {
         }
         
     }
+    @IBAction func shareButton(_ sender: Any) {
+        self.shareHula();
+    }
     
     @IBAction func helpOptionAction(_ sender: Any) {
         UIApplication.shared.openURL(URL(string: "https://hula.trading/")!)
@@ -330,4 +334,63 @@ extension HLSettingViewController{
         self.present(cameraViewController, animated: true)
         self.dismissFullscreenImageDirect()
     }
+    
+    
+    func shareHula(){
+        /*
+        let alert = UIAlertController(title: NSLocalizedString("Sharing", comment: ""), message: NSLocalizedString("Please choose a sharing method", comment: ""), preferredStyle: UIAlertControllerStyle.alert)
+        alert.addAction(UIAlertAction(title: "Facebook", style: UIAlertActionStyle.default){
+            UIAlertAction in
+            self.shareHulaFB()
+        })
+        alert.addAction(UIAlertAction(title: NSLocalizedString("Other", comment: ""), style: UIAlertActionStyle.default){
+            UIAlertAction in
+            self.shareHulaStandard()
+        })
+        self.present(alert, animated: true, completion: nil)
+ */
+        self.shareHulaStandard()
+    }
+    
+    func shareHulaFB(){
+        let appInvite = AppInvite(appLink: URL(string: "https://fb.me/128854257665971")!,
+                                  deliveryMethod: .facebook,
+                                  previewImageURL: URL(string: "https://hula.trading/img/logo-big.png"))
+        do {
+            try AppInvite.Dialog.show(from: self, invite: appInvite) { result in
+                switch result {
+                case .success(let result):
+                    print("App Invite Sent with result \(result)")
+                case .failed(let error):
+                    print("Failed to send app invite with error \(error)")
+                }
+            }
+        } catch let error {
+            print("Failed to show app invite dialog with error \(error)")
+        }
+    }
+    
+    
+    func shareHulaStandard(){
+        let text = NSLocalizedString("Hey, I trade on HULA! I get what I want and give what I don't. https://hula.trading", comment: "")
+        
+        // set up activity view controller
+        let textToShare = [ text ]
+        let activityViewController = UIActivityViewController(activityItems: textToShare, applicationActivities: nil)
+        activityViewController.popoverPresentationController?.sourceView = self.view // so that iPads won't crash
+        
+        // exclude some activity types from the list (optional)
+        activityViewController.excludedActivityTypes = [ UIActivityType.airDrop, UIActivityType.addToReadingList, UIActivityType.assignToContact ]
+        // present the view controller
+        self.present(activityViewController, animated: true, completion: nil)
+        
+        
+        
+        
+    }
+    
+    
+    
+    
+    
 }

@@ -16,7 +16,6 @@ class HLPictureSelectViewController: BaseViewController, UIImagePickerController
     @IBOutlet weak var titleLabel: UILabel!
     @IBOutlet weak var viewCamera: UIView!
     @IBOutlet weak var navView: UIView!
-    @IBOutlet weak var imgOverlay: UIImageView!
     @IBOutlet weak var controlView: UIView!
 
     // vars related with Camera
@@ -117,14 +116,14 @@ class HLPictureSelectViewController: BaseViewController, UIImagePickerController
             print("no preview layer")
             return
         }
-        previewLayer.videoGravity = AVLayerVideoGravityResizeAspect
+        previewLayer.videoGravity = AVLayerVideoGravityResizeAspectFill
         previewLayer.connection.videoOrientation = AVCaptureVideoOrientation.portrait
         viewCamera.layer.addSublayer(previewLayer)
-        previewLayer.frame = viewCamera.layer.frame
+        previewLayer.frame = CGRect(x:0, y:0,  width: viewCamera.layer.frame.width, height:viewCamera.layer.frame.height);
         captureSession.startRunning()
         
         self.view.addSubview(navView)
-        self.view.addSubview(imgOverlay)
+        //self.view.addSubview(imgOverlay)
         self.view.addSubview(controlView)
     }
     func stopSession() {
