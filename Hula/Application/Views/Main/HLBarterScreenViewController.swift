@@ -484,8 +484,12 @@ class HLBarterScreenViewController: BaseViewController {
             self.animateAddedProducts("owner")
             self.animateDisolveProducts("owner")
             
+            
         }
-        
+        self.thisTrade.other_ready = newTrade.other_ready;
+        self.thisTrade.owner_ready = newTrade.owner_ready;
+        // update bottom bar!
+        self.mainSwapViewHolder?.controlSetupBottomBar(index: myTradeIndex + 1)
         
     }
     
@@ -1056,6 +1060,8 @@ extension HLBarterScreenViewController: HLBarterScreenDelegate{
         trade.other_money = thisTrade.other_money
         trade.owner_id = thisTrade.owner_id
         trade.other_id = thisTrade.other_id
+        trade.owner_ready = thisTrade.owner_ready
+        trade.other_ready = thisTrade.other_ready
         trade.num_bids = thisTrade.num_bids
         return trade
     }
