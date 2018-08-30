@@ -483,7 +483,7 @@ class HLSwappViewController: UIViewController {
                             viewController.message = NSLocalizedString("Great! Enjoy your stuff and many thanks for using HULA.\nIn order to free up this trading room, this trade will be moved to your past trades tab.", comment: "")
                             viewController.trigger = "deal_closed"
                         } else {
-                            viewController.message = NSLocalizedString("Your offer has been sent with your changes.\nPlease allow 72 hours for the user to reply.", comment: "")
+                            viewController.message = NSLocalizedString("Your offer has been sent with your changes.", comment: "")
                         }
                     }
                     self.present(viewController, animated: true)

@@ -12,6 +12,8 @@ import EasyTipView
 class HLHomeViewController: BaseViewController, UIScrollViewDelegate, UITextFieldDelegate, UITableViewDelegate, UITableViewDataSource {
     
     
+    @IBOutlet weak var categoriesBtn: UIButton!
+    @IBOutlet weak var nearYouBtn: UIButton!
     @IBOutlet var productTableView: UITableView!
     @IBOutlet var searchTxtField: UITextField!
     @IBOutlet var profileCompleteAlertView: UIView!
@@ -21,14 +23,18 @@ class HLHomeViewController: BaseViewController, UIScrollViewDelegate, UITextFiel
     @IBOutlet weak var cancelButton: UIButton!
 
     var isSearching: Bool = false
-    var productArray: NSMutableArray!
+    var isNearYou: Bool = true
+    var productArray: [HulaProduct] = []
     var filteredKeywordsArray: NSMutableArray!
     var boxRoundedOriginalSize: CGSize!
+    var usersList: NSDictionary = [:]
+    var spinner: HLSpinnerUIView!
 
     override func viewDidLoad() {
         super.viewDidLoad()
         self.initData()
         
+        // search field
         boxRoundedView.layer.cornerRadius = CGFloat(17)
         boxRoundedView.layer.borderWidth = CGFloat(1.0)
         boxRoundedView.layer.borderColor = UIColor(red: 0.0, green: 0.0, blue: 0.0, alpha: 0.3).cgColor
@@ -39,7 +45,6 @@ class HLHomeViewController: BaseViewController, UIScrollViewDelegate, UITextFiel
         
         
         // easy tip
-        
         var preferences = EasyTipView.Preferences()
         preferences.drawing.font = UIFont(name: "Helvetica Neue", size: 13)!
         preferences.drawing.foregroundColor = UIColor.darkGray
@@ -47,6 +52,26 @@ class HLHomeViewController: BaseViewController, UIScrollViewDelegate, UITextFiel
         preferences.drawing.arrowPosition = EasyTipView.ArrowPosition.any
         EasyTipView.globalPreferences = preferences
         
+        
+        
+        // upper tabs setup
+        let tcat = categoriesBtn.title(for: .normal)
+        let attributedTitleCat = NSAttributedString(string: tcat!, attributes: [NSKernAttributeName: 2.33])
+        categoriesBtn.setAttributedTitle(attributedTitleCat, for: .normal)
+        categoriesBtn.titleLabel?.textColor = UIColor(red: 70.0/255, green: 70.0/255, blue: 70.0/255, alpha: 1.0)
+        let lineView = UIView(frame: CGRect(x: 0, y: categoriesBtn.frame.size.height - 1, width: categoriesBtn.frame.size.width, height: 1))
+        lineView.backgroundColor = UIColor(red: 70.0/255, green: 70.0/255, blue: 70.0/255, alpha: 1.0)
+        categoriesBtn.addSubview(lineView)
+        
+        
+        let tnear = nearYouBtn.title(for: .normal)
+        let attributedTitleNear = NSAttributedString(string: tnear!, attributes: [NSKernAttributeName: 2.33])
+        nearYouBtn.setAttributedTitle(attributedTitleNear, for: .normal)
+        nearYouBtn.titleLabel?.textColor = UIColor(red: 70.0/255, green: 70.0/255, blue: 70.0/255, alpha: 1.0)
+        let lineViewn = UIView(frame: CGRect(x: 0, y: nearYouBtn.frame.size.height - 1, width: nearYouBtn.frame.size.width, height: 1))
+        lineViewn.backgroundColor = UIColor(red: 70.0/255, green: 70.0/255, blue: 70.0/255, alpha: 1.0)
+        nearYouBtn.addSubview(lineViewn)
+
     }
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
@@ -58,22 +83,19 @@ class HLHomeViewController: BaseViewController, UIScrollViewDelegate, UITextFiel
         let appDelegate = UIApplication.shared.delegate as! AppDelegate
         appDelegate.allowRotation = true
         
-            
-            HLDataManager.sharedInstance.ga("discovery_home")
-        
-        
+        // stats
+        HLDataManager.sharedInstance.ga("discovery_home")
     }
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
     }
     func initData() {
         isSearching = false
-        productArray = NSMutableArray.init()
+        productArray = []
         filteredKeywordsArray = NSMutableArray.init()
-        for _ in 0 ..< 5 {
-            productArray.add("Camera")
-        }
         
+        getNearProducts();
+        // listen for categories loaded
         let categoriesLoaded = Notification.Name("categoriesLoaded")
         NotificationCenter.default.addObserver(self, selector: #selector(self.categoriesAreLoaded), name: categoriesLoaded, object: nil)
 
@@ -90,7 +112,59 @@ class HLHomeViewController: BaseViewController, UIScrollViewDelegate, UITextFiel
         }
         searchTxtField.addTarget(self, action: #selector(searchTextDidChange(_:)), for: UIControlEvents.editingChanged)
     }
-    
+    // Custom functions for ViewController
+    func getNearProducts() {
+        
+        spinner = HLSpinnerUIView()
+        self.view.addSubview(spinner)
+        spinner.show(inView: self.view)
+        
+        var queryURL: String = ""
+        let lat = HulaUser.sharedInstance.location.coordinate.latitude;
+        let lng = HulaUser.sharedInstance.location.coordinate.longitude;
+        queryURL = HulaConstants.apiURL + "products/near/\(lat)/\(lng)";
+            
+        print(queryURL)
+        HLDataManager.sharedInstance.httpGet(urlstr: queryURL, taskCallback: { (ok, json) in
+            if (ok){
+                DispatchQueue.main.async {
+                    if let dictionary = json as? [String: Any] {
+                        self.spinner.hide()
+                        //print(dictionary)
+                        if let products = dictionary["products"] as? [NSDictionary] {
+                            //print(products)
+                            self.productArray = [];
+                            for prod in products{
+                                let p = HulaProduct()
+                                p.populate(with: prod)
+                                if (p.productOwner != HulaUser.sharedInstance.userId){
+                                    self.productArray.append(p);
+                                }
+                            }
+                            
+                            /*
+                            self.productArray = products
+                            if let ful = dictionary["found_users"] as? NSArray {
+                                self.foundUsersList = ful;
+                            } else {
+                                self.foundUsersList = [];
+                            }
+                             */
+                        }
+                        if let users = dictionary["users"] as? NSDictionary {
+                            //print(users)
+                            self.usersList = users
+                        }
+                        
+                    }
+                    self.productTableView.reloadData()
+                }
+            } else {
+                // connection error
+                print("Connection error")
+            }
+        })
+    }
     
     //#MARK: - TableViewDelegate
     func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat{
@@ -103,7 +177,7 @@ class HLHomeViewController: BaseViewController, UIScrollViewDelegate, UITextFiel
         label.textColor = UIColor(red: 70.0/255, green: 70.0/255, blue: 70.0/255, alpha: 1.0)
         label.backgroundColor = UIColor.clear
         label.font = UIFont(name: "HelveticaNeue", size: 12)
-        label.attributedText = commonUtils.attributedStringWithTextSpacing(NSLocalizedString("NEAR YOU", comment: ""), 2.33)
+        label.attributedText = commonUtils.attributedStringWithTextSpacing(NSLocalizedString(" ", comment: ""), 2.33)
         view.addSubview(label)
         
         let lineLabel = UILabel(frame: CGRect(x: 0, y: tableView.sectionHeaderHeight - 1, width: tableView.frame.size.width, height: 1))
@@ -116,15 +190,19 @@ class HLHomeViewController: BaseViewController, UIScrollViewDelegate, UITextFiel
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat{
         if self.isSearching == true{
             return 73.0
-        }else{
+        } else {
             return 128.0
         }
     }
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         if self.isSearching == true {
             return filteredKeywordsArray.count
-        }else{
-            return dataManager.arrCategories.count
+        } else {
+            if self.isNearYou == true {
+                return productArray.count
+            } else {
+                return dataManager.arrCategories.count
+            }
         }
     }
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
@@ -135,33 +213,87 @@ class HLHomeViewController: BaseViewController, UIScrollViewDelegate, UITextFiel
             cell.productMainNameLabel.attributedText = commonUtils.attributedStringWithTextSpacing(keyword, CGFloat(1.0))
             return cell
         }else{
-            let cell = tableView.dequeueReusableCell(withIdentifier: "homeCategoryCell") as! HLHomeCategoryTableViewCell
-            let category : NSDictionary = dataManager.arrCategories.object(at: indexPath.row) as! NSDictionary
-            let cat_name = category.object(forKey: "name") as! String;
-            print("\"\(cat_name)\" = \"\(cat_name)\";");
-            cell.categoryName.attributedText = commonUtils.attributedStringWithTextSpacing(NSLocalizedString(cat_name, comment: ""), CGFloat(2.33))
-            cell.categoryImage.image = UIImage.init(named: category.object(forKey: "icon") as! String)
-            cell.categoryProductNum.text = String(format:NSLocalizedString("%i products", comment: ""), (category.object(forKey: "num_products") as! Int))
-
-            return cell
+            if self.isNearYou == true {
+                let cell = tableView.dequeueReusableCell(withIdentifier: "homeProductCell") as! HLProductTableViewCell
+                let product = productArray[indexPath.row];
+                
+                
+                cell.productName.text = product.productName
+                let prod_thumb = commonUtils.getThumbFor(url: product.productImage)
+                cell.productImage.loadImageFromURL(urlString: prod_thumb)
+                
+                cell.productName.text = product.productName;
+                
+                cell.productImage.layer.cornerRadius = 0
+                
+                cell.productTradeRate.isHidden = false;
+                cell.productDistance.isHidden = false;
+                cell.productOwnerImage.isHidden = false;
+                cell.productOwnerName.isHidden = false;
+                
+                if product.trading_count > 0 {
+                    cell.isMultipleTrades.isHidden = false
+                } else {
+                    cell.isMultipleTrades.isHidden = true
+                }
+                
+                let user_id = product.productOwner as String;
+                if let user = self.usersList.object(forKey: user_id) as? NSDictionary {
+                    //print(user)
+                    cell.productOwnerName.text = user.object(forKey: "nick") as? String
+                    if let user_img = user.object(forKey: "image") as? String{
+                        let thumb = commonUtils.getThumbFor(url: user_img)
+                        cell.productOwnerImage.loadImageFromURL(urlString: thumb)
+                    }
+                    let up = user.object(forKey: "feedback_points") as? Float
+                    let uc = user.object(forKey: "feedback_count") as? Float
+                    if (up != nil) && (uc != nil) && (uc != 0) {
+                        let perc_trade = round( up! / uc! * 100)
+                        cell.productTradeRate.text = "\(perc_trade)%"
+                    } else {
+                        cell.productTradeRate.text = "-"
+                    }
+                    cell.productDistance.text = "(" + commonUtils.getDistanceFrom(loc: product.productLocation) + ")"
+                }
+                
+                commonUtils.circleImageView(cell.productOwnerImage)
+                
+                
+                return cell
+            } else {
+                let cell = tableView.dequeueReusableCell(withIdentifier: "homeCategoryCell") as! HLHomeCategoryTableViewCell
+                let category : NSDictionary = dataManager.arrCategories.object(at: indexPath.row) as! NSDictionary
+                let cat_name = category.object(forKey: "name") as! String;
+                print("\"\(cat_name)\" = \"\(cat_name)\";");
+                cell.categoryName.attributedText = commonUtils.attributedStringWithTextSpacing(NSLocalizedString(cat_name, comment: ""), CGFloat(2.33))
+                cell.categoryImage.image = UIImage.init(named: category.object(forKey: "icon") as! String)
+                cell.categoryProductNum.text = String(format:NSLocalizedString("%i products", comment: ""), (category.object(forKey: "num_products") as! Int))
+                return cell
+            }
         }
     }
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath){
         let searchResultViewController = self.storyboard?.instantiateViewController(withIdentifier: "searchResultPage") as! HLSearchResultViewController
         if (isSearching){
-            
             searchResultViewController.searchByCategory = false
             let category : NSDictionary = [:]
             searchResultViewController.categoryToSearch = category
             searchResultViewController.keywordToSearch = self.filteredKeywordsArray.object(at: indexPath.row) as! String
+            self.navigationController?.pushViewController(searchResultViewController, animated: true)
         } else {
-            searchResultViewController.searchByCategory = true
-            let category : NSDictionary = dataManager.arrCategories.object(at: indexPath.row) as! NSDictionary
-            searchResultViewController.categoryToSearch = category
-            searchResultViewController.keywordToSearch = ""
+            if (isNearYou){
+                let viewController = self.storyboard?.instantiateViewController(withIdentifier: "productDetailPage") as! HLProductDetailViewController
+                viewController.productData = productArray[indexPath.row]
+                self.navigationController?.pushViewController(viewController, animated: true)
+            } else {
+                searchResultViewController.searchByCategory = true
+                let category : NSDictionary = dataManager.arrCategories.object(at: indexPath.row) as! NSDictionary
+                searchResultViewController.categoryToSearch = category
+                searchResultViewController.keywordToSearch = ""
+                self.navigationController?.pushViewController(searchResultViewController, animated: true)
+            }
         }
         
-        self.navigationController?.pushViewController(searchResultViewController, animated: true)
     }
     
     
@@ -200,6 +332,24 @@ class HLHomeViewController: BaseViewController, UIScrollViewDelegate, UITextFiel
             self.boxRoundedView.frame.size = self.boxRoundedOriginalSize
         })
         return textField.resignFirstResponder()
+    }
+    
+    @IBAction func nearYouAction(_ sender: Any) {
+        isNearYou = true;
+        isSearching = false;
+        nearYouBtn.alpha = 1;
+        categoriesBtn.alpha = 0.3;
+        productTableView.reloadData();
+        productTableView.setContentOffset(.zero, animated: true)
+
+    }
+    @IBAction func categoriesAction(_ sender: Any) {
+        isNearYou = false;
+        isSearching = false;
+        nearYouBtn.alpha = 0.3;
+        categoriesBtn.alpha = 1;
+        productTableView.reloadData();
+        productTableView.setContentOffset(.zero, animated: true)
     }
     
     @IBAction func cancelSearchAction(_ sender: Any) {
