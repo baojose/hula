@@ -556,7 +556,9 @@ class HLBarterScreenViewController: BaseViewController {
                 self.view.insertSubview(fakeImg, at: self.view.subviews.count - 2)
                 let cell = col.cellForItem(at: IndexPath(item: counter, section: 0))
                 cell?.alpha = 0
-                UIView.animate(withDuration: 0.3 + Double(counter)/10 , animations: {
+                //let animDuration = 0.3 + Double(counter)/10;
+                let animDuration = 0.1;
+                UIView.animate(withDuration: animDuration , animations: {
                     fakeImg.alpha = 1
                     if cell != nil{
                         var rct = (cell?.frame)!
@@ -570,7 +572,7 @@ class HLBarterScreenViewController: BaseViewController {
                         fakeImg.frame.size = CGSize(width:smallSide, height:smallSide)
                     }
                 }, completion:  { (success) in
-                    UIView.animate(withDuration: 0.3, animations: {
+                    UIView.animate(withDuration: 0.1, animations: {
                         fakeImg.alpha = 0
                         cell?.alpha = 1
                     })
@@ -589,7 +591,9 @@ class HLBarterScreenViewController: BaseViewController {
                 //self.view.addSubview(fakeImg)
                 let cell = col2.cellForItem(at: IndexPath(item: counter, section: 0))
                 cell?.alpha = 0
-                UIView.animate(withDuration: 0.2 + Double(counter)/10, animations: {
+                //let animDuration = 0.2 + Double(counter)/10;
+                let animDuration = 0.1;
+                UIView.animate(withDuration: animDuration, animations: {
                     fakeImg.alpha = 1
                     if cell != nil{
                         fakeImg.frame = (cell?.frame)!
@@ -598,7 +602,7 @@ class HLBarterScreenViewController: BaseViewController {
                         fakeImg.frame.size = CGSize(width:120, height:85)
                     }
                 }, completion:  { (success) in
-                    UIView.animate(withDuration: 0.3, animations: {
+                    UIView.animate(withDuration: 0.1, animations: {
                         fakeImg.alpha = 0
                         cell?.alpha = 1
                     })

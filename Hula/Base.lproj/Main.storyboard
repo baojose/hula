@@ -6520,6 +6520,7 @@ recycle!</string>
                     <navigationItem key="navigationItem" id="VRy-JK-bWJ"/>
                     <connections>
                         <outlet property="charactersRemainingLabel" destination="tfk-c4-2TO" id="ifr-XC-Pr3"/>
+                        <outlet property="conditionGroup" destination="DuW-h8-h7q" id="Mr2-vu-GWo"/>
                         <outlet property="conditionNewBtn" destination="Hdo-1P-jEB" id="HKs-Dm-ioo"/>
                         <outlet property="conditionUsedBtn" destination="zBf-n9-D91" id="RZv-rX-EqY"/>
                         <outlet property="desciptionTxtField" destination="1pq-AS-C8E" id="6MB-1d-8Rp"/>
