@@ -344,7 +344,8 @@ extension HLPostProductViewController: UITableViewDelegate, UITableViewDataSourc
         
         let category : NSDictionary = dataManager.arrCategories.object(at: indexPath.row) as! NSDictionary
         print(category)
-        dataManager.newProduct.productCategory = category.object(forKey: "_id") as! String
+        dataManager.newProduct.productCategory = category.object(forKey: "name") as! String
+        dataManager.newProduct.productCategoryId = category.object(forKey: "_id") as! String
         
         dataManager.newProduct.productName = NSLocalizedString("Untitled product", comment: "")
         NotificationCenter.default.post(name: NSNotification.Name(rawValue: "uploadModeUpdateDesign"), object: nil)

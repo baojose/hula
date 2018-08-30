@@ -43,6 +43,8 @@ class HLSwappViewController: UIViewController {
     @IBOutlet weak var threeDotsView: UIView!
     @IBOutlet weak var addTradeRoomBtn: HLRoundedButton!
     @IBOutlet weak var chatButton: HLRoundedButton!
+    @IBOutlet weak var myCheckMark: UIImageView!
+    @IBOutlet weak var otherCheckMark: UIImageView!
     
     @IBOutlet weak var pastChatCountLbl: UILabel!
     var initialOtherUserX:CGFloat = 0.0
@@ -61,7 +63,8 @@ class HLSwappViewController: UIViewController {
     var tempTag: Int = 0
     var detection_counter : Int = 0;
     
-    let kTagCloseDeal: Int = 91053
+    let kTagJustAccept: Int = 1;
+    let kTagCloseDeal: Int = 91053;
     let kTagProductsReceived: Int = 90441
     
     var firstLoad : Bool = true
@@ -76,6 +79,8 @@ class HLSwappViewController: UIViewController {
         CommonUtils.sharedInstance.circleImageView(otherUserImage)
         self.sendOfferBtn.alpha = 0;
         self.otherOfferBtn.alpha = 0;
+        self.myCheckMark.alpha = 0;
+        self.otherCheckMark.alpha = 0;
         self.remainingTimeLabel.alpha = 0;
         self.addTradeRoomBtn.alpha = 1;
         self.mainCentralLabel.alpha = 0;
@@ -423,28 +428,41 @@ class HLSwappViewController: UIViewController {
         }
         
         //print(tradeStatus.owner_products)
-        if (turn_id != HulaUser.sharedInstance.userId) && buttonTag != kTagProductsReceived{
+        if (turn_id != HulaUser.sharedInstance.userId) && buttonTag != kTagProductsReceived && false{
+            // always my turn
             print("This is not your turn!!!")
         } else {
-            let queryURL = HulaConstants.apiURL + "trades/\(trade_id!)"
-            let owner_products = tradeStatus.owner_products.joined(separator: ",")
-            let other_products = tradeStatus.other_products.joined(separator: ",")
-            let owner_money:Int = Int(tradeStatus.owner_money)
-            let other_money:Int = Int(tradeStatus.other_money)
-            var status = HulaConstants.sent_status
-            var acceptedTrade: String = "false"
-            if buttonTag == kTagCloseDeal || buttonTag == kTagProductsReceived {
-                // offer sent or product received
-                status = HulaConstants.review_status
+            
+            let queryURL = HulaConstants.apiURL + "trades/\(trade_id!)/ready";
+            HLDataManager.sharedInstance.httpGet(urlstr: queryURL, taskCallback: { (ok, json) in
+                if (ok){
+                    
+                    let queryURL2 = HulaConstants.apiURL + "trades/\(trade_id!)";
+                    let owner_products = tradeStatus.owner_products.joined(separator: ",")
+                    let other_products = tradeStatus.other_products.joined(separator: ",")
+                    let owner_money:Int = Int(tradeStatus.owner_money)
+                    let other_money:Int = Int(tradeStatus.other_money)
+                    var status = HulaConstants.sent_status
+                    var acceptedTrade: String = "false"
+                    if buttonTag == self.kTagCloseDeal || buttonTag == self.kTagProductsReceived {
+                        // offer sent or product received
+                        status = HulaConstants.review_status
+                    }
+                    if buttonTag == self.kTagProductsReceived {
+                        acceptedTrade = "true"
+                    }
+                    let dataString:String = "status=\(status)&owner_products=\(owner_products)&other_products=\(other_products)&owner_money=\(owner_money)&other_money=\(other_money)&accepted=\(acceptedTrade)"
+                    //print(dataString)
+                    
+                    
+                    self.sendDataToServer(queryURL: queryURL2, dataString: dataString, buttonTag:buttonTag);
+                }
             }
-            if buttonTag == kTagProductsReceived {
-                acceptedTrade = "true"
-            }
-            let dataString:String = "status=\(status)&owner_products=\(owner_products)&other_products=\(other_products)&owner_money=\(owner_money)&other_money=\(other_money)&accepted=\(acceptedTrade)"
-            //print(dataString)
+            );
             
             
-            sendDataToServer(queryURL: queryURL, dataString: dataString, buttonTag:buttonTag)
+            /*
+            */
         }
     }
     
@@ -465,7 +483,7 @@ class HLSwappViewController: UIViewController {
                             viewController.message = NSLocalizedString("Great! Enjoy your stuff and many thanks for using HULA.\nIn order to free up this trading room, this trade will be moved to your past trades tab.", comment: "")
                             viewController.trigger = "deal_closed"
                         } else {
-                            viewController.message = NSLocalizedString("Your offer has been sent with your changes.\nPlease allow 72 hours for the user to reply.", comment: "")
+                            viewController.message = NSLocalizedString("Your offer has been sent with your changes.", comment: "")
                         }
                     }
                     self.present(viewController, animated: true)
@@ -486,7 +504,28 @@ class HLSwappViewController: UIViewController {
             self.backFromChat = true
         })
     }
-    
+    func manageCheckMarks(trade:HulaTrade?){
+        
+        if trade != nil {
+            self.otherCheckMark.alpha = 0;
+            self.myCheckMark.alpha = 0;
+            self.threeDotsView.isHidden = false;
+            self.sendOfferBtn.setTitle(NSLocalizedString("Accept", comment: ""), for: .normal);
+            
+            if ( (trade!.owner_ready && trade!.owner_id == HulaUser.sharedInstance.userId) || (trade!.other_ready && trade!.other_id == HulaUser.sharedInstance.userId) ) {
+                self.myCheckMark.alpha = 1;
+                self.sendOfferBtn.setTitle("", for: .normal);
+            }
+            if ( (trade!.other_ready && trade!.owner_id == HulaUser.sharedInstance.userId) || (trade!.owner_ready && trade!.other_id == HulaUser.sharedInstance.userId) ){
+                self.otherCheckMark.alpha = 1;
+                self.otherOfferBtn.setTitle("", for: .normal)
+                self.threeDotsView.isHidden = true;
+            }
+        } else {
+            self.otherCheckMark.alpha = 0;
+            self.myCheckMark.alpha = 0;
+        }
+    }
     
     func controlSetupBottomBar(index:Int){
         //print("setting up bottom bar with index: \(index)")
@@ -501,7 +540,6 @@ class HLSwappViewController: UIViewController {
                 self.otherUserView.frame.origin.x = self.view.frame.width - self.otherUserView.frame.width
                 self.sendOfferBtn.alpha = 1
                 self.otherOfferBtn.alpha = 1
-                
                 self.addTradeRoomBtn.alpha = 0;
                 self.mainCentralLabel.alpha = 0;
                 self.currentTradesBtn.alpha = 0;
@@ -590,7 +628,7 @@ class HLSwappViewController: UIViewController {
                                     self.remainingTimeLabel.alpha = 0;
                                     
                                     self.sendOfferBtn.setTitle( NSLocalizedString("Accept", comment: ""), for: .normal)
-                                    self.sendOfferBtn.tag = 1
+                                    self.sendOfferBtn.tag = kTagJustAccept
                                     /*
                                     if self.tradeCanBeClosed(thisTrade) {
                                         // can be closed
@@ -647,6 +685,15 @@ class HLSwappViewController: UIViewController {
                             }
                         })
                     }
+                    
+                    
+                    if let tr = self.barterDelegate?.getCurrentTradeStatus() {
+                        print("updating checkmarks...");
+                        print("owner ready \(tr.owner_ready)");
+                        print("other ready \(tr.other_ready)");
+                        self.manageCheckMarks(trade: tr);
+                    }
+                    
                 } else {
                     // no trades
                     self.addTradeRoomBtn.alpha = 0
@@ -664,6 +711,7 @@ class HLSwappViewController: UIViewController {
                     self.chatCountLbl.isHidden = true
                     self.pastChatCountLbl.isHidden = true
                     
+                    self.manageCheckMarks(trade: nil);
                 }
             }
             
@@ -729,6 +777,8 @@ class HLSwappViewController: UIViewController {
                 
                 self.pastChatCountLbl.isHidden = true
             }
+            
+            self.manageCheckMarks(trade: nil);
         }
         
     }

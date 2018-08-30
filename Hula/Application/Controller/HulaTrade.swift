@@ -14,6 +14,8 @@ class HulaTrade: NSObject {
     var owner_id: String!
     var other_id: String!
     var other_agree: Bool = false
+    var other_ready: Bool = false
+    var owner_ready: Bool = false
     var date: Date = Date()
     var last_update: Date = Date()
     var owner_products = [] as [String]
@@ -46,6 +48,8 @@ class HulaTrade: NSObject {
         self.other_agree = false
         self.owner_id = ""
         self.other_id = ""
+        self.owner_ready = false
+        self.other_ready = false
         self.date = Date()
         self.last_update = Date()
         self.owner_products = []
@@ -114,6 +118,12 @@ class HulaTrade: NSObject {
         }
         if (dict["other_agree"] as? Bool) != nil {
             self.other_agree = (dict["other_agree"] as? Bool)!
+        }
+        if (dict["other_ready"] as? Bool) != nil {
+            self.other_ready = (dict["other_ready"] as? Bool)!
+        }
+        if (dict["owner_ready"] as? Bool) != nil {
+            self.owner_ready = (dict["owner_ready"] as? Bool)!
         }
         if (dict["date"] as? String) != nil {
             let str_date = dict["date"] as? String
