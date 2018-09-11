@@ -271,6 +271,7 @@ class HLSearchResultViewController: BaseViewController, UITableViewDataSource, U
             var isValidCond = false
             var isValidDist = false
             var isValidRep = false
+            var isValidUser = false
             hprod.populate(with: prod)
             
             if filterCondition == "all" || hprod.productCondition == filterCondition{
@@ -287,7 +288,12 @@ class HLSearchResultViewController: BaseViewController, UITableViewDataSource, U
                 isValidDist = true
             }
             
-            if(isValidCond && isValidRep && isValidDist){
+            if hprod.productOwner != HulaUser.sharedInstance.userId {
+                // remove my products from the list
+                isValidUser = true
+            }
+            
+            if(isValidCond && isValidRep && isValidDist && isValidUser){
                 filteredList.append(hprod)
             }
             
