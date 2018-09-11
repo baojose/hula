@@ -346,6 +346,7 @@ class HLNotificationsViewController: BaseViewController, UITableViewDelegate, UI
                 noNotificatiosnFoundView.isHidden = true
             }
         } else {
+            print("...too soon.")
             let when = DispatchTime.now() + 0.5 // change 2 to desired number of seconds
             DispatchQueue.main.asyncAfter(deadline: when) {
                 // Your code with delay

@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="13529" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" colorMatched="YES" initialViewController="omL-QY-oVG">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="13771" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" colorMatched="YES" initialViewController="omL-QY-oVG">
     <device id="retina4_0" orientation="portrait">
         <adaptation id="fullscreen"/>
     </device>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="13527"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="13772"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <customFonts key="customFonts">
@@ -1102,12 +1102,113 @@ recycle!</string>
                                                     <outlet property="productMainNameLabel" destination="ezH-H5-kjc" id="0hU-Y6-TAy"/>
                                                 </connections>
                                             </tableViewCell>
+                                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" selectionStyle="gray" indentationWidth="10" reuseIdentifier="homeProductCell" id="aGc-af-lx8" customClass="HLProductTableViewCell" customModule="Hula" customModuleProvider="target">
+                                                <rect key="frame" x="0.0" y="223" width="320" height="128"/>
+                                                <autoresizingMask key="autoresizingMask"/>
+                                                <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="aGc-af-lx8" id="Uca-Uv-qeW">
+                                                    <rect key="frame" x="0.0" y="0.0" width="320" height="128"/>
+                                                    <autoresizingMask key="autoresizingMask"/>
+                                                    <subviews>
+                                                        <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" id="dDc-31-7gu">
+                                                            <rect key="frame" x="10" y="12" width="105" height="105"/>
+                                                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                                        </imageView>
+                                                        <imageView userInteractionEnabled="NO" contentMode="center" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="icon-product-multipledeals" id="Kc1-r3-zhR">
+                                                            <rect key="frame" x="9" y="11" width="33" height="31"/>
+                                                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                                        </imageView>
+                                                        <imageView userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="icon_forward" id="0dw-ta-myX">
+                                                            <rect key="frame" x="296" y="58" width="8" height="12"/>
+                                                            <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxY="YES"/>
+                                                        </imageView>
+                                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="sqQ-RZ-bIp">
+                                                            <rect key="frame" x="0.0" y="127" width="320" height="1"/>
+                                                            <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
+                                                            <color key="backgroundColor" red="0.92549019610000005" green="0.92549019610000005" blue="0.92549019610000005" alpha="1" colorSpace="calibratedRGB"/>
+                                                            <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                                            <nil key="textColor"/>
+                                                            <nil key="highlightedColor"/>
+                                                        </label>
+                                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Loading..." lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="kkI-wK-zbB">
+                                                            <rect key="frame" x="135" y="12" width="137" height="60"/>
+                                                            <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxY="YES"/>
+                                                            <fontDescription key="fontDescription" name="HelveticaNeue-Light" family="Helvetica Neue" pointSize="16"/>
+                                                            <color key="textColor" red="0.27450980390000002" green="0.27450980390000002" blue="0.27450980390000002" alpha="1" colorSpace="calibratedRGB"/>
+                                                            <nil key="highlightedColor"/>
+                                                        </label>
+                                                        <imageView userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="temp_user" id="7gS-Ap-46R">
+                                                            <rect key="frame" x="133" y="86" width="28" height="28"/>
+                                                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                        </imageView>
+                                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="95% (23 trades)" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="Tie-Rf-deP">
+                                                            <rect key="frame" x="172" y="99" width="82" height="18"/>
+                                                            <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                            <fontDescription key="fontDescription" name="HelveticaNeue-Medium" family="Helvetica Neue" pointSize="12"/>
+                                                            <color key="textColor" red="0.22352941179999999" green="0.66666666669999997" blue="0.64313725489999995" alpha="1" colorSpace="calibratedRGB"/>
+                                                            <nil key="highlightedColor"/>
+                                                        </label>
+                                                        <view contentMode="scaleToFill" id="BjT-Cz-22j">
+                                                            <rect key="frame" x="213" y="79" width="89" height="38"/>
+                                                            <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMinY="YES"/>
+                                                            <subviews>
+                                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="(5 miles)" textAlignment="right" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="rr6-aY-5c1">
+                                                                    <rect key="frame" x="11" y="20" width="76" height="18"/>
+                                                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
+                                                                    <fontDescription key="fontDescription" name="HelveticaNeue-Bold" family="Helvetica Neue" pointSize="12"/>
+                                                                    <color key="textColor" red="0.27450980390000002" green="0.27450980390000002" blue="0.27450980390000002" alpha="1" colorSpace="calibratedRGB"/>
+                                                                    <nil key="highlightedColor"/>
+                                                                </label>
+                                                            </subviews>
+                                                            <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
+                                                        </view>
+                                                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Username" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="EXP-B0-jtI">
+                                                            <rect key="frame" x="172" y="83" width="100" height="18"/>
+                                                            <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
+                                                            <fontDescription key="fontDescription" name="HelveticaNeue-Medium" family="Helvetica Neue" pointSize="12"/>
+                                                            <color key="textColor" red="0.27450980390000002" green="0.27450980390000002" blue="0.27450980390000002" alpha="1" colorSpace="calibratedRGB"/>
+                                                            <nil key="highlightedColor"/>
+                                                        </label>
+                                                    </subviews>
+                                                </tableViewCellContentView>
+                                                <connections>
+                                                    <outlet property="isMultipleTrades" destination="Kc1-r3-zhR" id="b7B-J1-WpL"/>
+                                                    <outlet property="productDistance" destination="rr6-aY-5c1" id="ge2-BG-KC8"/>
+                                                    <outlet property="productImage" destination="dDc-31-7gu" id="2mE-PI-0oB"/>
+                                                    <outlet property="productName" destination="kkI-wK-zbB" id="L8a-Lw-x1u"/>
+                                                    <outlet property="productOwnerImage" destination="7gS-Ap-46R" id="tAS-dZ-Tds"/>
+                                                    <outlet property="productOwnerName" destination="EXP-B0-jtI" id="t2J-fT-k5J"/>
+                                                    <outlet property="productTradeRate" destination="Tie-Rf-deP" id="l7P-td-Ufo"/>
+                                                    <outlet property="verifiedMethodsView" destination="BjT-Cz-22j" id="DXV-UV-LOK"/>
+                                                </connections>
+                                            </tableViewCell>
                                         </prototypes>
                                         <connections>
                                             <outlet property="dataSource" destination="UjI-s8-fEy" id="9AK-dE-O2t"/>
                                             <outlet property="delegate" destination="UjI-s8-fEy" id="fAe-p0-bjO"/>
                                         </connections>
                                     </tableView>
+                                    <button opaque="NO" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" id="CmF-in-cpw">
+                                        <rect key="frame" x="0.0" y="-8" width="122" height="30"/>
+                                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                        <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="14"/>
+                                        <state key="normal" title="NEAR YOU">
+                                            <color key="titleColor" red="0.27450980390000002" green="0.27450980390000002" blue="0.27450980390000002" alpha="1" colorSpace="calibratedRGB"/>
+                                        </state>
+                                        <connections>
+                                            <action selector="nearYouAction:" destination="UjI-s8-fEy" eventType="touchUpInside" id="TZH-xG-Tfj"/>
+                                        </connections>
+                                    </button>
+                                    <button opaque="NO" alpha="0.29999999999999999" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" id="vOj-Hb-fjI">
+                                        <rect key="frame" x="130" y="-8" width="122" height="30"/>
+                                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                        <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="14"/>
+                                        <state key="normal" title="CATEGORIES">
+                                            <color key="titleColor" red="0.27450980390000002" green="0.27450980390000002" blue="0.27450980390000002" alpha="1" colorSpace="calibratedRGB"/>
+                                        </state>
+                                        <connections>
+                                            <action selector="categoriesAction:" destination="UjI-s8-fEy" eventType="touchUpInside" id="YrQ-NG-3yf"/>
+                                        </connections>
+                                    </button>
                                 </subviews>
                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                             </view>
@@ -1143,6 +1244,8 @@ recycle!</string>
                     <connections>
                         <outlet property="boxRoundedView" destination="cI8-ir-IUX" id="A0n-b1-9zm"/>
                         <outlet property="cancelButton" destination="KfS-5J-T0n" id="hgI-Cg-EmF"/>
+                        <outlet property="categoriesBtn" destination="vOj-Hb-fjI" id="2mN-EJ-9gz"/>
+                        <outlet property="nearYouBtn" destination="CmF-in-cpw" id="bek-5P-Oen"/>
                         <outlet property="noResultView" destination="uhn-v7-O28" id="YXx-T5-9D3"/>
                         <outlet property="productTableView" destination="E0s-E9-MX3" id="njX-uE-kdF"/>
                         <outlet property="profileCompleteAlertView" destination="XwW-Me-XKJ" id="Wmk-qg-7GN"/>
@@ -2311,6 +2414,10 @@ recycle!</string>
                                     <action selector="sendOfferAction:" destination="YHt-Pc-Ojx" eventType="touchUpInside" id="6ey-iZ-aXm"/>
                                 </connections>
                             </button>
+                            <imageView opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleAspectFit" misplaced="YES" insetsLayoutMarginsFromSafeArea="NO" image="check-white-mark" id="CEA-hJ-nfq">
+                                <rect key="frame" x="190" y="339" width="130" height="23"/>
+                                <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxX="YES" flexibleMinY="YES"/>
+                            </imageView>
                             <button opaque="NO" userInteractionEnabled="NO" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" id="e0d-uC-Q0h" customClass="HLRoundedButton" customModule="Hula" customModuleProvider="target">
                                 <rect key="frame" x="348" y="334" width="130" height="32"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMinX="YES" widthSizable="YES" flexibleMinY="YES"/>
@@ -2319,6 +2426,10 @@ recycle!</string>
                                     <color key="titleColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                 </state>
                             </button>
+                            <imageView opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleAspectFit" misplaced="YES" insetsLayoutMarginsFromSafeArea="NO" image="check-white-mark" id="aYM-sB-DYV">
+                                <rect key="frame" x="348" y="339" width="130" height="23"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMinX="YES" widthSizable="YES" flexibleMinY="YES"/>
+                            </imageView>
                             <view contentMode="scaleToFill" misplaced="YES" id="t72-mw-2Co">
                                 <rect key="frame" x="348" y="345" width="130" height="10"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMinX="YES" widthSizable="YES" flexibleMinY="YES"/>
@@ -2483,7 +2594,9 @@ recycle!</string>
                         <outlet property="mainCentralLabel" destination="A7C-1J-WdA" id="Rmq-Iv-hIq"/>
                         <outlet property="mainContainer" destination="MN8-Pi-VFB" id="niE-yO-Q0O"/>
                         <outlet property="mobileImage" destination="eQL-KX-96R" id="gaN-zQ-rjr"/>
+                        <outlet property="myCheckMark" destination="CEA-hJ-nfq" id="g2b-b4-YLb"/>
                         <outlet property="myUserView" destination="KoC-IE-SVR" id="a6n-ur-Y7A"/>
+                        <outlet property="otherCheckMark" destination="aYM-sB-DYV" id="7pg-Y3-Mum"/>
                         <outlet property="otherOfferBtn" destination="e0d-uC-Q0h" id="DVw-4U-7SC"/>
                         <outlet property="otherUserImage" destination="Ht0-c0-f1i" id="8aT-Kl-uzP"/>
                         <outlet property="otherUserNick" destination="aLx-VA-4WH" id="9HV-nN-XXy"/>
@@ -6407,6 +6520,7 @@ recycle!</string>
                     <navigationItem key="navigationItem" id="VRy-JK-bWJ"/>
                     <connections>
                         <outlet property="charactersRemainingLabel" destination="tfk-c4-2TO" id="ifr-XC-Pr3"/>
+                        <outlet property="conditionGroup" destination="DuW-h8-h7q" id="Mr2-vu-GWo"/>
                         <outlet property="conditionNewBtn" destination="Hdo-1P-jEB" id="HKs-Dm-ioo"/>
                         <outlet property="conditionUsedBtn" destination="zBf-n9-D91" id="RZv-rX-EqY"/>
                         <outlet property="desciptionTxtField" destination="1pq-AS-C8E" id="6MB-1d-8Rp"/>
@@ -7809,6 +7923,7 @@ recycle!</string>
         <image name="calculator-layout" width="865" height="681"/>
         <image name="cash_button_trade_interface" width="25" height="25"/>
         <image name="chat-icon" width="20" height="20"/>
+        <image name="check-white-mark" width="43" height="32"/>
         <image name="check_icon_l" width="38" height="38"/>
         <image name="close-cross" width="44" height="47"/>
         <image name="close_alert_button" width="32" height="32"/>

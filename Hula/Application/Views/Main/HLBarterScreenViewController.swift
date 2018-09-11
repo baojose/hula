@@ -484,8 +484,12 @@ class HLBarterScreenViewController: BaseViewController {
             self.animateAddedProducts("owner")
             self.animateDisolveProducts("owner")
             
+            
         }
-        
+        self.thisTrade.other_ready = newTrade.other_ready;
+        self.thisTrade.owner_ready = newTrade.owner_ready;
+        // update bottom bar!
+        self.mainSwapViewHolder?.controlSetupBottomBar(index: myTradeIndex + 1)
         
     }
     
@@ -552,7 +556,9 @@ class HLBarterScreenViewController: BaseViewController {
                 self.view.insertSubview(fakeImg, at: self.view.subviews.count - 2)
                 let cell = col.cellForItem(at: IndexPath(item: counter, section: 0))
                 cell?.alpha = 0
-                UIView.animate(withDuration: 0.3 + Double(counter)/10 , animations: {
+                //let animDuration = 0.3 + Double(counter)/10;
+                let animDuration = 0.1;
+                UIView.animate(withDuration: animDuration , animations: {
                     fakeImg.alpha = 1
                     if cell != nil{
                         var rct = (cell?.frame)!
@@ -566,7 +572,7 @@ class HLBarterScreenViewController: BaseViewController {
                         fakeImg.frame.size = CGSize(width:smallSide, height:smallSide)
                     }
                 }, completion:  { (success) in
-                    UIView.animate(withDuration: 0.3, animations: {
+                    UIView.animate(withDuration: 0.1, animations: {
                         fakeImg.alpha = 0
                         cell?.alpha = 1
                     })
@@ -585,7 +591,9 @@ class HLBarterScreenViewController: BaseViewController {
                 //self.view.addSubview(fakeImg)
                 let cell = col2.cellForItem(at: IndexPath(item: counter, section: 0))
                 cell?.alpha = 0
-                UIView.animate(withDuration: 0.2 + Double(counter)/10, animations: {
+                //let animDuration = 0.2 + Double(counter)/10;
+                let animDuration = 0.1;
+                UIView.animate(withDuration: animDuration, animations: {
                     fakeImg.alpha = 1
                     if cell != nil{
                         fakeImg.frame = (cell?.frame)!
@@ -594,7 +602,7 @@ class HLBarterScreenViewController: BaseViewController {
                         fakeImg.frame.size = CGSize(width:120, height:85)
                     }
                 }, completion:  { (success) in
-                    UIView.animate(withDuration: 0.3, animations: {
+                    UIView.animate(withDuration: 0.1, animations: {
                         fakeImg.alpha = 0
                         cell?.alpha = 1
                     })
@@ -1056,6 +1064,8 @@ extension HLBarterScreenViewController: HLBarterScreenDelegate{
         trade.other_money = thisTrade.other_money
         trade.owner_id = thisTrade.owner_id
         trade.other_id = thisTrade.other_id
+        trade.owner_ready = thisTrade.owner_ready
+        trade.other_ready = thisTrade.other_ready
         trade.num_bids = thisTrade.num_bids
         return trade
     }

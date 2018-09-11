@@ -89,6 +89,7 @@
 "You accepted the deal. Now meet the trader and exchange your stuff." = "¡Has aceptado el trato! Reúnete con el usuario para intercambiar vuestras cosas.";
 "Great! Enjoy your stuff and many thanks for using HULA.\nIn order to free up this trading room, this trade will be moved to your past trades tab." = "¡Muy bien! Disfruta tus cosas y muchas gracias por utilizar HULA.\nEsta Sala de Intercambio quedará libre y el trato se guardará en la pantalla de intercambios pasados.";
 "Your offer has been sent with your changes.\nPlease allow 72 hours for the user to reply." = "Tu oferta se ha enviado con tus cambios.\nEl usuario tiene 72 horas para responderte.";
+"Your offer has been sent with your changes." = "Tu oferta se ha enviado con tus cambios.";
 "I received my stuff" = "He recibido mis cosas.";
 "Waiting for user reply" = "Esperando respuesta…";
 "Remaining time for response:" = "Tiempo para responder:";

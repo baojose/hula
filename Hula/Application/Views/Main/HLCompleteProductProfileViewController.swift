@@ -18,6 +18,7 @@ class HLCompleteProductProfileViewController: BaseViewController, UIScrollViewDe
     @IBOutlet weak var doneBtn: HLRoundedGradientButton!
     
     @IBOutlet weak var charactersRemainingLabel: UILabel!
+    @IBOutlet weak var conditionGroup: UIView!
     
     @IBOutlet weak var productReferenceImage: UIImageView!
     var productCondition:String = "new"
@@ -61,6 +62,14 @@ class HLCompleteProductProfileViewController: BaseViewController, UIScrollViewDe
         self.view.addGestureRecognizer(tapGesture)
         
         //perkScrollView.contentSize = CGSize(width: mainScrollView.frame.size.width, height: mainScrollView.frame.size.height+130)
+        print("Cat: \(dataManager.newProduct.productCategoryId)");
+        print("Cat: \(dataManager.newProduct.productCategory)");
+        if dataManager.newProduct.productCategoryId! == "59124d47a0716d0938e9276c" {
+            // service product. No need to set as used or new
+            conditionGroup.isHidden = true;
+        } else {
+            conditionGroup.isHidden = false;
+        }
     }
     
     @IBAction func newConditionClicked(_ sender: UIButton!) {
