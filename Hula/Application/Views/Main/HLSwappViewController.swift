@@ -116,7 +116,6 @@ class HLSwappViewController: UIViewController {
         threeDotsView.isHidden = true
         controlSetupBottomBar(index:0);
         
-        
         firstLoad = true
         
         motionManager.accelerometerUpdateInterval = 0.6;
@@ -165,7 +164,7 @@ class HLSwappViewController: UIViewController {
         
     }
     override func viewDidAppear(_ animated: Bool) {
-        
+        threeDotsView.frame.origin.x = otherOfferBtn.frame.origin.x + otherOfferBtn.frame.width/2 - 20;
         motionManager.startAccelerometerUpdates(to: OperationQueue.current!){ (data, error) in
             if let xc = data?.acceleration.x {
                 if abs( xc ) > 0.8 {

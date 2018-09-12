@@ -93,6 +93,12 @@ class HLBarterScreenViewController: BaseViewController {
         mySelectedProductsCollection.currentSide = "mySide"
         myProductsCollection.currentSide = "-"
         otherProductsCollection.currentSide = "-"
+        
+        
+        if #available(iOS 11.0, *) {
+            print("####  setNeedsUpdateOfScreenEdgesDeferringSystemGestures");
+            setNeedsUpdateOfScreenEdgesDeferringSystemGestures()
+        }
     }
     
     
@@ -314,6 +320,7 @@ class HLBarterScreenViewController: BaseViewController {
                 scheduledTimerWithTimeInterval()
             }
         }
+        view.layoutIfNeeded()
     }
     
     override func viewWillDisappear(_ animated: Bool) {
@@ -346,6 +353,10 @@ class HLBarterScreenViewController: BaseViewController {
         
     }
 
+    override func preferredScreenEdgesDeferringSystemGestures() -> UIRectEdge {
+        print("*preferredScreenEdges")
+        return [.bottom,.top]
+    }
     /*
     // MARK: - Navigation
 
