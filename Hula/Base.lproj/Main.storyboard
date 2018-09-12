@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="13771" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" colorMatched="YES" initialViewController="omL-QY-oVG">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="13529" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" colorMatched="YES" initialViewController="omL-QY-oVG">
     <device id="retina4_0" orientation="portrait">
         <adaptation id="fullscreen"/>
     </device>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="13772"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="13527"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <customFonts key="customFonts">
@@ -7229,6 +7229,11 @@ recycle!</string>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                             </view>
+                            <view contentMode="scaleToFill" misplaced="YES" id="UM5-fo-Aed">
+                                <rect key="frame" x="461" y="367" width="24" height="18"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMinY="YES"/>
+                                <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                            </view>
                             <view contentMode="scaleToFill" id="e24-Ji-y0r">
                                 <rect key="frame" x="0.0" y="0.0" width="668" height="375"/>
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -7525,6 +7530,7 @@ recycle!</string>
                         <outlet property="myProductsDragView" destination="kJx-gG-UNP" id="QGK-vi-85j"/>
                         <outlet property="myProductsLabel" destination="1lO-hZ-tUF" id="c1F-IX-w6b"/>
                         <outlet property="mySelectedProductsCollection" destination="bfI-4N-h7M" id="sx2-pf-NbM"/>
+                        <outlet property="otherOkFakeView" destination="UM5-fo-Aed" id="7gU-Jg-ymp"/>
                         <outlet property="otherProductsCollection" destination="Lbs-rv-jzA" id="yv4-MM-HBs"/>
                         <outlet property="otherProductsDragView" destination="RNt-5Z-xam" id="38c-JT-iI8"/>
                         <outlet property="otherProductsLabel" destination="0Oz-kA-vb9" id="SI3-cQ-NFa"/>

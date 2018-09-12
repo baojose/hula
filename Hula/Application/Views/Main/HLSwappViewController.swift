@@ -510,13 +510,16 @@ class HLSwappViewController: UIViewController {
             self.otherCheckMark.alpha = 0;
             self.myCheckMark.alpha = 0;
             self.threeDotsView.isHidden = false;
+            self.sendOfferBtn.tag = kTagJustAccept
             self.sendOfferBtn.setTitle(NSLocalizedString("Accept", comment: ""), for: .normal);
             
             if ( (trade!.owner_ready && trade!.owner_id == HulaUser.sharedInstance.userId) || (trade!.other_ready && trade!.other_id == HulaUser.sharedInstance.userId) ) {
+                // I am ready
                 self.myCheckMark.alpha = 1;
                 self.sendOfferBtn.setTitle("", for: .normal);
             }
             if ( (trade!.other_ready && trade!.owner_id == HulaUser.sharedInstance.userId) || (trade!.owner_ready && trade!.other_id == HulaUser.sharedInstance.userId) ){
+                self.sendOfferBtn.tag = kTagCloseDeal
                 self.otherCheckMark.alpha = 1;
                 self.otherOfferBtn.setTitle("", for: .normal)
                 self.threeDotsView.isHidden = true;
@@ -628,7 +631,7 @@ class HLSwappViewController: UIViewController {
                                     self.remainingTimeLabel.alpha = 0;
                                     
                                     self.sendOfferBtn.setTitle( NSLocalizedString("Accept", comment: ""), for: .normal)
-                                    self.sendOfferBtn.tag = kTagJustAccept
+                                    //self.sendOfferBtn.tag = kTagJustAccept
                                     /*
                                     if self.tradeCanBeClosed(thisTrade) {
                                         // can be closed
@@ -638,13 +641,23 @@ class HLSwappViewController: UIViewController {
                                     } else {
                                         // send counter offer
                                         self.sendOfferBtn.setTitle( NSLocalizedString("Accept trade", comment: ""), for: .normal)
-                                        self.sendOfferBtn.tag = 1
+                                        self.sendOfferBtn.tag = kTagJustAccept
                                     }
                                     */
                                 }
                             }
                         }
                     }
+                    
+                    
+                    
+                    if let tr = self.barterDelegate?.getCurrentTradeStatus() {
+                        //print("updating checkmarks...");
+                        print("owner ready \(tr.owner_ready)");
+                        print("other ready \(tr.other_ready)");
+                        self.manageCheckMarks(trade: tr);
+                    }
+                    
                     if chat_count > 0 {
                         self.chatCountLbl.text = "\(chat_count)"
                         self.chatCountLbl.isHidden = false
@@ -687,12 +700,6 @@ class HLSwappViewController: UIViewController {
                     }
                     
                     
-                    if let tr = self.barterDelegate?.getCurrentTradeStatus() {
-                        print("updating checkmarks...");
-                        print("owner ready \(tr.owner_ready)");
-                        print("other ready \(tr.other_ready)");
-                        self.manageCheckMarks(trade: tr);
-                    }
                     
                 } else {
                     // no trades

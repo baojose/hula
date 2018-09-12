@@ -30,6 +30,7 @@ class HLBarterScreenViewController: BaseViewController {
     @IBOutlet weak var addMoneyBtn2: UIButton!
     @IBOutlet weak var addMoneyBtn1: UIButton!
     @IBOutlet weak var sendOfferFakeView: UIView!
+    @IBOutlet weak var otherOkFakeView: UIView!
     
     @IBOutlet weak var otherProductsLabel: UILabel!
     @IBOutlet weak var myProductsLabel: UILabel!
@@ -186,13 +187,14 @@ class HLBarterScreenViewController: BaseViewController {
             
             if HLDataManager.sharedInstance.onboardingTutorials.object(forKey: "barter_any_turn") as? String == nil{
                 CommonUtils.sharedInstance.showTutorial(arrayTips: [
-                    HulaTip(delay: 0.7, view: self.otherProductsCollection, text: NSLocalizedString("Here is their stuff.", comment: "")),
-                    HulaTip(delay: 0.4, view: self.otherSelectedProductsCollection, text: NSLocalizedString("Drag & drop here what you want.", comment: "")),
-                    HulaTip(delay: 0.5, view: self.otherProductsCollection, text: NSLocalizedString("Tap on the product to get more info and ask for a live video to check it.", comment: "")),
-                    HulaTip(delay: 0.4, view: self.myProductsCollection, text: NSLocalizedString("Here is your stuff.", comment: "")),
-                    HulaTip(delay: 0.4, view: self.addMoneyBtn1, text: NSLocalizedString("You can also offer money.", comment: "")),
-                    HulaTip(delay: 0.4, view: self.sendOfferFakeView, text: NSLocalizedString("Once you've selected what you want, find out if the other trader is interested. Click the button below to send a notification!", comment: "")),
-                    HulaTip(delay: 0.4, view: self.ChatFakeView, text: NSLocalizedString("Start chat here if you need to talk.", comment: ""))
+                    HulaTip(delay: 0.4, view: self.otherProductsCollection, text: NSLocalizedString("Here is their stuff.", comment: "")),
+                    HulaTip(delay: 0.2, view: self.otherSelectedProductsCollection, text: NSLocalizedString("Drag & drop here what you want.", comment: "")),
+                    HulaTip(delay: 0.2, view: self.otherProductsCollection, text: NSLocalizedString("Tap on the product to get more info and ask for a live video to check it.", comment: "")),
+                    HulaTip(delay: 0.2, view: self.myProductsCollection, text: NSLocalizedString("Here is your stuff.", comment: "")),
+                    HulaTip(delay: 0.2, view: self.addMoneyBtn1, text: NSLocalizedString("You can also offer money.", comment: "")),
+                    HulaTip(delay: 0.2, view: self.otherOkFakeView, text: NSLocalizedString("This is the other user's status. When you see a check mark, they are waiting for your final approval.", comment: "")),
+                    HulaTip(delay: 0.2, view: self.sendOfferFakeView, text: NSLocalizedString("Once you've selected what you want, check this button to let the other know you agree.", comment: "")),
+                    HulaTip(delay: 0.2, view: self.ChatFakeView, text: NSLocalizedString("Start chat here if you need to talk.", comment: ""))
                     ], named: "barter_any_turn")
                 //print(HLDataManager.sharedInstance.onboardingTutorials)
             }
