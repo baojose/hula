@@ -355,7 +355,7 @@ class HLBarterScreenViewController: BaseViewController {
 
     override func preferredScreenEdgesDeferringSystemGestures() -> UIRectEdge {
         print("*preferredScreenEdges")
-        return [.bottom,.top]
+        return .all	
     }
     /*
     // MARK: - Navigation

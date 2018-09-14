@@ -119,6 +119,12 @@ class HLSwappViewController: UIViewController {
         firstLoad = true
         
         motionManager.accelerometerUpdateInterval = 0.6;
+        
+        
+        if #available(iOS 11.0, *) {
+            print("####  setNeedsUpdateOfScreenEdgesDeferringSystemGestures");
+            setNeedsUpdateOfScreenEdgesDeferringSystemGestures()
+        }
     }
     
     override func prefersHomeIndicatorAutoHidden() -> Bool {
@@ -226,6 +232,12 @@ class HLSwappViewController: UIViewController {
                 }
             }
         }
+    }
+    
+    
+    override func preferredScreenEdgesDeferringSystemGestures() -> UIRectEdge {
+        print("*preferredScreenEdges")
+        return .all
     }
     
     @IBAction func closeSwappMode(_ sender: Any) {
