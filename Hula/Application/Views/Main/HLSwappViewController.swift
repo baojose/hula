@@ -670,8 +670,14 @@ class HLSwappViewController: UIViewController {
                         
                         if tr.other_agree {
                             self.otherUserView.alpha = 1
+                            
+                            if currentStatus != HulaConstants.cancel_status && currentStatus != HulaConstants.end_status {
+                                // closed deals should not show the other's button
+                                self.otherOfferBtn.alpha = 1
+                            }
                         } else {
-                            self.otherUserView.alpha = 0.3
+                            self.otherUserView.alpha = 0.5
+                            self.otherOfferBtn.alpha = 0.5
                         }
                         
                     }
@@ -688,10 +694,8 @@ class HLSwappViewController: UIViewController {
                         if (bids.count == 1 && thisTrade.object(forKey: "turn_user_id") as? String == HulaUser.sharedInstance.userId ){
                             // first turn
                             self.chatButton.alpha = 0.3
-                            self.otherOfferBtn.alpha = 0.3
                         } else {
                             self.chatButton.alpha = 1
-                            self.otherOfferBtn.alpha = 1
                         }
                     }
                     
