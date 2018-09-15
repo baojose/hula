@@ -209,8 +209,8 @@ class HLBarterScreenViewController: BaseViewController {
                     HulaTip(delay: 0.2, view: self.otherProductsCollection, text: NSLocalizedString("Tap on the product to get more info and ask for a live video to check it.", comment: "")),
                     HulaTip(delay: 0.2, view: self.myProductsCollection, text: NSLocalizedString("Here is your stuff.", comment: "")),
                     HulaTip(delay: 0.2, view: self.addMoneyBtn1, text: NSLocalizedString("You can also offer money.", comment: "")),
-                    HulaTip(delay: 0.2, view: self.otherOkFakeView, text: NSLocalizedString("This is the other user's status. When you see a check mark, they are waiting for your final approval.", comment: "")),
-                    HulaTip(delay: 0.2, view: self.sendOfferFakeView, text: NSLocalizedString("Once you've selected what you want, check this button to let the other know you agree.", comment: "")),
+                    HulaTip(delay: 0.2, view: self.otherOkFakeView, text: NSLocalizedString("This is the other user's status. When you see a check mark, he/she is waiting for your final approval.", comment: "")),
+                    HulaTip(delay: 0.2, view: self.sendOfferFakeView, text: NSLocalizedString("Once you've selected what you want, click this button to let the other know you agree.", comment: "")),
                     HulaTip(delay: 0.2, view: self.ChatFakeView, text: NSLocalizedString("Start chat here if you need to talk.", comment: ""))
                     ], named: "barter_any_turn")
                 //print(HLDataManager.sharedInstance.onboardingTutorials)
@@ -240,7 +240,7 @@ class HLBarterScreenViewController: BaseViewController {
                     if (self.myTradedProducts.count > 0){
                         for i in 0 ... (self.myTradedProducts.count - 1) {
                             if (self.myTradedProducts[i].productId == result[j].productId){
-                                print("found product!")
+                                //print("found product!")
                                 self.myTradedProducts[i].video_url = result[j].video_url;
                                 self.myTradedProducts[i].video_requested = result[j].video_requested;
                                 
@@ -250,7 +250,7 @@ class HLBarterScreenViewController: BaseViewController {
                     if (self.myProducts.count > 0){
                         for i in 0 ... (self.myProducts.count - 1) {
                             if (self.myProducts[i].productId == result[j].productId){
-                                print("found product!")
+                                //print("found product!")
                                 self.myProducts[i].video_url = result[j].video_url;
                                 self.myProducts[i].video_requested = result[j].video_requested;
                                 
@@ -279,7 +279,7 @@ class HLBarterScreenViewController: BaseViewController {
                         }
                     }
                     if (self.otherProducts.count > 0){
-                        for i in 0 ... (self.myProducts.count - 1) {
+                        for i in 0 ... (self.otherProducts.count - 1) {
                             if (self.otherProducts[i].productId == result[j].productId){
                                 //print("found product!")
                                 self.otherProducts[i].video_url = result[j].video_url;
