@@ -284,9 +284,7 @@ class HLDataManager: NSObject {
     func amIOfferedToTradeWith(_ user_id: String) -> Bool{
         for tr in arrCurrentTrades{
             if let trade = tr as? [String:Any] {
-                let numBids = (trade["bids"] as! [Any]).count
-                //print(numBids)
-                if trade["other_id"] as! String == user_id && (trade["status"] as! String == HulaConstants.pending_status || numBids <= 2)  {
+                if trade["other_id"] as! String == user_id && (trade["status"] as! String == HulaConstants.pending_status ) {
                     return true
                 }
             }

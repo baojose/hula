@@ -50,13 +50,19 @@ class HLFinalFeedbackViewController: UIViewController {
         
         userImage.loadImageFromURL(urlString: CommonUtils.sharedInstance.userImageURL(userId: self.user_id_closed ));
         
+        let appDelegate = UIApplication.shared.delegate as! AppDelegate
+        appDelegate.allowRotation = false
     }
 
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
     }
-    
+    override func viewWillDisappear(_ animated: Bool) {
+        
+        let appDelegate = UIApplication.shared.delegate as! AppDelegate
+        appDelegate.allowRotation = true
+    }
 
     /*
     // MARK: - Navigation
