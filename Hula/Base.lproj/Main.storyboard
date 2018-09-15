@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="13771" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" colorMatched="YES" initialViewController="omL-QY-oVG">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="13529" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" colorMatched="YES" initialViewController="omL-QY-oVG">
     <device id="retina4_0" orientation="portrait">
         <adaptation id="fullscreen"/>
     </device>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="13772"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="13527"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <customFonts key="customFonts">
@@ -1827,7 +1827,7 @@ recycle!</string>
                                                     <autoresizingMask key="autoresizingMask"/>
                                                     <subviews>
                                                         <imageView opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" image="icon_shape" id="FEq-ii-lbL">
-                                                            <rect key="frame" x="283" y="30" width="19" height="20"/>
+                                                            <rect key="frame" x="282" y="28" width="20" height="20"/>
                                                             <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
                                                         </imageView>
                                                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="5 hours ago" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="ODt-f7-Y70">
@@ -1838,18 +1838,18 @@ recycle!</string>
                                                             <nil key="highlightedColor"/>
                                                         </label>
                                                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" text="Prueba de texto de notificacion" textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="O5A-0A-owp">
-                                                            <rect key="frame" x="75" y="13" width="207" height="65"/>
+                                                            <rect key="frame" x="74" y="13" width="208" height="65"/>
                                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxY="YES"/>
                                                             <fontDescription key="fontDescription" name="HelveticaNeue-Light" family="Helvetica Neue" pointSize="16"/>
                                                             <color key="textColor" white="0.33333333333333331" alpha="1" colorSpace="calibratedWhite"/>
                                                             <nil key="highlightedColor"/>
                                                         </label>
                                                         <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" misplaced="YES" image="icon_forward" translatesAutoresizingMaskIntoConstraints="NO" id="7n8-km-83N">
-                                                            <rect key="frame" x="290" y="37" width="7" height="11"/>
+                                                            <rect key="frame" x="290" y="36" width="7" height="11"/>
                                                             <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
                                                         </imageView>
                                                         <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="s_05" id="qUv-mB-hOF">
-                                                            <rect key="frame" x="11" y="35" width="42" height="41"/>
+                                                            <rect key="frame" x="10" y="35" width="43" height="41"/>
                                                             <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                                         </imageView>
                                                         <imageView opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" image="icon_alert_thumbnails" id="K1a-Eg-HOv">
@@ -1857,11 +1857,11 @@ recycle!</string>
                                                             <autoresizingMask key="autoresizingMask"/>
                                                         </imageView>
                                                         <view contentMode="scaleToFill" misplaced="YES" id="b8X-Dh-Tv3">
-                                                            <rect key="frame" x="137" y="68" width="174" height="26"/>
+                                                            <rect key="frame" x="137" y="66" width="173" height="27"/>
                                                             <autoresizingMask key="autoresizingMask" flexibleMinX="YES" widthSizable="YES" flexibleMinY="YES"/>
                                                             <subviews>
                                                                 <button opaque="NO" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" id="Y0o-Vv-8XK">
-                                                                    <rect key="frame" x="14" y="-1" width="78" height="28"/>
+                                                                    <rect key="frame" x="14" y="-2" width="78" height="29"/>
                                                                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" heightSizable="YES"/>
                                                                     <color key="backgroundColor" red="0.22352941179999999" green="0.66666666669999997" blue="0.64313725489999995" alpha="1" colorSpace="calibratedRGB"/>
                                                                     <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="13"/>
@@ -1870,7 +1870,7 @@ recycle!</string>
                                                                     </state>
                                                                 </button>
                                                                 <button opaque="NO" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" showsTouchWhenHighlighted="YES" lineBreakMode="middleTruncation" id="mf6-wE-Gjd">
-                                                                    <rect key="frame" x="85" y="-1" width="76" height="28"/>
+                                                                    <rect key="frame" x="84" y="-2" width="76" height="29"/>
                                                                     <autoresizingMask key="autoresizingMask" flexibleMinX="YES" heightSizable="YES"/>
                                                                     <color key="backgroundColor" red="0.22352941179999999" green="0.66666666669999997" blue="0.64313725489999995" alpha="1" colorSpace="calibratedRGB"/>
                                                                     <fontDescription key="fontDescription" name="HelveticaNeue" family="Helvetica Neue" pointSize="13"/>
@@ -2415,7 +2415,7 @@ recycle!</string>
                                 </connections>
                             </button>
                             <imageView opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleAspectFit" misplaced="YES" insetsLayoutMarginsFromSafeArea="NO" image="check-white-mark" id="CEA-hJ-nfq">
-                                <rect key="frame" x="190" y="339" width="130" height="23"/>
+                                <rect key="frame" x="190" y="342" width="130" height="17"/>
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxX="YES" flexibleMinY="YES"/>
                             </imageView>
                             <button opaque="NO" userInteractionEnabled="NO" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" id="e0d-uC-Q0h" customClass="HLRoundedButton" customModule="Hula" customModuleProvider="target">
@@ -2427,7 +2427,7 @@ recycle!</string>
                                 </state>
                             </button>
                             <imageView opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleAspectFit" misplaced="YES" insetsLayoutMarginsFromSafeArea="NO" image="check-white-mark" id="aYM-sB-DYV">
-                                <rect key="frame" x="348" y="339" width="130" height="23"/>
+                                <rect key="frame" x="348" y="342" width="130" height="17"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMinX="YES" widthSizable="YES" flexibleMinY="YES"/>
                             </imageView>
                             <view contentMode="scaleToFill" misplaced="YES" id="t72-mw-2Co">
@@ -7229,6 +7229,11 @@ recycle!</string>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                             </view>
+                            <view contentMode="scaleToFill" misplaced="YES" id="UM5-fo-Aed">
+                                <rect key="frame" x="461" y="367" width="24" height="18"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMinY="YES"/>
+                                <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                            </view>
                             <view contentMode="scaleToFill" id="e24-Ji-y0r">
                                 <rect key="frame" x="0.0" y="0.0" width="668" height="375"/>
                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -7525,6 +7530,7 @@ recycle!</string>
                         <outlet property="myProductsDragView" destination="kJx-gG-UNP" id="QGK-vi-85j"/>
                         <outlet property="myProductsLabel" destination="1lO-hZ-tUF" id="c1F-IX-w6b"/>
                         <outlet property="mySelectedProductsCollection" destination="bfI-4N-h7M" id="sx2-pf-NbM"/>
+                        <outlet property="otherOkFakeView" destination="UM5-fo-Aed" id="7gU-Jg-ymp"/>
                         <outlet property="otherProductsCollection" destination="Lbs-rv-jzA" id="yv4-MM-HBs"/>
                         <outlet property="otherProductsDragView" destination="RNt-5Z-xam" id="38c-JT-iI8"/>
                         <outlet property="otherProductsLabel" destination="0Oz-kA-vb9" id="SI3-cQ-NFa"/>

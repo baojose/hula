@@ -122,7 +122,7 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
         let product : HulaProduct = self.arrayProducts[order_sorted]
         //print(product)
         cell.productDescription.text = product.productName
-        if product.trading_count > 0 {
+        if product.trading_count > 1 {
             cell.isMultipleTrades.isHidden = false
         } else {
             cell.isMultipleTrades.isHidden = true

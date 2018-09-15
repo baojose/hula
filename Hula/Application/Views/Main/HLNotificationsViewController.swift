@@ -114,14 +114,14 @@ class HLNotificationsViewController: BaseViewController, UITableViewDelegate, UI
                 if (type == "start"){
                     cell.rotationIcon.isHidden = true
                     cell.forwardIcon.isHidden = false
-                    if !is_read && !is_old {
-                        
+                    //if !is_read && !is_old {
+                        print("old \(is_old)")
                         cell.rejectBtn.tag = indexPath.row;
                         cell.rejectBtn.addTarget(self, action: #selector(rejectBtnTapped), for: .touchUpInside)
                         cell.acceptBtn.tag = indexPath.row;
                         cell.acceptBtn.addTarget(self, action: #selector(acceptBtnTapped), for: .touchUpInside)
                         cell.newTradeActionView.isHidden = false
-                    }
+                    //}
                 } else {
                     cell.rotationIcon.isHidden = false
                     cell.forwardIcon.isHidden = true

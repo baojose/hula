@@ -116,10 +116,15 @@ class HLSwappViewController: UIViewController {
         threeDotsView.isHidden = true
         controlSetupBottomBar(index:0);
         
-        
         firstLoad = true
         
         motionManager.accelerometerUpdateInterval = 0.6;
+        
+        
+        if #available(iOS 11.0, *) {
+            print("####  setNeedsUpdateOfScreenEdgesDeferringSystemGestures");
+            setNeedsUpdateOfScreenEdgesDeferringSystemGestures()
+        }
     }
     
     override func prefersHomeIndicatorAutoHidden() -> Bool {
@@ -165,7 +170,7 @@ class HLSwappViewController: UIViewController {
         
     }
     override func viewDidAppear(_ animated: Bool) {
-        
+        threeDotsView.frame.origin.x = otherOfferBtn.frame.origin.x + otherOfferBtn.frame.width/2 - 20;
         motionManager.startAccelerometerUpdates(to: OperationQueue.current!){ (data, error) in
             if let xc = data?.acceleration.x {
                 if abs( xc ) > 0.8 {
@@ -227,6 +232,12 @@ class HLSwappViewController: UIViewController {
                 }
             }
         }
+    }
+    
+    
+    override func preferredScreenEdgesDeferringSystemGestures() -> UIRectEdge {
+        print("*preferredScreenEdges")
+        return .all
     }
     
     @IBAction func closeSwappMode(_ sender: Any) {
@@ -510,13 +521,16 @@ class HLSwappViewController: UIViewController {
             self.otherCheckMark.alpha = 0;
             self.myCheckMark.alpha = 0;
             self.threeDotsView.isHidden = false;
+            self.sendOfferBtn.tag = kTagJustAccept
             self.sendOfferBtn.setTitle(NSLocalizedString("Accept", comment: ""), for: .normal);
             
             if ( (trade!.owner_ready && trade!.owner_id == HulaUser.sharedInstance.userId) || (trade!.other_ready && trade!.other_id == HulaUser.sharedInstance.userId) ) {
+                // I am ready
                 self.myCheckMark.alpha = 1;
                 self.sendOfferBtn.setTitle("", for: .normal);
             }
             if ( (trade!.other_ready && trade!.owner_id == HulaUser.sharedInstance.userId) || (trade!.owner_ready && trade!.other_id == HulaUser.sharedInstance.userId) ){
+                self.sendOfferBtn.tag = kTagCloseDeal
                 self.otherCheckMark.alpha = 1;
                 self.otherOfferBtn.setTitle("", for: .normal)
                 self.threeDotsView.isHidden = true;
@@ -628,7 +642,7 @@ class HLSwappViewController: UIViewController {
                                     self.remainingTimeLabel.alpha = 0;
                                     
                                     self.sendOfferBtn.setTitle( NSLocalizedString("Accept", comment: ""), for: .normal)
-                                    self.sendOfferBtn.tag = kTagJustAccept
+                                    //self.sendOfferBtn.tag = kTagJustAccept
                                     /*
                                     if self.tradeCanBeClosed(thisTrade) {
                                         // can be closed
@@ -638,13 +652,30 @@ class HLSwappViewController: UIViewController {
                                     } else {
                                         // send counter offer
                                         self.sendOfferBtn.setTitle( NSLocalizedString("Accept trade", comment: ""), for: .normal)
-                                        self.sendOfferBtn.tag = 1
+                                        self.sendOfferBtn.tag = kTagJustAccept
                                     }
                                     */
                                 }
                             }
                         }
                     }
+                    
+                    
+                    
+                    if let tr = self.barterDelegate?.getCurrentTradeStatus() {
+                        //print("updating checkmarks...");
+                        print("owner ready \(tr.owner_ready)");
+                        print("other ready \(tr.other_ready)");
+                        self.manageCheckMarks(trade: tr);
+                        
+                        if tr.other_agree {
+                            self.otherUserView.alpha = 1
+                        } else {
+                            self.otherUserView.alpha = 0.3
+                        }
+                        
+                    }
+                    
                     if chat_count > 0 {
                         self.chatCountLbl.text = "\(chat_count)"
                         self.chatCountLbl.isHidden = false
@@ -657,8 +688,10 @@ class HLSwappViewController: UIViewController {
                         if (bids.count == 1 && thisTrade.object(forKey: "turn_user_id") as? String == HulaUser.sharedInstance.userId ){
                             // first turn
                             self.chatButton.alpha = 0.3
+                            self.otherOfferBtn.alpha = 0.3
                         } else {
                             self.chatButton.alpha = 1
+                            self.otherOfferBtn.alpha = 1
                         }
                     }
                     
@@ -687,12 +720,6 @@ class HLSwappViewController: UIViewController {
                     }
                     
                     
-                    if let tr = self.barterDelegate?.getCurrentTradeStatus() {
-                        print("updating checkmarks...");
-                        print("owner ready \(tr.owner_ready)");
-                        print("other ready \(tr.other_ready)");
-                        self.manageCheckMarks(trade: tr);
-                    }
                     
                 } else {
                     // no trades
