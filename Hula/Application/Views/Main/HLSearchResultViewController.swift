@@ -126,7 +126,7 @@ class HLSearchResultViewController: BaseViewController, UITableViewDataSource, U
             cell.productOwnerImage.isHidden = false;
             cell.productOwnerName.isHidden = false;
             
-            if product.trading_count > 0 {
+            if product.trading_count > 1 {
                 cell.isMultipleTrades.isHidden = false
             } else {
                 cell.isMultipleTrades.isHidden = true

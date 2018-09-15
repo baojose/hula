@@ -1152,7 +1152,7 @@ extension HLBarterScreenViewController: HLBarterScreenDelegate{
             trade.other_products = generateProductArray(from: myTradedProducts)
             trade.owner_products = generateProductArray(from: otherTradedProducts)
         }
-        
+        trade.other_agree = thisTrade.other_agree
         trade.turn_user_id = thisTrade.turn_user_id
         trade.tradeId = thisTrade.tradeId
         trade.owner_money = thisTrade.owner_money

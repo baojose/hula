@@ -667,6 +667,13 @@ class HLSwappViewController: UIViewController {
                         print("owner ready \(tr.owner_ready)");
                         print("other ready \(tr.other_ready)");
                         self.manageCheckMarks(trade: tr);
+                        
+                        if tr.other_agree {
+                            self.otherUserView.alpha = 1
+                        } else {
+                            self.otherUserView.alpha = 0.3
+                        }
+                        
                     }
                     
                     if chat_count > 0 {
@@ -681,8 +688,10 @@ class HLSwappViewController: UIViewController {
                         if (bids.count == 1 && thisTrade.object(forKey: "turn_user_id") as? String == HulaUser.sharedInstance.userId ){
                             // first turn
                             self.chatButton.alpha = 0.3
+                            self.otherOfferBtn.alpha = 0.3
                         } else {
                             self.chatButton.alpha = 1
+                            self.otherOfferBtn.alpha = 1
                         }
                     }
                     
