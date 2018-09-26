@@ -37,7 +37,6 @@ class HLProductPictureEditViewController: BaseViewController, UIImagePickerContr
 
     override func viewDidLoad() {
         super.viewDidLoad()
-
         // Do any additional setup after loading the view.
         self.initView()
         self.initCamera()
@@ -50,6 +49,10 @@ class HLProductPictureEditViewController: BaseViewController, UIImagePickerContr
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        self.checkPermission()
     }
     
 
@@ -78,13 +81,39 @@ class HLProductPictureEditViewController: BaseViewController, UIImagePickerContr
         }
     }
     
+    func checkPermission() {
+        let photoAuthorizationStatus = PHPhotoLibrary.authorizationStatus()
+        switch photoAuthorizationStatus {
+        case .authorized:
+            print("Access is granted by user")
+        case .notDetermined:
+            PHPhotoLibrary.requestAuthorization({
+                (newStatus) in
+                print("status is \(newStatus)")
+                if newStatus ==  PHAuthorizationStatus.authorized {
+                    /* do stuff here */
+                    print("success")
+                }
+            })
+            print("It is not determined until now")
+        case .restricted:
+            // same same
+            print("User do not have access to photo album.")
+        case .denied:
+            // same same
+            print("User has denied the permission.")
+        }
+    }
+    
+    
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [String : Any]) {
         let chosenImage = info[UIImagePickerControllerOriginalImage] as! UIImage //2
         let croppedImage:UIImage = self.commonUtils.cropImage(chosenImage, HulaConstants.product_image_thumb_size)
         // save the image
-        uploadImage(croppedImage)
-        //dismiss(animated:true, completion: nil) //5
-        dismissToPreviousPage(croppedImage)
+        self.stopSession()
+        dismiss(animated:true, completion: nil)
+        self.uploadImage(croppedImage) //5
+        //dismissToPreviousPage(croppedImage)
     }
     func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
         dismiss(animated: true, completion: nil)
@@ -145,6 +174,7 @@ class HLProductPictureEditViewController: BaseViewController, UIImagePickerContr
     
     
     func openImagePicker(){
+        picker.delegate = self;
         picker.allowsEditing = false
         picker.sourceType = .photoLibrary
         picker.mediaTypes = UIImagePickerController.availableMediaTypes(for: .photoLibrary)!
@@ -160,9 +190,10 @@ class HLProductPictureEditViewController: BaseViewController, UIImagePickerContr
                     
                     if let cameraImage = UIImage(data: imageData) {
                         
+                        let croppedImage:UIImage = self.commonUtils.cropImage(cameraImage, HulaConstants.product_image_thumb_size)
                         self.stopSession()
                         // save this image
-                        self.uploadImage(cameraImage)
+                        self.uploadImage(croppedImage)
                     }
                 }
             })
@@ -172,15 +203,15 @@ class HLProductPictureEditViewController: BaseViewController, UIImagePickerContr
     
     func uploadImage(_ image:UIImage) {
         //print("Getting user info...")
-        //print("Uploading images...")
+        print("Uploading images...")
         dataManager.uploadImage(image, itemPosition: positionToReplace, taskCallback: { (ok, json) in
             if (ok){
-                //print("Uploaded!")
+                print("Uploaded!")
                 DispatchQueue.main.async {
                     if let dictionary = json as? [String: Any] {
                         //print(dictionary)
                         if let filePath:String = dictionary["path"] as? String {
-                            print(filePath)
+                            //print(filePath)
                             if let pos = dictionary["position"] as? String {
                                 //print(pos)
                                 self.resultingImage = HulaConstants.staticServerURL + filePath
@@ -190,7 +221,6 @@ class HLProductPictureEditViewController: BaseViewController, UIImagePickerContr
                                 self.prodDelegate?.imageUploaded(path:self.resultingImage, pos: Int(pos)! )
                                 
                                 //print("sent to delegate")
-                                self.dismissToPreviousPage(self.resultingImage)
                                 //print("dismiss")
                             }
                         }
@@ -201,6 +231,8 @@ class HLProductPictureEditViewController: BaseViewController, UIImagePickerContr
                 print("Connection error")
             }
         });
+        
+        self.dismissToPreviousPage(self.resultingImage)
     }
 }
 
