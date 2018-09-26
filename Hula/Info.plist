@@ -15,7 +15,7 @@
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
-	<string>1.0.23</string>
+	<string>1.0.24</string>
 	<key>CFBundleURLTypes</key>
 	<array>
 		<dict>
@@ -23,12 +23,12 @@
 			<array>
 				<string>li4885023</string>
 				<string>fb128854257665971</string>
-                <string>twitterkit-IpvhOe7ZlcvPiAOAC8UGeFZFA</string>
+				<string>twitterkit-IpvhOe7ZlcvPiAOAC8UGeFZFA</string>
 			</array>
 		</dict>
 	</array>
 	<key>CFBundleVersion</key>
-	<string>23</string>
+	<string>24</string>
 	<key>Fabric</key>
 	<dict>
 		<key>APIKey</key>
@@ -69,8 +69,8 @@
 		<string>fb-messenger-api</string>
 		<string>fbauth2</string>
 		<string>fbshareextension</string>
-        <string>twitter</string>
-        <string>twitterauth</string>
+		<string>twitter</string>
+		<string>twitterauth</string>
 	</array>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
