@@ -940,7 +940,8 @@ extension HLSwappViewController: AlertDelegate{
     }
     
     func shareHula(){
-        
+        /*
+        // Facebook app invite no longer supported
         let alert = UIAlertController(title: NSLocalizedString("Sharing", comment: ""), message: NSLocalizedString("Please choose a sharing method", comment: ""), preferredStyle: UIAlertControllerStyle.alert)
         alert.addAction(UIAlertAction(title: "Facebook", style: UIAlertActionStyle.default){
             UIAlertAction in
@@ -951,6 +952,8 @@ extension HLSwappViewController: AlertDelegate{
             self.shareHulaStandard()
         })
         self.present(alert, animated: true, completion: nil)
+         */
+        self.shareHulaStandard()
     }
     
     func shareHulaFB(){
