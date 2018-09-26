@@ -8,12 +8,15 @@ target 'Hula' do
   
   # Pods for Hula
 
-  pod 'FacebookCore'
-  pod 'FacebookLogin'
-  pod 'FacebookShare'
-  pod 'Fabric'
+  pod 'FBSDKCoreKit', '= 4.22.1'
+  pod 'FBSDKLoginKit', '= 4.22.1'
+  pod 'FBSDKShareKit', '= 4.22.1'
+  pod 'FacebookCore', '= 0.2.0'
+  pod 'FacebookLogin', '= 0.2.0'
+  pod 'FacebookShare', '= 0.2.0'
+  pod 'Fabric', '= 1.6.11'
   pod 'TwitterKit'
-  pod 'Crashlytics'
+  pod 'Crashlytics', '= 3.8.4'
   pod 'LinkedinSwift', '>= 1.6.2'
   pod 'EasyTipView', '~> 1.0.2'
   pod 'BRYXBanner'

@@ -757,7 +757,7 @@ class HLSwappViewController: UIViewController {
                 self.extraRoomImage.alpha = 1
                 self.nextTradeBtn.alpha = 1
                  */
-                if HulaUser.sharedInstance.maxTrades >= 5{
+                if HulaUser.sharedInstance.maxTrades >= 50{
                     self.addTradeRoomBtn.alpha = 0.3
                 } else {
                     self.addTradeRoomBtn.alpha = 1;
@@ -993,7 +993,7 @@ extension HLSwappViewController: AlertDelegate{
     }
     
     func addExtraRoom(){
-        if (HulaUser.sharedInstance.maxTrades<5){
+        if (HulaUser.sharedInstance.maxTrades<50){
             HulaUser.sharedInstance.maxTrades += 1
             HulaUser.sharedInstance.updateServerData()
             HLDataManager.sharedInstance.writeUserData()

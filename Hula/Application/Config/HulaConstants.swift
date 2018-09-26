@@ -41,4 +41,7 @@ struct HulaConstants {
     
     // local storage
     static let userFile: String = "UserData"
+    
+    static let twitterKey: String = "IpvhOe7ZlcvPiAOAC8UGeFZFA";
+    static let twitterSecret: String = "yGJI3jSuVNFbls9RNujHhC3sc19KDbhCRJsAg3QQpWBQ2cmOhU";
 }

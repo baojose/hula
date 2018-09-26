@@ -221,9 +221,10 @@ class HLProfileViewController: BaseViewController {
     
     
     func twitterValidate(){
-        Twitter.sharedInstance().logIn(completion: { (session, error) in
-            //print("Session open...")
-            
+        //print("Opening twitter...")
+        TWTRTwitter.sharedInstance().logIn(completion: { (session, error) in
+            //print("Session open!")
+            //print(session)
             if let unwrappedSession = session {
                 //print("Twitter ok!")
                 //print(unwrappedSession);
