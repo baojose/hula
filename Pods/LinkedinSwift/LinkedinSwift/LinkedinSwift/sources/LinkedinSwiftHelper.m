@@ -78,12 +78,19 @@
         __block LinkedinSwiftHelper *this = self;
         LinkedinSwiftAuthRequestSuccessCallback __successCallback = ^(LSLinkedinToken * _Nonnull token) {
             this->lsAccessToken = token;
-            successCallback(lsAccessToken);
+            successCallback(this->lsAccessToken);
         };
         
         NSObject<LinkedinClient> *client = [checker isLinkedinAppInstalled] ? nativeClient : webClient;
         [client authorizeSuccess:__successCallback error:errorCallback cancel:cancelCallback];
     }
+}
+
+- (void)logout {
+    lsAccessToken = nil;
+    /// logout all sessions
+    [nativeClient logout];
+    [webClient logout];
 }
 
 #pragma mark -

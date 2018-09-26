@@ -107,7 +107,8 @@ class HLSignUpViewController: UserBaseViewController, UITextFieldDelegate  {
     }
     
     func checkUsernick(nick:String){
-        let queryURL = HulaConstants.apiURL + "users/validatenick/\(nick)"
+        let escaped = nick.addingPercentEncoding(withAllowedCharacters: .alphanumerics)
+        let queryURL = HulaConstants.apiURL + "users/validatenick/\( escaped! )"
         //print(queryURL)
         
         HLDataManager.sharedInstance.httpGet(urlstr: queryURL, taskCallback: { (ok, json) in

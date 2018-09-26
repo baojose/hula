@@ -14,7 +14,7 @@ import FBSDKShareKit
 import FacebookCore
 import FacebookLogin
 import FacebookShare
-import Fabric
+//import Fabric
 import TwitterKit
 import Crashlytics
 import LinkedinSwift
@@ -44,8 +44,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // Remove before app release.
         //gai.logger.logLevel = .verbose;
         
-        Fabric.with([Twitter.self, Crashlytics.self])
-
+        //Fabric.with([Crashlytics.self])
+        TWTRTwitter.sharedInstance().start(withConsumerKey:HulaConstants.twitterKey, consumerSecret:HulaConstants.twitterSecret)
+    
         
         return FBSDKApplicationDelegate.sharedInstance().application(application, didFinishLaunchingWithOptions: launchOptions)
     }
@@ -86,17 +87,26 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
 
     func application(_ app: UIApplication, open url: URL, options: [UIApplicationOpenURLOptionsKey : Any] = [:]) -> Bool {
-        
         if LinkedinSwiftHelper.shouldHandle(url) {
             if #available(iOS 9.0, *) {
                 return LinkedinSwiftHelper.application(app, open: url, sourceApplication: options[UIApplicationOpenURLOptionsKey.sourceApplication] as? String, annotation: options[UIApplicationOpenURLOptionsKey.annotation])
             }
         }
         
+        let ttrsession = TWTRTwitter.sharedInstance().application(app, open: url, options: options);
+        if ttrsession {
+            return true
+        }
+        
+        
         if #available(iOS 9.0, *) {
             let isHandled = FBSDKApplicationDelegate.sharedInstance().application(app, open: url, sourceApplication: options[.sourceApplication] as! String!, annotation: options[.annotation])
             return isHandled
         }
+        
+        // manual hack to check twitter validation
+        //if url.pathComponents
+        
         return false
     }
     func registerForPushNotifications() {

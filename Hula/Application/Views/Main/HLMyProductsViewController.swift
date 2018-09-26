@@ -144,7 +144,7 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
         
         cell.warningView.isHidden = false
         if (product.productDescription != ""){
-            cell.warningView.isHidden = true
+            //cell.warningView.isHidden = true
         }
         let titleHeight: CGFloat! = commonUtils.heightString(width: cell.productDescription.frame.size.width, font: cell.productDescription.font, string: cell.productDescription.text!)
         cell.productDescription.frame = CGRect(x: cell.productDescription.frame.origin.x, y:(cell.contentView.frame.size.height - titleHeight) / 2.0, width: cell.productDescription.frame.size.width, height: titleHeight)
@@ -162,7 +162,7 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
         }
         
         let product : HulaProduct = self.arrayProducts[order_sorted]
-        if (product.productDescription == "" ){
+        if (product.productDescription == "" ) {
             // product is incomplete
             let viewController = self.storyboard?.instantiateViewController(withIdentifier: "completeProductProfilePage") as! HLCompleteProductProfileViewController
             self.dataManager.newProduct = product
