@@ -212,6 +212,9 @@ class HLEditProductMainViewController: BaseViewController, ProductPictureDelegat
         }
         redrawProductImages()
         product.updateServerData()
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2) { // change 2 to desired number of seconds
+            self.redrawProductImages()
+        }
     }
 }
 

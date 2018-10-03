@@ -13,6 +13,7 @@
 		271533421F07C15600E5F319 /* KDDragAndDropCollectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 271533401F07C15600E5F319 /* KDDragAndDropCollectionView.swift */; };
 		271533431F07C15600E5F319 /* KDDragAndDropManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 271533411F07C15600E5F319 /* KDDragAndDropManager.swift */; };
 		271533451F07C85200E5F319 /* HLProductCollectionViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 271533441F07C85200E5F319 /* HLProductCollectionViewCell.swift */; };
+		271E8CB1215C372200E3A8D3 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 271E8CB0215C372100E3A8D3 /* GoogleService-Info.plist */; };
 		271F5C5A1EDAD90C00A7B1C1 /* HulaTrade.swift in Sources */ = {isa = PBXBuildFile; fileRef = 271F5C591EDAD90C00A7B1C1 /* HulaTrade.swift */; };
 		2723C6721F9D53FF00DABF7A /* HLSellerHorizontalViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2723C6711F9D53FF00DABF7A /* HLSellerHorizontalViewController.swift */; };
 		272720431EBA9BE90084CF3C /* HLWelcomeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 272720421EBA9BE90084CF3C /* HLWelcomeViewController.swift */; };
@@ -132,6 +133,7 @@
 		271533401F07C15600E5F319 /* KDDragAndDropCollectionView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = KDDragAndDropCollectionView.swift; sourceTree = "<group>"; };
 		271533411F07C15600E5F319 /* KDDragAndDropManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = KDDragAndDropManager.swift; sourceTree = "<group>"; };
 		271533441F07C85200E5F319 /* HLProductCollectionViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HLProductCollectionViewCell.swift; sourceTree = "<group>"; };
+		271E8CB0215C372100E3A8D3 /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		271F5C591EDAD90C00A7B1C1 /* HulaTrade.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HulaTrade.swift; sourceTree = "<group>"; };
 		2723C6711F9D53FF00DABF7A /* HLSellerHorizontalViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HLSellerHorizontalViewController.swift; sourceTree = "<group>"; };
 		272720421EBA9BE90084CF3C /* HLWelcomeViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HLWelcomeViewController.swift; sourceTree = "<group>"; };
@@ -358,6 +360,7 @@
 		F83186121E6FABBA00DD61FA /* Hula */ = {
 			isa = PBXGroup;
 			children = (
+				271E8CB0215C372100E3A8D3 /* GoogleService-Info.plist */,
 				27D437E11F10FC73006E645B /* Hula.entitlements */,
 				F83186171E6FABBA00DD61FA /* Main.storyboard */,
 				274966C52048215D00B745BA /* Localizable.strings */,
@@ -752,6 +755,7 @@
 				F8BE7C401E7237A100FAE07D /* BebasNeue Bold.otf in Resources */,
 				F8BE7C441E7237A100FAE07D /* BebasNeue Thin.otf in Resources */,
 				F890E4941E70937D008719B9 /* splash_intro.mp4 in Resources */,
+				271E8CB1215C372200E3A8D3 /* GoogleService-Info.plist in Resources */,
 				F83186211E6FABBA00DD61FA /* LaunchScreen.storyboard in Resources */,
 				274966C72048215D00B745BA /* Localizable.strings in Resources */,
 				F831861E1E6FABBA00DD61FA /* Assets.xcassets in Resources */,
