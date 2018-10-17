@@ -193,7 +193,8 @@ class HLPictureSelectViewController: BaseViewController, UIImagePickerController
                         
                         self.stopSession()
                         // save this image
-                        self.uploadImage(cameraImage)
+                        let croppedImage:UIImage = self.commonUtils.cropImage(cameraImage, HulaConstants.product_image_thumb_size)
+                        self.uploadImage(croppedImage)
                     }
                 }
             })
