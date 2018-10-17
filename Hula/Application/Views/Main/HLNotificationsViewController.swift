@@ -186,9 +186,11 @@ class HLNotificationsViewController: BaseViewController, UITableViewDelegate, UI
         
         if let user_id = notification.object(forKey: "from_id") as? String{
             let tradeId = HLDataManager.sharedInstance.getTradeWith(user_id)
+            print("tradeId \(tradeId)");
             if tradeId != "" {
                 // close trade
-                let queryURL = HulaConstants.apiURL + "trades/\(tradeId)/agree"
+                let queryURL = HulaConstants.apiURL + "trades/\(tradeId)/agree";
+                print("queryURL \(queryURL)");
                 HLDataManager.sharedInstance.httpGet(urlstr: queryURL, taskCallback: { (ok, json) in
                     if (ok){
                         //print(json!)
