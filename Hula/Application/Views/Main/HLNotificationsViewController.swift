@@ -183,9 +183,11 @@ class HLNotificationsViewController: BaseViewController, UITableViewDelegate, UI
         if let notification_id = notification.object(forKey: "_id") as? String{
             markAsReadNotification(notification_id)
         }
-        
+        print("Accept pressed")
         if let user_id = notification.object(forKey: "from_id") as? String{
             let tradeId = HLDataManager.sharedInstance.getTradeWith(user_id)
+            print("Trade id \(tradeId)")
+            print("User id \(user_id)")
             if tradeId != "" {
                 // close trade
                 let queryURL = HulaConstants.apiURL + "trades/\(tradeId)/agree"

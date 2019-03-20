@@ -129,7 +129,9 @@ class HLDataManager: NSObject {
                                 }
                             }
                             if st != HulaConstants.end_status && st != HulaConstants.cancel_status && !hideFromDashboard {
+                                // status not ended and not cancelled and not agreed
                                 if  (st != HulaConstants.pending_status || trade.object(forKey: "turn_user_id") as! String == HulaUser.sharedInstance.userId) {
+                                    // status not pending
                                     self.arrCurrentTrades.append(trade)
                                 }
                             } else {
