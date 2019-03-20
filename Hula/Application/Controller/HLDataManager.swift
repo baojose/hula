@@ -275,7 +275,7 @@ class HLDataManager: NSObject {
         for tr in self.arrTrades {
             if let trade = tr as? [String:Any] {
                 if let agreed = trade["other_agree"] as? Bool {
-                    if !agreed && trade["owner_id"] as! String == user_id && (trade["status"] as! String == HulaConstants.sent_status)  {
+                    if !agreed && trade["owner_id"] as! String == user_id && ((trade["status"] as! String == HulaConstants.sent_status) || (trade["status"] as! String == HulaConstants.pending_status)) {
                         return trade["_id"] as! String
                     }
                 }

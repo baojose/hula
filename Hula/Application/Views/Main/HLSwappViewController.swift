@@ -605,6 +605,8 @@ class HLSwappViewController: UIViewController {
                             
                             self.sendOfferBtn.setTitle( NSLocalizedString("I received my stuff", comment: ""), for: .normal)
                             self.sendOfferBtn.tag = kTagProductsReceived
+                            
+                            self.otherOfferBtn.alpha = 0;
                         } else {
                             // still bartering
                             
@@ -746,6 +748,9 @@ class HLSwappViewController: UIViewController {
                 }
             }
             
+            if self.sendOfferBtn.tag == kTagProductsReceived {
+                self.otherOfferBtn.alpha = 0;
+            }
             
         } else {
             // index == 0
