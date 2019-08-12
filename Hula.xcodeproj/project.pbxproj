@@ -158,6 +158,9 @@
 		275BCF0A1F79A516000F0D95 /* HLResetSentViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HLResetSentViewController.swift; sourceTree = "<group>"; };
 		275C554F1EA3FB5A00A49051 /* UserData.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = UserData.plist; sourceTree = "<group>"; };
 		277C6C421EA2385B00530B0F /* HLRoundedButton.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HLRoundedButton.swift; sourceTree = "<group>"; };
+		2781D1942301E925000C5E9C /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = de; path = de.lproj/Main.strings; sourceTree = "<group>"; };
+		2781D1952301E926000C5E9C /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = de; path = de.lproj/LaunchScreen.strings; sourceTree = "<group>"; };
+		2781D1962301E926000C5E9C /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = de; path = de.lproj/Localizable.strings; sourceTree = "<group>"; };
 		278988FA1ED7933600C0FBA9 /* HLCalculatorViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HLCalculatorViewController.swift; sourceTree = "<group>"; };
 		2789E2E11FCB5293008D9426 /* HLFinalFeedbackViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HLFinalFeedbackViewController.swift; sourceTree = "<group>"; };
 		278F77871F88D87B00411D66 /* HLPastTradeViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HLPastTradeViewController.swift; sourceTree = "<group>"; };
@@ -728,6 +731,7 @@
 				en,
 				Base,
 				es,
+				de,
 			);
 			mainGroup = F83186071E6FABB900DD61FA;
 			productRefGroup = F83186111E6FABBA00DD61FA /* Products */;
@@ -1039,6 +1043,7 @@
 			children = (
 				274966C62048215D00B745BA /* Base */,
 				274966C82048216A00B745BA /* es */,
+				2781D1962301E926000C5E9C /* de */,
 			);
 			name = Localizable.strings;
 			sourceTree = "<group>";
@@ -1048,6 +1053,7 @@
 			children = (
 				F83186181E6FABBA00DD61FA /* Base */,
 				274966C32048208000B745BA /* es */,
+				2781D1942301E925000C5E9C /* de */,
 			);
 			name = Main.storyboard;
 			sourceTree = "<group>";
@@ -1057,6 +1063,7 @@
 			children = (
 				F83186201E6FABBA00DD61FA /* Base */,
 				274966C42048208000B745BA /* es */,
+				2781D1952301E926000C5E9C /* de */,
 			);
 			name = LaunchScreen.storyboard;
 			sourceTree = "<group>";
