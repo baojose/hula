@@ -10,6 +10,7 @@
 "User email already exists! Please use the login form." = "El email del usuario ya existe. Por favor, utiliza el formulario de identificación.";
 "Server response unexpected" = "Respuesta del servidor inesperada";
 "miles" = "millas";
+"kilometers" = "km";
 "Notification" = "Notificación";
 "years ago" = "años atrás";
 "1 year ago" = "hace 1 año";

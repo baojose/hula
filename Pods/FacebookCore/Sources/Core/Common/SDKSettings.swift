@@ -140,21 +140,21 @@ extension SDKSettings {
    Current logging behaviors of Facebook SDK.
    The default enabled behavior is `.DeveloperErrors` only.
    */
-  public static var enabledLoggingBehaviors: Set<SDKLoggingBehavior> {
-    get {
-      let behaviors = FBSDKSettings.loggingBehavior().flatMap { object -> SDKLoggingBehavior? in
-        if let value = object as? String {
-          return SDKLoggingBehavior(sdkStringValue: value)
+    public static var enabledLoggingBehaviors: Set<SDKLoggingBehavior> {
+        get {
+            let behaviors = FBSDKSettings.loggingBehavior().compactMap { object -> SDKLoggingBehavior? in
+                if let value = object as? String {
+                    return SDKLoggingBehavior(sdkStringValue: value)
+                }
+                return nil
+            }
+            return Set(behaviors)
         }
-        return nil
-      }
-      return Set(behaviors)
+        set {
+            let behaviors = newValue.map({ $0.sdkStringValue })
+            FBSDKSettings.setLoggingBehavior(Set(behaviors))
+        }
     }
-    set {
-      let behaviors = newValue.map({ $0.sdkStringValue })
-      FBSDKSettings.setLoggingBehavior(Set(behaviors))
-    }
-  }
 
   /**
    Enable a particular Facebook SDK logging behavior.

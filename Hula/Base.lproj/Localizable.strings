@@ -13,6 +13,7 @@
 "User email already exists! Please use the login form." = "User email already exists! Please use the login form.";
 "Server response unexpected" = "Server response unexpected.";
 "miles" = "miles";
+"kilometers" = "km";
 "Notification" = "Notification";
 "years ago" = "years ago";
 "1 year ago" = "1 year ago";
