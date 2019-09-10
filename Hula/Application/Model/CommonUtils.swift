@@ -110,22 +110,32 @@ class CommonUtils: NSObject, EasyTipViewDelegate, UIGestureRecognizerDelegate {
         if let userLocation = HulaUser.sharedInstance.location {
             let distanceInMeters = coordinate₀.distance(from: userLocation) // result is in meters
             
-            var distance = round( distanceInMeters / 1609 )
+            var distance = round( distanceInMeters / 1609 );
+            var dist_unit = NSLocalizedString("miles", comment: "");
+            if (!inUSA(HulaUser.sharedInstance.location)){
+                distance = round( distanceInMeters / 1000 );
+                dist_unit = NSLocalizedString("kilometers", comment: "");
+            }
             if (distance<1){
-                distance = round( distanceInMeters / 161 ) / 10
+                distance = round( distance*10 ) / 10;
             } else {
                 if (distance>1000){
                     //distance = distance
                     //return "Too far"
-                    return "\(Int(distance)) " + NSLocalizedString("miles", comment: "")
+                    return "\(Int(distance)) " + dist_unit
                 }
             }
-            return "\(distance) " + NSLocalizedString("miles", comment: "")
+            return "\(distance) " + dist_unit
         } else {
             return "-"
         }
     }
-    
+    func inUSA(_ loc:CLLocation) -> Bool{
+        if (loc.coordinate.longitude < -50) && (loc.coordinate.longitude > -170){
+            return true
+        }
+        return false;
+    }
     func getCGDistanceFrom(loc:CLLocation) -> CGFloat{
         if let userLocation = HulaUser.sharedInstance.location {
             let distanceInMeters:CGFloat = CGFloat(loc.distance(from: userLocation)) // result is in meters
@@ -454,7 +464,7 @@ extension String {
     subscript (r: Range<Int>) -> String {
         let start = index(startIndex, offsetBy: r.lowerBound)
         let end = index(startIndex, offsetBy: r.upperBound)
-        return self[Range(start ..< end)]
+        return self[start ..< end]
     }
 }
 

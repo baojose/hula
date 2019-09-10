@@ -120,6 +120,7 @@ class HLEditFieldViewController: BaseViewController, UITextFieldDelegate, UIText
         let userLocation:CLLocation = locations[0]
         let long = userLocation.coordinate.longitude;
         let lat = userLocation.coordinate.latitude;
+        print(userLocation)
         
         //print(long, lat)
         userData.location = CLLocation(latitude:lat, longitude:long);
@@ -135,11 +136,11 @@ class HLEditFieldViewController: BaseViewController, UITextFieldDelegate, UIText
         geoCoder.reverseGeocodeLocation(location) {
             (placemarks, error) -> Void in
             
-            let placeArray = placemarks as [CLPlacemark]!
+            let placeArray: [CLPlacemark] = placemarks as [CLPlacemark]!
             
             // Place details
             var placeMark: CLPlacemark!
-            placeMark = placeArray?[0]
+            placeMark = placeArray[0]
             
             // Address dictionary
             //print(placeMark.addressDictionary)
