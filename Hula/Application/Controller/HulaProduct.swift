@@ -101,8 +101,16 @@ class HulaProduct: NSObject {
                 }
             }
         }
-        if let tmp = with.object(forKey: "location") as? [Float] {
-            productLocation = CLLocation(latitude: CLLocationDegrees(tmp[0]), longitude: CLLocationDegrees(tmp[1]))
+        print (with.object(forKey: "location") as? [Any])
+        if let tmp = with.object(forKey: "location") as? [Any] {
+            let lat = tmp[0] as? Double
+            let lon = tmp[1] as? Double
+            print(Float(lat!))
+            
+            if (lat != nil && lon != nil){
+                productLocation = CLLocation(latitude: CLLocationDegrees(Float(lat!)), longitude: CLLocationDegrees(Float(lon!)))
+            }
+ 
         }
     }
     
