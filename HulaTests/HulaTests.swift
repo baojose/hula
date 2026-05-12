@@ -35,13 +35,13 @@ class HulaTests: XCTestCase {
                 NSNumber(value: -71.987654321)
             ]
         ]
-        
+
         product.populate(with: payload)
-        
+
         XCTAssertEqual(product.productLocation.coordinate.latitude, 42.123456789, accuracy: 0.000000001)
         XCTAssertEqual(product.productLocation.coordinate.longitude, -71.987654321, accuracy: 0.000000001)
     }
-    
+
     func testProductPopulateAcceptsStringLocationValues() {
         let product = HulaProduct()
         let payload: NSDictionary = [
@@ -50,13 +50,13 @@ class HulaTests: XCTestCase {
                 "-71.987654321"
             ]
         ]
-        
+
         product.populate(with: payload)
-        
+
         XCTAssertEqual(product.productLocation.coordinate.latitude, 42.123456789, accuracy: 0.000000001)
         XCTAssertEqual(product.productLocation.coordinate.longitude, -71.987654321, accuracy: 0.000000001)
     }
-    
+
     func testProductPopulateIgnoresInvalidLocationValues() {
         let product = HulaProduct()
         let originalLatitude = product.productLocation.coordinate.latitude
@@ -67,13 +67,13 @@ class HulaTests: XCTestCase {
                 "-71.987654321"
             ]
         ]
-        
+
         product.populate(with: payload)
-        
+
         XCTAssertEqual(product.productLocation.coordinate.latitude, originalLatitude)
         XCTAssertEqual(product.productLocation.coordinate.longitude, originalLongitude)
     }
-    
+
     func testProductPopulateIgnoresIncompleteLocationValues() {
         let product = HulaProduct()
         let originalLatitude = product.productLocation.coordinate.latitude
@@ -83,13 +83,13 @@ class HulaTests: XCTestCase {
                 NSNumber(value: 42.123456789)
             ]
         ]
-        
+
         product.populate(with: payload)
-        
+
         XCTAssertEqual(product.productLocation.coordinate.latitude, originalLatitude)
         XCTAssertEqual(product.productLocation.coordinate.longitude, originalLongitude)
     }
-    
+
     func testPerformanceExample() {
         // This is an example of a performance test case.
         self.measure {
