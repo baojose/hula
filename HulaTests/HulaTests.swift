@@ -7,6 +7,7 @@
 //
 
 import XCTest
+import CoreLocation
 @testable import Hula
 
 class HulaTests: XCTestCase {
@@ -24,6 +25,69 @@ class HulaTests: XCTestCase {
     func testExample() {
         // This is an example of a functional test case.
         // Use XCTAssert and related functions to verify your tests produce the correct results.
+    }
+    
+    func testProductPopulateAcceptsNumericLocationValues() {
+        let product = HulaProduct()
+        let payload: NSDictionary = [
+            "location": [
+                NSNumber(value: 42.123456789),
+                NSNumber(value: -71.987654321)
+            ]
+        ]
+        
+        product.populate(with: payload)
+        
+        XCTAssertEqual(product.productLocation.coordinate.latitude, 42.123456789, accuracy: 0.000000001)
+        XCTAssertEqual(product.productLocation.coordinate.longitude, -71.987654321, accuracy: 0.000000001)
+    }
+    
+    func testProductPopulateAcceptsStringLocationValues() {
+        let product = HulaProduct()
+        let payload: NSDictionary = [
+            "location": [
+                "42.123456789",
+                "-71.987654321"
+            ]
+        ]
+        
+        product.populate(with: payload)
+        
+        XCTAssertEqual(product.productLocation.coordinate.latitude, 42.123456789, accuracy: 0.000000001)
+        XCTAssertEqual(product.productLocation.coordinate.longitude, -71.987654321, accuracy: 0.000000001)
+    }
+    
+    func testProductPopulateIgnoresInvalidLocationValues() {
+        let product = HulaProduct()
+        let originalLatitude = product.productLocation.coordinate.latitude
+        let originalLongitude = product.productLocation.coordinate.longitude
+        let payload: NSDictionary = [
+            "location": [
+                "not-a-coordinate",
+                "-71.987654321"
+            ]
+        ]
+        
+        product.populate(with: payload)
+        
+        XCTAssertEqual(product.productLocation.coordinate.latitude, originalLatitude)
+        XCTAssertEqual(product.productLocation.coordinate.longitude, originalLongitude)
+    }
+    
+    func testProductPopulateIgnoresIncompleteLocationValues() {
+        let product = HulaProduct()
+        let originalLatitude = product.productLocation.coordinate.latitude
+        let originalLongitude = product.productLocation.coordinate.longitude
+        let payload: NSDictionary = [
+            "location": [
+                NSNumber(value: 42.123456789)
+            ]
+        ]
+        
+        product.populate(with: payload)
+        
+        XCTAssertEqual(product.productLocation.coordinate.latitude, originalLatitude)
+        XCTAssertEqual(product.productLocation.coordinate.longitude, originalLongitude)
     }
     
     func testPerformanceExample() {
