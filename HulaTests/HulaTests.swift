@@ -11,26 +11,27 @@ import XCTest
 
 class HulaTests: XCTestCase {
     
-    override func setUp() {
-        super.setUp()
-        // Put setup code here. This method is called before the invocation of each test method in the class.
+    func testProductPopulateAcceptsDoubleLocationCoordinates() {
+        let product = HulaProduct()
+        let payload: NSDictionary = [
+            "location": [37.7749295, -122.4194155]
+        ]
+
+        product.populate(with: payload)
+
+        XCTAssertEqual(product.productLocation.coordinate.latitude, 37.7749295, accuracy: 0.00001)
+        XCTAssertEqual(product.productLocation.coordinate.longitude, -122.4194155, accuracy: 0.00001)
     }
-    
-    override func tearDown() {
-        // Put teardown code here. This method is called after the invocation of each test method in the class.
-        super.tearDown()
-    }
-    
-    func testExample() {
-        // This is an example of a functional test case.
-        // Use XCTAssert and related functions to verify your tests produce the correct results.
-    }
-    
-    func testPerformanceExample() {
-        // This is an example of a performance test case.
-        self.measure {
-            // Put the code you want to measure the time of here.
-        }
+
+    func testProductPopulateFiltersEmptyImageLinks() {
+        let product = HulaProduct()
+        let payload: NSDictionary = [
+            "images": ["front.jpg", "", "side.jpg", ""]
+        ]
+
+        product.populate(with: payload)
+
+        XCTAssertEqual(product.arrProductPhotoLink, ["front.jpg", "side.jpg"])
     }
     
 }
