@@ -7,6 +7,7 @@
 //
 
 import XCTest
+import CoreLocation
 @testable import Hula
 
 class HulaTests: XCTestCase {
@@ -21,16 +22,22 @@ class HulaTests: XCTestCase {
         super.tearDown()
     }
     
-    func testExample() {
-        // This is an example of a functional test case.
-        // Use XCTAssert and related functions to verify your tests produce the correct results.
+    func testProductPopulateAcceptsFloatLocationValues() {
+        let product = HulaProduct()
+        
+        product.populate(with: ["location": [Float(40.4168), Float(-3.7038)]] as NSDictionary)
+        
+        XCTAssertEqual(product.productLocation.coordinate.latitude, CLLocationDegrees(Float(40.4168)), accuracy: 0.0001)
+        XCTAssertEqual(product.productLocation.coordinate.longitude, CLLocationDegrees(Float(-3.7038)), accuracy: 0.0001)
     }
     
-    func testPerformanceExample() {
-        // This is an example of a performance test case.
-        self.measure {
-            // Put the code you want to measure the time of here.
-        }
+    func testProductPopulateIgnoresInvalidLocationValues() {
+        let product = HulaProduct()
+        
+        product.populate(with: ["location": [NSNull(), NSNull()]] as NSDictionary)
+        
+        XCTAssertEqual(product.productLocation.coordinate.latitude, 0.0, accuracy: 0.0001)
+        XCTAssertEqual(product.productLocation.coordinate.longitude, 0.0, accuracy: 0.0001)
     }
     
 }
