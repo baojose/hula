@@ -7,30 +7,57 @@
 //
 
 import XCTest
+import CoreLocation
 @testable import Hula
 
 class HulaTests: XCTestCase {
     
-    override func setUp() {
-        super.setUp()
-        // Put setup code here. This method is called before the invocation of each test method in the class.
+    func testProductPopulatePreservesHighPrecisionLocationCoordinates() {
+        let product = HulaProduct()
+        let latitude = 37.7749295123
+        let longitude = -122.4194155123
+        let payload: NSDictionary = [
+            "location": [
+                NSNumber(value: latitude),
+                NSNumber(value: longitude)
+            ]
+        ]
+
+        product.populate(with: payload)
+
+        XCTAssertEqual(product.productLocation.coordinate.latitude, latitude, accuracy: 0.0000000001)
+        XCTAssertEqual(product.productLocation.coordinate.longitude, longitude, accuracy: 0.0000000001)
     }
-    
-    override func tearDown() {
-        // Put teardown code here. This method is called after the invocation of each test method in the class.
-        super.tearDown()
+
+    func testProductPopulateLeavesLocationUnchangedForIncompleteLocationArray() {
+        let product = HulaProduct()
+        product.productLocation = CLLocation(latitude: 10.5, longitude: -20.5)
+        let payload: NSDictionary = [
+            "location": [
+                NSNumber(value: 37.7749295123)
+            ]
+        ]
+
+        product.populate(with: payload)
+
+        XCTAssertEqual(product.productLocation.coordinate.latitude, 10.5, accuracy: 0.0000000001)
+        XCTAssertEqual(product.productLocation.coordinate.longitude, -20.5, accuracy: 0.0000000001)
     }
-    
-    func testExample() {
-        // This is an example of a functional test case.
-        // Use XCTAssert and related functions to verify your tests produce the correct results.
-    }
-    
-    func testPerformanceExample() {
-        // This is an example of a performance test case.
-        self.measure {
-            // Put the code you want to measure the time of here.
-        }
+
+    func testProductPopulateLeavesLocationUnchangedForNonNumericCoordinates() {
+        let product = HulaProduct()
+        product.productLocation = CLLocation(latitude: 10.5, longitude: -20.5)
+        let payload: NSDictionary = [
+            "location": [
+                "not-a-coordinate",
+                NSNumber(value: -122.4194155123)
+            ]
+        ]
+
+        product.populate(with: payload)
+
+        XCTAssertEqual(product.productLocation.coordinate.latitude, 10.5, accuracy: 0.0000000001)
+        XCTAssertEqual(product.productLocation.coordinate.longitude, -20.5, accuracy: 0.0000000001)
     }
     
 }
