@@ -26,6 +26,34 @@ class HulaTests: XCTestCase {
         // Use XCTAssert and related functions to verify your tests produce the correct results.
     }
     
+    func testProductPopulateReadsDoubleCoordinates() {
+        let product = HulaProduct()
+        
+        product.populate(with: ["location": [12.5, -45.25]] as NSDictionary)
+        
+        XCTAssertEqual(product.productLocation.coordinate.latitude, 12.5, accuracy: 0.000001)
+        XCTAssertEqual(product.productLocation.coordinate.longitude, -45.25, accuracy: 0.000001)
+    }
+    
+    func testProductPopulateReadsNumberCoordinates() {
+        let product = HulaProduct()
+        
+        product.populate(with: ["location": [NSNumber(value: 12.5), NSNumber(value: -45.25)]] as NSDictionary)
+        
+        XCTAssertEqual(product.productLocation.coordinate.latitude, 12.5, accuracy: 0.000001)
+        XCTAssertEqual(product.productLocation.coordinate.longitude, -45.25, accuracy: 0.000001)
+    }
+    
+    func testProductPopulateIgnoresMalformedCoordinates() {
+        let product = HulaProduct()
+        
+        product.populate(with: ["location": ["bad", NSNull()]] as NSDictionary)
+        product.populate(with: ["location": [12.5]] as NSDictionary)
+        
+        XCTAssertEqual(product.productLocation.coordinate.latitude, 0.0, accuracy: 0.000001)
+        XCTAssertEqual(product.productLocation.coordinate.longitude, 0.0, accuracy: 0.000001)
+    }
+    
     func testPerformanceExample() {
         // This is an example of a performance test case.
         self.measure {
