@@ -101,17 +101,29 @@ class HulaProduct: NSObject {
                 }
             }
         }
-        print (with.object(forKey: "location") as? [Any])
         if let tmp = with.object(forKey: "location") as? [Any] {
-            let lat = tmp[0] as? Double
-            let lon = tmp[1] as? Double
-            print(Float(lat!))
-            
-            if (lat != nil && lon != nil){
-                productLocation = CLLocation(latitude: CLLocationDegrees(Float(lat!)), longitude: CLLocationDegrees(Float(lon!)))
+            if tmp.count >= 2,
+                let lat = locationDegrees(from: tmp[0]),
+                let lon = locationDegrees(from: tmp[1]) {
+                productLocation = CLLocation(latitude: lat, longitude: lon)
             }
- 
         }
+    }
+
+    private func locationDegrees(from value: Any) -> CLLocationDegrees? {
+        if let value = value as? Double {
+            return CLLocationDegrees(value)
+        }
+        if let value = value as? Float {
+            return CLLocationDegrees(value)
+        }
+        if let value = value as? CGFloat {
+            return CLLocationDegrees(value)
+        }
+        if let value = value as? NSNumber {
+            return CLLocationDegrees(value.doubleValue)
+        }
+        return nil
     }
     
     func updateServerData(){
