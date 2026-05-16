@@ -52,6 +52,24 @@ class HulaTests: XCTestCase {
         XCTAssertEqual(product.productLocation.coordinate.longitude, 4.0)
     }
 
+    func testProductLocationNullPayloadDoesNotOverwrite() {
+        let product = HulaProduct()
+        product.productLocation = CLLocation(latitude: 5.0, longitude: 6.0)
+        let dict: NSDictionary = ["location": NSNull()]
+        product.populate(with: dict)
+        XCTAssertEqual(product.productLocation.coordinate.latitude, 5.0)
+        XCTAssertEqual(product.productLocation.coordinate.longitude, 6.0)
+    }
+
+    func testProductLocationMixedValidAndInvalidComponentsDoesNotOverwrite() {
+        let product = HulaProduct()
+        product.productLocation = CLLocation(latitude: 7.0, longitude: 8.0)
+        let dict: NSDictionary = ["location": [NSNumber(value: 12.34), NSNull()]]
+        product.populate(with: dict)
+        XCTAssertEqual(product.productLocation.coordinate.latitude, 7.0)
+        XCTAssertEqual(product.productLocation.coordinate.longitude, 8.0)
+    }
+
     func testProductLocationNSArrayPayloadParses() {
         let product = HulaProduct()
         let arr = NSMutableArray()
