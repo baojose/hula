@@ -8,6 +8,7 @@
 
 import XCTest
 import CoreLocation
+import CoreGraphics
 @testable import Hula
 
 class HulaTests: XCTestCase {
@@ -62,5 +63,53 @@ class HulaTests: XCTestCase {
         product.populate(with: dict)
         XCTAssertEqual(product.productLocation.coordinate.latitude, 41.878876, accuracy: 1e-6)
         XCTAssertEqual(product.productLocation.coordinate.longitude, -87.629798, accuracy: 1e-6)
+    }
+
+    func testProductLocationPopulateIgnoresExtraArrayValues() {
+        let product = HulaProduct()
+        let dict: NSDictionary = [
+            "location": [NSNumber(value: 48.856613), NSNumber(value: 2.352222), "ignored"]
+        ]
+        product.populate(with: dict)
+        XCTAssertEqual(product.productLocation.coordinate.latitude, 48.856613, accuracy: 1e-6)
+        XCTAssertEqual(product.productLocation.coordinate.longitude, 2.352222, accuracy: 1e-6)
+    }
+
+    func testProductLocationPopulateAcceptsIntegerComponents() {
+        let product = HulaProduct()
+        let dict: NSDictionary = [
+            "location": [Int32(52), Int64(13)]
+        ]
+        product.populate(with: dict)
+        XCTAssertEqual(product.productLocation.coordinate.latitude, 52.0)
+        XCTAssertEqual(product.productLocation.coordinate.longitude, 13.0)
+    }
+
+    func testProductLocationPopulateAcceptsCGFloatComponents() {
+        let product = HulaProduct()
+        let lat = CGFloat(34.052235)
+        let lon = CGFloat(-118.243683)
+        let dict: NSDictionary = ["location": [lat, lon]]
+        product.populate(with: dict)
+        XCTAssertEqual(product.productLocation.coordinate.latitude, Double(lat), accuracy: 1e-9)
+        XCTAssertEqual(product.productLocation.coordinate.longitude, Double(lon), accuracy: 1e-9)
+    }
+
+    func testProductLocationMixedValidityDoesNotOverwrite() {
+        let product = HulaProduct()
+        product.productLocation = CLLocation(latitude: 5.0, longitude: 6.0)
+        let dict: NSDictionary = ["location": [NSNumber(value: 7.0), "invalid"]]
+        product.populate(with: dict)
+        XCTAssertEqual(product.productLocation.coordinate.latitude, 5.0)
+        XCTAssertEqual(product.productLocation.coordinate.longitude, 6.0)
+    }
+
+    func testProductLocationNonArrayPayloadDoesNotOverwrite() {
+        let product = HulaProduct()
+        product.productLocation = CLLocation(latitude: 7.0, longitude: 8.0)
+        let dict: NSDictionary = ["location": "52.0,13.0"]
+        product.populate(with: dict)
+        XCTAssertEqual(product.productLocation.coordinate.latitude, 7.0)
+        XCTAssertEqual(product.productLocation.coordinate.longitude, 8.0)
     }
 }
