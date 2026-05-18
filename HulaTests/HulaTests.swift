@@ -63,4 +63,21 @@ class HulaTests: XCTestCase {
         XCTAssertEqual(product.productLocation.coordinate.latitude, 41.878876, accuracy: 1e-6)
         XCTAssertEqual(product.productLocation.coordinate.longitude, -87.629798, accuracy: 1e-6)
     }
+
+    func testProductLocationPopulateAcceptsIntegerArray() {
+        let product = HulaProduct()
+        let dict: NSDictionary = ["location": [51, -1]]
+        product.populate(with: dict)
+        XCTAssertEqual(product.productLocation.coordinate.latitude, 51.0)
+        XCTAssertEqual(product.productLocation.coordinate.longitude, -1.0)
+    }
+
+    func testProductLocationPartiallyInvalidArrayDoesNotOverwrite() {
+        let product = HulaProduct()
+        product.productLocation = CLLocation(latitude: 5.0, longitude: 6.0)
+        let dict: NSDictionary = ["location": [NSNumber(value: 52.520008), NSNull()]]
+        product.populate(with: dict)
+        XCTAssertEqual(product.productLocation.coordinate.latitude, 5.0)
+        XCTAssertEqual(product.productLocation.coordinate.longitude, 6.0)
+    }
 }
