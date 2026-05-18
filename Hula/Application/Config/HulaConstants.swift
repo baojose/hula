@@ -46,4 +46,14 @@ struct HulaConstants {
     // Obtain new credentials from Twitter Developer Portal — rotate if these ever leaked in git history.
     static let twitterKey: String = ""
     static let twitterSecret: String = ""
+    
+    // Public snapshot: set from private configuration before enabling LinkedIn verification.
+    // Rotate the OAuth client secret if it ever appeared in public git history.
+    static let linkedinClientId: String = ""
+    static let linkedinClientSecret: String = ""
+    static let linkedinState: String = ""
+    static let linkedinRedirectUrl: String = "https://hula.trading/"
+    static var isLinkedInConfigured: Bool {
+        return !linkedinClientId.isEmpty && !linkedinClientSecret.isEmpty && !linkedinState.isEmpty
+    }
 }
