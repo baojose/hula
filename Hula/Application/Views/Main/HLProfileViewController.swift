@@ -37,7 +37,19 @@ class HLProfileViewController: BaseViewController {
     @IBOutlet weak var fullsizeViewReference: UIView!
     
     
-    private let linkedinHelper = LinkedinSwiftHelper(configuration: LinkedinSwiftConfiguration(clientId: "77pqp8cu8tj7vb", clientSecret: "yx3RJzo3X9guNEhY", state: "DLKDJF46ikMMZADfdfds", permissions: ["r_basicprofile", "r_emailaddress"], redirectUrl: "https://hula.trading/"))
+    private lazy var linkedinHelper: LinkedinSwiftHelper? = {
+        guard HulaConstants.isLinkedInConfigured else {
+            return nil
+        }
+        let configuration = LinkedinSwiftConfiguration(
+            clientId: HulaConstants.linkedinClientId,
+            clientSecret: HulaConstants.linkedinClientSecret,
+            state: HulaConstants.linkedinState,
+            permissions: ["r_basicprofile", "r_emailaddress"],
+            redirectUrl: HulaConstants.linkedinRedirectUrl
+        )
+        return LinkedinSwiftHelper(configuration: configuration)
+    }()
     
     var arrFeedback: NSArray!
     var spinner: HLSpinnerUIView!
@@ -164,7 +176,7 @@ class HLProfileViewController: BaseViewController {
             alert.addAction(facebookAction)
         }
         
-        if HulaUser.sharedInstance.liToken.count == 0 {
+        if HulaUser.sharedInstance.liToken.count == 0 && HulaConstants.isLinkedInConfigured {
             let linkedinAction = UIAlertAction(title: "Linkedin", style: .default, handler: { action -> Void in
                 self.linkedinValidate()
             })
@@ -251,6 +263,17 @@ class HLProfileViewController: BaseViewController {
     }
     
     func linkedinValidate(){
+        guard let linkedinHelper = linkedinHelper else {
+            let alert = UIAlertController(
+                title: NSLocalizedString("LinkedIn unavailable", comment: ""),
+                message: NSLocalizedString("LinkedIn verification is not configured in this build.", comment: ""),
+                preferredStyle: UIAlertControllerStyle.alert
+            )
+            alert.addAction(UIAlertAction(title: "OK", style: UIAlertActionStyle.default, handler: nil))
+            self.present(alert, animated: true, completion: nil)
+            return
+        }
+        
         print("Validating linkedin...")
         linkedinHelper.authorizeSuccess({ (token) in
             
