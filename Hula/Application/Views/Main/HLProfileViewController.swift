@@ -37,7 +37,10 @@ class HLProfileViewController: BaseViewController {
     @IBOutlet weak var fullsizeViewReference: UIView!
     
     
-    private let linkedinHelper = LinkedinSwiftHelper(configuration: LinkedinSwiftConfiguration(clientId: "77pqp8cu8tj7vb", clientSecret: "yx3RJzo3X9guNEhY", state: "DLKDJF46ikMMZADfdfds", permissions: ["r_basicprofile", "r_emailaddress"], redirectUrl: "https://hula.trading/"))
+    private static let linkedinClientIdPlaceholder = "YOUR_LINKEDIN_APP_ID"
+    private static let linkedinClientSecretPlaceholder = "REPLACE_ME_LINKEDIN_CLIENT_SECRET"
+    private static let linkedinRedirectURL = "https://hula.trading/"
+    private static let linkedinState = "DLKDJF46ikMMZADfdfds"
     
     var arrFeedback: NSArray!
     var spinner: HLSpinnerUIView!
@@ -252,6 +255,13 @@ class HLProfileViewController: BaseViewController {
     
     func linkedinValidate(){
         print("Validating linkedin...")
+        guard let linkedinHelper = configuredLinkedinHelper() else {
+            let alert = UIAlertController(title: NSLocalizedString("LinkedIn validation unavailable", comment: ""), message: NSLocalizedString("LinkedIn credentials are not configured for this build.", comment: ""), preferredStyle: UIAlertControllerStyle.alert)
+            alert.addAction(UIAlertAction(title: "OK", style: UIAlertActionStyle.default, handler: nil))
+            self.present(alert, animated: true, completion: nil)
+            return
+        }
+
         linkedinHelper.authorizeSuccess({ (token) in
             
             print(token)
@@ -269,6 +279,17 @@ class HLProfileViewController: BaseViewController {
         }
     }
     
+    private func configuredLinkedinHelper() -> LinkedinSwiftHelper? {
+        let clientId = Bundle.main.object(forInfoDictionaryKey: "LIAppId") as? String ?? ""
+        let clientSecret = Bundle.main.object(forInfoDictionaryKey: "LIClientSecret") as? String ?? ""
+        if clientId.isEmpty || clientId == HLProfileViewController.linkedinClientIdPlaceholder || clientSecret.isEmpty || clientSecret == HLProfileViewController.linkedinClientSecretPlaceholder {
+            return nil
+        }
+
+        let configuration = LinkedinSwiftConfiguration(clientId: clientId, clientSecret: clientSecret, state: HLProfileViewController.linkedinState, permissions: ["r_basicprofile", "r_emailaddress"], redirectUrl: HLProfileViewController.linkedinRedirectURL)
+        return LinkedinSwiftHelper(configuration: configuration)
+    }
+
     // Custom functions for ViewController
     
     func getUserProfile() {
