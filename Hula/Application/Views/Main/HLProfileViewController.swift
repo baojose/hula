@@ -37,7 +37,24 @@ class HLProfileViewController: BaseViewController {
     @IBOutlet weak var fullsizeViewReference: UIView!
     
     
-    private let linkedinHelper = LinkedinSwiftHelper(configuration: LinkedinSwiftConfiguration(clientId: "77pqp8cu8tj7vb", clientSecret: "yx3RJzo3X9guNEhY", state: "DLKDJF46ikMMZADfdfds", permissions: ["r_basicprofile", "r_emailaddress"], redirectUrl: "https://hula.trading/"))
+    private lazy var linkedinHelper: LinkedinSwiftHelper? = {
+        guard let clientId = Bundle.main.object(forInfoDictionaryKey: "LIAppId") as? String,
+            let clientSecret = Bundle.main.object(forInfoDictionaryKey: "LIClientSecret") as? String,
+            let state = Bundle.main.object(forInfoDictionaryKey: "LIState") as? String,
+            let redirectUrl = Bundle.main.object(forInfoDictionaryKey: "LIRedirectURL") as? String,
+            !clientId.isEmpty,
+            !clientSecret.isEmpty,
+            !state.isEmpty,
+            !redirectUrl.isEmpty,
+            !clientId.hasPrefix("YOUR_"),
+            !clientSecret.hasPrefix("REPLACE_ME_"),
+            !state.hasPrefix("REPLACE_ME_"),
+            !redirectUrl.hasPrefix("REPLACE_ME_") else {
+                return nil
+        }
+        
+        return LinkedinSwiftHelper(configuration: LinkedinSwiftConfiguration(clientId: clientId, clientSecret: clientSecret, state: state, permissions: ["r_basicprofile", "r_emailaddress"], redirectUrl: redirectUrl))
+    }()
     
     var arrFeedback: NSArray!
     var spinner: HLSpinnerUIView!
@@ -251,6 +268,13 @@ class HLProfileViewController: BaseViewController {
     }
     
     func linkedinValidate(){
+        guard let linkedinHelper = linkedinHelper else {
+            let alert = UIAlertController(title: "LinkedIn unavailable", message: "LinkedIn credentials are not configured for this build.", preferredStyle: UIAlertControllerStyle.alert)
+            alert.addAction(UIAlertAction(title: "OK", style: UIAlertActionStyle.default, handler: nil))
+            self.present(alert, animated: true, completion: nil)
+            return
+        }
+        
         print("Validating linkedin...")
         linkedinHelper.authorizeSuccess({ (token) in
             
