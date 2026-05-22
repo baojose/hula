@@ -17,7 +17,7 @@ class HulaTests: XCTestCase {
         let latitude = 37.774929512345
         let longitude = -122.419415512345
 
-        product.populate(with: ["location": [latitude, longitude]])
+        product.populate(with: ["location": [latitude, longitude]] as NSDictionary)
 
         XCTAssertEqual(product.productLocation.coordinate.latitude, latitude, accuracy: 0.000000000001)
         XCTAssertEqual(product.productLocation.coordinate.longitude, longitude, accuracy: 0.000000000001)
@@ -27,7 +27,7 @@ class HulaTests: XCTestCase {
         let product = HulaProduct()
         let payload = NSArray(objects: NSNumber(value: 51.507351), NSNumber(value: -0.127758))
 
-        product.populate(with: ["location": payload])
+        product.populate(with: ["location": payload] as NSDictionary)
 
         XCTAssertEqual(product.productLocation.coordinate.latitude, 51.507351, accuracy: 0.000000000001)
         XCTAssertEqual(product.productLocation.coordinate.longitude, -0.127758, accuracy: 0.000000000001)
@@ -35,8 +35,9 @@ class HulaTests: XCTestCase {
 
     func testProductPopulateAcceptsIntegerAndFloatCoordinateValues() {
         let product = HulaProduct()
+        let location: [Any] = [Float(40.7128), -74]
 
-        product.populate(with: ["location": [Float(40.7128), -74]])
+        product.populate(with: ["location": location] as NSDictionary)
 
         XCTAssertEqual(product.productLocation.coordinate.latitude, 40.7128, accuracy: 0.0001)
         XCTAssertEqual(product.productLocation.coordinate.longitude, -74.0, accuracy: 0.000000000001)
@@ -47,7 +48,7 @@ class HulaTests: XCTestCase {
         let existingLocation = CLLocation(latitude: 12.34, longitude: 56.78)
         product.productLocation = existingLocation
 
-        product.populate(with: ["location": [99.99]])
+        product.populate(with: ["location": [99.99]] as NSDictionary)
 
         XCTAssertEqual(product.productLocation.coordinate.latitude, existingLocation.coordinate.latitude, accuracy: 0.000000000001)
         XCTAssertEqual(product.productLocation.coordinate.longitude, existingLocation.coordinate.longitude, accuracy: 0.000000000001)
@@ -58,7 +59,7 @@ class HulaTests: XCTestCase {
         let existingLocation = CLLocation(latitude: 12.34, longitude: 56.78)
         product.productLocation = existingLocation
 
-        product.populate(with: ["location": ["north", "west"]])
+        product.populate(with: ["location": ["north", "west"]] as NSDictionary)
 
         XCTAssertEqual(product.productLocation.coordinate.latitude, existingLocation.coordinate.latitude, accuracy: 0.000000000001)
         XCTAssertEqual(product.productLocation.coordinate.longitude, existingLocation.coordinate.longitude, accuracy: 0.000000000001)

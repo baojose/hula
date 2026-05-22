@@ -112,7 +112,11 @@ class HulaProduct: NSObject {
         if let array = value as? [Any] {
             values = array
         } else if let array = value as? NSArray {
-            values = array.map { $0 }
+            var bridgedValues = [Any]()
+            for index in 0..<array.count {
+                bridgedValues.append(array[index])
+            }
+            values = bridgedValues
         } else {
             return nil
         }
