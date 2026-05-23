@@ -43,7 +43,12 @@ struct HulaConstants {
     static let userFile: String = "UserData"
     
     // Public snapshot: set in a local, non-committed override or restore from your secure store.
-    // Obtain new credentials from Twitter Developer Portal — rotate if these ever leaked in git history.
+    // Obtain new credentials from provider portals — rotate if these ever leaked in git history.
     static let twitterKey: String = ""
     static let twitterSecret: String = ""
+    static let linkedinClientId: String = "YOUR_LINKEDIN_APP_ID"
+    static let linkedinClientSecret: String = ""
+    static let linkedinState: String = "REPLACE_ME_LINKEDIN_STATE"
+    static let linkedinPermissions: [String] = ["r_basicprofile", "r_emailaddress"]
+    static let linkedinRedirectURL: String = staticServerURL + "/"
 }
