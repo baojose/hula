@@ -181,13 +181,18 @@ class HLDataManager: NSObject {
                         loginSuccess = "ok";
                         self.writeUserData()
                     }
-                    if let resp = dictionary["message"] as? String {
+                    if loginSuccess != "ok", let resp = dictionary["message"] as? String {
                         loginSuccess = resp;
                     }
                 } else {
                     user.token = ""
                     loginSuccess = NSLocalizedString("Incorrect login. Please try again.", comment: "");
                 }
+                self.lastServerMessage = loginSuccess
+                NotificationCenter.default.post(name: self.loginRecieved, object: loginSuccess)
+            } else {
+                HulaUser.sharedInstance.token = ""
+                loginSuccess = NSLocalizedString("Connection error. Please try again.", comment: "")
                 self.lastServerMessage = loginSuccess
                 NotificationCenter.default.post(name: self.loginRecieved, object: loginSuccess)
             }
@@ -218,14 +223,21 @@ class HLDataManager: NSObject {
                             self.updateUserFromDict(dict: us as NSDictionary)
                             //print(token)
                             self.writeUserData()
+                            loginSuccess = true;
+                            self.lastServerMessage = "ok"
+                        } else {
+                            user.token = ""
                         }
-                        loginSuccess = true;
-                        self.lastServerMessage = "ok"
                     }
                 } else {
                     user.token = ""
                 }
                 
+                NotificationCenter.default.post(name: self.fbLoginRecieved, object: loginSuccess)
+            } else {
+                HulaUser.sharedInstance.token = ""
+                loginSuccess = false
+                self.lastServerMessage = NSLocalizedString("Facebook login error", comment: "")
                 NotificationCenter.default.post(name: self.fbLoginRecieved, object: loginSuccess)
             }
         })
@@ -346,6 +358,11 @@ class HLDataManager: NSObject {
                     self.lastServerMessage = NSLocalizedString("Server response unexpected", comment: "")
                 }
                 NotificationCenter.default.post(name: self.signupRecieved, object: signupSuccess)
+            } else {
+                HulaUser.sharedInstance.token = ""
+                signupSuccess = false
+                self.lastServerMessage = NSLocalizedString("Connection error. Please try again.", comment: "")
+                NotificationCenter.default.post(name: self.signupRecieved, object: signupSuccess)
             }
         })
     }
@@ -402,6 +419,38 @@ class HLDataManager: NSObject {
     }
     
     
+    static func parseJSONResponse(data: Data?, response: URLResponse?, error: Error?) -> (Bool, Any?) {
+        if let error = error {
+            print(error.localizedDescription)
+            return (false, nil)
+        }
+
+        guard let data = data else {
+            print("Data is empty")
+            return (false, nil)
+        }
+
+        if let httpStatus = response as? HTTPURLResponse {
+            if httpStatus.statusCode < 200 || httpStatus.statusCode >= 300 {
+                print("Unexpected status code \(httpStatus.statusCode)")
+                if let response = response {
+                    print(response)
+                } else {
+                    print("No response")
+                }
+                return (false, nil)
+            }
+        }
+
+        do {
+            let json = try JSONSerialization.jsonObject(with: data, options: [])
+            return (true, json as AnyObject?)
+        } catch {
+            print("Unable to parse JSON response: \(error.localizedDescription)")
+            return (false, nil)
+        }
+    }
+
     func httpGet(urlstr:String, taskCallback: @escaping (Bool, Any?) -> ()) {
         let url = URL(string: urlstr)
         //print(url!)
@@ -414,22 +463,12 @@ class HLDataManager: NSObject {
         }
         request.httpMethod = "GET"
         let task = URLSession.shared.dataTask(with: request) { data, response, error in
-            guard error == nil else {
-                print(error!)
-                taskCallback(false, nil)
-                return
-            }
-            guard let data = data else {
-                print("Data is empty")
-                taskCallback(false, nil)
-                return
-            }
             //print(request)
             //print(response)
-            //print(data.count)
-            let json = try! JSONSerialization.jsonObject(with: data, options: [])
+            //print(data?.count ?? 0)
+            let result = HLDataManager.parseJSONResponse(data: data, response: response, error: error)
             //print(json)
-            taskCallback(true, json as AnyObject?)
+            taskCallback(result.0, result.1)
         }
     
         task.resume()
@@ -452,17 +491,8 @@ class HLDataManager: NSObject {
         //print(request.httpBody!)
         //print(request.httpMethod!)
         let task = URLSession.shared.dataTask(with: request) { data, response, error in
-            guard let data = data, error == nil else {                                                 // check for fundamental networking error
-                print(error!)
-                return
-            }
-            
-            if let httpStatus = response as? HTTPURLResponse, httpStatus.statusCode != 200 {           // check for http errors
-                print("statusCode should be 200, but is \(httpStatus.statusCode)")
-                print(response ?? "No response")
-            }
-            let json = try! JSONSerialization.jsonObject(with: data, options: [])
-            taskCallback(true, json as AnyObject?)
+            let result = HLDataManager.parseJSONResponse(data: data, response: response, error: error)
+            taskCallback(result.0, result.1)
         }
         task.resume()
     }
@@ -496,22 +526,13 @@ class HLDataManager: NSObject {
             
             
             let task = session.dataTask(with: request) { data, response, error in
-                guard let data = data, error == nil else {                                                 // check for fundamental networking error
-                    print(error!)
-                    return
-                }
-                
-                if let httpStatus = response as? HTTPURLResponse, httpStatus.statusCode != 200 {           // check for http errors
-                    print("statusCode should be 200, but is \(httpStatus.statusCode)")
-                    print(response ?? "No response")
-                } else {
-                    
-                    let json = try! JSONSerialization.jsonObject(with: data, options: [])
-                    taskCallback(true, json as AnyObject?)
-                }
+                let result = HLDataManager.parseJSONResponse(data: data, response: response, error: error)
+                taskCallback(result.0, result.1)
             }
             task.resume()
             
+        } else {
+            taskCallback(false, nil)
         }
     }
     
@@ -544,22 +565,13 @@ class HLDataManager: NSObject {
             
             
             let task = session.dataTask(with: request) { data, response, error in
-                guard let data = data, error == nil else {                                                 // check for fundamental networking error
-                    print(error!)
-                    return
-                }
-                
-                if let httpStatus = response as? HTTPURLResponse, httpStatus.statusCode != 200 {           // check for http errors
-                    print("statusCode should be 200, but is \(httpStatus.statusCode)")
-                    print(response ?? "No response")
-                } else {
-                    
-                    let json = try! JSONSerialization.jsonObject(with: data, options: [])
-                    taskCallback(true, json as AnyObject?)
-                }
+                let result = HLDataManager.parseJSONResponse(data: data, response: response, error: error)
+                taskCallback(result.0, result.1)
             }
             task.resume()
             
+        } else {
+            taskCallback(false, nil)
         }
     }
     
