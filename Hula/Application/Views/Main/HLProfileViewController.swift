@@ -37,7 +37,23 @@ class HLProfileViewController: BaseViewController {
     @IBOutlet weak var fullsizeViewReference: UIView!
     
     
-    private let linkedinHelper = LinkedinSwiftHelper(configuration: LinkedinSwiftConfiguration(clientId: "77pqp8cu8tj7vb", clientSecret: "yx3RJzo3X9guNEhY", state: "DLKDJF46ikMMZADfdfds", permissions: ["r_basicprofile", "r_emailaddress"], redirectUrl: "https://hula.trading/"))
+    private lazy var linkedinHelper: LinkedinSwiftHelper? = {
+        guard let clientId = Bundle.main.object(forInfoDictionaryKey: "LIAppId") as? String,
+            let clientSecret = Bundle.main.object(forInfoDictionaryKey: "LIClientSecret") as? String,
+            !clientId.hasPrefix("YOUR_"),
+            !clientSecret.hasPrefix("REPLACE_ME"),
+            clientId.count > 0,
+            clientSecret.count > 0 else {
+                return nil
+        }
+        
+        let configuration = LinkedinSwiftConfiguration(clientId: clientId,
+                                                       clientSecret: clientSecret,
+                                                       state: "DLKDJF46ikMMZADfdfds",
+                                                       permissions: ["r_basicprofile", "r_emailaddress"],
+                                                       redirectUrl: "https://hula.trading/")
+        return LinkedinSwiftHelper(configuration: configuration)
+    }()
     
     var arrFeedback: NSArray!
     var spinner: HLSpinnerUIView!
@@ -252,6 +268,10 @@ class HLProfileViewController: BaseViewController {
     
     func linkedinValidate(){
         print("Validating linkedin...")
+        guard let linkedinHelper = linkedinHelper else {
+            print("LinkedIn credentials are not configured.")
+            return
+        }
         linkedinHelper.authorizeSuccess({ (token) in
             
             print(token)
