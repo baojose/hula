@@ -105,11 +105,11 @@ class HulaProduct: NSObject {
             productLocation = CLLocation(latitude: pair.lat, longitude: pair.lon)
         }
     }
-    
+
     /// `location` is expected as `[lat, lng]`; invalid payloads are ignored so existing coordinates are preserved.
     private static func locationCoordinatePair(from raw: Any?) -> (lat: CLLocationDegrees, lon: CLLocationDegrees)? {
         guard let raw = raw else { return nil }
-        
+
         let values: [Any]
         if let array = raw as? [Any] {
             values = array
@@ -123,15 +123,15 @@ class HulaProduct: NSObject {
         } else {
             return nil
         }
-        
+
         guard values.count >= 2 else { return nil }
         guard let lat = coordinateComponent(from: values[0]), let lon = coordinateComponent(from: values[1]) else {
             return nil
         }
-        
+
         return (lat: lat, lon: lon)
     }
-    
+
     private static func coordinateComponent(from value: Any) -> CLLocationDegrees? {
         switch value {
         case let d as Double:
