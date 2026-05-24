@@ -101,16 +101,55 @@ class HulaProduct: NSObject {
                 }
             }
         }
-        print (with.object(forKey: "location") as? [Any])
-        if let tmp = with.object(forKey: "location") as? [Any] {
-            let lat = tmp[0] as? Double
-            let lon = tmp[1] as? Double
-            print(Float(lat!))
-            
-            if (lat != nil && lon != nil){
-                productLocation = CLLocation(latitude: CLLocationDegrees(Float(lat!)), longitude: CLLocationDegrees(Float(lon!)))
+        if let pair = HulaProduct.locationCoordinatePair(from: with.object(forKey: "location")) {
+            productLocation = CLLocation(latitude: pair.lat, longitude: pair.lon)
+        }
+    }
+    
+    /// `location` is expected as `[lat, lng]`; invalid payloads are ignored so existing coordinates are preserved.
+    private static func locationCoordinatePair(from raw: Any?) -> (lat: CLLocationDegrees, lon: CLLocationDegrees)? {
+        guard let raw = raw else { return nil }
+        
+        let values: [Any]
+        if let array = raw as? [Any] {
+            values = array
+        } else if let array = raw as? NSArray {
+            var collected: [Any] = []
+            collected.reserveCapacity(array.count)
+            for idx in 0..<array.count {
+                collected.append(array.object(at: idx))
             }
- 
+            values = collected
+        } else {
+            return nil
+        }
+        
+        guard values.count >= 2 else { return nil }
+        guard let lat = coordinateComponent(from: values[0]), let lon = coordinateComponent(from: values[1]) else {
+            return nil
+        }
+        
+        return (lat: lat, lon: lon)
+    }
+    
+    private static func coordinateComponent(from value: Any) -> CLLocationDegrees? {
+        switch value {
+        case let d as Double:
+            return d
+        case let f as Float:
+            return CLLocationDegrees(f)
+        case let c as CGFloat:
+            return Double(c)
+        case let i as Int:
+            return CLLocationDegrees(i)
+        case let i as Int32:
+            return CLLocationDegrees(i)
+        case let i as Int64:
+            return CLLocationDegrees(i)
+        case let n as NSNumber:
+            return n.doubleValue
+        default:
+            return nil
         }
     }
     
