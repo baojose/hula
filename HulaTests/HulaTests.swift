@@ -25,6 +25,14 @@ class HulaTests: XCTestCase {
         // This is an example of a functional test case.
         // Use XCTAssert and related functions to verify your tests produce the correct results.
     }
+
+    func testPublicBundleDoesNotContainLeakedLinkedInCredentials() {
+        let bundle = Bundle(for: HLProfileViewController.self)
+
+        XCTAssertEqual(bundle.object(forInfoDictionaryKey: "LIAppId") as? String, "YOUR_LINKEDIN_APP_ID")
+        XCTAssertEqual(bundle.object(forInfoDictionaryKey: "LIClientSecret") as? String, "REPLACE_ME_LINKEDIN_CLIENT_SECRET")
+        XCTAssertEqual(bundle.object(forInfoDictionaryKey: "LIState") as? String, "REPLACE_ME_LINKEDIN_STATE")
+    }
     
     func testPerformanceExample() {
         // This is an example of a performance test case.
