@@ -101,17 +101,68 @@ class HulaProduct: NSObject {
                 }
             }
         }
-        print (with.object(forKey: "location") as? [Any])
-        if let tmp = with.object(forKey: "location") as? [Any] {
-            let lat = tmp[0] as? Double
-            let lon = tmp[1] as? Double
-            print(Float(lat!))
-            
-            if (lat != nil && lon != nil){
-                productLocation = CLLocation(latitude: CLLocationDegrees(Float(lat!)), longitude: CLLocationDegrees(Float(lon!)))
-            }
- 
+        if let tmp = HulaProduct.locationCoordinatePair(from: with.object(forKey: "location")) {
+            productLocation = CLLocation(latitude: tmp.latitude, longitude: tmp.longitude)
         }
+    }
+
+    private class func locationCoordinatePair(from value: Any?) -> (latitude: CLLocationDegrees, longitude: CLLocationDegrees)? {
+        let values: [Any]
+
+        if let array = value as? [Any] {
+            values = array
+        } else if let array = value as? NSArray {
+            var bridgedValues = [Any]()
+            for index in 0..<array.count {
+                bridgedValues.append(array[index])
+            }
+            values = bridgedValues
+        } else {
+            return nil
+        }
+
+        guard values.count >= 2 else {
+            return nil
+        }
+
+        guard let lat = coordinateComponent(from: values[0]),
+            let lon = coordinateComponent(from: values[1]) else {
+                return nil
+        }
+
+        return (lat, lon)
+    }
+
+    private class func coordinateComponent(from value: Any) -> CLLocationDegrees? {
+        if let number = value as? NSNumber {
+            return CLLocationDegrees(number.doubleValue)
+        }
+
+        if let double = value as? Double {
+            return CLLocationDegrees(double)
+        }
+
+        if let float = value as? Float {
+            return CLLocationDegrees(float)
+        }
+
+        if let cgFloat = value as? CGFloat {
+            return CLLocationDegrees(Double(cgFloat))
+        }
+
+        if let int = value as? Int {
+            return CLLocationDegrees(Double(int))
+        }
+
+        if let int32 = value as? Int32 {
+            return CLLocationDegrees(Double(int32))
+        }
+
+        if let int64 = value as? Int64 {
+            return CLLocationDegrees(Double(int64))
+        }
+
+        return nil
     }
     
     func updateServerData(){
