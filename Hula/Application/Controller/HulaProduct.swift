@@ -114,16 +114,16 @@ class HulaProduct: NSObject {
         } else {
             return nil
         }
-        
+
         guard values.count >= 2,
             let lat = coordinateComponent(from: values[0]),
             let lon = coordinateComponent(from: values[1]) else {
                 return nil
         }
-        
+
         return (lat, lon)
     }
-    
+
     private class func coordinateComponent(from value: Any) -> CLLocationDegrees? {
         if let number = value as? NSNumber { return number.doubleValue }
         if let double = value as? Double { return double }
