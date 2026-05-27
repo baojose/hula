@@ -101,17 +101,38 @@ class HulaProduct: NSObject {
                 }
             }
         }
-        print (with.object(forKey: "location") as? [Any])
-        if let tmp = with.object(forKey: "location") as? [Any] {
-            let lat = tmp[0] as? Double
-            let lon = tmp[1] as? Double
-            print(Float(lat!))
-            
-            if (lat != nil && lon != nil){
-                productLocation = CLLocation(latitude: CLLocationDegrees(Float(lat!)), longitude: CLLocationDegrees(Float(lon!)))
-            }
- 
+        if let location = HulaProduct.locationCoordinatePair(from: with.object(forKey: "location")) {
+            productLocation = CLLocation(latitude: location.latitude, longitude: location.longitude)
         }
+    }
+    class func locationCoordinatePair(from payload: Any?) -> (latitude: CLLocationDegrees, longitude: CLLocationDegrees)? {
+        let values: [Any]
+        if let tmp = payload as? [Any] {
+            values = tmp
+        } else if let tmp = payload as? NSArray {
+            values = tmp.map { $0 }
+        } else {
+            return nil
+        }
+
+        guard values.count >= 2,
+            let lat = coordinateComponent(from: values[0]),
+            let lon = coordinateComponent(from: values[1]) else {
+                return nil
+        }
+
+        return (lat, lon)
+    }
+
+    private class func coordinateComponent(from value: Any) -> CLLocationDegrees? {
+        if let number = value as? NSNumber { return number.doubleValue }
+        if let double = value as? Double { return double }
+        if let float = value as? Float { return Double(float) }
+        if let cgFloat = value as? CGFloat { return Double(cgFloat) }
+        if let int = value as? Int { return Double(int) }
+        if let int32 = value as? Int32 { return Double(int32) }
+        if let int64 = value as? Int64 { return Double(int64) }
+        return nil
     }
     
     func updateServerData(){
