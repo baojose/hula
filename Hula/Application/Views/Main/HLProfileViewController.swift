@@ -37,7 +37,12 @@ class HLProfileViewController: BaseViewController {
     @IBOutlet weak var fullsizeViewReference: UIView!
     
     
-    private let linkedinHelper = LinkedinSwiftHelper(configuration: LinkedinSwiftConfiguration(clientId: "77pqp8cu8tj7vb", clientSecret: "yx3RJzo3X9guNEhY", state: "DLKDJF46ikMMZADfdfds", permissions: ["r_basicprofile", "r_emailaddress"], redirectUrl: "https://hula.trading/"))
+    private lazy var linkedinHelper: LinkedinSwiftHelper? = {
+        guard let configuration = HLProfileViewController.linkedinConfiguration() else {
+            return nil
+        }
+        return LinkedinSwiftHelper(configuration: configuration)
+    }()
     
     var arrFeedback: NSArray!
     var spinner: HLSpinnerUIView!
@@ -120,6 +125,34 @@ class HLProfileViewController: BaseViewController {
         super.didReceiveMemoryWarning()
     }
     
+    static func linkedinConfiguration() -> LinkedinSwiftConfiguration? {
+        guard let clientId = configuredValue(forInfoKey: "LIAppId"),
+            let clientSecret = configuredValue(forInfoKey: "LIClientSecret"),
+            let redirectUrl = configuredValue(forInfoKey: "LIRedirectURL") else {
+                return nil
+        }
+
+        let state = configuredValue(forInfoKey: "LIState") ?? UUID().uuidString
+        return LinkedinSwiftConfiguration(clientId: clientId, clientSecret: clientSecret, state: state, permissions: ["r_basicprofile", "r_emailaddress"], redirectUrl: redirectUrl)
+    }
+
+    static func configuredValue(from value: String?) -> String? {
+        guard let value = value else {
+            return nil
+        }
+
+        let trimmed = value.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)
+        if trimmed.characters.count == 0 || trimmed.range(of: "YOUR_") != nil || trimmed.range(of: "REPLACE_ME") != nil || trimmed.hasPrefix("$(") {
+            return nil
+        }
+
+        return trimmed
+    }
+
+    private static func configuredValue(forInfoKey key: String) -> String? {
+        return configuredValue(from: Bundle.main.object(forInfoDictionaryKey: key) as? String)
+    }
+
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         //print("Preparing for segue...")
         if let destinationVC = segue.destination as? HLFeedbackHistoryViewController{
@@ -252,6 +285,15 @@ class HLProfileViewController: BaseViewController {
     
     func linkedinValidate(){
         print("Validating linkedin...")
+        guard let linkedinHelper = linkedinHelper else {
+            let alert = UIAlertController(title: NSLocalizedString("LinkedIn validation", comment: ""), message: NSLocalizedString("LinkedIn validation is not configured.", comment: ""),
+                preferredStyle: UIAlertControllerStyle.alert
+            )
+            alert.addAction(UIAlertAction(title: "OK", style: UIAlertActionStyle.default, handler: nil))
+            self.present(alert, animated: true, completion: nil)
+            return
+        }
+
         linkedinHelper.authorizeSuccess({ (token) in
             
             print(token)

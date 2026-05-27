@@ -15,7 +15,7 @@ class HulaTests: XCTestCase {
         super.setUp()
         // Put setup code here. This method is called before the invocation of each test method in the class.
     }
-    
+
     override func tearDown() {
         // Put teardown code here. This method is called after the invocation of each test method in the class.
         super.tearDown()
@@ -26,6 +26,14 @@ class HulaTests: XCTestCase {
         // Use XCTAssert and related functions to verify your tests produce the correct results.
     }
     
+    func testLinkedInConfigurationRejectsPlaceholders() {
+        XCTAssertNil(HLProfileViewController.configuredValue(from: "YOUR_LINKEDIN_APP_ID"))
+        XCTAssertNil(HLProfileViewController.configuredValue(from: "REPLACE_ME_LINKEDIN_CLIENT_SECRET"))
+        XCTAssertNil(HLProfileViewController.configuredValue(from: "$(LINKEDIN_CLIENT_SECRET)"))
+        XCTAssertNil(HLProfileViewController.configuredValue(from: "   "))
+        XCTAssertEqual(HLProfileViewController.configuredValue(from: "private-value"), "private-value")
+    }
+
     func testPerformanceExample() {
         // This is an example of a performance test case.
         self.measure {
