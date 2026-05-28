@@ -101,42 +101,53 @@ class HulaProduct: NSObject {
                 }
             }
         }
-        if let coordinatePair = HulaProduct.locationCoordinatePair(from: with.object(forKey: "location")) {
-            productLocation = CLLocation(latitude: coordinatePair.latitude, longitude: coordinatePair.longitude)
+        if let pair = HulaProduct.locationCoordinatePair(from: with.object(forKey: "location")) {
+            productLocation = CLLocation(latitude: pair.lat, longitude: pair.lon)
         }
     }
 
-    private class func locationCoordinatePair(from payload: Any?) -> (latitude: CLLocationDegrees, longitude: CLLocationDegrees)? {
-        var values: [Any]?
-
-        if let tmp = payload as? [Any] {
-            values = tmp
-        } else if let tmp = payload as? NSArray {
-            values = tmp as? [Any]
-        }
-
-        guard let coordinates = values, coordinates.count >= 2 else {
+    /// `location` as `[lat, lng]`; returns `nil` if the payload cannot be parsed so existing coordinates are kept.
+    private static func locationCoordinatePair(from raw: Any?) -> (lat: CLLocationDegrees, lon: CLLocationDegrees)? {
+        guard let raw = raw else { return nil }
+        let values: [Any]
+        if let array = raw as? [Any] {
+            values = array
+        } else if let array = raw as? NSArray {
+            var collected: [Any] = []
+            collected.reserveCapacity(array.count)
+            for idx in 0..<array.count {
+                collected.append(array.object(at: idx))
+            }
+            values = collected
+        } else {
             return nil
         }
-
-        guard let latitude = HulaProduct.coordinateComponent(from: coordinates[0]),
-            let longitude = HulaProduct.coordinateComponent(from: coordinates[1]) else {
+        guard values.count >= 2 else { return nil }
+        guard let lat = coordinateComponent(from: values[0]), let lon = coordinateComponent(from: values[1]) else {
             return nil
         }
-
-        return (latitude, longitude)
+        return (lat, lon)
     }
 
-    private class func coordinateComponent(from value: Any) -> CLLocationDegrees? {
-        if let tmp = value as? NSNumber { return CLLocationDegrees(tmp.doubleValue) }
-        if let tmp = value as? Double { return CLLocationDegrees(tmp) }
-        if let tmp = value as? Float { return CLLocationDegrees(tmp) }
-        if let tmp = value as? CGFloat { return CLLocationDegrees(tmp) }
-        if let tmp = value as? Int { return CLLocationDegrees(tmp) }
-        if let tmp = value as? Int32 { return CLLocationDegrees(tmp) }
-        if let tmp = value as? Int64 { return CLLocationDegrees(tmp) }
-
-        return nil
+    private static func coordinateComponent(from value: Any) -> CLLocationDegrees? {
+        switch value {
+        case let n as NSNumber:
+            return n.doubleValue
+        case let d as Double:
+            return d
+        case let f as Float:
+            return CLLocationDegrees(f)
+        case let c as CGFloat:
+            return Double(c)
+        case let i as Int:
+            return CLLocationDegrees(i)
+        case let i as Int32:
+            return CLLocationDegrees(i)
+        case let i as Int64:
+            return CLLocationDegrees(i)
+        default:
+            return nil
+        }
     }
     
     func updateServerData(){
