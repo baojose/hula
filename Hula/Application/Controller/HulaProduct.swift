@@ -101,17 +101,42 @@ class HulaProduct: NSObject {
                 }
             }
         }
-        print (with.object(forKey: "location") as? [Any])
-        if let tmp = with.object(forKey: "location") as? [Any] {
-            let lat = tmp[0] as? Double
-            let lon = tmp[1] as? Double
-            print(Float(lat!))
-            
-            if (lat != nil && lon != nil){
-                productLocation = CLLocation(latitude: CLLocationDegrees(Float(lat!)), longitude: CLLocationDegrees(Float(lon!)))
-            }
- 
+        if let coordinatePair = HulaProduct.locationCoordinatePair(from: with.object(forKey: "location")) {
+            productLocation = CLLocation(latitude: coordinatePair.latitude, longitude: coordinatePair.longitude)
         }
+    }
+
+    private class func locationCoordinatePair(from payload: Any?) -> (latitude: CLLocationDegrees, longitude: CLLocationDegrees)? {
+        var values: [Any]?
+
+        if let tmp = payload as? [Any] {
+            values = tmp
+        } else if let tmp = payload as? NSArray {
+            values = tmp as? [Any]
+        }
+
+        guard let coordinates = values, coordinates.count >= 2 else {
+            return nil
+        }
+
+        guard let latitude = HulaProduct.coordinateComponent(from: coordinates[0]),
+            let longitude = HulaProduct.coordinateComponent(from: coordinates[1]) else {
+            return nil
+        }
+
+        return (latitude, longitude)
+    }
+
+    private class func coordinateComponent(from value: Any) -> CLLocationDegrees? {
+        if let tmp = value as? NSNumber { return CLLocationDegrees(tmp.doubleValue) }
+        if let tmp = value as? Double { return CLLocationDegrees(tmp) }
+        if let tmp = value as? Float { return CLLocationDegrees(tmp) }
+        if let tmp = value as? CGFloat { return CLLocationDegrees(tmp) }
+        if let tmp = value as? Int { return CLLocationDegrees(tmp) }
+        if let tmp = value as? Int32 { return CLLocationDegrees(tmp) }
+        if let tmp = value as? Int64 { return CLLocationDegrees(tmp) }
+
+        return nil
     }
     
     func updateServerData(){
