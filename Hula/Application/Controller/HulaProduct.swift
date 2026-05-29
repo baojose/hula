@@ -105,7 +105,7 @@ class HulaProduct: NSObject {
             productLocation = CLLocation(latitude: coordinates.latitude, longitude: coordinates.longitude)
         }
     }
-    
+
     private class func locationCoordinatePair(from value: Any?) -> (latitude: CLLocationDegrees, longitude: CLLocationDegrees)? {
         guard let values = coordinateArray(from: value) else {
             return nil
@@ -118,7 +118,7 @@ class HulaProduct: NSObject {
         }
         return (latitude, longitude)
     }
-    
+
     private class func coordinateArray(from value: Any?) -> [Any]? {
         if let values = value as? [Any] {
             return values
@@ -132,7 +132,7 @@ class HulaProduct: NSObject {
         }
         return nil
     }
-    
+
     private class func coordinateComponent(from value: Any) -> CLLocationDegrees? {
         if value is Bool {
             return nil
