@@ -25,6 +25,26 @@ class HulaTests: XCTestCase {
         // This is an example of a functional test case.
         // Use XCTAssert and related functions to verify your tests produce the correct results.
     }
+
+    func testLinkedinConfigurationRejectsPublicPlaceholders() {
+        XCTAssertFalse(HulaConstants.isConfiguredCredential(""))
+        XCTAssertFalse(HulaConstants.isConfiguredCredential("YOUR_LINKEDIN_APP_ID"))
+        XCTAssertFalse(HulaConstants.isConfiguredCredential("REPLACE_ME_LINKEDIN_CLIENT_SECRET"))
+        XCTAssertFalse(HulaConstants.isConfiguredCredential("$(LINKEDIN_CLIENT_SECRET)"))
+        XCTAssertTrue(HulaConstants.isConfiguredCredential("real-linkedin-value"))
+    }
+
+    func testLinkedinConfigurationRequiresEveryCredential() {
+        XCTAssertFalse(HulaConstants.isLinkedinConfigurationValid(clientId: "real-client-id",
+                                                                  clientSecret: "REPLACE_ME_LINKEDIN_CLIENT_SECRET",
+                                                                  state: "real-state",
+                                                                  redirectURL: "https://hula.trading/"))
+
+        XCTAssertTrue(HulaConstants.isLinkedinConfigurationValid(clientId: "real-client-id",
+                                                                 clientSecret: "real-client-secret",
+                                                                 state: "real-state",
+                                                                 redirectURL: "https://hula.trading/"))
+    }
     
     func testPerformanceExample() {
         // This is an example of a performance test case.

@@ -46,4 +46,44 @@ struct HulaConstants {
     // Obtain new credentials from Twitter Developer Portal — rotate if these ever leaked in git history.
     static let twitterKey: String = ""
     static let twitterSecret: String = ""
+
+    // LinkedIn OAuth configuration. The public repository intentionally stores
+    // placeholders in Info.plist; production builds must inject real values.
+    static let linkedinClientId: String = infoPlistString(forKey: "LIAppId")
+    static let linkedinClientSecret: String = infoPlistString(forKey: "LIClientSecret")
+    static let linkedinState: String = infoPlistString(forKey: "LIState")
+    static let linkedinRedirectURL: String = infoPlistString(forKey: "LIRedirectURL")
+
+    static var hasLinkedinConfiguration: Bool {
+        return isLinkedinConfigurationValid(clientId: linkedinClientId,
+                                            clientSecret: linkedinClientSecret,
+                                            state: linkedinState,
+                                            redirectURL: linkedinRedirectURL)
+    }
+
+    static func isLinkedinConfigurationValid(clientId: String, clientSecret: String, state: String, redirectURL: String) -> Bool {
+        return isConfiguredCredential(clientId)
+            && isConfiguredCredential(clientSecret)
+            && isConfiguredCredential(state)
+            && isConfiguredCredential(redirectURL)
+    }
+
+    static func isConfiguredCredential(_ value: String) -> Bool {
+        let trimmed = value.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)
+        if trimmed.isEmpty {
+            return false
+        }
+
+        return trimmed.range(of: "YOUR_") == nil
+            && trimmed.range(of: "REPLACE_ME") == nil
+            && trimmed.range(of: "$(") == nil
+    }
+
+    private static func infoPlistString(forKey key: String) -> String {
+        guard let value = Bundle.main.object(forInfoDictionaryKey: key) as? String else {
+            return ""
+        }
+
+        return value.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)
+    }
 }

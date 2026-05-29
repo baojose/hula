@@ -37,7 +37,18 @@ class HLProfileViewController: BaseViewController {
     @IBOutlet weak var fullsizeViewReference: UIView!
     
     
-    private let linkedinHelper = LinkedinSwiftHelper(configuration: LinkedinSwiftConfiguration(clientId: "77pqp8cu8tj7vb", clientSecret: "yx3RJzo3X9guNEhY", state: "DLKDJF46ikMMZADfdfds", permissions: ["r_basicprofile", "r_emailaddress"], redirectUrl: "https://hula.trading/"))
+    private lazy var linkedinHelper: LinkedinSwiftHelper? = {
+        guard HulaConstants.hasLinkedinConfiguration else {
+            return nil
+        }
+
+        let configuration = LinkedinSwiftConfiguration(clientId: HulaConstants.linkedinClientId,
+                                                       clientSecret: HulaConstants.linkedinClientSecret,
+                                                       state: HulaConstants.linkedinState,
+                                                       permissions: ["r_basicprofile", "r_emailaddress"],
+                                                       redirectUrl: HulaConstants.linkedinRedirectURL)
+        return LinkedinSwiftHelper(configuration: configuration)
+    }()
     
     var arrFeedback: NSArray!
     var spinner: HLSpinnerUIView!
@@ -252,6 +263,11 @@ class HLProfileViewController: BaseViewController {
     
     func linkedinValidate(){
         print("Validating linkedin...")
+        guard let linkedinHelper = linkedinHelper else {
+            NSLog("LinkedIn validation is not configured.")
+            return
+        }
+
         linkedinHelper.authorizeSuccess({ (token) in
             
             print(token)
