@@ -46,4 +46,39 @@ struct HulaConstants {
     // Obtain new credentials from Twitter Developer Portal — rotate if these ever leaked in git history.
     static let twitterKey: String = ""
     static let twitterSecret: String = ""
+    
+    static let linkedInClientIdInfoKey = "HulaLinkedInClientId"
+    static let linkedInClientSecretInfoKey = "HulaLinkedInClientSecret"
+    static let linkedInStateInfoKey = "HulaLinkedInState"
+    static let linkedInRedirectURLInfoKey = "HulaLinkedInRedirectURL"
+    
+    static func configuredInfoString(forKey key: String) -> String? {
+        guard let value = Bundle.main.object(forInfoDictionaryKey: key) as? String else {
+            return nil
+        }
+        
+        let trimmedValue = value.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)
+        return isConfiguredInfoValue(trimmedValue) ? trimmedValue : nil
+    }
+    
+    static func isConfiguredInfoValue(_ value: String?) -> Bool {
+        guard let rawValue = value else {
+            return false
+        }
+        
+        let trimmedValue = rawValue.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)
+        if trimmedValue.isEmpty {
+            return false
+        }
+        
+        let uppercasedValue = trimmedValue.uppercased()
+        let placeholderTokens = ["YOUR_", "REPLACE_ME", "PLACEHOLDER", "$("]
+        for token in placeholderTokens {
+            if uppercasedValue.range(of: token) != nil {
+                return false
+            }
+        }
+        
+        return true
+    }
 }

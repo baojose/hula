@@ -26,6 +26,17 @@ class HulaTests: XCTestCase {
         // Use XCTAssert and related functions to verify your tests produce the correct results.
     }
     
+    func testPlaceholderConfigValuesAreRejected() {
+        XCTAssertFalse(HulaConstants.isConfiguredInfoValue(nil))
+        XCTAssertFalse(HulaConstants.isConfiguredInfoValue(""))
+        XCTAssertFalse(HulaConstants.isConfiguredInfoValue("   "))
+        XCTAssertFalse(HulaConstants.isConfiguredInfoValue("YOUR_LINKEDIN_CLIENT_ID"))
+        XCTAssertFalse(HulaConstants.isConfiguredInfoValue("REPLACE_ME_LINKEDIN_CLIENT_SECRET"))
+        XCTAssertFalse(HulaConstants.isConfiguredInfoValue("$(LINKEDIN_CLIENT_ID)"))
+        XCTAssertFalse(HulaConstants.isConfiguredInfoValue("placeholder-linkedin-state"))
+        XCTAssertTrue(HulaConstants.isConfiguredInfoValue("linkedin-client-id"))
+    }
+    
     func testPerformanceExample() {
         // This is an example of a performance test case.
         self.measure {
