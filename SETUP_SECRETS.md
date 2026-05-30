@@ -1,6 +1,6 @@
 # Public repository — credentials (read this first)
 
-This tree is a **sanitized** snapshot: Firebase, Twitter, Fabric, and social app IDs in source are **placeholders**. You must inject **real** values from your **private** configuration or from each provider’s console before the app will behave like production.
+This tree is a **sanitized** snapshot: Firebase, Twitter, Fabric, LinkedIn, and social app IDs in source are **placeholders**. You must inject **real** values from your **private** configuration or from each provider’s console before the app will behave like production.
 
 ## If these credentials ever appeared in public git history
 
@@ -10,6 +10,7 @@ This tree is a **sanitized** snapshot: Firebase, Twitter, Fabric, and social app
 2. **Firebase / Google** — in Google Cloud Console, **restrict** the iOS API key (bundle ID); consider **rotating** keys. Download a fresh `GoogleService-Info.plist` and keep it **out of public repos** if possible.
 3. **Facebook** — treat app ID as public metadata; **rotate the app secret** if it was ever committed; review app settings.
 4. **Fabric** — legacy; if you still run the Run Script build phase, replace placeholders with your own values or remove Fabric entirely.
+5. **LinkedIn** — rotate the client secret and replace `HulaLinkedInClientId`, `HulaLinkedInClientSecret`, `HulaLinkedInState`, `HulaLinkedInRedirectURL`, `LIAppId`, and the `li...` URL scheme from a private configuration source.
 
 ## Making this repo private
 

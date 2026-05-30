@@ -37,7 +37,16 @@ class HLProfileViewController: BaseViewController {
     @IBOutlet weak var fullsizeViewReference: UIView!
     
     
-    private let linkedinHelper = LinkedinSwiftHelper(configuration: LinkedinSwiftConfiguration(clientId: "77pqp8cu8tj7vb", clientSecret: "yx3RJzo3X9guNEhY", state: "DLKDJF46ikMMZADfdfds", permissions: ["r_basicprofile", "r_emailaddress"], redirectUrl: "https://hula.trading/"))
+    private lazy var linkedinHelper: LinkedinSwiftHelper? = {
+        guard let clientId = HulaConstants.configuredInfoString(forKey: HulaConstants.linkedInClientIdInfoKey),
+            let clientSecret = HulaConstants.configuredInfoString(forKey: HulaConstants.linkedInClientSecretInfoKey),
+            let state = HulaConstants.configuredInfoString(forKey: HulaConstants.linkedInStateInfoKey),
+            let redirectUrl = HulaConstants.configuredInfoString(forKey: HulaConstants.linkedInRedirectURLInfoKey) else {
+                return nil
+        }
+        
+        return LinkedinSwiftHelper(configuration: LinkedinSwiftConfiguration(clientId: clientId, clientSecret: clientSecret, state: state, permissions: ["r_basicprofile", "r_emailaddress"], redirectUrl: redirectUrl))
+    }()
     
     var arrFeedback: NSArray!
     var spinner: HLSpinnerUIView!
@@ -164,7 +173,7 @@ class HLProfileViewController: BaseViewController {
             alert.addAction(facebookAction)
         }
         
-        if HulaUser.sharedInstance.liToken.count == 0 {
+        if HulaUser.sharedInstance.liToken.count == 0 && linkedinHelper != nil {
             let linkedinAction = UIAlertAction(title: "Linkedin", style: .default, handler: { action -> Void in
                 self.linkedinValidate()
             })
@@ -252,6 +261,11 @@ class HLProfileViewController: BaseViewController {
     
     func linkedinValidate(){
         print("Validating linkedin...")
+        guard let linkedinHelper = linkedinHelper else {
+            NSLog("LinkedIn validation is not configured.")
+            return
+        }
+        
         linkedinHelper.authorizeSuccess({ (token) in
             
             print(token)
