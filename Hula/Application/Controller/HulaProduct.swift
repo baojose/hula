@@ -101,16 +101,55 @@ class HulaProduct: NSObject {
                 }
             }
         }
-        print (with.object(forKey: "location") as? [Any])
-        if let tmp = with.object(forKey: "location") as? [Any] {
-            let lat = tmp[0] as? Double
-            let lon = tmp[1] as? Double
-            print(Float(lat!))
-            
-            if (lat != nil && lon != nil){
-                productLocation = CLLocation(latitude: CLLocationDegrees(Float(lat!)), longitude: CLLocationDegrees(Float(lon!)))
+        if let location = HulaProduct.locationCoordinatePair(from: with.object(forKey: "location")) {
+            productLocation = CLLocation(latitude: location.latitude, longitude: location.longitude)
+        }
+    }
+
+    private static func locationCoordinatePair(from rawLocation: Any?) -> (latitude: CLLocationDegrees, longitude: CLLocationDegrees)? {
+        guard let rawLocation = rawLocation else { return nil }
+
+        let components: [Any]
+        if let tmp = rawLocation as? [Any] {
+            components = tmp
+        } else if let tmp = rawLocation as? NSArray {
+            components = tmp.map { $0 }
+        } else {
+            return nil
+        }
+
+        guard components.count >= 2 else { return nil }
+        guard let latitude = HulaProduct.coordinateComponent(from: components[0]),
+            let longitude = HulaProduct.coordinateComponent(from: components[1]) else {
+                return nil
+        }
+
+        return (latitude: latitude, longitude: longitude)
+    }
+
+    private static func coordinateComponent(from value: Any) -> CLLocationDegrees? {
+        switch value {
+        case _ as Bool:
+            return nil
+        case let number as NSNumber:
+            if CFGetTypeID(number) == CFBooleanGetTypeID() {
+                return nil
             }
- 
+            return number.doubleValue
+        case let number as Double:
+            return number
+        case let number as Float:
+            return Double(number)
+        case let number as CGFloat:
+            return Double(number)
+        case let number as Int:
+            return Double(number)
+        case let number as Int32:
+            return Double(number)
+        case let number as Int64:
+            return Double(number)
+        default:
+            return nil
         }
     }
     
