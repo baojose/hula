@@ -136,7 +136,7 @@ class HulaProduct: NSObject {
         case _ as Bool:
             return nil
         case let n as NSNumber:
-            if CFGetTypeID(n) == CFBooleanGetTypeID() {
+            if String(cString: n.objCType) == "c" {
                 return nil
             }
             return n.doubleValue

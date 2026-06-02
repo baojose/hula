@@ -28,7 +28,8 @@ class HulaTests: XCTestCase {
 
     func testProductLocationPopulateAcceptsMixedNumericTypes() {
         let product = HulaProduct()
-        let dict: NSDictionary = ["location": [Float(40.712776), Int(-74)]]
+        let location: [Any] = [Float(40.712776), Int(-74)]
+        let dict: NSDictionary = ["location": location]
 
         product.populate(with: dict)
 
@@ -75,7 +76,8 @@ class HulaTests: XCTestCase {
     func testProductLocationBooleanPayloadDoesNotOverwriteExistingLocation() {
         let product = HulaProduct()
         product.productLocation = CLLocation(latitude: 5.0, longitude: 6.0)
-        let dict: NSDictionary = ["location": [NSNumber(value: true), NSNumber(value: false)]]
+        let location: [Any] = [NSNumber(value: true), NSNumber(value: false)]
+        let dict: NSDictionary = ["location": location]
 
         product.populate(with: dict)
 
