@@ -402,10 +402,41 @@ class HLDataManager: NSObject {
     }
     
     
+    class func parseJSONResponse(data: Data?, response: URLResponse?, error: Error?) -> (ok: Bool, json: Any?) {
+        if let error = error {
+            print(error)
+            return (false, nil)
+        }
+
+        guard let data = data else {
+            print("Data is empty")
+            return (false, nil)
+        }
+
+        if let httpStatus = response as? HTTPURLResponse {
+            guard httpStatus.statusCode >= 200 && httpStatus.statusCode < 300 else {
+                print("Unexpected status code: \(httpStatus.statusCode)")
+                print(response ?? "No response")
+                return (false, nil)
+            }
+        }
+
+        do {
+            let json = try JSONSerialization.jsonObject(with: data, options: [])
+            return (true, json as AnyObject?)
+        } catch {
+            print(error)
+            return (false, nil)
+        }
+    }
+
     func httpGet(urlstr:String, taskCallback: @escaping (Bool, Any?) -> ()) {
-        let url = URL(string: urlstr)
-        //print(url!)
-        var request:URLRequest = URLRequest(url: url!)
+        guard let url = URL(string: urlstr) else {
+            taskCallback(false, nil)
+            return
+        }
+        //print(url)
+        var request:URLRequest = URLRequest(url: url)
         
         let user = HulaUser.sharedInstance
         //print(user.token)
@@ -414,30 +445,19 @@ class HLDataManager: NSObject {
         }
         request.httpMethod = "GET"
         let task = URLSession.shared.dataTask(with: request) { data, response, error in
-            guard error == nil else {
-                print(error!)
-                taskCallback(false, nil)
-                return
-            }
-            guard let data = data else {
-                print("Data is empty")
-                taskCallback(false, nil)
-                return
-            }
-            //print(request)
-            //print(response)
-            //print(data.count)
-            let json = try! JSONSerialization.jsonObject(with: data, options: [])
-            //print(json)
-            taskCallback(true, json as AnyObject?)
+            let result = HLDataManager.parseJSONResponse(data: data, response: response, error: error)
+            taskCallback(result.ok, result.json)
         }
     
         task.resume()
     }
 
     func httpPost(urlstr:String, postString:String, isPut: Bool, taskCallback: @escaping (Bool, Any?) -> ()) {
-        let url = URL(string: urlstr)
-        var request = URLRequest(url: url!)
+        guard let url = URL(string: urlstr) else {
+            taskCallback(false, nil)
+            return
+        }
+        var request = URLRequest(url: url)
         if (isPut){
             request.httpMethod = "PUT"
         } else {
@@ -452,17 +472,8 @@ class HLDataManager: NSObject {
         //print(request.httpBody!)
         //print(request.httpMethod!)
         let task = URLSession.shared.dataTask(with: request) { data, response, error in
-            guard let data = data, error == nil else {                                                 // check for fundamental networking error
-                print(error!)
-                return
-            }
-            
-            if let httpStatus = response as? HTTPURLResponse, httpStatus.statusCode != 200 {           // check for http errors
-                print("statusCode should be 200, but is \(httpStatus.statusCode)")
-                print(response ?? "No response")
-            }
-            let json = try! JSONSerialization.jsonObject(with: data, options: [])
-            taskCallback(true, json as AnyObject?)
+            let result = HLDataManager.parseJSONResponse(data: data, response: response, error: error)
+            taskCallback(result.ok, result.json)
         }
         task.resume()
     }
@@ -472,7 +483,11 @@ class HLDataManager: NSObject {
         
         if imageData != nil{
             let queryURL = HulaConstants.apiURL + "upload/image"
-            var request = URLRequest(url: URL(string:queryURL)!)
+            guard let url = URL(string:queryURL) else {
+                taskCallback(false, nil)
+                return
+            }
+            var request = URLRequest(url: url)
             let session:URLSession = URLSession.shared
             
             request.httpMethod = "POST"
@@ -496,22 +511,13 @@ class HLDataManager: NSObject {
             
             
             let task = session.dataTask(with: request) { data, response, error in
-                guard let data = data, error == nil else {                                                 // check for fundamental networking error
-                    print(error!)
-                    return
-                }
-                
-                if let httpStatus = response as? HTTPURLResponse, httpStatus.statusCode != 200 {           // check for http errors
-                    print("statusCode should be 200, but is \(httpStatus.statusCode)")
-                    print(response ?? "No response")
-                } else {
-                    
-                    let json = try! JSONSerialization.jsonObject(with: data, options: [])
-                    taskCallback(true, json as AnyObject?)
-                }
+                let result = HLDataManager.parseJSONResponse(data: data, response: response, error: error)
+                taskCallback(result.ok, result.json)
             }
             task.resume()
             
+        } else {
+            taskCallback(false, nil)
         }
     }
     
@@ -520,7 +526,11 @@ class HLDataManager: NSObject {
         
         if videoData != nil{
             let queryURL = HulaConstants.apiURL + "upload/video"
-            var request = URLRequest(url: URL(string:queryURL)!)
+            guard let url = URL(string:queryURL) else {
+                taskCallback(false, nil)
+                return
+            }
+            var request = URLRequest(url: url)
             let session:URLSession = URLSession.shared
             
             request.httpMethod = "POST"
@@ -544,22 +554,13 @@ class HLDataManager: NSObject {
             
             
             let task = session.dataTask(with: request) { data, response, error in
-                guard let data = data, error == nil else {                                                 // check for fundamental networking error
-                    print(error!)
-                    return
-                }
-                
-                if let httpStatus = response as? HTTPURLResponse, httpStatus.statusCode != 200 {           // check for http errors
-                    print("statusCode should be 200, but is \(httpStatus.statusCode)")
-                    print(response ?? "No response")
-                } else {
-                    
-                    let json = try! JSONSerialization.jsonObject(with: data, options: [])
-                    taskCallback(true, json as AnyObject?)
-                }
+                let result = HLDataManager.parseJSONResponse(data: data, response: response, error: error)
+                taskCallback(result.ok, result.json)
             }
             task.resume()
             
+        } else {
+            taskCallback(false, nil)
         }
     }
     
