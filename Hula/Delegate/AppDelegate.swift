@@ -48,7 +48,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         //gai.logger.logLevel = .verbose;
         
         //Fabric.with([Crashlytics.self])
-        TWTRTwitter.sharedInstance().start(withConsumerKey:HulaConstants.twitterKey, consumerSecret:HulaConstants.twitterSecret)
+        if HulaConstants.hasTwitterCredentials {
+            TWTRTwitter.sharedInstance().start(withConsumerKey:HulaConstants.twitterKey, consumerSecret:HulaConstants.twitterSecret)
+        }
     
         
         return FBSDKApplicationDelegate.sharedInstance().application(application, didFinishLaunchingWithOptions: launchOptions)
@@ -96,9 +98,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             }
         }
         
-        let ttrsession = TWTRTwitter.sharedInstance().application(app, open: url, options: options);
-        if ttrsession {
-            return true
+        if HulaConstants.hasTwitterCredentials {
+            let ttrsession = TWTRTwitter.sharedInstance().application(app, open: url, options: options);
+            if ttrsession {
+                return true
+            }
         }
         
         
