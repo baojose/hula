@@ -278,8 +278,7 @@ class HLProfileViewController: BaseViewController {
 
         print("Validating linkedin...")
         helper.authorizeSuccess({ (token) in
-            
-            print(token)
+
             self.verLinkedinIcon.image = UIImage(named: "icon_linkedin_on")
             self.verLinkedinIcon.bouncer()
             HulaUser.sharedInstance.liToken = token.accessToken
