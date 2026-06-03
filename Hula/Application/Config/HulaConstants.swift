@@ -42,8 +42,29 @@ struct HulaConstants {
     // local storage
     static let userFile: String = "UserData"
     
-    // Public snapshot: set in a local, non-committed override or restore from your secure store.
-    // Obtain new credentials from Twitter Developer Portal — rotate if these ever leaked in git history.
+    // Public snapshot: set these from a local, non-committed override before enabling social auth.
+    // Obtain new credentials from each provider — rotate if these ever leaked in git history.
     static let twitterKey: String = ""
     static let twitterSecret: String = ""
+    static let linkedinClientId: String = ""
+    static let linkedinClientSecret: String = ""
+    static let linkedinState: String = "REPLACE_ME_LINKEDIN_STATE"
+    static let linkedinRedirectURL: String = "https://hula.trading/"
+
+    static var hasTwitterCredentials: Bool {
+        return isConfiguredValue(twitterKey) && isConfiguredValue(twitterSecret)
+    }
+
+    static var hasLinkedInCredentials: Bool {
+        return isConfiguredValue(linkedinClientId) &&
+            isConfiguredValue(linkedinClientSecret) &&
+            isConfiguredValue(linkedinState) &&
+            isConfiguredValue(linkedinRedirectURL)
+    }
+
+    private static func isConfiguredValue(_ value: String) -> Bool {
+        return value.characters.count > 0 &&
+            value.range(of: "REPLACE_ME") == nil &&
+            value.range(of: "YOUR_") == nil
+    }
 }

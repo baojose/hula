@@ -37,7 +37,20 @@ class HLProfileViewController: BaseViewController {
     @IBOutlet weak var fullsizeViewReference: UIView!
     
     
-    private let linkedinHelper = LinkedinSwiftHelper(configuration: LinkedinSwiftConfiguration(clientId: "77pqp8cu8tj7vb", clientSecret: "yx3RJzo3X9guNEhY", state: "DLKDJF46ikMMZADfdfds", permissions: ["r_basicprofile", "r_emailaddress"], redirectUrl: "https://hula.trading/"))
+    private lazy var linkedinHelper: LinkedinSwiftHelper? = {
+        if !HulaConstants.hasLinkedInCredentials {
+            return nil
+        }
+
+        let configuration = LinkedinSwiftConfiguration(
+            clientId: HulaConstants.linkedinClientId,
+            clientSecret: HulaConstants.linkedinClientSecret,
+            state: HulaConstants.linkedinState,
+            permissions: ["r_basicprofile", "r_emailaddress"],
+            redirectUrl: HulaConstants.linkedinRedirectURL
+        )
+        return LinkedinSwiftHelper(configuration: configuration)
+    }()
     
     var arrFeedback: NSArray!
     var spinner: HLSpinnerUIView!
@@ -164,7 +177,7 @@ class HLProfileViewController: BaseViewController {
             alert.addAction(facebookAction)
         }
         
-        if HulaUser.sharedInstance.liToken.count == 0 {
+        if HulaUser.sharedInstance.liToken.count == 0 && HulaConstants.hasLinkedInCredentials {
             let linkedinAction = UIAlertAction(title: "Linkedin", style: .default, handler: { action -> Void in
                 self.linkedinValidate()
             })
@@ -172,7 +185,7 @@ class HLProfileViewController: BaseViewController {
         }
         
         
-        if HulaUser.sharedInstance.twToken.count == 0 {
+        if HulaUser.sharedInstance.twToken.count == 0 && HulaConstants.hasTwitterCredentials {
             let twitterAction = UIAlertAction(title: "Twitter", style: .default, handler: { action -> Void in
                 self.twitterValidate()
             })
@@ -221,6 +234,11 @@ class HLProfileViewController: BaseViewController {
     
     
     func twitterValidate(){
+        if !HulaConstants.hasTwitterCredentials {
+            showSocialValidationUnavailable("Twitter")
+            return
+        }
+
         //print("Opening twitter...")
         TWTRTwitter.sharedInstance().logIn(completion: { (session, error) in
             //print("Session open!")
@@ -233,7 +251,9 @@ class HLProfileViewController: BaseViewController {
                 HulaUser.sharedInstance.twToken = unwrappedSession.authToken as String
                 HulaUser.sharedInstance.updateServerData()
             } else {
-                NSLog("Login error: %@", error!.localizedDescription);
+                if let loginError = error {
+                    NSLog("Login error: %@", loginError.localizedDescription);
+                }
             }
         })
         
@@ -251,10 +271,14 @@ class HLProfileViewController: BaseViewController {
     }
     
     func linkedinValidate(){
+        guard let helper = linkedinHelper else {
+            showSocialValidationUnavailable("LinkedIn")
+            return
+        }
+
         print("Validating linkedin...")
-        linkedinHelper.authorizeSuccess({ (token) in
-            
-            print(token)
+        helper.authorizeSuccess({ (token) in
+
             self.verLinkedinIcon.image = UIImage(named: "icon_linkedin_on")
             self.verLinkedinIcon.bouncer()
             HulaUser.sharedInstance.liToken = token.accessToken
@@ -269,6 +293,14 @@ class HLProfileViewController: BaseViewController {
         }
     }
     
+    func showSocialValidationUnavailable(_ provider: String) {
+        let alert = UIAlertController(title: provider + " validation unavailable",
+                                      message: "This build does not include " + provider + " credentials.",
+                                      preferredStyle: UIAlertControllerStyle.alert)
+        alert.addAction(UIAlertAction(title: "OK", style: UIAlertActionStyle.default, handler: nil))
+        self.present(alert, animated: true, completion: nil)
+    }
+
     // Custom functions for ViewController
     
     func getUserProfile() {
