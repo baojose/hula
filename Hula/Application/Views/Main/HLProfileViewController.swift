@@ -41,7 +41,7 @@ class HLProfileViewController: BaseViewController {
         if !HulaConstants.hasLinkedInCredentials {
             return nil
         }
-        
+
         let configuration = LinkedinSwiftConfiguration(
             clientId: HulaConstants.linkedinClientId,
             clientSecret: HulaConstants.linkedinClientSecret,
@@ -238,7 +238,7 @@ class HLProfileViewController: BaseViewController {
             showSocialValidationUnavailable("Twitter")
             return
         }
-        
+
         //print("Opening twitter...")
         TWTRTwitter.sharedInstance().logIn(completion: { (session, error) in
             //print("Session open!")
@@ -275,7 +275,7 @@ class HLProfileViewController: BaseViewController {
             showSocialValidationUnavailable("LinkedIn")
             return
         }
-        
+
         print("Validating linkedin...")
         helper.authorizeSuccess({ (token) in
             
@@ -301,7 +301,7 @@ class HLProfileViewController: BaseViewController {
         alert.addAction(UIAlertAction(title: "OK", style: UIAlertActionStyle.default, handler: nil))
         self.present(alert, animated: true, completion: nil)
     }
-    
+
     // Custom functions for ViewController
     
     func getUserProfile() {

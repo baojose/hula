@@ -50,18 +50,18 @@ struct HulaConstants {
     static let linkedinClientSecret: String = ""
     static let linkedinState: String = "REPLACE_ME_LINKEDIN_STATE"
     static let linkedinRedirectURL: String = "https://hula.trading/"
-    
+
     static var hasTwitterCredentials: Bool {
         return isConfiguredValue(twitterKey) && isConfiguredValue(twitterSecret)
     }
-    
+
     static var hasLinkedInCredentials: Bool {
         return isConfiguredValue(linkedinClientId) &&
             isConfiguredValue(linkedinClientSecret) &&
             isConfiguredValue(linkedinState) &&
             isConfiguredValue(linkedinRedirectURL)
     }
-    
+
     private static func isConfiguredValue(_ value: String) -> Bool {
         return value.characters.count > 0 &&
             value.range(of: "REPLACE_ME") == nil &&
