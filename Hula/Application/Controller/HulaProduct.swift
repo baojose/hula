@@ -132,7 +132,7 @@ class HulaProduct: NSObject {
         }
 
         if let number = value as? NSNumber {
-            if CFGetTypeID(number) == CFBooleanGetTypeID() {
+            if CFGetTypeID(number as CFTypeRef) == CFBooleanGetTypeID() {
                 return nil
             }
 
