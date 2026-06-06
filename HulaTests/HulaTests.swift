@@ -11,17 +11,17 @@ import Foundation
 @testable import Hula
 
 class HulaTests: XCTestCase {
-
+    
     override func setUp() {
         super.setUp()
         // Put setup code here. This method is called before the invocation of each test method in the class.
     }
-
+    
     override func tearDown() {
         // Put teardown code here. This method is called after the invocation of each test method in the class.
         super.tearDown()
     }
-
+    
     func testParseJSONResponseRejectsTransportError() {
         let data = "{}".data(using: .utf8)
         let error = NSError(domain: "network", code: -1, userInfo: nil)
@@ -31,7 +31,7 @@ class HulaTests: XCTestCase {
         XCTAssertFalse(result.0)
         XCTAssertNil(result.1)
     }
-
+    
     func testParseJSONResponseRejectsHTTPFailure() {
         let data = "{\"ok\":true}".data(using: .utf8)
         let response = httpResponse(statusCode: 500)
@@ -66,5 +66,5 @@ class HulaTests: XCTestCase {
     private func httpResponse(statusCode: Int) -> HTTPURLResponse {
         return HTTPURLResponse(url: URL(string: "https://api.hula.trading/v1/test")!, statusCode: statusCode, httpVersion: nil, headerFields: nil)!
     }
-
+    
 }
