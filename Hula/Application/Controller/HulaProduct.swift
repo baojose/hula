@@ -10,7 +10,7 @@ import UIKit
 import MapKit
 
 class HulaProduct: NSObject {
-    
+
     var productId: String!
     var productName: String!
     var productCategory: String!
@@ -108,7 +108,7 @@ class HulaProduct: NSObject {
             productLocation = CLLocation(latitude: lat, longitude: lon)
         }
     }
-    
+
     private func locationDegrees(from value: Any) -> CLLocationDegrees? {
         if value is Bool {
             return nil
@@ -134,13 +134,13 @@ class HulaProduct: NSObject {
         }
         return nil
     }
-    
+
     func updateServerData(){
         //print("Updating user...")
         if(HulaUser.sharedInstance.isUserLoggedIn()){
             let queryURL = HulaConstants.apiURL + "products/" + self.productId
             HLDataManager.sharedInstance.httpPost(urlstr: queryURL, postString: getPostString(), isPut: true, taskCallback: { (ok, json) in
-                
+
                 //print("done")
                 //print(ok)
                 if (ok){
@@ -148,7 +148,7 @@ class HulaProduct: NSObject {
                     if (json as? [String: Any]) != nil {
                         //print(dictionary)
                     }
-                    
+
                     //NotificationCenter.default.post(name: self.signupRecieved, object: signupSuccess)
                 }
             })
