@@ -7,6 +7,7 @@
 //
 
 import XCTest
+import Foundation
 @testable import Hula
 
 class HulaTests: XCTestCase {
@@ -21,16 +22,49 @@ class HulaTests: XCTestCase {
         super.tearDown()
     }
     
-    func testExample() {
-        // This is an example of a functional test case.
-        // Use XCTAssert and related functions to verify your tests produce the correct results.
+    func testParseJSONResponseRejectsTransportError() {
+        let data = "{}".data(using: .utf8)
+        let error = NSError(domain: "network", code: -1, userInfo: nil)
+        
+        let result = HLDataManager.parseJSONResponse(data: data, response: nil, error: error)
+        
+        XCTAssertFalse(result.0)
+        XCTAssertNil(result.1)
     }
     
-    func testPerformanceExample() {
-        // This is an example of a performance test case.
-        self.measure {
-            // Put the code you want to measure the time of here.
-        }
+    func testParseJSONResponseRejectsHTTPFailure() {
+        let data = "{\"ok\":true}".data(using: .utf8)
+        let response = httpResponse(statusCode: 500)
+        
+        let result = HLDataManager.parseJSONResponse(data: data, response: response, error: nil)
+        
+        XCTAssertFalse(result.0)
+        XCTAssertNil(result.1)
+    }
+    
+    func testParseJSONResponseRejectsMalformedJSON() {
+        let data = "server error".data(using: .utf8)
+        let response = httpResponse(statusCode: 200)
+        
+        let result = HLDataManager.parseJSONResponse(data: data, response: response, error: nil)
+        
+        XCTAssertFalse(result.0)
+        XCTAssertNil(result.1)
+    }
+    
+    func testParseJSONResponseAcceptsSuccessfulJSON() {
+        let data = "{\"ok\":true}".data(using: .utf8)
+        let response = httpResponse(statusCode: 200)
+        
+        let result = HLDataManager.parseJSONResponse(data: data, response: response, error: nil)
+        
+        XCTAssertTrue(result.0)
+        let dictionary = result.1 as? [String: Bool]
+        XCTAssertTrue(dictionary?["ok"] == true)
+    }
+    
+    private func httpResponse(statusCode: Int) -> HTTPURLResponse {
+        return HTTPURLResponse(url: URL(string: "https://api.hula.trading/v1/test")!, statusCode: statusCode, httpVersion: nil, headerFields: nil)!
     }
     
 }
