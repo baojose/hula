@@ -478,7 +478,7 @@ class HLDataManager: NSObject {
             return (false, nil)
         }
     }
-    
+
     func uploadImage(_ image: UIImage, itemPosition: Int, taskCallback: @escaping (Bool, Any?) -> ()){
         let imageData = UIImageJPEGRepresentation(image,0.7)
         
