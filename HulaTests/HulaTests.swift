@@ -29,38 +29,38 @@ class HulaTests: XCTestCase {
         XCTAssertFalse(HLProfileViewController.isConfiguredLinkedInValue("$(LINKEDIN_CLIENT_SECRET)"))
         XCTAssertTrue(HLProfileViewController.isConfiguredLinkedInValue("configured-value"))
     }
-    
+
     func testParseJSONResponseAcceptsSuccessfulJSON() {
         let data = "{\"ok\":true}".data(using: .utf8)
         let response = HTTPURLResponse(url: URL(string: "https://hula.trading")!,
                                        statusCode: 200,
                                        httpVersion: nil,
                                        headerFields: nil)
-        
+
         let result = HLDataManager.parseJSONResponse(data: data, response: response, error: nil)
-        
+
         XCTAssertTrue(result.ok)
         XCTAssertEqual((result.json as? NSDictionary)?.object(forKey: "ok") as? Bool, true)
     }
-    
+
     func testParseJSONResponseRejectsHTTPError() {
         let data = "{\"message\":\"server error\"}".data(using: .utf8)
         let response = HTTPURLResponse(url: URL(string: "https://hula.trading")!,
                                        statusCode: 500,
                                        httpVersion: nil,
                                        headerFields: nil)
-        
+
         let result = HLDataManager.parseJSONResponse(data: data, response: response, error: nil)
-        
+
         XCTAssertFalse(result.ok)
         XCTAssertNil(result.json)
     }
-    
+
     func testParseJSONResponseRejectsInvalidJSON() {
         let data = "not json".data(using: .utf8)
-        
+
         let result = HLDataManager.parseJSONResponse(data: data, response: nil, error: nil)
-        
+
         XCTAssertFalse(result.ok)
         XCTAssertNil(result.json)
     }

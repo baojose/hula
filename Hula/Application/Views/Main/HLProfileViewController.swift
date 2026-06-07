@@ -289,21 +289,21 @@ class HLProfileViewController: BaseViewController {
               let redirectUrl = configuredInfoPlistValue("LIRedirectURL") else {
             return nil
         }
-        
+
         return LinkedinSwiftConfiguration(clientId: clientId,
                                           clientSecret: clientSecret,
                                           state: state,
                                           permissions: ["r_basicprofile", "r_emailaddress"],
                                           redirectUrl: redirectUrl)
     }
-    
+
     static func configuredInfoPlistValue(_ key: String) -> String? {
         guard let value = Bundle.main.object(forInfoDictionaryKey: key) as? String else {
             return nil
         }
         return isConfiguredLinkedInValue(value) ? value : nil
     }
-    
+
     static func isConfiguredLinkedInValue(_ value: String?) -> Bool {
         guard let value = value?.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines) else {
             return false
@@ -319,7 +319,7 @@ class HLProfileViewController: BaseViewController {
         }
         return true
     }
-    
+
     // Custom functions for ViewController
     
     func getUserProfile() {
