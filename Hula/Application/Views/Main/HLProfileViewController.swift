@@ -44,7 +44,7 @@ class HLProfileViewController: BaseViewController {
                                           permissions: HulaConstants.linkedinPermissions,
                                           redirectUrl: HulaConstants.linkedinRedirectUrl)
     }
-    
+
     private let linkedinHelper = LinkedinSwiftHelper(configuration: HLProfileViewController.linkedinConfiguration())
     
     var arrFeedback: NSArray!

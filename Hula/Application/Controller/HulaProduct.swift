@@ -32,7 +32,7 @@ class HulaProduct: NSObject {
             return productLocation.distance(from: HulaUser.sharedInstance.location)
         }
     }
-    
+
     class var sharedInstance: HulaProduct {
         struct Static {
             static let instance: HulaProduct = HulaProduct()
@@ -79,7 +79,7 @@ class HulaProduct: NSObject {
     override var description : String {
         return "(Product id: \(self.productId!); name:   \(self.productName!); dist:   \(self.distance))\n"
     }
-    
+
     func populate(with: NSDictionary){
         if let tmp = with.object(forKey: "_id") as? String { productId = tmp }
         if let tmp = with.object(forKey: "title") as? String { productName = tmp }
