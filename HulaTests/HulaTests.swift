@@ -7,30 +7,78 @@
 //
 
 import XCTest
+import CoreLocation
+import LinkedinSwift
 @testable import Hula
 
 class HulaTests: XCTestCase {
-    
-    override func setUp() {
-        super.setUp()
-        // Put setup code here. This method is called before the invocation of each test method in the class.
+
+    func testPublicSnapshotKeepsThirdPartyCredentialPlaceholdersEmpty() {
+        XCTAssertEqual(HulaConstants.twitterKey, "")
+        XCTAssertEqual(HulaConstants.twitterSecret, "")
+        XCTAssertEqual(HulaConstants.linkedinClientId, "")
+        XCTAssertEqual(HulaConstants.linkedinClientSecret, "")
+        XCTAssertEqual(HulaConstants.linkedinState, "")
     }
-    
-    override func tearDown() {
-        // Put teardown code here. This method is called after the invocation of each test method in the class.
-        super.tearDown()
+
+    func testLinkedinConfigurationUsesSanitizedConstants() {
+        let configuration = HLProfileViewController.linkedinConfiguration()
+
+        XCTAssertEqual(configuration.clientId, HulaConstants.linkedinClientId)
+        XCTAssertEqual(configuration.clientSecret, HulaConstants.linkedinClientSecret)
+        XCTAssertEqual(configuration.state, HulaConstants.linkedinState)
+        XCTAssertEqual(configuration.redirectUrl, HulaConstants.linkedinRedirectUrl)
+        let permissions = configuration.permissions as? [String]
+        XCTAssertNotNil(permissions)
+        XCTAssertEqual(permissions!, HulaConstants.linkedinPermissions)
     }
-    
-    func testExample() {
-        // This is an example of a functional test case.
-        // Use XCTAssert and related functions to verify your tests produce the correct results.
+
+    func testProductLocationParsingPreservesDoublePrecision() {
+        let product = HulaProduct()
+        let latitude = 12.3456789012345
+        let longitude = -98.7654321098765
+
+        product.populate(with: ["location": [latitude, longitude]] as NSDictionary)
+
+        XCTAssertEqual(product.productLocation.coordinate.latitude, latitude, accuracy: 0.000000000001)
+        XCTAssertEqual(product.productLocation.coordinate.longitude, longitude, accuracy: 0.000000000001)
     }
-    
-    func testPerformanceExample() {
-        // This is an example of a performance test case.
-        self.measure {
-            // Put the code you want to measure the time of here.
-        }
+
+    func testProductLocationParsingAcceptsNSArrayNumberPayloads() {
+        let product = HulaProduct()
+        let location = NSArray(objects: NSNumber(value: 19.432608), NSNumber(value: -99.133209))
+
+        product.populate(with: ["location": location] as NSDictionary)
+
+        XCTAssertEqual(product.productLocation.coordinate.latitude, 19.432608, accuracy: 0.000000001)
+        XCTAssertEqual(product.productLocation.coordinate.longitude, -99.133209, accuracy: 0.000000001)
     }
-    
+
+    func testProductLocationParsingAcceptsMixedNumericPayloads() {
+        let product = HulaProduct()
+
+        product.populate(with: ["location": [Float(40.7128), -74]] as NSDictionary)
+
+        XCTAssertEqual(product.productLocation.coordinate.latitude, 40.7128, accuracy: 0.00001)
+        XCTAssertEqual(product.productLocation.coordinate.longitude, -74.0, accuracy: 0.000000001)
+    }
+
+    func testMalformedProductLocationPayloadsPreserveExistingLocation() {
+        let product = HulaProduct()
+        product.populate(with: ["location": [33.8121, -117.9190]] as NSDictionary)
+
+        product.populate(with: ["location": [99.0]] as NSDictionary)
+        assertProduct(product, stillHasLatitude: 33.8121, longitude: -117.9190)
+
+        product.populate(with: ["location": ["north", "west"]] as NSDictionary)
+        assertProduct(product, stillHasLatitude: 33.8121, longitude: -117.9190)
+
+        product.populate(with: ["location": [true, false]] as NSDictionary)
+        assertProduct(product, stillHasLatitude: 33.8121, longitude: -117.9190)
+    }
+
+    private func assertProduct(_ product: HulaProduct, stillHasLatitude latitude: CLLocationDegrees, longitude: CLLocationDegrees) {
+        XCTAssertEqual(product.productLocation.coordinate.latitude, latitude, accuracy: 0.000000001)
+        XCTAssertEqual(product.productLocation.coordinate.longitude, longitude, accuracy: 0.000000001)
+    }
 }
