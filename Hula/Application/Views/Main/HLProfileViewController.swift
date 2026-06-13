@@ -107,7 +107,7 @@ class HLProfileViewController: BaseViewController {
 
         return LinkedinSwiftHelper(configuration: configuration.linkedinSwiftConfiguration)
     }()
-    
+
     private var isLinkedinConfigured: Bool {
         return linkedinHelper != nil
     }
