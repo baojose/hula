@@ -13,6 +13,69 @@ import TwitterKit
 import CoreLocation
 import LinkedinSwift
 
+struct LinkedinAppConfiguration {
+    static let clientIdKey = "LIAppId"
+    static let clientSecretKey = "LinkedInClientSecret"
+    static let stateKey = "LinkedInState"
+    static let redirectUrlKey = "LinkedInRedirectURL"
+
+    let clientId: String
+    let clientSecret: String
+    let state: String
+    let redirectUrl: String
+
+    var linkedinSwiftConfiguration: LinkedinSwiftConfiguration {
+        return LinkedinSwiftConfiguration(clientId: clientId,
+                                          clientSecret: clientSecret,
+                                          state: state,
+                                          permissions: ["r_basicprofile", "r_emailaddress"],
+                                          redirectUrl: redirectUrl)
+    }
+
+    static func fromBundle(_ bundle: Bundle = Bundle.main) -> LinkedinAppConfiguration? {
+        guard let infoDictionary = bundle.infoDictionary else {
+            return nil
+        }
+
+        return fromInfoDictionary(infoDictionary)
+    }
+
+    static func fromInfoDictionary(_ infoDictionary: [String: Any]) -> LinkedinAppConfiguration? {
+        guard let clientId = sanitizedValue(infoDictionary, key: clientIdKey),
+            let clientSecret = sanitizedValue(infoDictionary, key: clientSecretKey),
+            let state = sanitizedValue(infoDictionary, key: stateKey),
+            let redirectUrl = sanitizedValue(infoDictionary, key: redirectUrlKey),
+            URL(string: redirectUrl) != nil else {
+                return nil
+        }
+
+        return LinkedinAppConfiguration(clientId: clientId,
+                                        clientSecret: clientSecret,
+                                        state: state,
+                                        redirectUrl: redirectUrl)
+    }
+
+    private static func sanitizedValue(_ infoDictionary: [String: Any], key: String) -> String? {
+        guard let rawValue = infoDictionary[key] as? String else {
+            return nil
+        }
+
+        let trimmedValue = rawValue.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)
+        guard trimmedValue.characters.count > 0 else {
+            return nil
+        }
+
+        let lowercasedValue = trimmedValue.lowercased()
+        if lowercasedValue.contains("replace_me") ||
+            lowercasedValue.contains("your_") ||
+            lowercasedValue.contains("placeholder") ||
+            trimmedValue.contains("$(") {
+            return nil
+        }
+
+        return trimmedValue
+    }
+}
 
 class HLProfileViewController: BaseViewController {
     
@@ -37,7 +100,17 @@ class HLProfileViewController: BaseViewController {
     @IBOutlet weak var fullsizeViewReference: UIView!
     
     
-    private let linkedinHelper = LinkedinSwiftHelper(configuration: LinkedinSwiftConfiguration(clientId: "77pqp8cu8tj7vb", clientSecret: "yx3RJzo3X9guNEhY", state: "DLKDJF46ikMMZADfdfds", permissions: ["r_basicprofile", "r_emailaddress"], redirectUrl: "https://hula.trading/"))
+    private lazy var linkedinHelper: LinkedinSwiftHelper? = {
+        guard let configuration = LinkedinAppConfiguration.fromBundle() else {
+            return nil
+        }
+
+        return LinkedinSwiftHelper(configuration: configuration.linkedinSwiftConfiguration)
+    }()
+
+    private var isLinkedinConfigured: Bool {
+        return linkedinHelper != nil
+    }
     
     var arrFeedback: NSArray!
     var spinner: HLSpinnerUIView!
@@ -164,7 +237,7 @@ class HLProfileViewController: BaseViewController {
             alert.addAction(facebookAction)
         }
         
-        if HulaUser.sharedInstance.liToken.count == 0 {
+        if HulaUser.sharedInstance.liToken.count == 0 && isLinkedinConfigured {
             let linkedinAction = UIAlertAction(title: "Linkedin", style: .default, handler: { action -> Void in
                 self.linkedinValidate()
             })
@@ -252,6 +325,15 @@ class HLProfileViewController: BaseViewController {
     
     func linkedinValidate(){
         print("Validating linkedin...")
+        guard let linkedinHelper = linkedinHelper else {
+            let alert = UIAlertController(title: NSLocalizedString("LinkedIn validation unavailable", comment: ""),
+                                          message: NSLocalizedString("LinkedIn validation is not configured for this build.", comment: ""),
+                                          preferredStyle: UIAlertControllerStyle.alert)
+            alert.addAction(UIAlertAction(title: "OK", style: UIAlertActionStyle.default, handler: nil))
+            self.present(alert, animated: true, completion: nil)
+            return
+        }
+
         linkedinHelper.authorizeSuccess({ (token) in
             
             print(token)

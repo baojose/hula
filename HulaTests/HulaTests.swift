@@ -25,6 +25,72 @@ class HulaTests: XCTestCase {
         // This is an example of a functional test case.
         // Use XCTAssert and related functions to verify your tests produce the correct results.
     }
+
+    func testLinkedinConfigurationRejectsPlaceholders() {
+        let infoDictionary: [String: Any] = [
+            LinkedinAppConfiguration.clientIdKey: "YOUR_LINKEDIN_APP_ID",
+            LinkedinAppConfiguration.clientSecretKey: "REPLACE_ME_LINKEDIN_CLIENT_SECRET",
+            LinkedinAppConfiguration.stateKey: "REPLACE_ME_LINKEDIN_STATE",
+            LinkedinAppConfiguration.redirectUrlKey: "https://hula.trading/"
+        ]
+
+        XCTAssertNil(LinkedinAppConfiguration.fromInfoDictionary(infoDictionary))
+    }
+
+    func testLinkedinConfigurationAcceptsConfiguredValues() {
+        let infoDictionary: [String: Any] = [
+            LinkedinAppConfiguration.clientIdKey: "configured-client-id",
+            LinkedinAppConfiguration.clientSecretKey: "configured-client-secret",
+            LinkedinAppConfiguration.stateKey: "configured-state",
+            LinkedinAppConfiguration.redirectUrlKey: "https://hula.trading/"
+        ]
+
+        let configuration = LinkedinAppConfiguration.fromInfoDictionary(infoDictionary)
+
+        XCTAssertEqual(configuration?.clientId, "configured-client-id")
+        XCTAssertEqual(configuration?.clientSecret, "configured-client-secret")
+        XCTAssertEqual(configuration?.state, "configured-state")
+        XCTAssertEqual(configuration?.redirectUrl, "https://hula.trading/")
+    }
+
+    func testJSONResponseParserRejectsMalformedJSON() {
+        let data = "not json".data(using: String.Encoding.utf8)
+        let response = HTTPURLResponse(url: URL(string: "https://hula.trading")!,
+                                       statusCode: 200,
+                                       httpVersion: nil,
+                                       headerFields: nil)
+
+        let parsedResponse = HLDataManager.parseJSONResponse(data: data, response: response, error: nil)
+
+        XCTAssertFalse(parsedResponse.ok)
+        XCTAssertNil(parsedResponse.json)
+    }
+
+    func testJSONResponseParserRejectsHTTPFailures() {
+        let data = "{\"ok\":true}".data(using: String.Encoding.utf8)
+        let response = HTTPURLResponse(url: URL(string: "https://hula.trading")!,
+                                       statusCode: 500,
+                                       httpVersion: nil,
+                                       headerFields: nil)
+
+        let parsedResponse = HLDataManager.parseJSONResponse(data: data, response: response, error: nil)
+
+        XCTAssertFalse(parsedResponse.ok)
+        XCTAssertNil(parsedResponse.json)
+    }
+
+    func testJSONResponseParserAcceptsValidJSON() {
+        let data = "{\"ok\":true}".data(using: String.Encoding.utf8)
+        let response = HTTPURLResponse(url: URL(string: "https://hula.trading")!,
+                                       statusCode: 200,
+                                       httpVersion: nil,
+                                       headerFields: nil)
+
+        let parsedResponse = HLDataManager.parseJSONResponse(data: data, response: response, error: nil)
+
+        XCTAssertTrue(parsedResponse.ok)
+        XCTAssertNotNil(parsedResponse.json as? [String: Any])
+    }
     
     func testPerformanceExample() {
         // This is an example of a performance test case.
