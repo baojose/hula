@@ -25,6 +25,33 @@ class HulaTests: XCTestCase {
         // This is an example of a functional test case.
         // Use XCTAssert and related functions to verify your tests produce the correct results.
     }
+
+    func testLinkedinConfigurationRejectsPlaceholders() {
+        let infoDictionary: [String: Any] = [
+            LinkedinAppConfiguration.clientIdKey: "YOUR_LINKEDIN_APP_ID",
+            LinkedinAppConfiguration.clientSecretKey: "REPLACE_ME_LINKEDIN_CLIENT_SECRET",
+            LinkedinAppConfiguration.stateKey: "REPLACE_ME_LINKEDIN_STATE",
+            LinkedinAppConfiguration.redirectUrlKey: "https://hula.trading/"
+        ]
+
+        XCTAssertNil(LinkedinAppConfiguration.fromInfoDictionary(infoDictionary))
+    }
+
+    func testLinkedinConfigurationAcceptsConfiguredValues() {
+        let infoDictionary: [String: Any] = [
+            LinkedinAppConfiguration.clientIdKey: "configured-client-id",
+            LinkedinAppConfiguration.clientSecretKey: "configured-client-secret",
+            LinkedinAppConfiguration.stateKey: "configured-state",
+            LinkedinAppConfiguration.redirectUrlKey: "https://hula.trading/"
+        ]
+
+        let configuration = LinkedinAppConfiguration.fromInfoDictionary(infoDictionary)
+
+        XCTAssertEqual(configuration?.clientId, "configured-client-id")
+        XCTAssertEqual(configuration?.clientSecret, "configured-client-secret")
+        XCTAssertEqual(configuration?.state, "configured-state")
+        XCTAssertEqual(configuration?.redirectUrl, "https://hula.trading/")
+    }
     
     func testPerformanceExample() {
         // This is an example of a performance test case.
