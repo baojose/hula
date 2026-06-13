@@ -7,30 +7,66 @@
 //
 
 import XCTest
+import CoreLocation
 @testable import Hula
 
 class HulaTests: XCTestCase {
-    
-    override func setUp() {
-        super.setUp()
-        // Put setup code here. This method is called before the invocation of each test method in the class.
+
+    func testProductLocationPopulatePreservesDoublePrecision() {
+        let product = HulaProduct()
+        let preciseLat = 37.7749295123
+        let preciseLon = -122.4194155789
+        let dict: NSDictionary = [
+            "location": [NSNumber(value: preciseLat), NSNumber(value: preciseLon)]
+        ]
+
+        product.populate(with: dict)
+
+        assertLocation(product.productLocation, latitude: preciseLat, longitude: preciseLon, accuracy: 1e-9)
     }
-    
-    override func tearDown() {
-        // Put teardown code here. This method is called after the invocation of each test method in the class.
-        super.tearDown()
+
+    func testProductLocationPopulateAcceptsNSArrayPayload() {
+        let product = HulaProduct()
+        let coordinates = NSMutableArray()
+        coordinates.add(NSNumber(value: 41.878876))
+        coordinates.add(NSNumber(value: -87.629798))
+        let dict = NSMutableDictionary()
+        dict.setObject(coordinates, forKey: "location" as NSCopying)
+
+        product.populate(with: dict)
+
+        assertLocation(product.productLocation, latitude: 41.878876, longitude: -87.629798, accuracy: 1e-6)
     }
-    
-    func testExample() {
-        // This is an example of a functional test case.
-        // Use XCTAssert and related functions to verify your tests produce the correct results.
+
+    func testProductLocationPopulateAcceptsMixedNumericPayloads() {
+        let product = HulaProduct()
+        let dict: NSDictionary = [
+            "location": [Float(40.712776), Int(-74)]
+        ]
+
+        product.populate(with: dict)
+
+        assertLocation(product.productLocation, latitude: Double(Float(40.712776)), longitude: -74.0, accuracy: 1e-6)
     }
-    
-    func testPerformanceExample() {
-        // This is an example of a performance test case.
-        self.measure {
-            // Put the code you want to measure the time of here.
-        }
+
+    func testProductLocationMalformedPayloadsDoNotOverwriteExistingLocation() {
+        assertMalformedLocationPayloadDoesNotOverwrite(["location": [NSNumber(value: 1.5)]])
+        assertMalformedLocationPayloadDoesNotOverwrite(["location": ["north", "west"]])
+        assertMalformedLocationPayloadDoesNotOverwrite(["location": [true, false]])
+        assertMalformedLocationPayloadDoesNotOverwrite(["location": "37.7,-122.4"])
     }
-    
+
+    private func assertMalformedLocationPayloadDoesNotOverwrite(_ payload: NSDictionary, file: StaticString = #file, line: UInt = #line) {
+        let product = HulaProduct()
+        product.productLocation = CLLocation(latitude: 3.0, longitude: 4.0)
+
+        product.populate(with: payload)
+
+        assertLocation(product.productLocation, latitude: 3.0, longitude: 4.0, file: file, line: line)
+    }
+
+    private func assertLocation(_ location: CLLocation, latitude: CLLocationDegrees, longitude: CLLocationDegrees, accuracy: CLLocationDegrees = 0.0, file: StaticString = #file, line: UInt = #line) {
+        XCTAssertEqual(location.coordinate.latitude, latitude, accuracy: accuracy, file: file, line: line)
+        XCTAssertEqual(location.coordinate.longitude, longitude, accuracy: accuracy, file: file, line: line)
+    }
 }
