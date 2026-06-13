@@ -52,6 +52,45 @@ class HulaTests: XCTestCase {
         XCTAssertEqual(configuration?.state, "configured-state")
         XCTAssertEqual(configuration?.redirectUrl, "https://hula.trading/")
     }
+
+    func testJSONResponseParserRejectsMalformedJSON() {
+        let data = "not json".data(using: String.Encoding.utf8)
+        let response = HTTPURLResponse(url: URL(string: "https://hula.trading")!,
+                                       statusCode: 200,
+                                       httpVersion: nil,
+                                       headerFields: nil)
+
+        let parsedResponse = HLDataManager.parseJSONResponse(data: data, response: response, error: nil)
+
+        XCTAssertFalse(parsedResponse.ok)
+        XCTAssertNil(parsedResponse.json)
+    }
+
+    func testJSONResponseParserRejectsHTTPFailures() {
+        let data = "{\"ok\":true}".data(using: String.Encoding.utf8)
+        let response = HTTPURLResponse(url: URL(string: "https://hula.trading")!,
+                                       statusCode: 500,
+                                       httpVersion: nil,
+                                       headerFields: nil)
+
+        let parsedResponse = HLDataManager.parseJSONResponse(data: data, response: response, error: nil)
+
+        XCTAssertFalse(parsedResponse.ok)
+        XCTAssertNil(parsedResponse.json)
+    }
+
+    func testJSONResponseParserAcceptsValidJSON() {
+        let data = "{\"ok\":true}".data(using: String.Encoding.utf8)
+        let response = HTTPURLResponse(url: URL(string: "https://hula.trading")!,
+                                       statusCode: 200,
+                                       httpVersion: nil,
+                                       headerFields: nil)
+
+        let parsedResponse = HLDataManager.parseJSONResponse(data: data, response: response, error: nil)
+
+        XCTAssertTrue(parsedResponse.ok)
+        XCTAssertNotNil(parsedResponse.json as? [String: Any])
+    }
     
     func testPerformanceExample() {
         // This is an example of a performance test case.
