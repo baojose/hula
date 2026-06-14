@@ -62,6 +62,12 @@
 	<string>Hula Trade</string>
 	<key>LIAppId</key>
 	<string>YOUR_LINKEDIN_APP_ID</string>
+	<key>HulaLinkedInClientSecret</key>
+	<string>YOUR_LINKEDIN_CLIENT_SECRET</string>
+	<key>HulaLinkedInRedirectURL</key>
+	<string>YOUR_LINKEDIN_REDIRECT_URL</string>
+	<key>HulaLinkedInState</key>
+	<string>REPLACE_ME_LINKEDIN_STATE</string>
 	<key>LSApplicationQueriesSchemes</key>
 	<array>
 		<string>linkedin</string>
