@@ -36,7 +36,7 @@ class HLProfileViewController: BaseViewController {
     @IBOutlet weak var viewFeedbackBtn: UIButton!
     @IBOutlet weak var fullsizeViewReference: UIView!
     
-    
+
     static func isConfiguredLinkedinValue(_ value: String?) -> Bool {
         guard let value = value else {
             return false
@@ -44,7 +44,7 @@ class HLProfileViewController: BaseViewController {
         let trimmed = value.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)
         return trimmed != "" && trimmed.range(of: "YOUR_") == nil && trimmed.range(of: "REPLACE_ME") == nil
     }
-    
+
     private func linkedinConfigValue(forKey key: String) -> String? {
         let value = Bundle.main.object(forInfoDictionaryKey: key) as? String
         if HLProfileViewController.isConfiguredLinkedinValue(value) {
@@ -52,7 +52,7 @@ class HLProfileViewController: BaseViewController {
         }
         return nil
     }
-    
+
     private func configuredLinkedinHelper() -> LinkedinSwiftHelper? {
         guard let clientId = linkedinConfigValue(forKey: "LIAppId"),
             let clientSecret = linkedinConfigValue(forKey: "HulaLinkedInClientSecret"),
@@ -60,7 +60,7 @@ class HLProfileViewController: BaseViewController {
             let redirectUrl = linkedinConfigValue(forKey: "HulaLinkedInRedirectURL") else {
                 return nil
         }
-        
+
         let configuration = LinkedinSwiftConfiguration(clientId: clientId,
                                                        clientSecret: clientSecret,
                                                        state: state,
@@ -310,7 +310,7 @@ class HLProfileViewController: BaseViewController {
         alert.addAction(UIAlertAction(title: "OK", style: UIAlertActionStyle.default, handler: nil))
         self.present(alert, animated: true, completion: nil)
     }
-    
+
     // Custom functions for ViewController
     
     func getUserProfile() {
