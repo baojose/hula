@@ -7,30 +7,36 @@
 //
 
 import XCTest
+import LinkedinSwift
 @testable import Hula
 
 class HulaTests: XCTestCase {
-    
-    override func setUp() {
-        super.setUp()
-        // Put setup code here. This method is called before the invocation of each test method in the class.
+
+    func testSocialCredentialConstantsRemainPublicPlaceholders() {
+        XCTAssertEqual(HulaConstants.twitterKey, "")
+        XCTAssertEqual(HulaConstants.twitterSecret, "")
+        XCTAssertEqual(HulaConstants.linkedinClientId, "")
+        XCTAssertEqual(HulaConstants.linkedinClientSecret, "")
+        XCTAssertEqual(HulaConstants.linkedinState, "")
     }
-    
-    override func tearDown() {
-        // Put teardown code here. This method is called after the invocation of each test method in the class.
-        super.tearDown()
+
+    func testLinkedinConfigurationUsesCentralizedPublicSnapshotValues() {
+        let configuration = HLProfileViewController.linkedinConfiguration()
+
+        XCTAssertEqual(configuration.clientId, HulaConstants.linkedinClientId)
+        XCTAssertEqual(configuration.clientSecret, HulaConstants.linkedinClientSecret)
+        XCTAssertEqual(configuration.state, HulaConstants.linkedinState)
+        XCTAssertEqual(configuration.permissions as? [String] ?? [], HulaConstants.linkedinPermissions)
+        XCTAssertEqual(configuration.redirectUrl, HulaConstants.linkedinRedirectURL)
     }
-    
-    func testExample() {
-        // This is an example of a functional test case.
-        // Use XCTAssert and related functions to verify your tests produce the correct results.
+
+    func testLinkedinConfigurationKeepsRequiredOAuthShapeWithoutSecrets() {
+        let configuration = HLProfileViewController.linkedinConfiguration()
+
+        XCTAssertTrue(configuration.clientId.isEmpty)
+        XCTAssertTrue(configuration.clientSecret.isEmpty)
+        XCTAssertTrue(configuration.state.isEmpty)
+        XCTAssertEqual(configuration.permissions as? [String] ?? [], ["r_basicprofile", "r_emailaddress"])
+        XCTAssertEqual(configuration.redirectUrl, "https://hula.trading/")
     }
-    
-    func testPerformanceExample() {
-        // This is an example of a performance test case.
-        self.measure {
-            // Put the code you want to measure the time of here.
-        }
-    }
-    
 }
