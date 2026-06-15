@@ -46,7 +46,7 @@ struct HulaConstants {
     // Obtain new credentials from Twitter Developer Portal — rotate if these ever leaked in git history.
     static let twitterKey: String = ""
     static let twitterSecret: String = ""
-    
+
     // Public snapshot: replace from LinkedIn Developer Portal in private configuration.
     static let linkedinClientId: String = ""
     static let linkedinClientSecret: String = ""

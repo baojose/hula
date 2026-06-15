@@ -104,7 +104,7 @@ class HulaProduct: NSObject {
         }
         return nil
     }
-    
+
     private class func coordinateArray(from value: Any?) -> [Any]? {
         if let tmp = value as? [Any] {
             return tmp
@@ -114,7 +114,7 @@ class HulaProduct: NSObject {
         }
         return nil
     }
-    
+
     func populate(with: NSDictionary){
         if let tmp = with.object(forKey: "_id") as? String { productId = tmp }
         if let tmp = with.object(forKey: "title") as? String { productName = tmp }
