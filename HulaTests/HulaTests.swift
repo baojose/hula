@@ -7,6 +7,7 @@
 //
 
 import XCTest
+import Foundation
 @testable import Hula
 
 class HulaTests: XCTestCase {
@@ -21,16 +22,44 @@ class HulaTests: XCTestCase {
         super.tearDown()
     }
     
-    func testExample() {
-        // This is an example of a functional test case.
-        // Use XCTAssert and related functions to verify your tests produce the correct results.
+    func testHTTPResponseParserParsesSuccessfulJSON() {
+        let url = URL(string: "https://api.hula.trading/v1/categories")!
+        let response = HTTPURLResponse(url: url, statusCode: 200, httpVersion: nil, headerFields: nil)
+        let data = "{\"ok\":true}".data(using: .utf8)
+
+        let parsed = HLDataManager.parseHTTPResponse(data: data, response: response, error: nil)
+
+        XCTAssertTrue(parsed.ok)
+        XCTAssertNotNil(parsed.json)
     }
     
-    func testPerformanceExample() {
-        // This is an example of a performance test case.
-        self.measure {
-            // Put the code you want to measure the time of here.
-        }
+    func testHTTPResponseParserRejectsMalformedJSON() {
+        let url = URL(string: "https://api.hula.trading/v1/categories")!
+        let response = HTTPURLResponse(url: url, statusCode: 200, httpVersion: nil, headerFields: nil)
+        let data = "not-json".data(using: .utf8)
+
+        let parsed = HLDataManager.parseHTTPResponse(data: data, response: response, error: nil)
+
+        XCTAssertFalse(parsed.ok)
+        XCTAssertNil(parsed.json)
     }
-    
+
+    func testHTTPResponseParserRejectsHTTPError() {
+        let url = URL(string: "https://api.hula.trading/v1/authenticate")!
+        let response = HTTPURLResponse(url: url, statusCode: 500, httpVersion: nil, headerFields: nil)
+        let data = "{\"message\":\"server error\"}".data(using: .utf8)
+
+        let parsed = HLDataManager.parseHTTPResponse(data: data, response: response, error: nil)
+
+        XCTAssertFalse(parsed.ok)
+        XCTAssertNil(parsed.json)
+    }
+
+    func testLinkedInCredentialPlaceholdersAreRejected() {
+        XCTAssertFalse(HLProfileViewController.isConfiguredLinkedInValue(""))
+        XCTAssertFalse(HLProfileViewController.isConfiguredLinkedInValue("YOUR_LINKEDIN_CLIENT_SECRET"))
+        XCTAssertFalse(HLProfileViewController.isConfiguredLinkedInValue("REPLACE_ME_LINKEDIN_STATE"))
+        XCTAssertTrue(HLProfileViewController.isConfiguredLinkedInValue("configured-linkedin-value"))
+    }
+
 }
