@@ -84,33 +84,33 @@ class HulaProduct: NSObject {
         if value is Bool {
             return nil
         }
-        
+
         if let number = value as? NSNumber {
             if CFGetTypeID(number) == CFBooleanGetTypeID() {
                 return nil
             }
             return CLLocationDegrees(number.doubleValue)
         }
-        
+
         if let doubleValue = value as? Double {
             return CLLocationDegrees(doubleValue)
         }
-        
+
         if let floatValue = value as? Float {
             return CLLocationDegrees(floatValue)
         }
-        
+
         if let intValue = value as? Int {
             return CLLocationDegrees(intValue)
         }
-        
+
         if let cgFloatValue = value as? CGFloat {
             return CLLocationDegrees(cgFloatValue)
         }
-        
+
         return nil
     }
-    
+
     func populate(with: NSDictionary){
         if let tmp = with.object(forKey: "_id") as? String { productId = tmp }
         if let tmp = with.object(forKey: "title") as? String { productName = tmp }
