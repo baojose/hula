@@ -11,64 +11,64 @@ import CoreLocation
 @testable import Hula
 
 class HulaTests: XCTestCase {
-    
+
     override func setUp() {
         super.setUp()
         resetSharedUser()
     }
-    
+
     override func tearDown() {
         resetSharedUser()
         super.tearDown()
     }
-    
+
     func testFeedbackUsesDashWhenNoFeedbackAndRoundedPercentageWhenPresent() {
         let user = HulaUser.sharedInstance
         user.feedback_count = 0.0
         user.feedback_points = 0.0
         XCTAssertEqual(user.getFeedback(), "-")
-        
+
         user.feedback_count = 3.0
         user.feedback_points = 2.0
         XCTAssertEqual(user.getFeedback(), "67%")
     }
-    
+
     func testUserLoggedInRequiresBothUserIdAndToken() {
         let user = HulaUser.sharedInstance
-        
+
         user.userId = "user-123"
         user.token = ""
         XCTAssertFalse(user.isUserLoggedIn())
-        
+
         user.userId = ""
         user.token = "token-abc"
         XCTAssertFalse(user.isUserLoggedIn())
-        
+
         user.userId = "user-123"
         user.token = "token-abc"
         XCTAssertTrue(user.isUserLoggedIn())
     }
-    
+
     func testIncompleteProfileRequiresPublicProfileFields() {
         fillCompleteProfile()
         XCTAssertFalse(HulaUser.sharedInstance.isIncompleteProfile())
-        
+
         HulaUser.sharedInstance.userName = ""
         XCTAssertTrue(HulaUser.sharedInstance.isIncompleteProfile())
-        
+
         fillCompleteProfile()
         HulaUser.sharedInstance.userNick = ""
         XCTAssertTrue(HulaUser.sharedInstance.isIncompleteProfile())
-        
+
         fillCompleteProfile()
         HulaUser.sharedInstance.userBio = ""
         XCTAssertTrue(HulaUser.sharedInstance.isIncompleteProfile())
-        
+
         fillCompleteProfile()
         HulaUser.sharedInstance.userPhotoURL = ""
         XCTAssertTrue(HulaUser.sharedInstance.isIncompleteProfile())
     }
-    
+
     func testPopulateUserMapsServerDictionaryFields() {
         let user = HulaUser.sharedInstance
         let payload: NSDictionary = [
@@ -93,9 +93,9 @@ class HulaTests: XCTestCase {
             "deviceId": "device-123",
             "max_trades": 7
         ]
-        
+
         user.populate(with: payload)
-        
+
         XCTAssertEqual(user.userId, "user-123")
         XCTAssertEqual(user.userName, "Jane Appleseed")
         XCTAssertEqual(user.userNick, "jane")
@@ -118,10 +118,10 @@ class HulaTests: XCTestCase {
         XCTAssertEqual(user.deviceId, "device-123")
         XCTAssertEqual(user.maxTrades, 7)
     }
-    
+
     func testThumbnailURLMappingHandlesFallbacksAndNestedImagePaths() {
         let utils = CommonUtils.sharedInstance
-        
+
         XCTAssertEqual(utils.getThumbFor(url: ""), HulaConstants.noProductThumb)
         XCTAssertEqual(utils.getThumbFor(url: HulaConstants.transparentImg), HulaConstants.transparentImg)
         XCTAssertEqual(
@@ -133,7 +133,7 @@ class HulaTests: XCTestCase {
             "https://hula.trading/files/a/b/c/tm_item.png"
         )
     }
-    
+
     func testISO8601ExtensionRoundTripsUTCDate() {
         let date = Date(timeIntervalSince1970: 1_489_842_000.123)
         let encoded = date.iso8601
@@ -141,14 +141,14 @@ class HulaTests: XCTestCase {
             XCTFail("Expected ISO8601 formatter to parse its own output")
             return
         }
-        
+
         XCTAssertEqual(decoded.timeIntervalSince1970, date.timeIntervalSince1970, accuracy: 0.001)
     }
-    
+
     func testLegacyISODateParserReadsServerMillisecondsFormat() {
         let date = CommonUtils.sharedInstance.isoDateToNSDate(date: "2020-01-15T12:34:56.000Z")
         let components = Calendar(identifier: .gregorian).dateComponents(in: TimeZone(secondsFromGMT: 0)!, from: date as Date)
-        
+
         XCTAssertEqual(components.year, 2020)
         XCTAssertEqual(components.month, 1)
         XCTAssertEqual(components.day, 15)
@@ -156,7 +156,7 @@ class HulaTests: XCTestCase {
         XCTAssertEqual(components.minute, 34)
         XCTAssertEqual(components.second, 56)
     }
-    
+
     func testTradePostStringIncludesCorePayloadFields() {
         let trade = HulaTrade()
         trade.product_id = "product-1"
@@ -170,9 +170,9 @@ class HulaTests: XCTestCase {
         trade.turn_user_id = "owner-1"
         trade.owner_money = 12.5
         trade.other_money = 3.0
-        
+
         let postString = trade.get_post_string()
-        
+
         XCTAssertTrue(postString.contains("product_id=product-1"))
         XCTAssertTrue(postString.contains("owner_id=owner-1"))
         XCTAssertTrue(postString.contains("other_id=other-1"))
@@ -185,7 +185,7 @@ class HulaTests: XCTestCase {
         XCTAssertTrue(postString.contains("owner_money=12.5"))
         XCTAssertTrue(postString.contains("other_money=3.0"))
     }
-    
+
     func testTradeLoadFromMergesLastBidDiffAndDefaultsUnreadAndAcceptedState() {
         let trade = HulaTrade()
         let payload: NSDictionary = [
@@ -216,9 +216,9 @@ class HulaTests: XCTestCase {
                 ]
             ]
         ]
-        
+
         trade.loadFrom(dict: payload)
-        
+
         XCTAssertEqual(trade.tradeId, "trade-1")
         XCTAssertEqual(trade.product_id, "product-1")
         XCTAssertEqual(trade.owner_id, "owner-1")
@@ -240,7 +240,7 @@ class HulaTests: XCTestCase {
         XCTAssertEqual(trade.num_bids, 2)
         XCTAssertEqual(trade.last_bid_diff, ["owner-added-product", "other-added-product", "other-added-money"])
     }
-    
+
     private func fillCompleteProfile() {
         let user = HulaUser.sharedInstance
         user.userName = "Jane Appleseed"
@@ -248,7 +248,7 @@ class HulaTests: XCTestCase {
         user.userBio = "trader"
         user.userPhotoURL = "https://hula.trading/files/user/jane.jpg"
     }
-    
+
     private func resetSharedUser() {
         let user = HulaUser.sharedInstance
         user.userId = ""
@@ -276,5 +276,5 @@ class HulaTests: XCTestCase {
         user.arrayProducts = []
         user.numProducts = 0
     }
-    
+
 }
