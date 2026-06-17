@@ -157,6 +157,34 @@ class HLDataManager: NSObject {
         guard let builder = GAIDictionaryBuilder.createScreenView() else { return }
         tracker.send(builder.build() as [NSObject : AnyObject])
     }
+
+    static func parseHTTPResponse(data: Data?, response: URLResponse?, error: Error?) -> (ok: Bool, json: Any?) {
+        if let error = error {
+            print(error)
+            return (false, nil)
+        }
+
+        if let httpStatus = response as? HTTPURLResponse {
+            guard (200..<300).contains(httpStatus.statusCode) else {
+                print("statusCode should be 2xx, but is \(httpStatus.statusCode)")
+                print(response ?? "No response")
+                return (false, nil)
+            }
+        }
+
+        guard let data = data, data.count > 0 else {
+            print("Data is empty")
+            return (false, nil)
+        }
+
+        do {
+            let json = try JSONSerialization.jsonObject(with: data, options: [])
+            return (true, json as AnyObject?)
+        } catch {
+            print("Invalid JSON response: \(error)")
+            return (false, nil)
+        }
+    }
     
     func loginUser(email:String, pass:String) {
         
@@ -190,6 +218,9 @@ class HLDataManager: NSObject {
                 }
                 self.lastServerMessage = loginSuccess
                 NotificationCenter.default.post(name: self.loginRecieved, object: loginSuccess)
+            } else {
+                self.lastServerMessage = NSLocalizedString("Connection error. Please try again.", comment: "")
+                NotificationCenter.default.post(name: self.loginRecieved, object: self.lastServerMessage)
             }
         })
     }
@@ -226,6 +257,9 @@ class HLDataManager: NSObject {
                     user.token = ""
                 }
                 
+                NotificationCenter.default.post(name: self.fbLoginRecieved, object: loginSuccess)
+            } else {
+                self.lastServerMessage = NSLocalizedString("Facebook login error", comment: "")
                 NotificationCenter.default.post(name: self.fbLoginRecieved, object: loginSuccess)
             }
         })
@@ -346,6 +380,9 @@ class HLDataManager: NSObject {
                     self.lastServerMessage = NSLocalizedString("Server response unexpected", comment: "")
                 }
                 NotificationCenter.default.post(name: self.signupRecieved, object: signupSuccess)
+            } else {
+                self.lastServerMessage = NSLocalizedString("Connection error. Please try again.", comment: "")
+                NotificationCenter.default.post(name: self.signupRecieved, object: signupSuccess)
             }
         })
     }
@@ -414,22 +451,8 @@ class HLDataManager: NSObject {
         }
         request.httpMethod = "GET"
         let task = URLSession.shared.dataTask(with: request) { data, response, error in
-            guard error == nil else {
-                print(error!)
-                taskCallback(false, nil)
-                return
-            }
-            guard let data = data else {
-                print("Data is empty")
-                taskCallback(false, nil)
-                return
-            }
-            //print(request)
-            //print(response)
-            //print(data.count)
-            let json = try! JSONSerialization.jsonObject(with: data, options: [])
-            //print(json)
-            taskCallback(true, json as AnyObject?)
+            let parsedResponse = HLDataManager.parseHTTPResponse(data: data, response: response, error: error)
+            taskCallback(parsedResponse.ok, parsedResponse.json)
         }
     
         task.resume()
@@ -452,17 +475,8 @@ class HLDataManager: NSObject {
         //print(request.httpBody!)
         //print(request.httpMethod!)
         let task = URLSession.shared.dataTask(with: request) { data, response, error in
-            guard let data = data, error == nil else {                                                 // check for fundamental networking error
-                print(error!)
-                return
-            }
-            
-            if let httpStatus = response as? HTTPURLResponse, httpStatus.statusCode != 200 {           // check for http errors
-                print("statusCode should be 200, but is \(httpStatus.statusCode)")
-                print(response ?? "No response")
-            }
-            let json = try! JSONSerialization.jsonObject(with: data, options: [])
-            taskCallback(true, json as AnyObject?)
+            let parsedResponse = HLDataManager.parseHTTPResponse(data: data, response: response, error: error)
+            taskCallback(parsedResponse.ok, parsedResponse.json)
         }
         task.resume()
     }
@@ -496,22 +510,13 @@ class HLDataManager: NSObject {
             
             
             let task = session.dataTask(with: request) { data, response, error in
-                guard let data = data, error == nil else {                                                 // check for fundamental networking error
-                    print(error!)
-                    return
-                }
-                
-                if let httpStatus = response as? HTTPURLResponse, httpStatus.statusCode != 200 {           // check for http errors
-                    print("statusCode should be 200, but is \(httpStatus.statusCode)")
-                    print(response ?? "No response")
-                } else {
-                    
-                    let json = try! JSONSerialization.jsonObject(with: data, options: [])
-                    taskCallback(true, json as AnyObject?)
-                }
+                let parsedResponse = HLDataManager.parseHTTPResponse(data: data, response: response, error: error)
+                taskCallback(parsedResponse.ok, parsedResponse.json)
             }
             task.resume()
             
+        } else {
+            taskCallback(false, nil)
         }
     }
     
@@ -544,22 +549,13 @@ class HLDataManager: NSObject {
             
             
             let task = session.dataTask(with: request) { data, response, error in
-                guard let data = data, error == nil else {                                                 // check for fundamental networking error
-                    print(error!)
-                    return
-                }
-                
-                if let httpStatus = response as? HTTPURLResponse, httpStatus.statusCode != 200 {           // check for http errors
-                    print("statusCode should be 200, but is \(httpStatus.statusCode)")
-                    print(response ?? "No response")
-                } else {
-                    
-                    let json = try! JSONSerialization.jsonObject(with: data, options: [])
-                    taskCallback(true, json as AnyObject?)
-                }
+                let parsedResponse = HLDataManager.parseHTTPResponse(data: data, response: response, error: error)
+                taskCallback(parsedResponse.ok, parsedResponse.json)
             }
             task.resume()
             
+        } else {
+            taskCallback(false, nil)
         }
     }
     
@@ -613,7 +609,7 @@ class HLDataManager: NSObject {
         dict.setObject(user.numProducts, forKey: "numProducts" as NSCopying)
         
         //...
-        dict.write(toFile: path, atomically: false)
+        dict.write(toFile: path, atomically: true)
         //let resultDictionary = NSMutableDictionary(contentsOfFile: path)
         //print("Saved UserData.plist file is --> \(String(describing: resultDictionary?.description))")
         
