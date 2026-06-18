@@ -7,6 +7,7 @@
 //
 
 import XCTest
+import Foundation
 @testable import Hula
 
 class HulaTests: XCTestCase {
@@ -56,6 +57,42 @@ class HulaTests: XCTestCase {
         ]
 
         XCTAssertNotNil(HLProfileViewController.linkedinConfiguration(from: info))
+    }
+
+    func testHTTPParserRejectsMalformedJSONWithoutCrashing() {
+        let response = httpResponse(statusCode: 200)
+        let parsed = HLDataManager.parseHTTPResponse(data: "not-json".data(using: .utf8), response: response, error: nil)
+
+        XCTAssertFalse(parsed.success)
+        XCTAssertNil(parsed.json)
+    }
+
+    func testHTTPParserRejectsNonSuccessStatus() {
+        let response = httpResponse(statusCode: 503)
+        let parsed = HLDataManager.parseHTTPResponse(data: "{\"ok\":true}".data(using: .utf8), response: response, error: nil)
+
+        XCTAssertFalse(parsed.success)
+        XCTAssertNil(parsed.json)
+    }
+
+    func testHTTPParserRejectsMissingData() {
+        let response = httpResponse(statusCode: 200)
+        let parsed = HLDataManager.parseHTTPResponse(data: nil, response: response, error: nil)
+
+        XCTAssertFalse(parsed.success)
+        XCTAssertNil(parsed.json)
+    }
+
+    func testHTTPParserAcceptsValidJSON() {
+        let response = httpResponse(statusCode: 200)
+        let parsed = HLDataManager.parseHTTPResponse(data: "{\"ok\":true}".data(using: .utf8), response: response, error: nil)
+
+        XCTAssertTrue(parsed.success)
+        XCTAssertNotNil(parsed.json)
+    }
+
+    private func httpResponse(statusCode: Int) -> HTTPURLResponse {
+        return HTTPURLResponse(url: URL(string: "https://hula.trading")!, statusCode: statusCode, httpVersion: nil, headerFields: nil)!
     }
 
     func testPerformanceExample() {

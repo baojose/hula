@@ -190,6 +190,10 @@ class HLDataManager: NSObject {
                 }
                 self.lastServerMessage = loginSuccess
                 NotificationCenter.default.post(name: self.loginRecieved, object: loginSuccess)
+            } else {
+                loginSuccess = NSLocalizedString("Connection error. Please try again.", comment: "")
+                self.lastServerMessage = loginSuccess
+                NotificationCenter.default.post(name: self.loginRecieved, object: loginSuccess)
             }
         })
     }
@@ -226,6 +230,8 @@ class HLDataManager: NSObject {
                     user.token = ""
                 }
                 
+                NotificationCenter.default.post(name: self.fbLoginRecieved, object: loginSuccess)
+            } else {
                 NotificationCenter.default.post(name: self.fbLoginRecieved, object: loginSuccess)
             }
         })
@@ -346,6 +352,9 @@ class HLDataManager: NSObject {
                     self.lastServerMessage = NSLocalizedString("Server response unexpected", comment: "")
                 }
                 NotificationCenter.default.post(name: self.signupRecieved, object: signupSuccess)
+            } else {
+                self.lastServerMessage = NSLocalizedString("Connection error. Please try again.", comment: "")
+                NotificationCenter.default.post(name: self.signupRecieved, object: signupSuccess)
             }
         })
     }
@@ -402,11 +411,38 @@ class HLDataManager: NSObject {
     }
     
     
+    static func parseHTTPResponse(data: Data?, response: URLResponse?, error: Error?) -> (success: Bool, json: Any?) {
+        if let error = error {
+            print(error)
+            return (false, nil)
+        }
+
+        if let httpStatus = response as? HTTPURLResponse {
+            if httpStatus.statusCode < 200 || httpStatus.statusCode >= 300 {
+                print("HTTP status code \(httpStatus.statusCode)")
+                return (false, nil)
+            }
+        }
+
+        guard let data = data else {
+            print("Data is empty")
+            return (false, nil)
+        }
+
+        do {
+            let json = try JSONSerialization.jsonObject(with: data, options: [])
+            return (true, json)
+        } catch {
+            print(error)
+            return (false, nil)
+        }
+    }
+
     func httpGet(urlstr:String, taskCallback: @escaping (Bool, Any?) -> ()) {
         let url = URL(string: urlstr)
         //print(url!)
         var request:URLRequest = URLRequest(url: url!)
-        
+
         let user = HulaUser.sharedInstance
         //print(user.token)
         if (user.token.count>10){
@@ -414,24 +450,13 @@ class HLDataManager: NSObject {
         }
         request.httpMethod = "GET"
         let task = URLSession.shared.dataTask(with: request) { data, response, error in
-            guard error == nil else {
-                print(error!)
-                taskCallback(false, nil)
-                return
-            }
-            guard let data = data else {
-                print("Data is empty")
-                taskCallback(false, nil)
-                return
-            }
             //print(request)
             //print(response)
-            //print(data.count)
-            let json = try! JSONSerialization.jsonObject(with: data, options: [])
+            let parsed = HLDataManager.parseHTTPResponse(data: data, response: response, error: error)
             //print(json)
-            taskCallback(true, json as AnyObject?)
+            taskCallback(parsed.success, parsed.json as AnyObject?)
         }
-    
+
         task.resume()
     }
 
@@ -452,35 +477,26 @@ class HLDataManager: NSObject {
         //print(request.httpBody!)
         //print(request.httpMethod!)
         let task = URLSession.shared.dataTask(with: request) { data, response, error in
-            guard let data = data, error == nil else {                                                 // check for fundamental networking error
-                print(error!)
-                return
-            }
-            
-            if let httpStatus = response as? HTTPURLResponse, httpStatus.statusCode != 200 {           // check for http errors
-                print("statusCode should be 200, but is \(httpStatus.statusCode)")
-                print(response ?? "No response")
-            }
-            let json = try! JSONSerialization.jsonObject(with: data, options: [])
-            taskCallback(true, json as AnyObject?)
+            let parsed = HLDataManager.parseHTTPResponse(data: data, response: response, error: error)
+            taskCallback(parsed.success, parsed.json as AnyObject?)
         }
         task.resume()
     }
-    
+
     func uploadImage(_ image: UIImage, itemPosition: Int, taskCallback: @escaping (Bool, Any?) -> ()){
         let imageData = UIImageJPEGRepresentation(image,0.7)
-        
+
         if imageData != nil{
             let queryURL = HulaConstants.apiURL + "upload/image"
             var request = URLRequest(url: URL(string:queryURL)!)
             let session:URLSession = URLSession.shared
-            
+
             request.httpMethod = "POST"
-            
-            
+
+
             let boundary = "Boundary-\(UUID().uuidString)"
             request.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
-            
+
             let user = HulaUser.sharedInstance
             if (user.token.count>10){
                 request.setValue(user.token, forHTTPHeaderField: "x-access-token")
@@ -490,45 +506,36 @@ class HLDataManager: NSObject {
                                   data: imageData!,
                                   mimeType: "image/jpeg",
                                   filename: "image1.jpg")
-            
-            
+
+
             request.httpBody = body as Data
-            
-            
+
+
             let task = session.dataTask(with: request) { data, response, error in
-                guard let data = data, error == nil else {                                                 // check for fundamental networking error
-                    print(error!)
-                    return
-                }
-                
-                if let httpStatus = response as? HTTPURLResponse, httpStatus.statusCode != 200 {           // check for http errors
-                    print("statusCode should be 200, but is \(httpStatus.statusCode)")
-                    print(response ?? "No response")
-                } else {
-                    
-                    let json = try! JSONSerialization.jsonObject(with: data, options: [])
-                    taskCallback(true, json as AnyObject?)
-                }
+                let parsed = HLDataManager.parseHTTPResponse(data: data, response: response, error: error)
+                taskCallback(parsed.success, parsed.json as AnyObject?)
             }
             task.resume()
-            
+
+        } else {
+            taskCallback(false, nil)
         }
     }
-    
+
     func uploadVideo(_ videoPath: String, productId:String, tradeId:String, taskCallback: @escaping (Bool, Any?) -> ()){
         let videoData = NSData(contentsOfFile: videoPath)
-        
+
         if videoData != nil{
             let queryURL = HulaConstants.apiURL + "upload/video"
             var request = URLRequest(url: URL(string:queryURL)!)
             let session:URLSession = URLSession.shared
-            
+
             request.httpMethod = "POST"
-            
-            
+
+
             let boundary = "Boundary-\(UUID().uuidString)"
             request.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
-            
+
             let user = HulaUser.sharedInstance
             if (user.token.count>10){
                 request.setValue(user.token, forHTTPHeaderField: "x-access-token")
@@ -538,28 +545,19 @@ class HLDataManager: NSObject {
                                   data: videoData! as Data,
                                   mimeType: "video/mp4",
                                   filename: "video.mp4")
-            
-            
+
+
             request.httpBody = body as Data
-            
-            
+
+
             let task = session.dataTask(with: request) { data, response, error in
-                guard let data = data, error == nil else {                                                 // check for fundamental networking error
-                    print(error!)
-                    return
-                }
-                
-                if let httpStatus = response as? HTTPURLResponse, httpStatus.statusCode != 200 {           // check for http errors
-                    print("statusCode should be 200, but is \(httpStatus.statusCode)")
-                    print(response ?? "No response")
-                } else {
-                    
-                    let json = try! JSONSerialization.jsonObject(with: data, options: [])
-                    taskCallback(true, json as AnyObject?)
-                }
+                let parsed = HLDataManager.parseHTTPResponse(data: data, response: response, error: error)
+                taskCallback(parsed.success, parsed.json as AnyObject?)
             }
             task.resume()
-            
+
+        } else {
+            taskCallback(false, nil)
         }
     }
     
@@ -613,7 +611,7 @@ class HLDataManager: NSObject {
         dict.setObject(user.numProducts, forKey: "numProducts" as NSCopying)
         
         //...
-        dict.write(toFile: path, atomically: false)
+        dict.write(toFile: path, atomically: true)
         //let resultDictionary = NSMutableDictionary(contentsOfFile: path)
         //print("Saved UserData.plist file is --> \(String(describing: resultDictionary?.description))")
         
