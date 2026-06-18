@@ -36,14 +36,14 @@ class HLProfileViewController: BaseViewController {
     @IBOutlet weak var viewFeedbackBtn: UIButton!
     @IBOutlet weak var fullsizeViewReference: UIView!
     
-    
+
     private lazy var linkedinHelper: LinkedinSwiftHelper? = {
         guard let configuration = HLProfileViewController.linkedinConfiguration() else {
             return nil
         }
         return LinkedinSwiftHelper(configuration: configuration)
     }()
-    
+
     static func linkedinConfiguration(from infoDictionary: [String: Any]? = Bundle.main.infoDictionary) -> LinkedinSwiftConfiguration? {
         guard let infoDictionary = infoDictionary,
             let clientId = configuredInfoValue("LinkedInClientId", in: infoDictionary),
@@ -52,25 +52,25 @@ class HLProfileViewController: BaseViewController {
             let redirectUrl = configuredInfoValue("LinkedInRedirectURL", in: infoDictionary) else {
                 return nil
         }
-        
+
         return LinkedinSwiftConfiguration(clientId: clientId, clientSecret: clientSecret, state: state, permissions: ["r_basicprofile", "r_emailaddress"], redirectUrl: redirectUrl)
     }
-    
+
     private static func configuredInfoValue(_ key: String, in infoDictionary: [String: Any]) -> String? {
         guard let value = infoDictionary[key] as? String else {
             return nil
         }
-        
+
         let trimmed = value.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)
         if trimmed.isEmpty {
             return nil
         }
-        
+
         let normalized = trimmed.uppercased()
         if normalized.contains("REPLACE_ME") || normalized.contains("YOUR_") {
             return nil
         }
-        
+
         return trimmed
     }
     
@@ -293,7 +293,7 @@ class HLProfileViewController: BaseViewController {
             self.present(alert, animated: true, completion: nil)
             return
         }
-        
+
         linkedinHelper.authorizeSuccess({ (token) in
             
             print(token)

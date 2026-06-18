@@ -33,20 +33,20 @@ class HulaTests: XCTestCase {
             "LinkedInState": "REPLACE_ME_LINKEDIN_STATE",
             "LinkedInRedirectURL": "https://hula.trading/"
         ]
-        
+
         XCTAssertNil(HLProfileViewController.linkedinConfiguration(from: info))
     }
-    
+
     func testLinkedInConfigurationRejectsMissingValues() {
         let info: [String: Any] = [
             "LinkedInClientId": "configured-client-id",
             "LinkedInState": "configured-state",
             "LinkedInRedirectURL": "https://hula.trading/"
         ]
-        
+
         XCTAssertNil(HLProfileViewController.linkedinConfiguration(from: info))
     }
-    
+
     func testLinkedInConfigurationAcceptsConfiguredValues() {
         let info: [String: Any] = [
             "LinkedInClientId": "configured-client-id",
@@ -54,10 +54,10 @@ class HulaTests: XCTestCase {
             "LinkedInState": "configured-state",
             "LinkedInRedirectURL": "https://hula.trading/"
         ]
-        
+
         XCTAssertNotNil(HLProfileViewController.linkedinConfiguration(from: info))
     }
-    
+
     func testPerformanceExample() {
         // This is an example of a performance test case.
         self.measure {
