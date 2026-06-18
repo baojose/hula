@@ -8,6 +8,7 @@
 
 import UIKit
 import Foundation
+import LinkedinSwift
 
 struct HulaConstants {
     
@@ -46,4 +47,16 @@ struct HulaConstants {
     // Obtain new credentials from Twitter Developer Portal — rotate if these ever leaked in git history.
     static let twitterKey: String = ""
     static let twitterSecret: String = ""
+    
+    // Public snapshot: keep LinkedIn OAuth credentials out of source control.
+    // Configure these from a private build setting or local override before release.
+    static let linkedinClientId: String = ""
+    static let linkedinClientSecret: String = ""
+    static let linkedinState: String = "hula-linkedin-oauth-state"
+    static let linkedinPermissions: [String] = ["r_basicprofile", "r_emailaddress"]
+    static let linkedinRedirectURL: String = "https://hula.trading/"
+    
+    static var linkedinConfiguration: LinkedinSwiftConfiguration {
+        return LinkedinSwiftConfiguration(clientId: linkedinClientId, clientSecret: linkedinClientSecret, state: linkedinState, permissions: linkedinPermissions, redirectUrl: linkedinRedirectURL)
+    }
 }
