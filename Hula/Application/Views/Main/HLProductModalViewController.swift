@@ -365,18 +365,20 @@ class HLProductModalViewController: UIViewController, UIImagePickerControllerDel
                 print("Uploaded")
                 //print(json)
                 DispatchQueue.main.async {
-                    if let dict = json as? [String: Any] {
-                        if let vp = dict["path"] as? String{
-                            self.product.video_requested[self.currentTradeId] = true
-                            self.product.video_url[self.currentTradeId] = HulaConstants.staticServerURL + vp
-                        }
+                    if success, let dict = json as? [String: Any], let vp = dict["path"] as? String {
+                        self.product.video_requested[self.currentTradeId] = true
+                        self.product.video_url[self.currentTradeId] = HulaConstants.staticServerURL + vp
+                        self.videoBtn.setTitle(NSLocalizedString(" Video uploaded", comment: ""), for: .normal)
+                        self.videoBtn.setImage(UIImage(named: "video-player-icon-red"), for: .normal)
+                        self.videoBtn.tag = 43909
+                        self.notify(NSLocalizedString("Video uploaded!", comment: ""))
+                        self.refreshProduct()
+                    } else {
+                        self.videoBtn.setTitle(NSLocalizedString(" Record video proof", comment: ""), for: .normal)
+                        self.videoBtn.tag = 43904
+                        self.notify(NSLocalizedString("Video upload failed. Please try again.", comment: ""))
                     }
-                    self.videoBtn.setTitle(NSLocalizedString(" Video uploaded", comment: ""), for: .normal)
-                    self.videoBtn.setImage(UIImage(named: "video-player-icon-red"), for: .normal)
-                    self.videoBtn.tag = 43909
-                    self.notify(NSLocalizedString("Video uploaded!", comment: ""))
                     //self.setupVideoButtons()
-                    self.refreshProduct()
                 }
                 
             })
