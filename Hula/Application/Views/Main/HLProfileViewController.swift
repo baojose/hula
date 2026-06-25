@@ -18,16 +18,16 @@ struct LinkedInOAuthConfiguration {
     static let clientSecretKey = "LIClientSecret"
     static let stateKey = "LIState"
     static let redirectURLKey = "LIRedirectURL"
-    
+
     let clientId: String
     let clientSecret: String
     let state: String
     let redirectURL: String
-    
+
     static func fromMainBundle() -> LinkedInOAuthConfiguration? {
         return from(infoDictionary: Bundle.main.infoDictionary ?? [:])
     }
-    
+
     static func from(infoDictionary: [String: Any]) -> LinkedInOAuthConfiguration? {
         guard let clientId = configuredValue(infoDictionary[clientIdKey] as? String),
             let clientSecret = configuredValue(infoDictionary[clientSecretKey] as? String),
@@ -35,15 +35,15 @@ struct LinkedInOAuthConfiguration {
             let redirectURL = configuredValue(infoDictionary[redirectURLKey] as? String) else {
                 return nil
         }
-        
+
         return LinkedInOAuthConfiguration(clientId: clientId, clientSecret: clientSecret, state: state, redirectURL: redirectURL)
     }
-    
+
     static func configuredValue(_ value: String?) -> String? {
         guard let value = value else {
             return nil
         }
-        
+
         let trimmedValue = value.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)
         guard !trimmedValue.isEmpty,
             !trimmedValue.hasPrefix("YOUR_"),
@@ -51,7 +51,7 @@ struct LinkedInOAuthConfiguration {
             trimmedValue.range(of: "$(") == nil else {
                 return nil
         }
-        
+
         return trimmedValue
     }
 }
@@ -77,16 +77,16 @@ class HLProfileViewController: BaseViewController {
     @IBOutlet weak var completeProfileTooltip: UIView!
     @IBOutlet weak var viewFeedbackBtn: UIButton!
     @IBOutlet weak var fullsizeViewReference: UIView!
-    
-    
+
+
     private lazy var linkedinHelper: LinkedinSwiftHelper? = {
         guard let config = LinkedInOAuthConfiguration.fromMainBundle() else {
             return nil
         }
-        
+
         return LinkedinSwiftHelper(configuration: LinkedinSwiftConfiguration(clientId: config.clientId, clientSecret: config.clientSecret, state: config.state, permissions: ["r_basicprofile", "r_emailaddress"], redirectUrl: config.redirectURL))
     }()
-    
+
     var arrFeedback: NSArray!
     var spinner: HLSpinnerUIView!
     var image_dismissing:Bool = false
@@ -306,7 +306,7 @@ class HLProfileViewController: BaseViewController {
             self.present(alert, animated: true, completion: nil)
             return
         }
-        
+
         linkedinHelper.authorizeSuccess({ (token) in
             
             print(token)

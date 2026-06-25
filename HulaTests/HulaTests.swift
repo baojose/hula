@@ -32,7 +32,7 @@ class HulaTests: XCTestCase {
             // Put the code you want to measure the time of here.
         }
     }
-    
+
     func testLinkedInConfigurationRejectsPlaceholders() {
         let info: [String: Any] = [
             LinkedInOAuthConfiguration.clientIdKey: "YOUR_LINKEDIN_APP_ID",
@@ -40,12 +40,12 @@ class HulaTests: XCTestCase {
             LinkedInOAuthConfiguration.stateKey: "REPLACE_ME_LINKEDIN_STATE",
             LinkedInOAuthConfiguration.redirectURLKey: "https://hula.trading/"
         ]
-        
+
         XCTAssertNil(LinkedInOAuthConfiguration.from(infoDictionary: info))
         XCTAssertNil(LinkedInOAuthConfiguration.configuredValue("REPLACE_ME_LINKEDIN_CLIENT_SECRET"))
         XCTAssertNil(LinkedInOAuthConfiguration.configuredValue("YOUR_LINKEDIN_APP_ID"))
     }
-    
+
     func testLinkedInConfigurationLoadsInjectedValues() {
         let info: [String: Any] = [
             LinkedInOAuthConfiguration.clientIdKey: "real-client-id",
@@ -53,12 +53,12 @@ class HulaTests: XCTestCase {
             LinkedInOAuthConfiguration.stateKey: "real-state",
             LinkedInOAuthConfiguration.redirectURLKey: "https://hula.trading/"
         ]
-        
+
         let config = LinkedInOAuthConfiguration.from(infoDictionary: info)
         XCTAssertEqual(config?.clientId, "real-client-id")
         XCTAssertEqual(config?.clientSecret, "real-client-secret")
         XCTAssertEqual(config?.state, "real-state")
         XCTAssertEqual(config?.redirectURL, "https://hula.trading/")
     }
-    
+
 }
