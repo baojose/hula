@@ -101,17 +101,53 @@ class HulaProduct: NSObject {
                 }
             }
         }
-        print (with.object(forKey: "location") as? [Any])
-        if let tmp = with.object(forKey: "location") as? [Any] {
-            let lat = tmp[0] as? Double
-            let lon = tmp[1] as? Double
-            print(Float(lat!))
-            
-            if (lat != nil && lon != nil){
-                productLocation = CLLocation(latitude: CLLocationDegrees(Float(lat!)), longitude: CLLocationDegrees(Float(lon!)))
-            }
- 
+        if let tmp = with.object(forKey: "location") {
+            updateLocation(from: tmp)
         }
+    }
+
+    private func updateLocation(from payload: Any) {
+        if let tmp = payload as? [Any] {
+            updateLocation(fromArray: tmp)
+        } else if let tmp = payload as? NSArray {
+            updateLocation(fromArray: tmp.map { $0 })
+        }
+    }
+
+    private func updateLocation(fromArray tmp: [Any]) {
+        if tmp.count < 2 {
+            return
+        }
+
+        if let lat = HulaProduct.coordinateValue(tmp[0]), let lon = HulaProduct.coordinateValue(tmp[1]) {
+            productLocation = CLLocation(latitude: lat, longitude: lon)
+        }
+    }
+
+    private static func coordinateValue(_ value: Any) -> CLLocationDegrees? {
+        if value is Bool {
+            return nil
+        }
+        if let tmp = value as? Double {
+            return CLLocationDegrees(tmp)
+        }
+        if let tmp = value as? Float {
+            return CLLocationDegrees(tmp)
+        }
+        if let tmp = value as? CGFloat {
+            return CLLocationDegrees(tmp)
+        }
+        if let tmp = value as? Int {
+            return CLLocationDegrees(tmp)
+        }
+        if let tmp = value as? NSNumber {
+            if CFGetTypeID(tmp) == CFBooleanGetTypeID() {
+                return nil
+            }
+            return CLLocationDegrees(tmp.doubleValue)
+        }
+
+        return nil
     }
     
     func updateServerData(){
