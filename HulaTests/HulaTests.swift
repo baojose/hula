@@ -61,4 +61,28 @@ class HulaTests: XCTestCase {
         XCTAssertEqual(config?.redirectURL, "https://hula.trading/")
     }
 
+    func testHTTPResponseParserRejectsMalformedJSON() {
+        let response = HTTPURLResponse(url: URL(string: "https://api.hula.trading/v1/test")!, statusCode: 200, httpVersion: nil, headerFields: nil)
+        let result = HLDataManager.parseHTTPResponse(data: "not-json".data(using: .utf8), response: response, error: nil)
+
+        XCTAssertFalse(result.success)
+        XCTAssertNil(result.json)
+    }
+
+    func testHTTPResponseParserRejectsNonSuccessStatusCode() {
+        let response = HTTPURLResponse(url: URL(string: "https://api.hula.trading/v1/test")!, statusCode: 500, httpVersion: nil, headerFields: nil)
+        let result = HLDataManager.parseHTTPResponse(data: "{\"ok\":true}".data(using: .utf8), response: response, error: nil)
+
+        XCTAssertFalse(result.success)
+        XCTAssertNil(result.json)
+    }
+
+    func testHTTPResponseParserAcceptsValidJSON() {
+        let response = HTTPURLResponse(url: URL(string: "https://api.hula.trading/v1/test")!, statusCode: 200, httpVersion: nil, headerFields: nil)
+        let result = HLDataManager.parseHTTPResponse(data: "{\"ok\":true}".data(using: .utf8), response: response, error: nil)
+
+        XCTAssertTrue(result.success)
+        XCTAssertNotNil(result.json)
+    }
+
 }
