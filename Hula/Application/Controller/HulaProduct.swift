@@ -141,6 +141,9 @@ class HulaProduct: NSObject {
             return CLLocationDegrees(tmp)
         }
         if let tmp = value as? NSNumber {
+            if CFGetTypeID(tmp) == CFBooleanGetTypeID() {
+                return nil
+            }
             return CLLocationDegrees(tmp.doubleValue)
         }
 
