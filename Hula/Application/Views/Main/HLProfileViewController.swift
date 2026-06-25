@@ -13,6 +13,48 @@ import TwitterKit
 import CoreLocation
 import LinkedinSwift
 
+struct LinkedInOAuthConfiguration {
+    static let clientIdKey = "LIAppId"
+    static let clientSecretKey = "LIClientSecret"
+    static let stateKey = "LIState"
+    static let redirectURLKey = "LIRedirectURL"
+    
+    let clientId: String
+    let clientSecret: String
+    let state: String
+    let redirectURL: String
+    
+    static func fromMainBundle() -> LinkedInOAuthConfiguration? {
+        return from(infoDictionary: Bundle.main.infoDictionary ?? [:])
+    }
+    
+    static func from(infoDictionary: [String: Any]) -> LinkedInOAuthConfiguration? {
+        guard let clientId = configuredValue(infoDictionary[clientIdKey] as? String),
+            let clientSecret = configuredValue(infoDictionary[clientSecretKey] as? String),
+            let state = configuredValue(infoDictionary[stateKey] as? String),
+            let redirectURL = configuredValue(infoDictionary[redirectURLKey] as? String) else {
+                return nil
+        }
+        
+        return LinkedInOAuthConfiguration(clientId: clientId, clientSecret: clientSecret, state: state, redirectURL: redirectURL)
+    }
+    
+    static func configuredValue(_ value: String?) -> String? {
+        guard let value = value else {
+            return nil
+        }
+        
+        let trimmedValue = value.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)
+        guard !trimmedValue.isEmpty,
+            !trimmedValue.hasPrefix("YOUR_"),
+            !trimmedValue.hasPrefix("REPLACE_ME"),
+            trimmedValue.range(of: "$(") == nil else {
+                return nil
+        }
+        
+        return trimmedValue
+    }
+}
 
 class HLProfileViewController: BaseViewController {
     
@@ -37,7 +79,13 @@ class HLProfileViewController: BaseViewController {
     @IBOutlet weak var fullsizeViewReference: UIView!
     
     
-    private let linkedinHelper = LinkedinSwiftHelper(configuration: LinkedinSwiftConfiguration(clientId: "77pqp8cu8tj7vb", clientSecret: "yx3RJzo3X9guNEhY", state: "DLKDJF46ikMMZADfdfds", permissions: ["r_basicprofile", "r_emailaddress"], redirectUrl: "https://hula.trading/"))
+    private lazy var linkedinHelper: LinkedinSwiftHelper? = {
+        guard let config = LinkedInOAuthConfiguration.fromMainBundle() else {
+            return nil
+        }
+        
+        return LinkedinSwiftHelper(configuration: LinkedinSwiftConfiguration(clientId: config.clientId, clientSecret: config.clientSecret, state: config.state, permissions: ["r_basicprofile", "r_emailaddress"], redirectUrl: config.redirectURL))
+    }()
     
     var arrFeedback: NSArray!
     var spinner: HLSpinnerUIView!
@@ -252,6 +300,13 @@ class HLProfileViewController: BaseViewController {
     
     func linkedinValidate(){
         print("Validating linkedin...")
+        guard let linkedinHelper = linkedinHelper else {
+            let alert = UIAlertController(title: "LinkedIn validation unavailable", message: "LinkedIn credentials are not configured for this build.", preferredStyle: UIAlertControllerStyle.alert)
+            alert.addAction(UIAlertAction(title: "OK", style: UIAlertActionStyle.default, handler: nil))
+            self.present(alert, animated: true, completion: nil)
+            return
+        }
+        
         linkedinHelper.authorizeSuccess({ (token) in
             
             print(token)
