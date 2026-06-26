@@ -371,7 +371,7 @@ class HLProductModalViewController: UIViewController, UIImagePickerControllerDel
                         self.notify(NSLocalizedString("Video upload failed. Please try again.", comment: ""))
                         return
                     }
-                    
+
                     self.product.video_requested[self.currentTradeId] = true
                     self.product.video_url[self.currentTradeId] = HulaConstants.staticServerURL + vp
                     self.videoBtn.setTitle(NSLocalizedString(" Video uploaded", comment: ""), for: .normal)

@@ -53,39 +53,39 @@ class HLProfileViewController: BaseViewController {
     private static let linkedinRedirectURLKey = "LIRedirectURL"
     private static let linkedinDefaultRedirectURL = "https://hula.trading/"
     private static let linkedinPermissions = ["r_basicprofile", "r_emailaddress"]
-    
+
     static func isConfiguredLinkedinValue(_ value: String?) -> Bool {
         guard let value = value else {
             return false
         }
-        
+
         let trimmedValue = value.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)
         if trimmedValue.isEmpty {
             return false
         }
-        
+
         let uppercasedValue = trimmedValue.uppercased()
         return !uppercasedValue.hasPrefix("YOUR_")
             && !uppercasedValue.hasPrefix("REPLACE_ME")
             && !uppercasedValue.contains("$(")
     }
-    
+
     private static func configuredInfoPlistValue(_ key: String) -> String? {
         guard let value = Bundle.main.object(forInfoDictionaryKey: key) as? String else {
             return nil
         }
-        
+
         let trimmedValue = value.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)
         return isConfiguredLinkedinValue(trimmedValue) ? trimmedValue : nil
     }
-    
+
     private static func makeLinkedinHelper() -> LinkedinSwiftHelper? {
         guard let clientId = configuredInfoPlistValue(linkedinClientIdKey),
             let clientSecret = configuredInfoPlistValue(linkedinClientSecretKey),
             let state = configuredInfoPlistValue(linkedinStateKey) else {
                 return nil
         }
-        
+
         let redirectURL = configuredInfoPlistValue(linkedinRedirectURLKey) ?? linkedinDefaultRedirectURL
         let configuration = LinkedinSwiftConfiguration(clientId: clientId,
                                                        clientSecret: clientSecret,
@@ -94,7 +94,7 @@ class HLProfileViewController: BaseViewController {
                                                        redirectUrl: redirectURL)
         return LinkedinSwiftHelper(configuration: configuration)
     }
-    
+
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -307,7 +307,7 @@ class HLProfileViewController: BaseViewController {
             linkedinConfigurationAlert()
             return
         }
-        
+
         linkedinHelper.authorizeSuccess({ (token) in
             
             print(token)
@@ -332,7 +332,7 @@ class HLProfileViewController: BaseViewController {
         alert.addAction(UIAlertAction(title: "OK", style: UIAlertActionStyle.default, handler: nil))
         self.present(alert, animated: true, completion: nil)
     }
-    
+
     // Custom functions for ViewController
     
     func getUserProfile() {
