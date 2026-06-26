@@ -231,7 +231,7 @@ class HLDataManager: NSObject {
             } else {
                 HulaUser.sharedInstance.token = ""
             }
-            
+
             NotificationCenter.default.post(name: self.fbLoginRecieved, object: loginSuccess)
         })
  
@@ -415,12 +415,12 @@ class HLDataManager: NSObject {
             print(error)
             return (false, nil)
         }
-        
+
         guard let data = data else {
             print("Data is empty")
             return (false, nil)
         }
-        
+
         if let httpStatus = response as? HTTPURLResponse {
             if !(200..<300).contains(httpStatus.statusCode) {
                 print("statusCode should be 2xx, but is \(httpStatus.statusCode)")
@@ -432,7 +432,7 @@ class HLDataManager: NSObject {
                 return (false, nil)
             }
         }
-        
+
         do {
             let json = try JSONSerialization.jsonObject(with: data, options: [])
             return (true, json)
@@ -441,7 +441,7 @@ class HLDataManager: NSObject {
             return (false, nil)
         }
     }
-    
+
     func httpGet(urlstr:String, taskCallback: @escaping (Bool, Any?) -> ()) {
         let url = URL(string: urlstr)
         //print(url!)
