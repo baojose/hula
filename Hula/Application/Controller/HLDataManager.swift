@@ -168,8 +168,8 @@ class HLDataManager: NSObject {
             //print("done")
             //print(ok)
             //print(json!)
+            let user = HulaUser.sharedInstance
             if (ok){
-                let user = HulaUser.sharedInstance
                 if let dictionary = json as? [String: Any] {
                     if (dictionary["token"] as? String) != nil {
                         // access individual value in dictionary
@@ -188,9 +188,12 @@ class HLDataManager: NSObject {
                     user.token = ""
                     loginSuccess = NSLocalizedString("Incorrect login. Please try again.", comment: "");
                 }
-                self.lastServerMessage = loginSuccess
-                NotificationCenter.default.post(name: self.loginRecieved, object: loginSuccess)
+            } else {
+                user.token = ""
+                loginSuccess = NSLocalizedString("Incorrect login. Please try again.", comment: "");
             }
+            self.lastServerMessage = loginSuccess
+            NotificationCenter.default.post(name: self.loginRecieved, object: loginSuccess)
         })
     }
     
@@ -225,9 +228,11 @@ class HLDataManager: NSObject {
                 } else {
                     user.token = ""
                 }
-                
-                NotificationCenter.default.post(name: self.fbLoginRecieved, object: loginSuccess)
+            } else {
+                HulaUser.sharedInstance.token = ""
             }
+
+            NotificationCenter.default.post(name: self.fbLoginRecieved, object: loginSuccess)
         })
  
     }
@@ -345,8 +350,11 @@ class HLDataManager: NSObject {
                     user.token = ""
                     self.lastServerMessage = NSLocalizedString("Server response unexpected", comment: "")
                 }
-                NotificationCenter.default.post(name: self.signupRecieved, object: signupSuccess)
+            } else {
+                HulaUser.sharedInstance.token = ""
+                self.lastServerMessage = NSLocalizedString("Server response unexpected", comment: "")
             }
+            NotificationCenter.default.post(name: self.signupRecieved, object: signupSuccess)
         })
     }
     
@@ -402,6 +410,38 @@ class HLDataManager: NSObject {
     }
     
     
+    static func parseHTTPResponse(data: Data?, response: URLResponse?, error: Error?) -> (success: Bool, json: Any?) {
+        if let error = error {
+            print(error)
+            return (false, nil)
+        }
+
+        guard let data = data else {
+            print("Data is empty")
+            return (false, nil)
+        }
+
+        if let httpStatus = response as? HTTPURLResponse {
+            if !(200..<300).contains(httpStatus.statusCode) {
+                print("statusCode should be 2xx, but is \(httpStatus.statusCode)")
+                if let response = response {
+                    print(response)
+                } else {
+                    print("No response")
+                }
+                return (false, nil)
+            }
+        }
+
+        do {
+            let json = try JSONSerialization.jsonObject(with: data, options: [])
+            return (true, json)
+        } catch {
+            print("JSON parse error: \(error.localizedDescription)")
+            return (false, nil)
+        }
+    }
+
     func httpGet(urlstr:String, taskCallback: @escaping (Bool, Any?) -> ()) {
         let url = URL(string: urlstr)
         //print(url!)
@@ -414,22 +454,12 @@ class HLDataManager: NSObject {
         }
         request.httpMethod = "GET"
         let task = URLSession.shared.dataTask(with: request) { data, response, error in
-            guard error == nil else {
-                print(error!)
-                taskCallback(false, nil)
-                return
-            }
-            guard let data = data else {
-                print("Data is empty")
-                taskCallback(false, nil)
-                return
-            }
             //print(request)
             //print(response)
             //print(data.count)
-            let json = try! JSONSerialization.jsonObject(with: data, options: [])
+            let parsed = HLDataManager.parseHTTPResponse(data: data, response: response, error: error)
             //print(json)
-            taskCallback(true, json as AnyObject?)
+            taskCallback(parsed.success, parsed.json)
         }
     
         task.resume()
@@ -452,17 +482,8 @@ class HLDataManager: NSObject {
         //print(request.httpBody!)
         //print(request.httpMethod!)
         let task = URLSession.shared.dataTask(with: request) { data, response, error in
-            guard let data = data, error == nil else {                                                 // check for fundamental networking error
-                print(error!)
-                return
-            }
-            
-            if let httpStatus = response as? HTTPURLResponse, httpStatus.statusCode != 200 {           // check for http errors
-                print("statusCode should be 200, but is \(httpStatus.statusCode)")
-                print(response ?? "No response")
-            }
-            let json = try! JSONSerialization.jsonObject(with: data, options: [])
-            taskCallback(true, json as AnyObject?)
+            let parsed = HLDataManager.parseHTTPResponse(data: data, response: response, error: error)
+            taskCallback(parsed.success, parsed.json)
         }
         task.resume()
     }
@@ -493,25 +514,14 @@ class HLDataManager: NSObject {
             
             
             request.httpBody = body as Data
-            
-            
             let task = session.dataTask(with: request) { data, response, error in
-                guard let data = data, error == nil else {                                                 // check for fundamental networking error
-                    print(error!)
-                    return
-                }
-                
-                if let httpStatus = response as? HTTPURLResponse, httpStatus.statusCode != 200 {           // check for http errors
-                    print("statusCode should be 200, but is \(httpStatus.statusCode)")
-                    print(response ?? "No response")
-                } else {
-                    
-                    let json = try! JSONSerialization.jsonObject(with: data, options: [])
-                    taskCallback(true, json as AnyObject?)
-                }
+                let parsed = HLDataManager.parseHTTPResponse(data: data, response: response, error: error)
+                taskCallback(parsed.success, parsed.json)
             }
             task.resume()
             
+        } else {
+            taskCallback(false, nil)
         }
     }
     
@@ -541,25 +551,14 @@ class HLDataManager: NSObject {
             
             
             request.httpBody = body as Data
-            
-            
             let task = session.dataTask(with: request) { data, response, error in
-                guard let data = data, error == nil else {                                                 // check for fundamental networking error
-                    print(error!)
-                    return
-                }
-                
-                if let httpStatus = response as? HTTPURLResponse, httpStatus.statusCode != 200 {           // check for http errors
-                    print("statusCode should be 200, but is \(httpStatus.statusCode)")
-                    print(response ?? "No response")
-                } else {
-                    
-                    let json = try! JSONSerialization.jsonObject(with: data, options: [])
-                    taskCallback(true, json as AnyObject?)
-                }
+                let parsed = HLDataManager.parseHTTPResponse(data: data, response: response, error: error)
+                taskCallback(parsed.success, parsed.json)
             }
             task.resume()
             
+        } else {
+            taskCallback(false, nil)
         }
     }
     
@@ -613,7 +612,7 @@ class HLDataManager: NSObject {
         dict.setObject(user.numProducts, forKey: "numProducts" as NSCopying)
         
         //...
-        dict.write(toFile: path, atomically: false)
+        dict.write(toFile: path, atomically: true)
         //let resultDictionary = NSMutableDictionary(contentsOfFile: path)
         //print("Saved UserData.plist file is --> \(String(describing: resultDictionary?.description))")
         
