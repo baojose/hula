@@ -37,13 +37,63 @@ class HLProfileViewController: BaseViewController {
     @IBOutlet weak var fullsizeViewReference: UIView!
     
     
-    private let linkedinHelper = LinkedinSwiftHelper(configuration: LinkedinSwiftConfiguration(clientId: "77pqp8cu8tj7vb", clientSecret: "yx3RJzo3X9guNEhY", state: "DLKDJF46ikMMZADfdfds", permissions: ["r_basicprofile", "r_emailaddress"], redirectUrl: "https://hula.trading/"))
+    private lazy var linkedinHelper: LinkedinSwiftHelper? = {
+        return HLProfileViewController.makeLinkedinHelper()
+    }()
     
     var arrFeedback: NSArray!
     var spinner: HLSpinnerUIView!
     var image_dismissing:Bool = false
     var current_image_url:String = ""
     var last_logged_user:String = ""
+    
+    private static let linkedinClientIdKey = "LIAppId"
+    private static let linkedinClientSecretKey = "LIAppSecret"
+    private static let linkedinStateKey = "LIState"
+    private static let linkedinRedirectURLKey = "LIRedirectURL"
+    private static let linkedinDefaultRedirectURL = "https://hula.trading/"
+    private static let linkedinPermissions = ["r_basicprofile", "r_emailaddress"]
+    
+    static func isConfiguredLinkedinValue(_ value: String?) -> Bool {
+        guard let value = value else {
+            return false
+        }
+        
+        let trimmedValue = value.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)
+        if trimmedValue.isEmpty {
+            return false
+        }
+        
+        let uppercasedValue = trimmedValue.uppercased()
+        return !uppercasedValue.hasPrefix("YOUR_")
+            && !uppercasedValue.hasPrefix("REPLACE_ME")
+            && !uppercasedValue.contains("$(")
+    }
+    
+    private static func configuredInfoPlistValue(_ key: String) -> String? {
+        guard let value = Bundle.main.object(forInfoDictionaryKey: key) as? String else {
+            return nil
+        }
+        
+        let trimmedValue = value.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)
+        return isConfiguredLinkedinValue(trimmedValue) ? trimmedValue : nil
+    }
+    
+    private static func makeLinkedinHelper() -> LinkedinSwiftHelper? {
+        guard let clientId = configuredInfoPlistValue(linkedinClientIdKey),
+            let clientSecret = configuredInfoPlistValue(linkedinClientSecretKey),
+            let state = configuredInfoPlistValue(linkedinStateKey) else {
+                return nil
+        }
+        
+        let redirectURL = configuredInfoPlistValue(linkedinRedirectURLKey) ?? linkedinDefaultRedirectURL
+        let configuration = LinkedinSwiftConfiguration(clientId: clientId,
+                                                       clientSecret: clientSecret,
+                                                       state: state,
+                                                       permissions: linkedinPermissions,
+                                                       redirectUrl: redirectURL)
+        return LinkedinSwiftHelper(configuration: configuration)
+    }
     
     
     override func viewDidLoad() {
@@ -252,6 +302,12 @@ class HLProfileViewController: BaseViewController {
     
     func linkedinValidate(){
         print("Validating linkedin...")
+        guard let linkedinHelper = linkedinHelper else {
+            print("LinkedIn validation is not configured for this build.")
+            linkedinConfigurationAlert()
+            return
+        }
+        
         linkedinHelper.authorizeSuccess({ (token) in
             
             print(token)
@@ -267,6 +323,14 @@ class HLProfileViewController: BaseViewController {
         }) {
             //show sign in cancelled event
         }
+    }
+    
+    private func linkedinConfigurationAlert(){
+        let alert = UIAlertController(title: NSLocalizedString("LinkedIn validation unavailable", comment: ""),
+                                      message: NSLocalizedString("LinkedIn validation is not configured for this build.", comment: ""),
+                                      preferredStyle: UIAlertControllerStyle.alert)
+        alert.addAction(UIAlertAction(title: "OK", style: UIAlertActionStyle.default, handler: nil))
+        self.present(alert, animated: true, completion: nil)
     }
     
     // Custom functions for ViewController
