@@ -105,7 +105,7 @@ class HulaProduct: NSObject {
     }
     private func updateLocation(from rawLocation: Any?) {
         guard let rawLocation = rawLocation else { return }
-        
+
         let values: [Any]
         if let tmp = rawLocation as? [Any] {
             values = tmp
@@ -114,13 +114,13 @@ class HulaProduct: NSObject {
         } else {
             return
         }
-        
+
         guard values.count >= 2,
             let lat = coordinateValue(from: values[0]),
             let lon = coordinateValue(from: values[1]) else {
                 return
         }
-        
+
         productLocation = CLLocation(latitude: lat, longitude: lon)
     }
     private func coordinateValue(from value: Any) -> CLLocationDegrees? {
