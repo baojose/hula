@@ -32,5 +32,45 @@ class HulaTests: XCTestCase {
             // Put the code you want to measure the time of here.
         }
     }
+
+    func testHTTPResponseParserRejectsMalformedJSON() {
+        let response = HTTPURLResponse(url: URL(string: "https://example.com")!, statusCode: 200, httpVersion: nil, headerFields: nil)
+        let data = "not-json".data(using: .utf8)
+
+        let result = HLDataManager.parseHTTPResponse(data: data, response: response, error: nil)
+
+        XCTAssertFalse(result.0)
+        XCTAssertNil(result.1)
+    }
+
+    func testHTTPResponseParserRejectsServerErrors() {
+        let response = HTTPURLResponse(url: URL(string: "https://example.com")!, statusCode: 500, httpVersion: nil, headerFields: nil)
+        let data = "{\"message\":\"error\"}".data(using: .utf8)
+
+        let result = HLDataManager.parseHTTPResponse(data: data, response: response, error: nil)
+
+        XCTAssertFalse(result.0)
+        XCTAssertNil(result.1)
+    }
+
+    func testHTTPResponseParserAcceptsValidJSON() {
+        let response = HTTPURLResponse(url: URL(string: "https://example.com")!, statusCode: 200, httpVersion: nil, headerFields: nil)
+        let data = "{\"ok\":true}".data(using: .utf8)
+
+        let result = HLDataManager.parseHTTPResponse(data: data, response: response, error: nil)
+
+        XCTAssertTrue(result.0)
+        let dict = result.1 as? [String: Any]
+        XCTAssertEqual(dict?["ok"] as? Bool, true)
+    }
+
+    func testLinkedInPlaceholderValuesAreRejected() {
+        XCTAssertFalse(HLProfileViewController.isConfiguredLinkedinValue(nil))
+        XCTAssertFalse(HLProfileViewController.isConfiguredLinkedinValue(""))
+        XCTAssertFalse(HLProfileViewController.isConfiguredLinkedinValue("YOUR_LINKEDIN_APP_SECRET"))
+        XCTAssertFalse(HLProfileViewController.isConfiguredLinkedinValue("REPLACE_ME_LINKEDIN_SECRET"))
+        XCTAssertFalse(HLProfileViewController.isConfiguredLinkedinValue("$(LINKEDIN_SECRET)"))
+        XCTAssertTrue(HLProfileViewController.isConfiguredLinkedinValue("configured-value"))
+    }
     
 }
