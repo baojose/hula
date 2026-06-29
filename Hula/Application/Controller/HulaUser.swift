@@ -221,7 +221,7 @@ class HulaUser: NSObject {
         
         
     }
-    
+
     private class func coordinateValue(from value: Any) -> CLLocationDegrees? {
         if value is Bool {
             return nil
@@ -243,7 +243,7 @@ class HulaUser: NSObject {
         }
         return nil
     }
-    
+
     
     
     override var description : String {

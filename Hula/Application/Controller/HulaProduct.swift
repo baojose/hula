@@ -109,7 +109,7 @@ class HulaProduct: NSObject {
             }
         }
     }
-    
+
     private class func coordinateValue(from value: Any) -> CLLocationDegrees? {
         if value is Bool {
             return nil
@@ -131,7 +131,7 @@ class HulaProduct: NSObject {
         }
         return nil
     }
-    
+
     func updateServerData(){
         //print("Updating user...")
         if(HulaUser.sharedInstance.isUserLoggedIn()){
