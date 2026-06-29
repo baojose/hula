@@ -191,10 +191,12 @@ class HulaUser: NSObject {
         if let tmp = with.object(forKey: "bio") as? String { userBio = tmp }
         if let tmp = with.object(forKey: "email") as? String { userEmail = tmp }
         if let tmp = with.object(forKey: "image") as? String { userPhotoURL = tmp }
-        if let tmp = with.object(forKey: "location") as? [CGFloat]  {
-            let lat = tmp[0]
-            let lon = tmp[1]
-            location = CLLocation(latitude:CLLocationDegrees(lat), longitude:CLLocationDegrees(lon));
+        if let tmp = with.object(forKey: "location") as? [Any]  {
+            if tmp.count >= 2,
+                let lat = HulaUser.coordinateValue(from: tmp[0]),
+                let lon = HulaUser.coordinateValue(from: tmp[1]) {
+                location = CLLocation(latitude: lat, longitude: lon)
+            }
         }
         if let tmp = with.object(forKey: "location_name") as? String  {
             userLocationName = tmp;
@@ -218,6 +220,28 @@ class HulaUser: NSObject {
         
         
         
+    }
+    
+    private class func coordinateValue(from value: Any) -> CLLocationDegrees? {
+        if value is Bool {
+            return nil
+        }
+        if let tmp = value as? Double {
+            return CLLocationDegrees(tmp)
+        }
+        if let tmp = value as? Float {
+            return CLLocationDegrees(tmp)
+        }
+        if let tmp = value as? CGFloat {
+            return CLLocationDegrees(tmp)
+        }
+        if let tmp = value as? Int {
+            return CLLocationDegrees(tmp)
+        }
+        if let tmp = value as? NSNumber {
+            return CLLocationDegrees(tmp.doubleValue)
+        }
+        return nil
     }
     
     
