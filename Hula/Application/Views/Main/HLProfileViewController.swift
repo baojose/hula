@@ -37,7 +37,29 @@ class HLProfileViewController: BaseViewController {
     @IBOutlet weak var fullsizeViewReference: UIView!
     
     
-    private let linkedinHelper = LinkedinSwiftHelper(configuration: LinkedinSwiftConfiguration(clientId: "77pqp8cu8tj7vb", clientSecret: "yx3RJzo3X9guNEhY", state: "DLKDJF46ikMMZADfdfds", permissions: ["r_basicprofile", "r_emailaddress"], redirectUrl: "https://hula.trading/"))
+    static func isLinkedinConfigValueUsable(_ value: String) -> Bool {
+        return value.count > 0 && !value.hasPrefix("YOUR_") && !value.hasPrefix("REPLACE_ME")
+    }
+
+    private static func linkedinInfoValue(_ key: String) -> String {
+        return Bundle.main.object(forInfoDictionaryKey: key) as? String ?? ""
+    }
+
+    private static func isLinkedinConfigured() -> Bool {
+        let keys = ["LIAppId", "LIAppSecret", "LIState", "LIRedirectURL"]
+        for key in keys {
+            if !isLinkedinConfigValueUsable(linkedinInfoValue(key)) {
+                return false
+            }
+        }
+        return true
+    }
+
+    private static func linkedinConfiguration() -> LinkedinSwiftConfiguration {
+        return LinkedinSwiftConfiguration(clientId: linkedinInfoValue("LIAppId"), clientSecret: linkedinInfoValue("LIAppSecret"), state: linkedinInfoValue("LIState"), permissions: ["r_basicprofile", "r_emailaddress"], redirectUrl: linkedinInfoValue("LIRedirectURL"))
+    }
+
+    private let linkedinHelper = LinkedinSwiftHelper(configuration: HLProfileViewController.linkedinConfiguration())
     
     var arrFeedback: NSArray!
     var spinner: HLSpinnerUIView!
@@ -252,6 +274,13 @@ class HLProfileViewController: BaseViewController {
     
     func linkedinValidate(){
         print("Validating linkedin...")
+        guard HLProfileViewController.isLinkedinConfigured() else {
+            let alert = UIAlertController(title: NSLocalizedString("LinkedIn validation unavailable", comment: ""), message: NSLocalizedString("LinkedIn validation is not configured for this build.", comment: ""), preferredStyle: UIAlertControllerStyle.alert)
+            alert.addAction(UIAlertAction(title: "OK", style: UIAlertActionStyle.default, handler: nil))
+            self.present(alert, animated: true, completion: nil)
+            return
+        }
+
         linkedinHelper.authorizeSuccess({ (token) in
             
             print(token)
