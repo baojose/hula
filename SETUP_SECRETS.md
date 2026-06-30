@@ -10,6 +10,7 @@ This tree is a **sanitized** snapshot: Firebase, Twitter, Fabric, and social app
 2. **Firebase / Google** — in Google Cloud Console, **restrict** the iOS API key (bundle ID); consider **rotating** keys. Download a fresh `GoogleService-Info.plist` and keep it **out of public repos** if possible.
 3. **Facebook** — treat app ID as public metadata; **rotate the app secret** if it was ever committed; review app settings.
 4. **Fabric** — legacy; if you still run the Run Script build phase, replace placeholders with your own values or remove Fabric entirely.
+5. **LinkedIn** — rotate the client secret and configure `LIAppId`, `LIAppSecret`, `LIState`, and `LIRedirectURL` from private build settings or a private `Info.plist` overlay before enabling LinkedIn validation.
 
 ## Making this repo private
 
