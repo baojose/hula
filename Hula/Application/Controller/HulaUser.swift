@@ -10,7 +10,7 @@ import UIKit
 import CoreLocation
 
 class HulaUser: NSObject {
-    
+
     var userId: String!
     var userName: String!
     var userNick: String!
@@ -35,7 +35,7 @@ class HulaUser: NSObject {
     var trades_closed: Float = 0.0
     var arrayProducts = [] as Array
     var numProducts:Int = 0
-    
+
     class var sharedInstance: HulaUser {
         struct Static {
             static let instance: HulaUser = HulaUser()
@@ -69,7 +69,7 @@ class HulaUser: NSObject {
         self.arrayProducts = []
         self.numProducts = 0
     }
-    
+
     func isIncompleteProfile() -> Bool{
         var isIncomplete = false
         if (self.userName==""){
@@ -115,7 +115,7 @@ class HulaUser: NSObject {
         self.arrayProducts = []
         self.numProducts = 0
     }
-    
+
     func isUserLoggedIn() -> Bool{
         var isLoggedIn = false;
         if (self.userId.count > 0) && (self.token.count > 0) {
@@ -123,13 +123,13 @@ class HulaUser: NSObject {
         }
         return isLoggedIn
     }
-    
+
     func updateServerData(){
         //print("Updating user...")
         if(isUserLoggedIn()){
             let queryURL = HulaConstants.apiURL + "users/" + self.userId
             HLDataManager.sharedInstance.httpPost(urlstr: queryURL, postString: getPostString(), isPut: true, taskCallback: { (ok, json) in
-                
+
                 //print("done")
                 //print(ok)
                 if (ok){
@@ -137,13 +137,13 @@ class HulaUser: NSObject {
                     if (json as? [String: Any]) != nil {
                         //print(dictionary)
                     }
-                    
+
                     //NotificationCenter.default.post(name: self.signupRecieved, object: signupSuccess)
                 }
             })
         }
     }
-    
+
     func resendValidationMail(){
         //print("Sending validation mail...")
         if(isUserLoggedIn()){
@@ -154,7 +154,7 @@ class HulaUser: NSObject {
                     if (json as? [String: Any]) != nil {
                         //print(dictionary)
                     }
-                    
+
                     //NotificationCenter.default.post(name: self.signupRecieved, object: signupSuccess)
                 }
             })
@@ -165,7 +165,7 @@ class HulaUser: NSObject {
         str = str + "&nick=" + self.userNick + "&image=" + self.userPhotoURL + "&twtoken=" + self.twToken
         str = str + "&litoken=" + self.liToken + "&fbtoken=" + self.fbToken + "&push_device_id=" + self.deviceId
         str = str + "&zip=" + self.zip + "&max_trades=" + String(self.maxTrades)
-        
+
         if (self.location.coordinate.latitude != 0 && self.location.coordinate.longitude != 0){
            str = str + "&lat=\(self.location.coordinate.latitude)&lng=\(self.location.coordinate.longitude)&location_name=" + self.userLocationName
         }
@@ -181,9 +181,9 @@ class HulaUser: NSObject {
         }
         return res
     }
-    
-    
-    
+
+
+
     func populate(with: NSDictionary){
         if let tmp = with.object(forKey: "_id") as? String { userId = tmp }
         if let tmp = with.object(forKey: "name") as? String { userName = tmp }
@@ -191,10 +191,8 @@ class HulaUser: NSObject {
         if let tmp = with.object(forKey: "bio") as? String { userBio = tmp }
         if let tmp = with.object(forKey: "email") as? String { userEmail = tmp }
         if let tmp = with.object(forKey: "image") as? String { userPhotoURL = tmp }
-        if let tmp = with.object(forKey: "location") as? [CGFloat]  {
-            let lat = tmp[0]
-            let lon = tmp[1]
-            location = CLLocation(latitude:CLLocationDegrees(lat), longitude:CLLocationDegrees(lon));
+        if let coordinatePair = HulaUser.locationCoordinatePair(from: with.object(forKey: "location"))  {
+            location = CLLocation(latitude: coordinatePair.latitude, longitude: coordinatePair.longitude);
         }
         if let tmp = with.object(forKey: "location_name") as? String  {
             userLocationName = tmp;
@@ -204,24 +202,85 @@ class HulaUser: NSObject {
         if let tmp = with.object(forKey: "li_token") as? String { liToken = tmp }
         if let tmp = with.object(forKey: "status") as? String { status = tmp }
         if let tmp = with.object(forKey: "zip") as? String { zip = tmp }
-        
+
         if let tmp = with.object(forKey: "feedback_count") as? Float { feedback_count = tmp }
         if let tmp = with.object(forKey: "feedback_points") as? Float { feedback_points = tmp }
-        
-        
+
+
         if let tmp = with.object(forKey: "trades_started") as? Float { trades_started = tmp }
         if let tmp = with.object(forKey: "trades_finished") as? Float { trades_finished = tmp }
         if let tmp = with.object(forKey: "trades_closed") as? Float { trades_closed = tmp }
-        
+
         if let tmp = with.object(forKey: "deviceId") as? String { deviceId = tmp }
         if let tmp = with.object(forKey: "max_trades") as? Int { maxTrades = tmp }
-        
-        
-        
+
+
+
     }
-    
-    
-    
+
+    private class func locationCoordinatePair(from payload: Any?) -> (latitude: CLLocationDegrees, longitude: CLLocationDegrees)? {
+        guard let payload = payload else {
+            return nil
+        }
+
+        let values: [Any]
+        if let swiftArray = payload as? [Any] {
+            values = swiftArray
+        } else if let nsArray = payload as? NSArray {
+            var bridgedValues: [Any] = []
+            for item in nsArray {
+                bridgedValues.append(item)
+            }
+            values = bridgedValues
+        } else {
+            return nil
+        }
+
+        guard values.count >= 2,
+            let latitude = HulaUser.coordinateComponent(from: values[0]),
+            let longitude = HulaUser.coordinateComponent(from: values[1]) else {
+                return nil
+        }
+
+        return (latitude, longitude)
+    }
+
+    private class func coordinateComponent(from value: Any) -> CLLocationDegrees? {
+        if value is Bool {
+            return nil
+        }
+
+        if let number = value as? NSNumber {
+            if CFGetTypeID(number) == CFBooleanGetTypeID() {
+                return nil
+            }
+            return CLLocationDegrees(number.doubleValue)
+        }
+
+        if let double = value as? Double {
+            return CLLocationDegrees(double)
+        }
+        if let float = value as? Float {
+            return CLLocationDegrees(float)
+        }
+        if let cgFloat = value as? CGFloat {
+            return CLLocationDegrees(cgFloat)
+        }
+        if let int = value as? Int {
+            return CLLocationDegrees(int)
+        }
+        if let int32 = value as? Int32 {
+            return CLLocationDegrees(int32)
+        }
+        if let int64 = value as? Int64 {
+            return CLLocationDegrees(int64)
+        }
+
+        return nil
+    }
+
+
+
     override var description : String {
         return "User id: \(self.userId!); nick:   \(self.userNick!)  location: \(self.location.coordinate.latitude) ,  \(self.location.coordinate.longitude)\n"
     }
