@@ -191,10 +191,8 @@ class HulaUser: NSObject {
         if let tmp = with.object(forKey: "bio") as? String { userBio = tmp }
         if let tmp = with.object(forKey: "email") as? String { userEmail = tmp }
         if let tmp = with.object(forKey: "image") as? String { userPhotoURL = tmp }
-        if let tmp = with.object(forKey: "location") as? [CGFloat]  {
-            let lat = tmp[0]
-            let lon = tmp[1]
-            location = CLLocation(latitude:CLLocationDegrees(lat), longitude:CLLocationDegrees(lon));
+        if let coordinatePair = HulaUser.locationCoordinatePair(from: with.object(forKey: "location"))  {
+            location = CLLocation(latitude: coordinatePair.latitude, longitude: coordinatePair.longitude);
         }
         if let tmp = with.object(forKey: "location_name") as? String  {
             userLocationName = tmp;
@@ -218,6 +216,67 @@ class HulaUser: NSObject {
         
         
         
+    }
+    
+    private class func locationCoordinatePair(from payload: Any?) -> (latitude: CLLocationDegrees, longitude: CLLocationDegrees)? {
+        guard let payload = payload else {
+            return nil
+        }
+        
+        let values: [Any]
+        if let swiftArray = payload as? [Any] {
+            values = swiftArray
+        } else if let nsArray = payload as? NSArray {
+            var bridgedValues: [Any] = []
+            for item in nsArray {
+                bridgedValues.append(item)
+            }
+            values = bridgedValues
+        } else {
+            return nil
+        }
+        
+        guard values.count >= 2,
+            let latitude = HulaUser.coordinateComponent(from: values[0]),
+            let longitude = HulaUser.coordinateComponent(from: values[1]) else {
+                return nil
+        }
+        
+        return (latitude, longitude)
+    }
+    
+    private class func coordinateComponent(from value: Any) -> CLLocationDegrees? {
+        if value is Bool {
+            return nil
+        }
+        
+        if let number = value as? NSNumber {
+            if CFGetTypeID(number) == CFBooleanGetTypeID() {
+                return nil
+            }
+            return CLLocationDegrees(number.doubleValue)
+        }
+        
+        if let double = value as? Double {
+            return CLLocationDegrees(double)
+        }
+        if let float = value as? Float {
+            return CLLocationDegrees(float)
+        }
+        if let cgFloat = value as? CGFloat {
+            return CLLocationDegrees(cgFloat)
+        }
+        if let int = value as? Int {
+            return CLLocationDegrees(int)
+        }
+        if let int32 = value as? Int32 {
+            return CLLocationDegrees(int32)
+        }
+        if let int64 = value as? Int64 {
+            return CLLocationDegrees(int64)
+        }
+        
+        return nil
     }
     
     

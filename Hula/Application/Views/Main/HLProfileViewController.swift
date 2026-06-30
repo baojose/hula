@@ -37,7 +37,7 @@ class HLProfileViewController: BaseViewController {
     @IBOutlet weak var fullsizeViewReference: UIView!
     
     
-    private let linkedinHelper = LinkedinSwiftHelper(configuration: LinkedinSwiftConfiguration(clientId: "77pqp8cu8tj7vb", clientSecret: "yx3RJzo3X9guNEhY", state: "DLKDJF46ikMMZADfdfds", permissions: ["r_basicprofile", "r_emailaddress"], redirectUrl: "https://hula.trading/"))
+    private let linkedinHelper = LinkedinSwiftHelper(configuration: LinkedinSwiftConfiguration(clientId: HulaConstants.linkedinClientId, clientSecret: HulaConstants.linkedinClientSecret, state: HulaConstants.linkedinState, permissions: HulaConstants.linkedinPermissions, redirectUrl: HulaConstants.linkedinRedirectURL))
     
     var arrFeedback: NSArray!
     var spinner: HLSpinnerUIView!
