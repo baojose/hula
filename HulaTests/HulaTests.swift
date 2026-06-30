@@ -15,7 +15,7 @@ class HulaTests: XCTestCase {
     private func httpResponse(statusCode: Int) -> HTTPURLResponse {
         return HTTPURLResponse(url: URL(string: "https://example.com")!, statusCode: statusCode, httpVersion: nil, headerFields: nil)!
     }
-    
+
     override func setUp() {
         super.setUp()
         // Put setup code here. This method is called before the invocation of each test method in the class.
@@ -34,46 +34,46 @@ class HulaTests: XCTestCase {
     func testHTTPResponseParserRejectsMalformedJSON() {
         let data = "not json".data(using: String.Encoding.utf8)
         let parsed = HLDataManager.parseHTTPResponse(data: data, response: httpResponse(statusCode: 200), error: nil)
-        
+
         XCTAssertFalse(parsed.success)
         XCTAssertNil(parsed.json)
     }
-    
+
     func testHTTPResponseParserRejectsNonSuccessStatusCode() {
         let data = "{\"ok\":true}".data(using: String.Encoding.utf8)
         let parsed = HLDataManager.parseHTTPResponse(data: data, response: httpResponse(statusCode: 500), error: nil)
-        
+
         XCTAssertFalse(parsed.success)
         XCTAssertNil(parsed.json)
     }
-    
+
     func testHTTPResponseParserAcceptsSuccessJSON() {
         let data = "{\"ok\":true}".data(using: String.Encoding.utf8)
         let parsed = HLDataManager.parseHTTPResponse(data: data, response: httpResponse(statusCode: 200), error: nil)
-        
+
         XCTAssertTrue(parsed.success)
         XCTAssertNotNil(parsed.json)
     }
-    
+
     func testProductPopulateIgnoresMalformedLocation() {
         let product = HulaProduct()
-        
+
         product.populate(with: ["location": []] as NSDictionary)
         XCTAssertEqual(product.productLocation.coordinate.latitude, 0.0, accuracy: 0.001)
         XCTAssertEqual(product.productLocation.coordinate.longitude, 0.0, accuracy: 0.001)
-        
+
         product.populate(with: ["location": [NSNumber(value: 51.5), "-0.12"] as [Any]] as NSDictionary)
         XCTAssertEqual(product.productLocation.coordinate.latitude, 51.5, accuracy: 0.001)
         XCTAssertEqual(product.productLocation.coordinate.longitude, -0.12, accuracy: 0.001)
     }
-    
+
     func testLinkedInPlaceholdersAreRejected() {
         XCTAssertFalse(HLProfileViewController.isLinkedinConfigValueUsable(""))
         XCTAssertFalse(HLProfileViewController.isLinkedinConfigValueUsable("YOUR_LINKEDIN_APP_SECRET"))
         XCTAssertFalse(HLProfileViewController.isLinkedinConfigValueUsable("REPLACE_ME_LINKEDIN_SECRET"))
         XCTAssertTrue(HLProfileViewController.isLinkedinConfigValueUsable("configured-value"))
     }
-    
+
     func testPerformanceExample() {
         // This is an example of a performance test case.
         self.measure {

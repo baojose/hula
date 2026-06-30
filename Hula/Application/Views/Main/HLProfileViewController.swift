@@ -40,11 +40,11 @@ class HLProfileViewController: BaseViewController {
     static func isLinkedinConfigValueUsable(_ value: String) -> Bool {
         return value.count > 0 && !value.hasPrefix("YOUR_") && !value.hasPrefix("REPLACE_ME")
     }
-    
+
     private static func linkedinInfoValue(_ key: String) -> String {
         return Bundle.main.object(forInfoDictionaryKey: key) as? String ?? ""
     }
-    
+
     private static func isLinkedinConfigured() -> Bool {
         let keys = ["LIAppId", "LIAppSecret", "LIState", "LIRedirectURL"]
         for key in keys {
@@ -54,11 +54,11 @@ class HLProfileViewController: BaseViewController {
         }
         return true
     }
-    
+
     private static func linkedinConfiguration() -> LinkedinSwiftConfiguration {
         return LinkedinSwiftConfiguration(clientId: linkedinInfoValue("LIAppId"), clientSecret: linkedinInfoValue("LIAppSecret"), state: linkedinInfoValue("LIState"), permissions: ["r_basicprofile", "r_emailaddress"], redirectUrl: linkedinInfoValue("LIRedirectURL"))
     }
-    
+
     private let linkedinHelper = LinkedinSwiftHelper(configuration: HLProfileViewController.linkedinConfiguration())
     
     var arrFeedback: NSArray!
@@ -280,7 +280,7 @@ class HLProfileViewController: BaseViewController {
             self.present(alert, animated: true, completion: nil)
             return
         }
-        
+
         linkedinHelper.authorizeSuccess({ (token) in
             
             print(token)

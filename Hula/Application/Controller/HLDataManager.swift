@@ -416,22 +416,22 @@ class HLDataManager: NSObject {
             print(error)
             return (false, nil)
         }
-        
+
         guard let httpStatus = response as? HTTPURLResponse else {
             print("Missing HTTP response")
             return (false, nil)
         }
-        
+
         guard httpStatus.statusCode >= 200 && httpStatus.statusCode < 300 else {
             print("statusCode should be 2xx, but is \(httpStatus.statusCode)")
             return (false, nil)
         }
-        
+
         guard let data = data else {
             print("Data is empty")
             return (false, nil)
         }
-        
+
         do {
             let json = try JSONSerialization.jsonObject(with: data, options: [])
             return (true, json)

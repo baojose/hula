@@ -120,7 +120,7 @@ class HulaProduct: NSObject {
         }
         return nil
     }
-    
+
     func updateServerData(){
         //print("Updating user...")
         if(HulaUser.sharedInstance.isUserLoggedIn()){
