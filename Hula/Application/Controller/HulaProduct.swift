@@ -10,7 +10,7 @@ import UIKit
 import MapKit
 
 class HulaProduct: NSObject {
-    
+
     var productId: String!
     var productName: String!
     var productCategory: String!
@@ -32,7 +32,7 @@ class HulaProduct: NSObject {
             return productLocation.distance(from: HulaUser.sharedInstance.location)
         }
     }
-    
+
     class var sharedInstance: HulaProduct {
         struct Static {
             static let instance: HulaProduct = HulaProduct()
@@ -79,7 +79,7 @@ class HulaProduct: NSObject {
     override var description : String {
         return "(Product id: \(self.productId!); name:   \(self.productName!); dist:   \(self.distance))\n"
     }
-    
+
     func populate(with: NSDictionary){
         if let tmp = with.object(forKey: "_id") as? String { productId = tmp }
         if let tmp = with.object(forKey: "title") as? String { productName = tmp }
@@ -105,12 +105,12 @@ class HulaProduct: NSObject {
             productLocation = CLLocation(latitude: coordinatePair.latitude, longitude: coordinatePair.longitude)
         }
     }
-    
+
     private class func locationCoordinatePair(from payload: Any?) -> (latitude: CLLocationDegrees, longitude: CLLocationDegrees)? {
         guard let payload = payload else {
             return nil
         }
-        
+
         let values: [Any]
         if let swiftArray = payload as? [Any] {
             values = swiftArray
@@ -123,28 +123,28 @@ class HulaProduct: NSObject {
         } else {
             return nil
         }
-        
+
         guard values.count >= 2,
             let latitude = HulaProduct.coordinateComponent(from: values[0]),
             let longitude = HulaProduct.coordinateComponent(from: values[1]) else {
                 return nil
         }
-        
+
         return (latitude, longitude)
     }
-    
+
     private class func coordinateComponent(from value: Any) -> CLLocationDegrees? {
         if value is Bool {
             return nil
         }
-        
+
         if let number = value as? NSNumber {
             if CFGetTypeID(number) == CFBooleanGetTypeID() {
                 return nil
             }
             return CLLocationDegrees(number.doubleValue)
         }
-        
+
         if let double = value as? Double {
             return CLLocationDegrees(double)
         }
@@ -163,16 +163,16 @@ class HulaProduct: NSObject {
         if let int64 = value as? Int64 {
             return CLLocationDegrees(int64)
         }
-        
+
         return nil
     }
-    
+
     func updateServerData(){
         //print("Updating user...")
         if(HulaUser.sharedInstance.isUserLoggedIn()){
             let queryURL = HulaConstants.apiURL + "products/" + self.productId
             HLDataManager.sharedInstance.httpPost(urlstr: queryURL, postString: getPostString(), isPut: true, taskCallback: { (ok, json) in
-                
+
                 //print("done")
                 //print(ok)
                 if (ok){
@@ -180,7 +180,7 @@ class HulaProduct: NSObject {
                     if (json as? [String: Any]) != nil {
                         //print(dictionary)
                     }
-                    
+
                     //NotificationCenter.default.post(name: self.signupRecieved, object: signupSuccess)
                 }
             })
