@@ -191,10 +191,8 @@ class HulaUser: NSObject {
         if let tmp = with.object(forKey: "bio") as? String { userBio = tmp }
         if let tmp = with.object(forKey: "email") as? String { userEmail = tmp }
         if let tmp = with.object(forKey: "image") as? String { userPhotoURL = tmp }
-        if let tmp = with.object(forKey: "location") as? [CGFloat]  {
-            let lat = tmp[0]
-            let lon = tmp[1]
-            location = CLLocation(latitude:CLLocationDegrees(lat), longitude:CLLocationDegrees(lon));
+        if let coordinates = coordinatePair(from: with.object(forKey: "location")) {
+            location = CLLocation(latitude: CLLocationDegrees(coordinates.latitude), longitude: CLLocationDegrees(coordinates.longitude));
         }
         if let tmp = with.object(forKey: "location_name") as? String  {
             userLocationName = tmp;
@@ -218,6 +216,54 @@ class HulaUser: NSObject {
         
         
         
+    }
+
+    private func coordinatePair(from value: Any?) -> (latitude: Double, longitude: Double)? {
+        guard let rawValue = value else {
+            return nil
+        }
+
+        let values: [Any]
+        if let array = rawValue as? [Any] {
+            values = array
+        } else if let array = rawValue as? NSArray {
+            values = array.map { $0 }
+        } else {
+            return nil
+        }
+
+        guard values.count >= 2,
+            let latitude = coordinateDouble(from: values[0]),
+            let longitude = coordinateDouble(from: values[1]) else {
+                return nil
+        }
+
+        return (latitude, longitude)
+    }
+
+    private func coordinateDouble(from value: Any) -> Double? {
+        if value is Bool {
+            return nil
+        }
+        if let number = value as? NSNumber {
+            if CFGetTypeID(number) == CFBooleanGetTypeID() {
+                return nil
+            }
+            return number.doubleValue
+        }
+        if let value = value as? Double {
+            return value
+        }
+        if let value = value as? Float {
+            return Double(value)
+        }
+        if let value = value as? Int {
+            return Double(value)
+        }
+        if let value = value as? CGFloat {
+            return Double(value)
+        }
+        return nil
     }
     
     
