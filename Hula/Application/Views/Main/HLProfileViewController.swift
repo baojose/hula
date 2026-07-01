@@ -54,7 +54,7 @@ class HLProfileViewController: BaseViewController {
         if trimmedValue.isEmpty { return false }
         if trimmedValue.hasPrefix("YOUR_") { return false }
         if trimmedValue.hasPrefix("REPLACE_ME") { return false }
-        if trimmedValue.contains("YOUR_LINKEDIN") { return false }
+        if trimmedValue.range(of: "YOUR_LINKEDIN") != nil { return false }
         return true
     }
 
