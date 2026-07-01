@@ -246,7 +246,7 @@ class HulaUser: NSObject {
             return nil
         }
         if let number = value as? NSNumber {
-            if CFGetTypeID(number) == CFBooleanGetTypeID() {
+            if CFGetTypeID(number as CFTypeRef) == CFBooleanGetTypeID() {
                 return nil
             }
             return number.doubleValue
