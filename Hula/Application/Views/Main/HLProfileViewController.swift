@@ -57,24 +57,24 @@ class HLProfileViewController: BaseViewController {
         if trimmedValue.contains("YOUR_LINKEDIN") { return false }
         return true
     }
-    
+
     static func linkedinConfiguration(infoDictionary: [String: Any]? = Bundle.main.infoDictionary) -> LinkedinSwiftConfiguration? {
         guard let infoDictionary = infoDictionary else { return nil }
         let clientId = infoDictionary["LIAppId"] as? String
         let clientSecret = infoDictionary["LIAppSecret"] as? String
         let state = infoDictionary["LIState"] as? String
         let redirectURL = infoDictionary["LIRedirectURL"] as? String
-        
+
         guard isConfiguredLinkedInValue(clientId),
             isConfiguredLinkedInValue(clientSecret),
             isConfiguredLinkedInValue(state),
             isConfiguredLinkedInValue(redirectURL) else {
                 return nil
         }
-        
+
         return LinkedinSwiftConfiguration(clientId: clientId!, clientSecret: clientSecret!, state: state!, permissions: ["r_basicprofile", "r_emailaddress"], redirectUrl: redirectURL!)
     }
-    
+
     
     override func viewDidLoad() {
         super.viewDidLoad()

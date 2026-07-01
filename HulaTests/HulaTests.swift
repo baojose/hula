@@ -33,10 +33,10 @@ class HulaTests: XCTestCase {
             "LIState": "YOUR_LINKEDIN_OAUTH_STATE",
             "LIRedirectURL": "YOUR_LINKEDIN_REDIRECT_URL"
         ]
-        
+
         XCTAssertNil(HLProfileViewController.linkedinConfiguration(infoDictionary: placeholderInfo))
     }
-    
+
     func testLinkedInConfigurationAcceptsPrivateValues() {
         let privateInfo: [String: Any] = [
             "LIAppId": "local-client-id",
@@ -44,10 +44,10 @@ class HulaTests: XCTestCase {
             "LIState": "local-oauth-state",
             "LIRedirectURL": "https://example.com/linkedin"
         ]
-        
+
         XCTAssertNotNil(HLProfileViewController.linkedinConfiguration(infoDictionary: privateInfo))
     }
-    
+
     func testPerformanceExample() {
         // This is an example of a performance test case.
         self.measure {
