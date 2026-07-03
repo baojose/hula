@@ -37,7 +37,14 @@ class HLProfileViewController: BaseViewController {
     @IBOutlet weak var fullsizeViewReference: UIView!
     
     
-    private let linkedinHelper = LinkedinSwiftHelper(configuration: LinkedinSwiftConfiguration(clientId: "77pqp8cu8tj7vb", clientSecret: "yx3RJzo3X9guNEhY", state: "DLKDJF46ikMMZADfdfds", permissions: ["r_basicprofile", "r_emailaddress"], redirectUrl: "https://hula.trading/"))
+    private typealias LinkedinConfig = (clientId: String, clientSecret: String, state: String, redirectUrl: String)
+    private lazy var linkedinHelper: LinkedinSwiftHelper? = {
+        guard let config = HLProfileViewController.linkedinConfiguration() else {
+            return nil
+        }
+        
+        return LinkedinSwiftHelper(configuration: LinkedinSwiftConfiguration(clientId: config.clientId, clientSecret: config.clientSecret, state: config.state, permissions: ["r_basicprofile", "r_emailaddress"], redirectUrl: config.redirectUrl))
+    }()
     
     var arrFeedback: NSArray!
     var spinner: HLSpinnerUIView!
@@ -144,6 +151,39 @@ class HLProfileViewController: BaseViewController {
         
     }
     
+    static func isUsableLinkedinConfigurationValue(_ value: String?) -> Bool {
+        guard let trimmed = value?.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines), trimmed != "" else {
+            return false
+        }
+        
+        let uppercaseValue = trimmed.uppercased()
+        if uppercaseValue.hasPrefix("$(") || uppercaseValue.contains("YOUR_") || uppercaseValue.contains("REPLACE_ME") || uppercaseValue.contains("GENERATE_") {
+            return false
+        }
+        
+        return true
+    }
+    
+    private static func linkedinConfigurationValue(_ key: String, bundle: Bundle = Bundle.main) -> String? {
+        guard let value = bundle.object(forInfoDictionaryKey: key) as? String,
+            isUsableLinkedinConfigurationValue(value) else {
+                return nil
+        }
+        
+        return value.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)
+    }
+    
+    private static func linkedinConfiguration(bundle: Bundle = Bundle.main) -> LinkedinConfig? {
+        guard let clientId = linkedinConfigurationValue("LIAppId", bundle: bundle),
+            let clientSecret = linkedinConfigurationValue("LIAppSecret", bundle: bundle),
+            let state = linkedinConfigurationValue("LIState", bundle: bundle),
+            let redirectUrl = linkedinConfigurationValue("LIRedirectURL", bundle: bundle) else {
+                return nil
+        }
+        
+        return (clientId, clientSecret, state, redirectUrl)
+    }
+    
     // IB Actions
     
     @IBAction func closeTooltip(_ sender: Any) {
@@ -164,7 +204,7 @@ class HLProfileViewController: BaseViewController {
             alert.addAction(facebookAction)
         }
         
-        if HulaUser.sharedInstance.liToken.count == 0 {
+        if HulaUser.sharedInstance.liToken.count == 0 && HLProfileViewController.linkedinConfiguration() != nil {
             let linkedinAction = UIAlertAction(title: "Linkedin", style: .default, handler: { action -> Void in
                 self.linkedinValidate()
             })
@@ -252,6 +292,13 @@ class HLProfileViewController: BaseViewController {
     
     func linkedinValidate(){
         print("Validating linkedin...")
+        guard let linkedinHelper = linkedinHelper else {
+            let alert = UIAlertController(title: NSLocalizedString("LinkedIn validation unavailable", comment: ""), message: NSLocalizedString("LinkedIn credentials are not configured for this build.", comment: ""), preferredStyle: UIAlertControllerStyle.alert)
+            alert.addAction(UIAlertAction(title: "OK", style: UIAlertActionStyle.default, handler: nil))
+            self.present(alert, animated: true, completion: nil)
+            return
+        }
+        
         linkedinHelper.authorizeSuccess({ (token) in
             
             print(token)
