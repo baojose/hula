@@ -42,7 +42,7 @@ class HLProfileViewController: BaseViewController {
         guard let config = HLProfileViewController.linkedinConfiguration() else {
             return nil
         }
-        
+
         return LinkedinSwiftHelper(configuration: LinkedinSwiftConfiguration(clientId: config.clientId, clientSecret: config.clientSecret, state: config.state, permissions: ["r_basicprofile", "r_emailaddress"], redirectUrl: config.redirectUrl))
     }()
     
@@ -155,24 +155,24 @@ class HLProfileViewController: BaseViewController {
         guard let trimmed = value?.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines), trimmed != "" else {
             return false
         }
-        
+
         let uppercaseValue = trimmed.uppercased()
         if uppercaseValue.hasPrefix("$(") || uppercaseValue.contains("YOUR_") || uppercaseValue.contains("REPLACE_ME") || uppercaseValue.contains("GENERATE_") {
             return false
         }
-        
+
         return true
     }
-    
+
     private static func linkedinConfigurationValue(_ key: String, bundle: Bundle = Bundle.main) -> String? {
         guard let value = bundle.object(forInfoDictionaryKey: key) as? String,
             isUsableLinkedinConfigurationValue(value) else {
                 return nil
         }
-        
+
         return value.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)
     }
-    
+
     private static func linkedinConfiguration(bundle: Bundle = Bundle.main) -> LinkedinConfig? {
         guard let clientId = linkedinConfigurationValue("LIAppId", bundle: bundle),
             let clientSecret = linkedinConfigurationValue("LIAppSecret", bundle: bundle),
@@ -180,10 +180,10 @@ class HLProfileViewController: BaseViewController {
             let redirectUrl = linkedinConfigurationValue("LIRedirectURL", bundle: bundle) else {
                 return nil
         }
-        
+
         return (clientId, clientSecret, state, redirectUrl)
     }
-    
+
     // IB Actions
     
     @IBAction func closeTooltip(_ sender: Any) {
@@ -298,7 +298,7 @@ class HLProfileViewController: BaseViewController {
             self.present(alert, animated: true, completion: nil)
             return
         }
-        
+
         linkedinHelper.authorizeSuccess({ (token) in
             
             print(token)

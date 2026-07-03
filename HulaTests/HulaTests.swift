@@ -34,13 +34,13 @@ class HulaTests: XCTestCase {
         XCTAssertFalse(HLProfileViewController.isUsableLinkedinConfigurationValue("GENERATE_LINKEDIN_OAUTH_STATE"))
         XCTAssertFalse(HLProfileViewController.isUsableLinkedinConfigurationValue("$(LI_APP_SECRET)"))
     }
-    
+
     func testLinkedinConfigurationAcceptsPrivateValues() {
         XCTAssertTrue(HLProfileViewController.isUsableLinkedinConfigurationValue("real-linkedin-client-id"))
         XCTAssertTrue(HLProfileViewController.isUsableLinkedinConfigurationValue("  real-linkedin-client-secret  "))
         XCTAssertTrue(HLProfileViewController.isUsableLinkedinConfigurationValue("https://hula.trading/"))
     }
-    
+
     func testPerformanceExample() {
         // This is an example of a performance test case.
         self.measure {
