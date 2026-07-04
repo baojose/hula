@@ -79,7 +79,28 @@ class HulaProduct: NSObject {
     override var description : String {
         return "(Product id: \(self.productId!); name:   \(self.productName!); dist:   \(self.distance))\n"
     }
-    
+
+    private func locationCoordinate(from value: Any) -> CLLocationDegrees? {
+        if value is Bool {
+            return nil
+        }
+        if let number = value as? NSNumber {
+            return CLLocationDegrees(number.doubleValue)
+        }
+        return nil
+    }
+
+    private func parsedLocation(from value: Any?) -> CLLocation? {
+        guard let coordinates = value as? [Any], coordinates.count >= 2 else {
+            return nil
+        }
+        guard let latitude = locationCoordinate(from: coordinates[0]),
+            let longitude = locationCoordinate(from: coordinates[1]) else {
+                return nil
+        }
+        return CLLocation(latitude: latitude, longitude: longitude)
+    }
+
     func populate(with: NSDictionary){
         if let tmp = with.object(forKey: "_id") as? String { productId = tmp }
         if let tmp = with.object(forKey: "title") as? String { productName = tmp }
@@ -101,16 +122,8 @@ class HulaProduct: NSObject {
                 }
             }
         }
-        print (with.object(forKey: "location") as? [Any])
-        if let tmp = with.object(forKey: "location") as? [Any] {
-            let lat = tmp[0] as? Double
-            let lon = tmp[1] as? Double
-            print(Float(lat!))
-            
-            if (lat != nil && lon != nil){
-                productLocation = CLLocation(latitude: CLLocationDegrees(Float(lat!)), longitude: CLLocationDegrees(Float(lon!)))
-            }
- 
+        if let location = parsedLocation(from: with.object(forKey: "location")) {
+            productLocation = location
         }
     }
     
