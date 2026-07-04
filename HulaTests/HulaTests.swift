@@ -25,6 +25,34 @@ class HulaTests: XCTestCase {
         // This is an example of a functional test case.
         // Use XCTAssert and related functions to verify your tests produce the correct results.
     }
+
+    func testLinkedinConfigurationRejectsPlaceholders() {
+        let placeholderInfo = [
+            "LIAppId": "YOUR_LINKEDIN_APP_ID",
+            "LIAppSecret": "YOUR_LINKEDIN_APP_SECRET",
+            "LIState": "YOUR_LINKEDIN_STATE",
+            "LIRedirectURL": "YOUR_LINKEDIN_REDIRECT_URL"
+        ]
+
+        XCTAssertNil(HLProfileViewController.linkedinConfiguration(from: placeholderInfo))
+    }
+
+    func testLinkedinConfigurationUsesConfiguredValues() {
+        let configuredInfo = [
+            "LIAppId": "linkedin-app-id",
+            "LIAppSecret": "linkedin-app-secret",
+            "LIState": "random-state-value",
+            "LIRedirectURL": "https://example.com/linkedin"
+        ]
+
+        let configuration = HLProfileViewController.linkedinConfiguration(from: configuredInfo)
+
+        XCTAssertNotNil(configuration)
+        XCTAssertEqual(configuration?.clientId, "linkedin-app-id")
+        XCTAssertEqual(configuration?.clientSecret, "linkedin-app-secret")
+        XCTAssertEqual(configuration?.state, "random-state-value")
+        XCTAssertEqual(configuration?.redirectUrl, "https://example.com/linkedin")
+    }
     
     func testPerformanceExample() {
         // This is an example of a performance test case.
