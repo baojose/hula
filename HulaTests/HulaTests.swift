@@ -25,7 +25,7 @@ class HulaTests: XCTestCase {
         // This is an example of a functional test case.
         // Use XCTAssert and related functions to verify your tests produce the correct results.
     }
-    
+
     func testLinkedinConfigurationRejectsPublicPlaceholders() {
         XCTAssertFalse(HLProfileViewController.isUsableLinkedinConfigurationValue(nil))
         XCTAssertFalse(HLProfileViewController.isUsableLinkedinConfigurationValue(""))
@@ -34,7 +34,7 @@ class HulaTests: XCTestCase {
         XCTAssertFalse(HLProfileViewController.isUsableLinkedinConfigurationValue("GENERATE_LINKEDIN_OAUTH_STATE"))
         XCTAssertFalse(HLProfileViewController.isUsableLinkedinConfigurationValue("$(LI_APP_SECRET)"))
     }
-    
+
     func testLinkedinConfigurationAcceptsPrivateValues() {
         XCTAssertTrue(HLProfileViewController.isUsableLinkedinConfigurationValue("real-linkedin-client-id"))
         XCTAssertTrue(HLProfileViewController.isUsableLinkedinConfigurationValue("  real-linkedin-client-secret  "))
