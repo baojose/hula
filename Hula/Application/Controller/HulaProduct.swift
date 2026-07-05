@@ -101,17 +101,58 @@ class HulaProduct: NSObject {
                 }
             }
         }
-        print (with.object(forKey: "location") as? [Any])
-        if let tmp = with.object(forKey: "location") as? [Any] {
-            let lat = tmp[0] as? Double
-            let lon = tmp[1] as? Double
-            print(Float(lat!))
-            
-            if (lat != nil && lon != nil){
-                productLocation = CLLocation(latitude: CLLocationDegrees(Float(lat!)), longitude: CLLocationDegrees(Float(lon!)))
-            }
- 
+        if let location = location(from: with.object(forKey: "location")) {
+            productLocation = location
         }
+    }
+
+    private func location(from value: Any?) -> CLLocation? {
+        let values: [Any]
+        if let array = value as? [Any] {
+            values = array
+        } else if let array = value as? NSArray {
+            values = array.map { $0 }
+        } else {
+            return nil
+        }
+
+        if values.count < 2 {
+            return nil
+        }
+
+        guard let lat = coordinate(from: values[0]), let lon = coordinate(from: values[1]) else {
+            return nil
+        }
+
+        return CLLocation(latitude: lat, longitude: lon)
+    }
+
+    private func coordinate(from value: Any) -> CLLocationDegrees? {
+        if value is Bool {
+            return nil
+        }
+
+        if let value = value as? NSNumber {
+            let encodedType = String(cString: value.objCType)
+            if encodedType == "c" || encodedType == "B" {
+                return nil
+            }
+            return CLLocationDegrees(value.doubleValue)
+        }
+        if let value = value as? Double {
+            return CLLocationDegrees(value)
+        }
+        if let value = value as? Float {
+            return CLLocationDegrees(value)
+        }
+        if let value = value as? CGFloat {
+            return CLLocationDegrees(value)
+        }
+        if let value = value as? Int {
+            return CLLocationDegrees(value)
+        }
+
+        return nil
     }
     
     func updateServerData(){

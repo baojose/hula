@@ -46,4 +46,9 @@ struct HulaConstants {
     // Obtain new credentials from Twitter Developer Portal — rotate if these ever leaked in git history.
     static let twitterKey: String = ""
     static let twitterSecret: String = ""
+    static let linkedinClientId: String = ""
+    static let linkedinClientSecret: String = ""
+    static let linkedinState: String = ""
+    static let linkedinPermissions: [String] = ["r_basicprofile", "r_emailaddress"]
+    static let linkedinRedirectURL: String = "https://hula.trading/"
 }
