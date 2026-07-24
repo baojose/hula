@@ -160,14 +160,24 @@ class HulaUser: NSObject {
             })
         }
     }
+    private static let formValueAllowedCharacters: CharacterSet = {
+        var allowed = CharacterSet.urlQueryAllowed
+        allowed.remove(charactersIn: "&=")
+        return allowed
+    }()
+
+    private func formEncodedValue(_ value: String) -> String {
+        return value.addingPercentEncoding(withAllowedCharacters: HulaUser.formValueAllowedCharacters) ?? ""
+    }
+
     func getPostString() -> String {
-        var str = "email=" + self.userEmail + "&name=" + self.userName + "&bio=" + self.userBio
-        str = str + "&nick=" + self.userNick + "&image=" + self.userPhotoURL + "&twtoken=" + self.twToken
-        str = str + "&litoken=" + self.liToken + "&fbtoken=" + self.fbToken + "&push_device_id=" + self.deviceId
-        str = str + "&zip=" + self.zip + "&max_trades=" + String(self.maxTrades)
+        var str = "email=" + formEncodedValue(self.userEmail) + "&name=" + formEncodedValue(self.userName) + "&bio=" + formEncodedValue(self.userBio)
+        str = str + "&nick=" + formEncodedValue(self.userNick) + "&image=" + formEncodedValue(self.userPhotoURL) + "&twtoken=" + formEncodedValue(self.twToken)
+        str = str + "&litoken=" + formEncodedValue(self.liToken) + "&fbtoken=" + formEncodedValue(self.fbToken) + "&push_device_id=" + formEncodedValue(self.deviceId)
+        str = str + "&zip=" + formEncodedValue(self.zip) + "&max_trades=" + String(self.maxTrades)
         
         if (self.location.coordinate.latitude != 0 && self.location.coordinate.longitude != 0){
-           str = str + "&lat=\(self.location.coordinate.latitude)&lng=\(self.location.coordinate.longitude)&location_name=" + self.userLocationName
+           str = str + "&lat=\(self.location.coordinate.latitude)&lng=\(self.location.coordinate.longitude)&location_name=" + formEncodedValue(self.userLocationName)
         }
         return str
     }
