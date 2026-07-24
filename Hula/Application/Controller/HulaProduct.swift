@@ -133,15 +133,25 @@ class HulaProduct: NSObject {
             })
         }
     }
+    private static let formValueAllowedCharacters: CharacterSet = {
+        var allowed = CharacterSet.urlQueryAllowed
+        allowed.remove(charactersIn: "&=")
+        return allowed
+    }()
+
+    private func formEncodedValue(_ value: String) -> String {
+        return value.addingPercentEncoding(withAllowedCharacters: HulaProduct.formValueAllowedCharacters) ?? ""
+    }
+
     func getPostString() -> String {
-        var str = "title=" + self.productName +
-            "&description=" + self.productDescription +
-            "&condition=" + self.productCondition
-        str = str + "&category_name=" + self.productCategory +
-            "&category_id=" + self.productCategoryId +
-            "&image_url=" + self.productImage
-        str = str + "&owner_id=" + self.productOwner +
-            "&images=" + self.arrProductPhotoLink.joined(separator: ",")
+        var str = "title=" + formEncodedValue(self.productName) +
+            "&description=" + formEncodedValue(self.productDescription) +
+            "&condition=" + formEncodedValue(self.productCondition)
+        str = str + "&category_name=" + formEncodedValue(self.productCategory) +
+            "&category_id=" + formEncodedValue(self.productCategoryId) +
+            "&image_url=" + formEncodedValue(self.productImage)
+        str = str + "&owner_id=" + formEncodedValue(self.productOwner) +
+            "&images=" + formEncodedValue(self.arrProductPhotoLink.joined(separator: ","))
         /*
         if (self.productLocation.coordinate.latitude != 0 && self.productLocation.coordinate.longitude != 0){
             str = str + "&lat=\(self.productLocation.coordinate.latitude)&lng=\(self.productLocation.coordinate.longitude)"
