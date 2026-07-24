@@ -177,9 +177,10 @@ class HulaTrade: NSObject {
         
         //print(dict)
         self.last_bid_diff = []
+        self.num_bids = 0
         if let bids = dict["bids"] as? [Any] {
             self.num_bids = bids.count
-            if let last_bid = bids[ (bids.count - 1) ] as? [String:Any]{
+            if let last_bid = bids.last as? [String:Any]{
                 //print(last_bid)
                 if let lb_owner = last_bid["owner_diff"] as? [String]{
                     for item in lb_owner {
