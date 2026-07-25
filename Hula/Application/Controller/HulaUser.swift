@@ -160,14 +160,24 @@ class HulaUser: NSObject {
             })
         }
     }
+    private static let formValueAllowedCharacters: CharacterSet = {
+        var allowed = CharacterSet.urlQueryAllowed
+        allowed.remove(charactersIn: "&=")
+        return allowed
+    }()
+
+    private func formEncodedValue(_ value: String) -> String {
+        return value.addingPercentEncoding(withAllowedCharacters: HulaUser.formValueAllowedCharacters) ?? ""
+    }
+
     func getPostString() -> String {
-        var str = "email=" + self.userEmail + "&name=" + self.userName + "&bio=" + self.userBio
-        str = str + "&nick=" + self.userNick + "&image=" + self.userPhotoURL + "&twtoken=" + self.twToken
-        str = str + "&litoken=" + self.liToken + "&fbtoken=" + self.fbToken + "&push_device_id=" + self.deviceId
-        str = str + "&zip=" + self.zip + "&max_trades=" + String(self.maxTrades)
+        var str = "email=" + formEncodedValue(self.userEmail) + "&name=" + formEncodedValue(self.userName) + "&bio=" + formEncodedValue(self.userBio)
+        str = str + "&nick=" + formEncodedValue(self.userNick) + "&image=" + formEncodedValue(self.userPhotoURL) + "&twtoken=" + formEncodedValue(self.twToken)
+        str = str + "&litoken=" + formEncodedValue(self.liToken) + "&fbtoken=" + formEncodedValue(self.fbToken) + "&push_device_id=" + formEncodedValue(self.deviceId)
+        str = str + "&zip=" + formEncodedValue(self.zip) + "&max_trades=" + String(self.maxTrades)
         
         if (self.location.coordinate.latitude != 0 && self.location.coordinate.longitude != 0){
-           str = str + "&lat=\(self.location.coordinate.latitude)&lng=\(self.location.coordinate.longitude)&location_name=" + self.userLocationName
+           str = str + "&lat=\(self.location.coordinate.latitude)&lng=\(self.location.coordinate.longitude)&location_name=" + formEncodedValue(self.userLocationName)
         }
         return str
     }
@@ -181,8 +191,53 @@ class HulaUser: NSObject {
         }
         return res
     }
-    
-    
+
+    private func coordinateValue(from value: Any) -> CLLocationDegrees? {
+        if value is Bool {
+            return nil
+        }
+        if let number = value as? NSNumber {
+            let type = String(cString: number.objCType)
+            if type == "c" || type == "B" {
+                return nil
+            }
+            return CLLocationDegrees(number.doubleValue)
+        }
+        if let value = value as? Double {
+            return CLLocationDegrees(value)
+        }
+        if let value = value as? Float {
+            return CLLocationDegrees(value)
+        }
+        if let value = value as? CGFloat {
+            return CLLocationDegrees(value)
+        }
+        if let value = value as? Int {
+            return CLLocationDegrees(value)
+        }
+        return nil
+    }
+
+    private func coordinatePair(from value: Any?) -> (latitude: CLLocationDegrees, longitude: CLLocationDegrees)? {
+        var coordinates: [Any]
+        if let tmp = value as? [Any] {
+            coordinates = tmp
+        } else if let tmp = value as? NSArray {
+            coordinates = []
+            for item in tmp {
+                coordinates.append(item)
+            }
+        } else {
+            return nil
+        }
+
+        guard coordinates.count >= 2,
+            let latitude = coordinateValue(from: coordinates[0]),
+            let longitude = coordinateValue(from: coordinates[1]) else {
+                return nil
+        }
+        return (latitude, longitude)
+    }
     
     func populate(with: NSDictionary){
         if let tmp = with.object(forKey: "_id") as? String { userId = tmp }
@@ -191,10 +246,8 @@ class HulaUser: NSObject {
         if let tmp = with.object(forKey: "bio") as? String { userBio = tmp }
         if let tmp = with.object(forKey: "email") as? String { userEmail = tmp }
         if let tmp = with.object(forKey: "image") as? String { userPhotoURL = tmp }
-        if let tmp = with.object(forKey: "location") as? [CGFloat]  {
-            let lat = tmp[0]
-            let lon = tmp[1]
-            location = CLLocation(latitude:CLLocationDegrees(lat), longitude:CLLocationDegrees(lon));
+        if let coordinates = coordinatePair(from: with.object(forKey: "location")) {
+            location = CLLocation(latitude: coordinates.latitude, longitude: coordinates.longitude);
         }
         if let tmp = with.object(forKey: "location_name") as? String  {
             userLocationName = tmp;
