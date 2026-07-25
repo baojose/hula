@@ -295,10 +295,10 @@ extension HLDashboardViewController: UICollectionViewDelegate, UICollectionViewD
             var owner_money : Float = 0;
             var other_money : Float = 0;
             
-            if let tmp = thisTrade.object(forKey: "owner_money") as? Float{
+            if let tmp = CommonUtils.floatFromJSON(thisTrade.object(forKey: "owner_money")) {
                 owner_money = tmp
             }
-            if let tmp = thisTrade.object(forKey: "other_money") as? Float{
+            if let tmp = CommonUtils.floatFromJSON(thisTrade.object(forKey: "other_money")) {
                 other_money = tmp
             }
             
