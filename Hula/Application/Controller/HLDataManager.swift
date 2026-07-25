@@ -113,10 +113,11 @@ class HLDataManager: NSObject {
                 if let array = json as? [NSDictionary] {
                     for trade in array {
                         // access all objects in array
-                        if let st = trade.object(forKey: "status") as? String{
+                        if let st = trade.object(forKey: "status") as? String,
+                           let ownerId = trade.object(forKey: "owner_id") as? String {
                             //print(st)
                             var hideFromDashboard = false
-                            if trade.object(forKey: "owner_id") as! String == HulaUser.sharedInstance.userId {
+                            if ownerId == HulaUser.sharedInstance.userId {
                                 if trade.object(forKey: "owner_accepted") as? Bool == true {
                                     hideFromDashboard = true
                                 }
@@ -130,8 +131,9 @@ class HLDataManager: NSObject {
                             }
                             if st != HulaConstants.end_status && st != HulaConstants.cancel_status && !hideFromDashboard {
                                 // status not ended and not cancelled and not agreed
-                                if  (st != HulaConstants.pending_status || trade.object(forKey: "turn_user_id") as! String == HulaUser.sharedInstance.userId) {
-                                    // status not pending
+                                let turnUserId = trade.object(forKey: "turn_user_id") as? String
+                                if st != HulaConstants.pending_status || turnUserId == HulaUser.sharedInstance.userId {
+                                    // status not pending, or pending and it is my turn
                                     self.arrCurrentTrades.append(trade)
                                 }
                             } else {
@@ -163,7 +165,8 @@ class HLDataManager: NSObject {
         //print("Login in progress...")
         let queryURL = HulaConstants.apiURL + "authenticate"
         var loginSuccess = "";
-        httpPost(urlstr: queryURL, postString: "email="+email+"&pass="+pass, isPut: false, taskCallback: { (ok, json) in
+        let postString = "email=" + CommonUtils.formEncodedValue(email) + "&pass=" + CommonUtils.formEncodedValue(pass)
+        httpPost(urlstr: queryURL, postString: postString, isPut: false, taskCallback: { (ok, json) in
             
             //print("done")
             //print(ok)
@@ -198,7 +201,7 @@ class HLDataManager: NSObject {
         let queryURL = HulaConstants.apiURL + "fbauth"
         var loginSuccess = false;
         
-        httpPost(urlstr: queryURL, postString: "fbtoken="+token, isPut: false, taskCallback: { (ok, json) in
+        httpPost(urlstr: queryURL, postString: "fbtoken=" + CommonUtils.formEncodedValue(token), isPut: false, taskCallback: { (ok, json) in
             
             //print("done")
             //print(ok)
@@ -318,7 +321,11 @@ class HLDataManager: NSObject {
         //print("Login in progress...")
         let queryURL = HulaConstants.apiURL + "signup"
         var signupSuccess = false;
-        httpPost(urlstr: queryURL, postString: "email="+email+"&pass="+pass+"&name="+nick+"&nick="+nick, isPut: false, taskCallback: { (ok, json) in
+        let postString = "email=" + CommonUtils.formEncodedValue(email)
+            + "&pass=" + CommonUtils.formEncodedValue(pass)
+            + "&name=" + CommonUtils.formEncodedValue(nick)
+            + "&nick=" + CommonUtils.formEncodedValue(nick)
+        httpPost(urlstr: queryURL, postString: postString, isPut: false, taskCallback: { (ok, json) in
             
             //print("done")
             //print(ok)

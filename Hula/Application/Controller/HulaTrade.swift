@@ -135,11 +135,13 @@ class HulaTrade: NSObject {
         if (dict["other_products"] as? [String]) != nil {
             self.other_products = (dict["other_products"] as? [String])!
         }
-        if (dict["owner_money"] as? Float) != nil {
-            self.owner_money = (dict["owner_money"] as? Float)!
+        // JSONSerialization bridges whole numbers as Int/NSNumber; `as? Float` misses those
+        // and silently leaves cash at 0 after live-barter sync / trade reload.
+        if let money = CommonUtils.floatFromJSON(dict["owner_money"]) {
+            self.owner_money = money
         }
-        if (dict["other_money"] as? Float) != nil {
-            self.other_money = (dict["other_money"] as? Float)!
+        if let money = CommonUtils.floatFromJSON(dict["other_money"]) {
+            self.other_money = money
         }
         if (dict["next_bid"] as? String) != nil {
             self.next_bid = dict["next_bid"] as? String
