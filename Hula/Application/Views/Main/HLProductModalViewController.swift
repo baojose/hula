@@ -284,8 +284,11 @@ class HLProductModalViewController: UIViewController, UIImagePickerControllerDel
         if let t = product.video_url[currentTradeId] {
             vurl = t
         }
-        let videoURL = URL(string: vurl)
-        let player = AVPlayer(url: videoURL!)
+        guard !vurl.isEmpty, let videoURL = URL(string: vurl) else {
+            notify(NSLocalizedString("Video is not available yet.", comment: ""))
+            return
+        }
+        let player = AVPlayer(url: videoURL)
         let playerViewController = LandscapeAVPlayerController()
         if #available(iOS 9.0, *) {
             HLDataManager.sharedInstance.onlyLandscapeView = true
@@ -295,7 +298,7 @@ class HLProductModalViewController: UIViewController, UIImagePickerControllerDel
         }
         playerViewController.player = player
         self.present(playerViewController, animated: true) {
-            playerViewController.player!.play()
+            playerViewController.player?.play()
         }
     }
     

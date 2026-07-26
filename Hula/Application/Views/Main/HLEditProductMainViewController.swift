@@ -201,14 +201,22 @@ class HLEditProductMainViewController: BaseViewController, ProductPictureDelegat
     }
     
     func imageUploaded(path: String, pos: Int){
-        if (product.arrProductPhotoLink.count < pos ){
-            product.arrProductPhotoLink.append(path)
-        } else {
-            product.arrProductPhotoLink[ pos - 1 ] = path
+        // pos is 1-based slot index from the camera UI
+        guard pos >= 1 else { return }
+        let index = pos - 1
+        while product.arrProductPhotoLink.count <= index {
+            product.arrProductPhotoLink.append("")
+        }
+        product.arrProductPhotoLink[index] = path
+        // Drop trailing empties so we don't persist blank image slots
+        while let last = product.arrProductPhotoLink.last, last.isEmpty {
+            product.arrProductPhotoLink.removeLast()
         }
         if (pos == 1){
             product.productImage = path
             self.productImage.loadImageFromURL(urlString: path)
+        } else if product.productImage.isEmpty, let first = product.arrProductPhotoLink.first, !first.isEmpty {
+            product.productImage = first
         }
         redrawProductImages()
         product.updateServerData()

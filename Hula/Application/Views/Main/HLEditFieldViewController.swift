@@ -136,11 +136,13 @@ class HLEditFieldViewController: BaseViewController, UITextFieldDelegate, UIText
         geoCoder.reverseGeocodeLocation(location) {
             (placemarks, error) -> Void in
             
-            let placeArray: [CLPlacemark] = placemarks as [CLPlacemark]!
+            guard let placeArray = placemarks, placeArray.count > 0 else {
+                self.spinner.hide()
+                return
+            }
             
             // Place details
-            var placeMark: CLPlacemark!
-            placeMark = placeArray[0]
+            let placeMark = placeArray[0]
             
             // Address dictionary
             //print(placeMark.addressDictionary)
@@ -148,10 +150,26 @@ class HLEditFieldViewController: BaseViewController, UITextFieldDelegate, UIText
             let city = placeMark.addressDictionary?["City"] as? String
             let zip = placeMark.addressDictionary?["ZIP"] as? String
             
-            self.newValueTextView.text = zip!
-            self.userData.zip = zip!
-            self.userData.userLocationName = city! + ", " + country!
-            self.grayLocationLabel.text = city! + ", " + country!
+            if let zip = zip {
+                self.newValueTextView.text = zip
+                self.userData.zip = zip
+            }
+            let cityPart = city ?? ""
+            let countryPart = country ?? ""
+            let locationName: String
+            if cityPart.isEmpty && countryPart.isEmpty {
+                locationName = ""
+            } else if cityPart.isEmpty {
+                locationName = countryPart
+            } else if countryPart.isEmpty {
+                locationName = cityPart
+            } else {
+                locationName = cityPart + ", " + countryPart
+            }
+            if !locationName.isEmpty {
+                self.userData.userLocationName = locationName
+                self.grayLocationLabel.text = locationName
+            }
             self.spinner.hide()
             
             

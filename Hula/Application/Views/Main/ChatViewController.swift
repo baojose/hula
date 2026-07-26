@@ -120,8 +120,10 @@ class ChatViewController: UIViewController {
         self.sectionKeys = []
         self.sortedChat = [:]
         for message in self.chat{
-            if let date = message.object(forKey: "date") as? String{
-                let index = date.index(date.startIndex, offsetBy: 13)
+            if let date = message.object(forKey: "date") as? String, date.count > 0 {
+                // Group by prefix through hour (13 chars for full ISO8601); fall back for short dates.
+                let prefixLen = min(13, date.count)
+                let index = date.index(date.startIndex, offsetBy: prefixLen)
                 let date_extract = date.substring(to: index)
                 //print(date_extract)
                 if var exists = self.sortedChat.object(forKey: date_extract) as? [NSDictionary]{

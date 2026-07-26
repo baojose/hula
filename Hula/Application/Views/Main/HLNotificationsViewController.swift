@@ -189,18 +189,18 @@ class HLNotificationsViewController: BaseViewController, UITableViewDelegate, UI
             print("Trade id \(tradeId)")
             print("User id \(user_id)")
             if tradeId != "" {
-                // close trade
+                // Agree first; only open the trade room after the server accepts.
                 let queryURL = HulaConstants.apiURL + "trades/\(tradeId)/agree";
                 print("queryURL \(queryURL)");
                 HLDataManager.sharedInstance.httpGet(urlstr: queryURL, taskCallback: { (ok, json) in
-                    if (ok){
-                        //print(json!)
-                        if (json as? [String: Any]) != nil {
-                            //print(dictionary)
+                    guard ok, (json as? [String: Any]) != nil else { return }
+                    DispatchQueue.main.async {
+                        if let portraitNC = self.tabBarController?.navigationController as? HulaPortraitNavigationController {
+                            portraitNC.openSwapView()
                         }
-                        //NotificationCenter.default.post(name: self.signupRecieved, object: signupSuccess)
                     }
                 })
+                return
             }
         }
         

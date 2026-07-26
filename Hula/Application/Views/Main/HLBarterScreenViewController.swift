@@ -726,8 +726,8 @@ class HLBarterScreenViewController: BaseViewController {
                                 //print("item")
                                 //print(item)
                                 if let product_data = item as? [String : Any]{
-                                    let id = product_data["_id"] as! String
-                                    let name = product_data["title"] as! String
+                                    guard let id = product_data["_id"] as? String else { continue }
+                                    let name = (product_data["title"] as? String) ?? NSLocalizedString("Untitled product", comment: "")
                                     var image = product_data["image_url"] as? String
                                     if (image == nil){
                                         image = CommonUtils.sharedInstance.productImageURL(productId: id)
