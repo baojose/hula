@@ -339,6 +339,38 @@ class CommonUtils: NSObject, EasyTipViewDelegate, UIGestureRecognizerDelegate {
     }
 }
 
+extension CommonUtils {
+    /// Parse numeric JSON values that may arrive as Int, Double, Float, or NSNumber.
+    /// `as? Float` fails for whole-number JSON values bridged as Int/NSNumber.
+    static func floatFromJSON(_ value: Any?) -> Float? {
+        if let number = value as? NSNumber {
+            // Bool bridges as NSNumber; reject so true/false never become 1/0 money.
+            if CFGetTypeID(number) == CFBooleanGetTypeID() {
+                return nil
+            }
+            return number.floatValue
+        }
+        if let v = value as? Float {
+            return v
+        }
+        if let v = value as? Double {
+            return Float(v)
+        }
+        if let v = value as? Int {
+            return Float(v)
+        }
+        return nil
+    }
+
+    /// Percent-encode a single application/x-www-form-urlencoded field value.
+    /// Keeps `&`/`=` as delimiters and encodes `+` so it is not decoded as a space.
+    static func formEncodedValue(_ value: String) -> String {
+        var allowed = CharacterSet.urlQueryAllowed
+        allowed.remove(charactersIn: "&=+")
+        return value.addingPercentEncoding(withAllowedCharacters: allowed) ?? ""
+    }
+}
+
 extension Formatter {
     static let iso8601: DateFormatter = {
         let formatter = DateFormatter()
