@@ -329,7 +329,8 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
                                 HLDataManager.sharedInstance.newProduct.productId = product_id
                             }
                         }
-                        
+                        // Images often finish before create returns product_id; persist them now.
+                        self.persistProductImagesIfReady()
                         
                         if (self.arrayProducts.count > 0){
                             self.noProductsView.isHidden = true
@@ -342,6 +343,17 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
                 }
             })
         }
+    }
+
+    /// Called when either create or the last image upload completes.
+    /// Avoids silently dropping photos when uploads finish before product_id is assigned.
+    func persistProductImagesIfReady() {
+        guard images_to_upload > 0,
+              images_already_uploaded >= images_to_upload,
+              HLDataManager.sharedInstance.newProduct.productId.count > 0 else {
+            return
+        }
+        updateProduct()
     }
     func updateProduct() {
         //print("Updating product...")
@@ -400,31 +412,29 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
                     if (dataManager.newProduct.arrProductPhotos[i] as? UIImage != nil){
                         images_to_upload += 1
                         dataManager.uploadImage(dataManager.newProduct.arrProductPhotos[i] as! UIImage, itemPosition:i, taskCallback: { (ok, json) in
-                            if (ok){
-                                DispatchQueue.main.async {
-                                    if let dictionary = json as? [String: Any] {
-                                        if let filePath:String = dictionary["path"] as? String {
-                                            if let pos = dictionary["position"] as? String {
-                                                //print(pos)
-                                                //print(filePath)
-                                                self.images_already_uploaded += 1
-                                                self.arrayImagesURL[Int(pos)!] = HulaConstants.staticServerURL + filePath
-                                                HLDataManager.sharedInstance.newProduct.arrProductPhotoLink = self.arrayImagesURL
-                                                if Int(pos) == 0 {
-                                                    HLDataManager.sharedInstance.newProduct.productImage = HulaConstants.staticServerURL + filePath
-                                                }
-                                                //print(self.arrayImagesURL[Int(pos)!])
-                                                if (self.images_already_uploaded == self.images_to_upload){
-                                                    self.updateProduct()
-                                                }
-                                                self.notify("Uploaded image \(self.images_already_uploaded) of \(self.images_to_upload).")
-                                            }
-                                        }
+                            DispatchQueue.main.async {
+                                var didStorePath = false
+                                if ok, let dictionary = json as? [String: Any],
+                                   let filePath = dictionary["path"] as? String,
+                                   let posStr = dictionary["position"] as? String,
+                                   let pos = Int(posStr),
+                                   pos >= 0, pos < self.arrayImagesURL.count {
+                                    self.arrayImagesURL[pos] = HulaConstants.staticServerURL + filePath
+                                    HLDataManager.sharedInstance.newProduct.arrProductPhotoLink = self.arrayImagesURL
+                                    if pos == 0 {
+                                        HLDataManager.sharedInstance.newProduct.productImage = HulaConstants.staticServerURL + filePath
                                     }
+                                    didStorePath = true
+                                } else if !ok {
+                                    print("Connection error")
                                 }
-                            } else {
-                                // connection error
-                                print("Connection error")
+                                self.images_already_uploaded += 1
+                                if didStorePath {
+                                    self.notify("Uploaded image \(self.images_already_uploaded) of \(self.images_to_upload).")
+                                }
+                                // If create already returned product_id, persist now; otherwise
+                                // uploadProduct() will call persistProductImagesIfReady().
+                                self.persistProductImagesIfReady()
                             }
                         });
                     }

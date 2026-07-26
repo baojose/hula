@@ -228,8 +228,13 @@ class HLEditFieldViewController: BaseViewController, UITextFieldDelegate, UIText
         geoCoder.geocodeAddressString(zipCode) { (places, error) in
             if let placemarks = places, let placemark = placemarks.first {
                 if let loc = placemark.locality {
-                    self.userData.userLocationName = loc + ", " + placemark.country!
-                    self.grayLocationLabel.text = loc + ", " + placemark.country!
+                    if let country = placemark.country, !country.isEmpty {
+                        self.userData.userLocationName = loc + ", " + country
+                        self.grayLocationLabel.text = loc + ", " + country
+                    } else {
+                        self.userData.userLocationName = loc
+                        self.grayLocationLabel.text = loc
+                    }
                     self.userData.location = placemark.location
                 }
             }
