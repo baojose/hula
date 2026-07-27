@@ -201,13 +201,8 @@ class HLEditProductMainViewController: BaseViewController, ProductPictureDelegat
     }
     
     func imageUploaded(path: String, pos: Int){
-        if (product.arrProductPhotoLink.count < pos ){
-            product.arrProductPhotoLink.append(path)
-        } else {
-            product.arrProductPhotoLink[ pos - 1 ] = path
-        }
-        if (pos == 1){
-            product.productImage = path
+        product.applyUploadedImage(path: path, pos: pos)
+        if pos == 1 {
             self.productImage.loadImageFromURL(urlString: path)
         }
         redrawProductImages()
