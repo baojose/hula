@@ -119,9 +119,16 @@ class HLBarterScreenViewController: BaseViewController {
             
             //print(swappPageVC.parent)
             
-            myTradeIndex = min(swappPageVC.currentIndex, swappPageVC.arrTrades.count)
-            
-            let ct = swappPageVC.arrTrades[swappPageVC.currentIndex]
+            // currentIndex can become stale if arrTrades shrinks during an open session.
+            guard let safeIndex = CommonUtils.sharedInstance.clampedTradeIndex(
+                swappPageVC.currentIndex,
+                tradeCount: swappPageVC.arrTrades.count
+            ) else {
+                return
+            }
+            myTradeIndex = safeIndex
+
+            let ct = swappPageVC.arrTrades[myTradeIndex]
             //print("ct \(ct)")
             thisTrade.loadFrom(dict: ct)
             if (thisTrade.owner_id == HulaUser.sharedInstance.userId){

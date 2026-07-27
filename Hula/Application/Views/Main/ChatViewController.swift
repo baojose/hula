@@ -259,10 +259,11 @@ extension ChatViewController: UITableViewDelegate, UITableViewDataSource{
         label.font = UIFont(name: "HelveticaNeue", size: 12)
         
         var sectionTitle = sectionKeys[section]
-        if let comments = sortedChat.object(forKey: sectionKeys[section]) as? [NSDictionary]{
-            let lastDate = comments[0].object(forKey: "date") as! String
-            let dt = CommonUtils.sharedInstance.isoDateToNSDate(date:lastDate)
-            sectionTitle = CommonUtils.sharedInstance.timeAgoSinceDate(date: dt, numericDates: true)
+        if let comments = sortedChat.object(forKey: sectionKeys[section]) as? [NSDictionary], comments.count > 0 {
+            if let lastDate = comments[0].object(forKey: "date") as? String, lastDate.count > 0 {
+                let dt = CommonUtils.sharedInstance.isoDateToNSDate(date:lastDate)
+                sectionTitle = CommonUtils.sharedInstance.timeAgoSinceDate(date: dt, numericDates: true)
+            }
         }
         label.text = sectionTitle
         label.textAlignment = .center
@@ -273,10 +274,12 @@ extension ChatViewController: UITableViewDelegate, UITableViewDataSource{
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat{
         let cell = tableView.dequeueReusableCell(withIdentifier: "chatCell") as! ChatTableViewCell
         
-        if let comments = sortedChat.object(forKey: sectionKeys[indexPath.section]) as? [NSDictionary]{
+        if let comments = sortedChat.object(forKey: sectionKeys[indexPath.section]) as? [NSDictionary],
+           indexPath.row < comments.count {
             
             let data:NSDictionary = comments[indexPath.row]
-            let h = CommonUtils.sharedInstance.heightString(width: cell.messageText.frame.width, font: cell.messageText.font!, string: data.object(forKey: "message") as! String)*1.3 + 30
+            let message = data.object(forKey: "message") as? String ?? ""
+            let h = CommonUtils.sharedInstance.heightString(width: cell.messageText.frame.width, font: cell.messageText.font!, string: message)*1.3 + 30
             return h
         }
         return 100.0
@@ -287,12 +290,14 @@ extension ChatViewController: UITableViewDelegate, UITableViewDataSource{
         
         let cell = tableView.dequeueReusableCell(withIdentifier: "chatCell") as! ChatTableViewCell
         
-        if let comments = sortedChat.object(forKey: sectionKeys[indexPath.section]) as? [NSDictionary]{
+        if let comments = sortedChat.object(forKey: sectionKeys[indexPath.section]) as? [NSDictionary],
+           indexPath.row < comments.count {
             
             let data:NSDictionary = comments[indexPath.row]
             cell.userNameLabel.text = NSLocalizedString("You", comment: "")
-            cell.messageText.text = data.object(forKey: "message") as! String
-            let user_id = data.object(forKey: "user_id") as! String
+            let message = data.object(forKey: "message") as? String ?? ""
+            cell.messageText.text = message
+            let user_id = data.object(forKey: "user_id") as? String ?? ""
             if (user_id == HulaUser.sharedInstance.userId){
                 // my message
                 cell.userNameLabel.text = HulaUser.sharedInstance.userNick

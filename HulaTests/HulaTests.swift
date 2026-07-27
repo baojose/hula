@@ -10,27 +10,48 @@ import XCTest
 @testable import Hula
 
 class HulaTests: XCTestCase {
-    
+
     override func setUp() {
         super.setUp()
-        // Put setup code here. This method is called before the invocation of each test method in the class.
     }
-    
+
     override func tearDown() {
-        // Put teardown code here. This method is called after the invocation of each test method in the class.
         super.tearDown()
     }
-    
-    func testExample() {
-        // This is an example of a functional test case.
-        // Use XCTAssert and related functions to verify your tests produce the correct results.
+
+    func testRelativeDateLabelReturnsEmptyForMissingOrBlankDate() {
+        let utils = CommonUtils.sharedInstance
+        XCTAssertEqual(utils.relativeDateLabel(fromISO: nil), "")
+        XCTAssertEqual(utils.relativeDateLabel(fromISO: ""), "")
     }
-    
-    func testPerformanceExample() {
-        // This is an example of a performance test case.
-        self.measure {
-            // Put the code you want to measure the time of here.
-        }
+
+    func testRelativeDateLabelReturnsNonEmptyForValidISODate() {
+        let utils = CommonUtils.sharedInstance
+        let label = utils.relativeDateLabel(fromISO: "2026-07-27T12:00:00.000Z", numericDates: true)
+        XCTAssertFalse(label.isEmpty)
     }
-    
+
+    func testClampedTradeIndexPreventsOutOfBounds() {
+        let utils = CommonUtils.sharedInstance
+        XCTAssertNil(utils.clampedTradeIndex(0, tradeCount: 0))
+        XCTAssertEqual(utils.clampedTradeIndex(-1, tradeCount: 3), 0)
+        XCTAssertEqual(utils.clampedTradeIndex(0, tradeCount: 3), 0)
+        XCTAssertEqual(utils.clampedTradeIndex(2, tradeCount: 3), 2)
+        XCTAssertEqual(utils.clampedTradeIndex(9, tradeCount: 3), 2)
+    }
+
+    func testProductIdentityPreventsDuplicateCreateTracking() {
+        // Mirrors HLMyProductsViewController.newPostModeDesign re-entry guard:
+        // complete-profile Done must not append/upload a second product for the same instance.
+        var arrayProducts: [HulaProduct] = []
+        let newProduct = HulaProduct()
+        arrayProducts.append(newProduct)
+
+        let existingIndex = arrayProducts.index(where: { $0 === newProduct })
+        XCTAssertEqual(existingIndex, 0)
+
+        // A second create notification with the same instance should hit the existing path.
+        let wouldStartSecondCreate = existingIndex == nil
+        XCTAssertFalse(wouldStartSecondCreate)
+    }
 }

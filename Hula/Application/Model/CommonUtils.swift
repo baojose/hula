@@ -222,6 +222,30 @@ class CommonUtils: NSObject, EasyTipViewDelegate, UIGestureRecognizerDelegate {
             return NSDate()
         }
     }
+
+    /// Safe relative-date label for optional API date strings (notifications/chat).
+    /// Returns empty string when date is missing/blank so callers never force-unwrap.
+    func relativeDateLabel(fromISO dateString: String?, numericDates: Bool = false) -> String {
+        guard let dateString = dateString, dateString.count > 0 else {
+            return ""
+        }
+        let date = isoDateToNSDate(date: dateString)
+        return timeAgoSinceDate(date: date, numericDates: numericDates)
+    }
+
+    /// Clamps a trade list index so mid-session refreshes cannot OOB-crash open rooms/chat.
+    func clampedTradeIndex(_ index: Int, tradeCount: Int) -> Int? {
+        guard tradeCount > 0 else {
+            return nil
+        }
+        if index < 0 {
+            return 0
+        }
+        if index >= tradeCount {
+            return tradeCount - 1
+        }
+        return index
+    }
     func userImageURL(userId: String) -> String{
         return HulaConstants.apiURL + "users/\(userId)/image"
     }

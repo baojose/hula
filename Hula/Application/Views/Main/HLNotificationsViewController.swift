@@ -102,12 +102,13 @@ class HLNotificationsViewController: BaseViewController, UITableViewDelegate, UI
                 cell.backgroundColor = UIColor(red: 1, green: 1, blue: 1, alpha: 1)
             }
             
-            let date = notification.object(forKey: "date") as? String
-            let realdate = CommonUtils.sharedInstance.isoDateToNSDate(date: date!)
-            let days_since = daysBetween(start: realdate as Date, end: NSDate() as Date )
-            print(days_since);
-            if days_since > 3 {
-                is_old = true;
+            if let date = notification.object(forKey: "date") as? String, date.count > 0 {
+                let realdate = CommonUtils.sharedInstance.isoDateToNSDate(date: date)
+                let days_since = daysBetween(start: realdate as Date, end: NSDate() as Date )
+                print(days_since);
+                if days_since > 3 {
+                    is_old = true;
+                }
             }
             cell.newTradeActionView.isHidden = true
             if let type = notification.object(forKey: "type") as? String{
@@ -132,10 +133,11 @@ class HLNotificationsViewController: BaseViewController, UITableViewDelegate, UI
         
         cell.NotificationsText.text = notification.object(forKey: "text") as? String
         commonUtils.circleImageView(cell.NotificationImageView)
-        
-        let date = commonUtils.isoDateToNSDate(date: (notification.object(forKey: "date") as? String)!)
-        let relativeDate = commonUtils.timeAgoSinceDate(date: date, numericDates: false)
-        cell.NotificationsDate.text = relativeDate
+
+        cell.NotificationsDate.text = commonUtils.relativeDateLabel(
+            fromISO: notification.object(forKey: "date") as? String,
+            numericDates: false
+        )
         if let usr = notification.object(forKey: "from_id") as? String{
             cell.NotificationImageView.loadImageFromURL(urlString: HulaConstants.apiURL + "users/\(usr)/image")
         }
@@ -227,17 +229,18 @@ class HLNotificationsViewController: BaseViewController, UITableViewDelegate, UI
             }
             
             if (type == "start"){
-                let user_id = notification.object(forKey: "from_id") as! String
-                HLDataManager.sharedInstance.getUserProfile(userId: user_id, taskCallback: {(user, prods, userfeedback) in
-                    let storyboard = UIStoryboard(name: "Main", bundle: nil)
-                    let myModalViewController = storyboard.instantiateViewController(withIdentifier: "sellerInfoPage") as! HLSellerInfoViewController
-                    myModalViewController.user = user
-                    myModalViewController.userProducts = prods
-                    myModalViewController.userFeedback = userfeedback
-                    myModalViewController.modalPresentationStyle = UIModalPresentationStyle.fullScreen
-                    myModalViewController.modalTransitionStyle = UIModalTransitionStyle.coverVertical
-                    self.navigationController?.pushViewController(myModalViewController, animated: true)
-                })
+                if let user_id = notification.object(forKey: "from_id") as? String, user_id.count > 0 {
+                    HLDataManager.sharedInstance.getUserProfile(userId: user_id, taskCallback: {(user, prods, userfeedback) in
+                        let storyboard = UIStoryboard(name: "Main", bundle: nil)
+                        let myModalViewController = storyboard.instantiateViewController(withIdentifier: "sellerInfoPage") as! HLSellerInfoViewController
+                        myModalViewController.user = user
+                        myModalViewController.userProducts = prods
+                        myModalViewController.userFeedback = userfeedback
+                        myModalViewController.modalPresentationStyle = UIModalPresentationStyle.fullScreen
+                        myModalViewController.modalTransitionStyle = UIModalTransitionStyle.coverVertical
+                        self.navigationController?.pushViewController(myModalViewController, animated: true)
+                    })
+                }
             }
         }
         
