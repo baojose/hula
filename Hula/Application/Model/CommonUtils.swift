@@ -339,6 +339,73 @@ class CommonUtils: NSObject, EasyTipViewDelegate, UIGestureRecognizerDelegate {
     }
 }
 
+extension CommonUtils {
+    /// Parse numeric JSON values that may arrive as Int, Double, Float, or NSNumber.
+    /// `as? Float` fails for whole-number JSON values bridged as Int/NSNumber.
+    static func floatFromJSON(_ value: Any?) -> Float? {
+        if let number = value as? NSNumber {
+            // Bool bridges as NSNumber; reject so true/false never become 1/0 money.
+            if CFGetTypeID(number) == CFBooleanGetTypeID() {
+                return nil
+            }
+            return number.floatValue
+        }
+        if let v = value as? Float {
+            return v
+        }
+        if let v = value as? Double {
+            return Float(v)
+        }
+        if let v = value as? Int {
+            return Float(v)
+        }
+        return nil
+    }
+
+    /// Percent-encode a single application/x-www-form-urlencoded field value.
+    /// Keeps `&`/`=` as delimiters and encodes `+` so it is not decoded as a space.
+    static func formEncodedValue(_ value: String) -> String {
+        var allowed = CharacterSet.urlQueryAllowed
+        allowed.remove(charactersIn: "&=+")
+        return value.addingPercentEncoding(withAllowedCharacters: allowed) ?? ""
+    }
+
+    /// Chat section key: prefix through hour for full ISO8601, safe for short dates.
+    static func chatDateSectionKey(_ date: String) -> String? {
+        guard date.count > 0 else { return nil }
+        let prefixLen = min(13, date.count)
+        let index = date.index(date.startIndex, offsetBy: prefixLen)
+        return date.substring(to: index)
+    }
+
+    /// Build "City, Country" display text when either geocode field may be missing.
+    static func locationDisplayName(city: String?, country: String?) -> String {
+        let cityPart = city ?? ""
+        let countryPart = country ?? ""
+        if cityPart.isEmpty && countryPart.isEmpty {
+            return ""
+        }
+        if cityPart.isEmpty {
+            return countryPart
+        }
+        if countryPart.isEmpty {
+            return cityPart
+        }
+        return cityPart + ", " + countryPart
+    }
+
+    /// Path-safe email segment for `/users/resetmail/{email}` after trimming whitespace.
+    static func resetMailPathComponent(_ email: String) -> String? {
+        let trimmed = email.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard trimmed.count > 4,
+            let encoded = trimmed.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed),
+            !encoded.isEmpty else {
+                return nil
+        }
+        return encoded
+    }
+}
+
 extension Formatter {
     static let iso8601: DateFormatter = {
         let formatter = DateFormatter()

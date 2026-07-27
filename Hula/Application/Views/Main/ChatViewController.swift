@@ -120,9 +120,8 @@ class ChatViewController: UIViewController {
         self.sectionKeys = []
         self.sortedChat = [:]
         for message in self.chat{
-            if let date = message.object(forKey: "date") as? String{
-                let index = date.index(date.startIndex, offsetBy: 13)
-                let date_extract = date.substring(to: index)
+            if let date = message.object(forKey: "date") as? String,
+                let date_extract = CommonUtils.chatDateSectionKey(date) {
                 //print(date_extract)
                 if var exists = self.sortedChat.object(forKey: date_extract) as? [NSDictionary]{
                     exists.append(message)
@@ -154,7 +153,7 @@ class ChatViewController: UIViewController {
         //print("trade id: \(self.trade_id)")
         if tx.count > 0 {
             let queryURL = HulaConstants.apiURL + "trades/\(self.trade_id)/chat"
-            HLDataManager.sharedInstance.httpPost(urlstr: queryURL, postString: "message=\(tx)", isPut: false, taskCallback: { (ok, json) in
+            HLDataManager.sharedInstance.httpPost(urlstr: queryURL, postString: "message=" + CommonUtils.formEncodedValue(tx), isPut: false, taskCallback: { (ok, json) in
                 //print("done")
                 //print(ok)
                 if (ok){
