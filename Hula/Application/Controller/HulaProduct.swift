@@ -142,13 +142,11 @@ class HulaProduct: NSObject {
             "&image_url=" + self.productImage
         str = str + "&owner_id=" + self.productOwner +
             "&images=" + self.arrProductPhotoLink.joined(separator: ",")
-        /*
+        // Persist the product's own coordinates on edit. Using the user's live GPS
+        // silently relocated listings whenever any field was updated.
         if (self.productLocation.coordinate.latitude != 0 && self.productLocation.coordinate.longitude != 0){
             str = str + "&lat=\(self.productLocation.coordinate.latitude)&lng=\(self.productLocation.coordinate.longitude)"
         }
-        */
-        str += "&lat=\(HulaUser.sharedInstance.location.coordinate.latitude)"
-        str += "&lng=\(HulaUser.sharedInstance.location.coordinate.longitude)"
         print(str)
         return str
     }
