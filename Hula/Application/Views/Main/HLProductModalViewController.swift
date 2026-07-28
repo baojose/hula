@@ -402,8 +402,9 @@ class HLProductModalViewController: UIViewController, UIImagePickerControllerDel
     }
     @IBAction func fsImageAction(_ sender: Any) {
         print("Fullingscreening")
-        if let im = productsScrollView.viewWithTag(pageControl.currentPage + 1000) as? UIImageView{
-            fullScreenImage(im.image!)
+        if let im = productsScrollView.viewWithTag(pageControl.currentPage + 1000) as? UIImageView,
+           let image = im.image {
+            fullScreenImage(image)
         }
     }
     
