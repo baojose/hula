@@ -194,8 +194,9 @@ class HLEditProductMainViewController: BaseViewController, ProductPictureDelegat
             product.productImage = product.arrProductPhotoLink[0]
             productImage.loadImageFromURL(urlString: product.arrProductPhotoLink[0])
         } else {
+            // Clear featured image_url so a deleted last photo is not re-posted.
+            product.productImage = ""
             productImage.loadImageFromURL(urlString: HulaConstants.noProductThumb)
-            //prodImg1.loadImageFromURL(urlString: HulaConstants.noProductThumb)
         }
         numPicturesLabel.text = "\(product.arrProductPhotoLink.count)"
     }
