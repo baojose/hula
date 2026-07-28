@@ -216,7 +216,12 @@ class HLFinalFeedbackViewController: UIViewController {
     func sendFeedback(){
         let queryURL = HulaConstants.apiURL + "feedback"
         let comments = "\(good_str). \(bad_str)"
-        let dataString:String = "trade_id=\(self.trade_id_closed)&user_id=\(self.user_id_closed)&comments=\(comments)&val=\(points)"
+        let dataString = CommonUtils.feedbackPostString(
+            tradeId: self.trade_id_closed,
+            userId: self.user_id_closed,
+            comments: comments,
+            points: points
+        )
         print(dataString)
         HLDataManager.sharedInstance.httpPost(urlstr: queryURL, postString: dataString, isPut: false, taskCallback: { (ok, json) in
             if (ok){
