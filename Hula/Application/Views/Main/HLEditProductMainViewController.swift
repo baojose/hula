@@ -190,12 +190,12 @@ class HLEditProductMainViewController: BaseViewController, ProductPictureDelegat
         }
         
         
-        if product.arrProductPhotoLink.count > 0 && product.arrProductPhotoLink[0].count > 0 {
-            product.productImage = product.arrProductPhotoLink[0]
-            productImage.loadImageFromURL(urlString: product.arrProductPhotoLink[0])
+        product.syncFeaturedImageFromPhotos()
+        if let featured = product.productImage, featured.count > 0 {
+            productImage.loadImageFromURL(urlString: featured)
         } else {
+            // Featured image_url cleared when the last photo is deleted.
             productImage.loadImageFromURL(urlString: HulaConstants.noProductThumb)
-            //prodImg1.loadImageFromURL(urlString: HulaConstants.noProductThumb)
         }
         numPicturesLabel.text = "\(product.arrProductPhotoLink.count)"
     }
