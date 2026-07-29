@@ -712,4 +712,100 @@ class HulaTests: XCTestCase {
         XCTAssertEqual(url?.absoluteString, "https://hula.trading/files/video.mp4")
     }
 
+    // MARK: - Novel coverage beyond #97/#98
+
+    func testProductPostStringUsesProductLocationNotUserGPS() {
+        let product = HulaProduct()
+        product.productId = "prod-1"
+        product.productName = "Lamp"
+        product.productDescription = "Desk lamp"
+        product.productCondition = "good"
+        product.productCategory = "Home"
+        product.productCategoryId = "cat-1"
+        product.productImage = "https://example.com/lamp.jpg"
+        product.productOwner = "owner-1"
+        product.arrProductPhotoLink = ["https://example.com/lamp.jpg"]
+        product.productLocation = CLLocation(latitude: 40.7128, longitude: -74.0060)
+
+        let previousUserLocation = HulaUser.sharedInstance.location
+        HulaUser.sharedInstance.location = CLLocation(latitude: 37.7749, longitude: -122.4194)
+        defer { HulaUser.sharedInstance.location = previousUserLocation }
+
+        let body = product.getPostString()
+        XCTAssertTrue(body.contains("lat=40.7128"), "Edit PUT must keep product lat; got \(body)")
+        XCTAssertTrue(body.contains("lng=-74.006"), "Edit PUT must keep product lng; got \(body)")
+        XCTAssertFalse(body.contains("lat=37.7749"), "Must not overwrite with user GPS; got \(body)")
+        XCTAssertFalse(body.contains("lng=-122.4194"), "Must not overwrite with user GPS; got \(body)")
+    }
+
+    func testProductPostStringOmitsZeroCoordinates() {
+        let product = HulaProduct()
+        product.productName = "Untitled"
+        product.productDescription = ""
+        product.productCondition = ""
+        product.productCategory = ""
+        product.productCategoryId = ""
+        product.productImage = ""
+        product.productOwner = ""
+        product.arrProductPhotoLink = []
+        product.productLocation = CLLocation(latitude: 0, longitude: 0)
+
+        let previousUserLocation = HulaUser.sharedInstance.location
+        HulaUser.sharedInstance.location = CLLocation(latitude: 51.5074, longitude: -0.1278)
+        defer { HulaUser.sharedInstance.location = previousUserLocation }
+
+        let body = product.getPostString()
+        XCTAssertFalse(body.contains("&lat="), "Unset product location must not send lat; got \(body)")
+        XCTAssertFalse(body.contains("&lng="), "Unset product location must not send lng; got \(body)")
+    }
+
+    func testSyncFeaturedImageClearsWhenPhotosEmpty() {
+        let product = HulaProduct()
+        product.productImage = "https://example.com/old.jpg"
+        product.arrProductPhotoLink = []
+        product.syncFeaturedImageFromPhotos()
+        XCTAssertEqual(product.productImage, "")
+
+        let body = product.getPostString()
+        XCTAssertTrue(body.contains("image_url="), body)
+        XCTAssertFalse(
+            body.contains("image_url=" + CommonUtils.formEncodedValue("https://example.com/old.jpg")),
+            "Deleted photo must not remain as featured image_url; got \(body)"
+        )
+
+        product.arrProductPhotoLink = ["https://example.com/new.jpg"]
+        product.syncFeaturedImageFromPhotos()
+        XCTAssertEqual(product.productImage, "https://example.com/new.jpg")
+    }
+
+    func testIntFromJSONAcceptsWholeAndBridgedNumbers() {
+        XCTAssertEqual(CommonUtils.intFromJSON(3), 3)
+        XCTAssertEqual(CommonUtils.intFromJSON(NSNumber(value: 7)), 7)
+        XCTAssertEqual(CommonUtils.intFromJSON(4.0), 4)
+        XCTAssertEqual(CommonUtils.intFromJSON(Float(2)), 2)
+        XCTAssertNil(CommonUtils.intFromJSON(true))
+        XCTAssertNil(CommonUtils.intFromJSON(false))
+        XCTAssertNil(CommonUtils.intFromJSON("3"))
+        XCTAssertNil(CommonUtils.intFromJSON(nil))
+    }
+
+    func testTradeLoadFromParsesBridgedUnreadCounts() {
+        let trade = HulaTrade()
+        trade.loadFrom(dict: [
+            "_id": "t1",
+            "owner_unread": NSNumber(value: 2),
+            "other_unread": 5.0
+        ] as NSDictionary)
+        XCTAssertEqual(trade.owner_unread, 2)
+        XCTAssertEqual(trade.other_unread, 5)
+
+        trade.loadFrom(dict: [
+            "_id": "t2",
+            "owner_unread": true,
+            "other_unread": "1"
+        ] as NSDictionary)
+        XCTAssertEqual(trade.owner_unread, 0)
+        XCTAssertEqual(trade.other_unread, 0)
+    }
+
 }
