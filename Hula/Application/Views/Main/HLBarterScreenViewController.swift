@@ -119,9 +119,16 @@ class HLBarterScreenViewController: BaseViewController {
             
             //print(swappPageVC.parent)
             
-            myTradeIndex = min(swappPageVC.currentIndex, swappPageVC.arrTrades.count)
-            
-            let ct = swappPageVC.arrTrades[swappPageVC.currentIndex]
+            // currentIndex can become stale if arrTrades shrinks during an open session.
+            guard let safeIndex = CommonUtils.sharedInstance.clampedTradeIndex(
+                swappPageVC.currentIndex,
+                tradeCount: swappPageVC.arrTrades.count
+            ) else {
+                return
+            }
+            myTradeIndex = safeIndex
+
+            let ct = swappPageVC.arrTrades[myTradeIndex]
             //print("ct \(ct)")
             thisTrade.loadFrom(dict: ct)
             if (thisTrade.owner_id == HulaUser.sharedInstance.userId){
@@ -726,8 +733,11 @@ class HLBarterScreenViewController: BaseViewController {
                                 //print("item")
                                 //print(item)
                                 if let product_data = item as? [String : Any]{
-                                    let id = product_data["_id"] as! String
-                                    let name = product_data["title"] as! String
+                                    guard let identity = CommonUtils.barterProductIdentity(from: product_data) else {
+                                        continue
+                                    }
+                                    let id = identity.id
+                                    let name = identity.title
                                     var image = product_data["image_url"] as? String
                                     if (image == nil){
                                         image = CommonUtils.sharedInstance.productImageURL(productId: id)
