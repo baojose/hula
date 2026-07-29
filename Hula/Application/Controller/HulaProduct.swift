@@ -181,15 +181,23 @@ class HulaProduct: NSObject {
             "&image_url=" + CommonUtils.formEncodedValue(self.productImage)
         str = str + "&owner_id=" + CommonUtils.formEncodedValue(self.productOwner) +
             "&images=" + CommonUtils.formEncodedValue(self.arrProductPhotoLink.joined(separator: ","))
-        /*
+        // Persist the product's own coordinates on edit. Using the user's live GPS
+        // silently relocated listings whenever any field was updated.
         if (self.productLocation.coordinate.latitude != 0 && self.productLocation.coordinate.longitude != 0){
             str = str + "&lat=\(self.productLocation.coordinate.latitude)&lng=\(self.productLocation.coordinate.longitude)"
         }
-        */
-        str += "&lat=\(HulaUser.sharedInstance.location.coordinate.latitude)"
-        str += "&lng=\(HulaUser.sharedInstance.location.coordinate.longitude)"
         print(str)
         return str
+    }
+
+    /// Keep featured `image_url` aligned with the first photo; clear when the album is empty
+    /// so a deleted last photo is not re-posted as the featured image.
+    func syncFeaturedImageFromPhotos() {
+        if let first = arrProductPhotoLink.first, first.count > 0 {
+            productImage = first
+        } else {
+            productImage = ""
+        }
     }
 
     /// Apply a uploaded image URL into a 1-based camera slot without corrupting earlier empties.
