@@ -173,13 +173,13 @@ class HulaTrade: NSObject {
         if let str_date = dict["last_update"] as? String, let parsed = str_date.dateFromISO8601 {
             self.last_update = parsed
         }
-        if (dict["owner_unread"] as? Int) != nil {
-            self.owner_unread = dict["owner_unread"] as! Int
+        if let unread = CommonUtils.intFromJSON(dict["owner_unread"]) {
+            self.owner_unread = unread
         } else {
             self.owner_unread = 0
         }
-        if (dict["other_unread"] as? Int) != nil {
-            self.other_unread = dict["other_unread"] as! Int
+        if let unread = CommonUtils.intFromJSON(dict["other_unread"]) {
+            self.other_unread = unread
         } else {
             self.other_unread = 0
         }

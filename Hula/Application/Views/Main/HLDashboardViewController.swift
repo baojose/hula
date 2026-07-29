@@ -317,11 +317,10 @@ extension HLDashboardViewController: UICollectionViewDelegate, UICollectionViewD
                     drawProducts(inCell: cell, fromArr: owner_products_arr, money: owner_money, side: "right")
                 }
                 
-                if let chat_count = thisTrade.object(forKey: "other_unread") as? Int{
-                    if chat_count > 0 {
-                        cell.chatCountLabel.text = "\(chat_count)"
-                        cell.chatCountLabel.isHidden = false
-                    }
+                if let chat_count = CommonUtils.intFromJSON(thisTrade.object(forKey: "other_unread")),
+                   chat_count > 0 {
+                    cell.chatCountLabel.text = "\(chat_count)"
+                    cell.chatCountLabel.isHidden = false
                 }
             } else {
                 if let other_products_arr = thisTrade.object(forKey: "other_products") as? [String]{
@@ -330,11 +329,10 @@ extension HLDashboardViewController: UICollectionViewDelegate, UICollectionViewD
                 if let owner_products_arr = thisTrade.object(forKey: "owner_products") as? [String]{
                     drawProducts(inCell: cell, fromArr: owner_products_arr, money: owner_money, side: "left")
                 }
-                if let chat_count = thisTrade.object(forKey: "owner_unread") as? Int{
-                    if chat_count > 0 {
-                        cell.chatCountLabel.text = "\(chat_count)"
-                        cell.chatCountLabel.isHidden = false
-                    }
+                if let chat_count = CommonUtils.intFromJSON(thisTrade.object(forKey: "owner_unread")),
+                   chat_count > 0 {
+                    cell.chatCountLabel.text = "\(chat_count)"
+                    cell.chatCountLabel.isHidden = false
                 }
             }
             

@@ -387,6 +387,27 @@ extension CommonUtils {
         return nil
     }
 
+    /// Parse integer JSON counts (unread badges, etc.) across Int/Double/NSNumber bridges.
+    /// Rejects Bool so `true`/`false` never become unread `1`/`0`.
+    static func intFromJSON(_ value: Any?) -> Int? {
+        if let number = value as? NSNumber {
+            if CFGetTypeID(number) == CFBooleanGetTypeID() {
+                return nil
+            }
+            return number.intValue
+        }
+        if let v = value as? Int {
+            return v
+        }
+        if let v = value as? Double {
+            return Int(v)
+        }
+        if let v = value as? Float {
+            return Int(v)
+        }
+        return nil
+    }
+
     /// Percent-encode a single application/x-www-form-urlencoded field value.
     /// Keeps `&`/`=` as delimiters and encodes `+` so it is not decoded as a space.
     static func formEncodedValue(_ value: String) -> String {
