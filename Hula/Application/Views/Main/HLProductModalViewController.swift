@@ -279,13 +279,15 @@ class HLProductModalViewController: UIViewController, UIImagePickerControllerDel
         
         print("do not allow rotation")
         
-        var vurl : String = ""
         print(product.video_url)
-        if let t = product.video_url[currentTradeId] {
-            vurl = t
+        guard let videoURL = CommonUtils.playableVideoURL(
+            videoURLs: product.video_url,
+            tradeId: currentTradeId
+        ) else {
+            notify(NSLocalizedString("Video is not available yet.", comment: ""))
+            return
         }
-        let videoURL = URL(string: vurl)
-        let player = AVPlayer(url: videoURL!)
+        let player = AVPlayer(url: videoURL)
         let playerViewController = LandscapeAVPlayerController()
         if #available(iOS 9.0, *) {
             HLDataManager.sharedInstance.onlyLandscapeView = true
@@ -295,7 +297,7 @@ class HLProductModalViewController: UIViewController, UIImagePickerControllerDel
         }
         playerViewController.player = player
         self.present(playerViewController, animated: true) {
-            playerViewController.player!.play()
+            playerViewController.player?.play()
         }
     }
     

@@ -79,6 +79,53 @@ class HulaProduct: NSObject {
     override var description : String {
         return "(Product id: \(self.productId!); name:   \(self.productName!); dist:   \(self.distance))\n"
     }
+
+    private func coordinateValue(from value: Any) -> CLLocationDegrees? {
+        if value is Bool {
+            return nil
+        }
+        if let number = value as? NSNumber {
+            let type = String(cString: number.objCType)
+            if type == "c" || type == "B" {
+                return nil
+            }
+            return CLLocationDegrees(number.doubleValue)
+        }
+        if let value = value as? Double {
+            return CLLocationDegrees(value)
+        }
+        if let value = value as? Float {
+            return CLLocationDegrees(value)
+        }
+        if let value = value as? CGFloat {
+            return CLLocationDegrees(value)
+        }
+        if let value = value as? Int {
+            return CLLocationDegrees(value)
+        }
+        return nil
+    }
+
+    private func coordinatePair(from value: Any?) -> (latitude: CLLocationDegrees, longitude: CLLocationDegrees)? {
+        var coordinates: [Any]
+        if let tmp = value as? [Any] {
+            coordinates = tmp
+        } else if let tmp = value as? NSArray {
+            coordinates = []
+            for item in tmp {
+                coordinates.append(item)
+            }
+        } else {
+            return nil
+        }
+
+        guard coordinates.count >= 2,
+            let latitude = coordinateValue(from: coordinates[0]),
+            let longitude = coordinateValue(from: coordinates[1]) else {
+                return nil
+        }
+        return (latitude, longitude)
+    }
     
     func populate(with: NSDictionary){
         if let tmp = with.object(forKey: "_id") as? String { productId = tmp }
@@ -101,16 +148,8 @@ class HulaProduct: NSObject {
                 }
             }
         }
-        print (with.object(forKey: "location") as? [Any])
-        if let tmp = with.object(forKey: "location") as? [Any] {
-            let lat = tmp[0] as? Double
-            let lon = tmp[1] as? Double
-            print(Float(lat!))
-            
-            if (lat != nil && lon != nil){
-                productLocation = CLLocation(latitude: CLLocationDegrees(Float(lat!)), longitude: CLLocationDegrees(Float(lon!)))
-            }
- 
+        if let coordinates = coordinatePair(from: with.object(forKey: "location")) {
+            productLocation = CLLocation(latitude: coordinates.latitude, longitude: coordinates.longitude)
         }
     }
     
@@ -134,14 +173,14 @@ class HulaProduct: NSObject {
         }
     }
     func getPostString() -> String {
-        var str = "title=" + self.productName +
-            "&description=" + self.productDescription +
-            "&condition=" + self.productCondition
-        str = str + "&category_name=" + self.productCategory +
-            "&category_id=" + self.productCategoryId +
-            "&image_url=" + self.productImage
-        str = str + "&owner_id=" + self.productOwner +
-            "&images=" + self.arrProductPhotoLink.joined(separator: ",")
+        var str = "title=" + CommonUtils.formEncodedValue(self.productName) +
+            "&description=" + CommonUtils.formEncodedValue(self.productDescription) +
+            "&condition=" + CommonUtils.formEncodedValue(self.productCondition)
+        str = str + "&category_name=" + CommonUtils.formEncodedValue(self.productCategory) +
+            "&category_id=" + CommonUtils.formEncodedValue(self.productCategoryId) +
+            "&image_url=" + CommonUtils.formEncodedValue(self.productImage)
+        str = str + "&owner_id=" + CommonUtils.formEncodedValue(self.productOwner) +
+            "&images=" + CommonUtils.formEncodedValue(self.arrProductPhotoLink.joined(separator: ","))
         /*
         if (self.productLocation.coordinate.latitude != 0 && self.productLocation.coordinate.longitude != 0){
             str = str + "&lat=\(self.productLocation.coordinate.latitude)&lng=\(self.productLocation.coordinate.longitude)"
@@ -151,5 +190,23 @@ class HulaProduct: NSObject {
         str += "&lng=\(HulaUser.sharedInstance.location.coordinate.longitude)"
         print(str)
         return str
+    }
+
+    /// Apply a uploaded image URL into a 1-based camera slot without corrupting earlier empties.
+    func applyUploadedImage(path: String, pos: Int) {
+        guard pos >= 1 else { return }
+        let index = pos - 1
+        while arrProductPhotoLink.count <= index {
+            arrProductPhotoLink.append("")
+        }
+        arrProductPhotoLink[index] = path
+        while let last = arrProductPhotoLink.last, last.isEmpty {
+            arrProductPhotoLink.removeLast()
+        }
+        if pos == 1 {
+            productImage = path
+        } else if productImage.isEmpty, let first = arrProductPhotoLink.first, !first.isEmpty {
+            productImage = first
+        }
     }
 }

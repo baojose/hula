@@ -188,17 +188,17 @@ class HLPastTradeViewController: UIViewController, UICollectionViewDelegate, UIC
         }
         
         
-        switch type {
-        case "other":
-            if thisTrade.other_money > 0 {
-                let moneyProd = HulaProduct(id: "xmoney", name: "+$\(Int(round(thisTrade.other_money)))", image: HulaConstants.transparentImg)
+        // Mirror barter-room mapping: UI "owner"/my side vs "other" side depends on
+        // whether the current user is the trade owner.
+        let iAmOwner = (thisTrade.owner_id == HulaUser.sharedInstance.userId)
+        let money = thisTrade.money(forSide: type, viewerIsOwner: iAmOwner)
+        if money > 0 {
+            let moneyProd = HulaProduct(id: "xmoney", name: "+$\(Int(round(money)))", image: HulaConstants.transparentImg)
+            switch type {
+            case "other":
                 self.otherTradedProducts.append(moneyProd)
                 self.otherSelectedProductsCollection.reloadData()
-            }
-        default:
-            
-            if thisTrade.owner_money > 0 {
-                let moneyProd = HulaProduct(id: "xmoney", name: "+$\( Int(round(thisTrade.owner_money)) )", image: HulaConstants.transparentImg)
+            default:
                 self.myTradedProducts.append(moneyProd)
                 self.mySelectedProductsCollection.reloadData()
             }
