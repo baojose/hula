@@ -84,7 +84,28 @@ class HulaTrade: NSObject {
     }
     
     func get_post_string() -> String {
-        return "product_id=\(self.product_id)&owner_id=\(self.owner_id)&other_id=\(self.other_id)&date=\(self.date.iso8601)&owner_products=\(self.owner_products.joined())&other_products=\(self.other_products.joined())&next_bid=\(self.next_bid)&status=\(self.status)&turn_user_id=\(self.turn_user_id)&owner_money=\(self.owner_money)&other_money=\(self.other_money)"
+        let ownerProducts = CommonUtils.formEncodedValue(self.owner_products.joined(separator: ","))
+        let otherProducts = CommonUtils.formEncodedValue(self.other_products.joined(separator: ","))
+        return "product_id=" + CommonUtils.formEncodedValue(self.product_id)
+            + "&owner_id=" + CommonUtils.formEncodedValue(self.owner_id)
+            + "&other_id=" + CommonUtils.formEncodedValue(self.other_id)
+            + "&date=" + CommonUtils.formEncodedValue(self.date.iso8601)
+            + "&owner_products=" + ownerProducts
+            + "&other_products=" + otherProducts
+            + "&next_bid=" + CommonUtils.formEncodedValue(self.next_bid)
+            + "&status=" + CommonUtils.formEncodedValue(self.status)
+            + "&turn_user_id=" + CommonUtils.formEncodedValue(self.turn_user_id)
+            + "&owner_money=\(self.owner_money)&other_money=\(self.other_money)"
+    }
+
+    /// Map trade cash onto the UI "owner"/my side vs "other" side for the current viewer.
+    func money(forSide side: String, viewerIsOwner: Bool) -> Float {
+        switch side {
+        case "other":
+            return viewerIsOwner ? other_money : owner_money
+        default:
+            return viewerIsOwner ? owner_money : other_money
+        }
     }
     
     func loadTrade(tradeId:String, callback: @escaping (Bool) -> ()){
@@ -125,9 +146,8 @@ class HulaTrade: NSObject {
         if (dict["owner_ready"] as? Bool) != nil {
             self.owner_ready = (dict["owner_ready"] as? Bool)!
         }
-        if (dict["date"] as? String) != nil {
-            let str_date = dict["date"] as? String
-            self.date = (str_date?.dateFromISO8601)!
+        if let str_date = dict["date"] as? String, let parsed = str_date.dateFromISO8601 {
+            self.date = parsed
         }
         if (dict["owner_products"] as? [String]) != nil {
             self.owner_products = (dict["owner_products"] as? [String])!
@@ -135,11 +155,11 @@ class HulaTrade: NSObject {
         if (dict["other_products"] as? [String]) != nil {
             self.other_products = (dict["other_products"] as? [String])!
         }
-        if (dict["owner_money"] as? Float) != nil {
-            self.owner_money = (dict["owner_money"] as? Float)!
+        if let money = CommonUtils.floatFromJSON(dict["owner_money"]) {
+            self.owner_money = money
         }
-        if (dict["other_money"] as? Float) != nil {
-            self.other_money = (dict["other_money"] as? Float)!
+        if let money = CommonUtils.floatFromJSON(dict["other_money"]) {
+            self.other_money = money
         }
         if (dict["next_bid"] as? String) != nil {
             self.next_bid = dict["next_bid"] as? String
@@ -150,9 +170,8 @@ class HulaTrade: NSObject {
         if (dict["turn_user_id"] as? String) != nil {
             self.turn_user_id = dict["turn_user_id"] as? String
         }
-        if (dict["last_update"] as? String) != nil {
-            let str_date = dict["last_update"] as! String
-            self.last_update = (str_date.dateFromISO8601)!
+        if let str_date = dict["last_update"] as? String, let parsed = str_date.dateFromISO8601 {
+            self.last_update = parsed
         }
         if (dict["owner_unread"] as? Int) != nil {
             self.owner_unread = dict["owner_unread"] as! Int
@@ -177,9 +196,10 @@ class HulaTrade: NSObject {
         
         //print(dict)
         self.last_bid_diff = []
+        self.num_bids = 0
         if let bids = dict["bids"] as? [Any] {
             self.num_bids = bids.count
-            if let last_bid = bids[ (bids.count - 1) ] as? [String:Any]{
+            if let last_bid = bids.last as? [String:Any]{
                 //print(last_bid)
                 if let lb_owner = last_bid["owner_diff"] as? [String]{
                     for item in lb_owner {
