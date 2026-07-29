@@ -266,7 +266,11 @@ class HLSearchResultViewController: BaseViewController, UITableViewDataSource, U
     
     func getFilteredList(){
         filteredList = []
-        for prod in (productsList as? [NSDictionary])!{
+        guard let products = productsList as? [NSDictionary] else {
+            productsTableView.reloadData()
+            return
+        }
+        for prod in products {
             let hprod = HulaProduct()
             var isValidCond = false
             var isValidDist = false
@@ -303,15 +307,12 @@ class HLSearchResultViewController: BaseViewController, UITableViewDataSource, U
         filteredList.sort { $0.distance < $1.distance  }
         print(filteredList)
         
-        for us in (foundUsersList as? [NSDictionary])!{
-            let hprod = HulaProduct()
-            hprod.productName = String(NSLocalizedString("User", comment: "")) + ": " + (us["name"] as! String)
-                + "\n(" + (us["nick"] as! String) + ")";
-            hprod.productDescription = us["nick"] as! String;
-            hprod.productImage = us["image"] as! String;
-            hprod.productId = us["_id"] as! String;
-            hprod.productCategoryId = "xx_user";
-            filteredList.append(hprod)
+        if let users = foundUsersList as? [NSDictionary] {
+            for us in users {
+                if let hprod = CommonUtils.searchUserProduct(from: us) {
+                    filteredList.append(hprod)
+                }
+            }
         }
         
         
