@@ -120,9 +120,8 @@ class ChatViewController: UIViewController {
         self.sectionKeys = []
         self.sortedChat = [:]
         for message in self.chat{
-            if let date = message.object(forKey: "date") as? String{
-                let index = date.index(date.startIndex, offsetBy: 13)
-                let date_extract = date.substring(to: index)
+            if let date = message.object(forKey: "date") as? String,
+                let date_extract = CommonUtils.chatDateSectionKey(date) {
                 //print(date_extract)
                 if var exists = self.sortedChat.object(forKey: date_extract) as? [NSDictionary]{
                     exists.append(message)
@@ -154,7 +153,7 @@ class ChatViewController: UIViewController {
         //print("trade id: \(self.trade_id)")
         if tx.count > 0 {
             let queryURL = HulaConstants.apiURL + "trades/\(self.trade_id)/chat"
-            HLDataManager.sharedInstance.httpPost(urlstr: queryURL, postString: "message=\(tx)", isPut: false, taskCallback: { (ok, json) in
+            HLDataManager.sharedInstance.httpPost(urlstr: queryURL, postString: "message=" + CommonUtils.formEncodedValue(tx), isPut: false, taskCallback: { (ok, json) in
                 //print("done")
                 //print(ok)
                 if (ok){
@@ -259,10 +258,12 @@ extension ChatViewController: UITableViewDelegate, UITableViewDataSource{
         label.font = UIFont(name: "HelveticaNeue", size: 12)
         
         var sectionTitle = sectionKeys[section]
-        if let comments = sortedChat.object(forKey: sectionKeys[section]) as? [NSDictionary]{
-            let lastDate = comments[0].object(forKey: "date") as! String
-            let dt = CommonUtils.sharedInstance.isoDateToNSDate(date:lastDate)
-            sectionTitle = CommonUtils.sharedInstance.timeAgoSinceDate(date: dt, numericDates: true)
+        if let comments = sortedChat.object(forKey: sectionKeys[section]) as? [NSDictionary], comments.count > 0 {
+            let lastDate = comments[0].object(forKey: "date") as? String
+            let relative = CommonUtils.sharedInstance.relativeDateLabel(fromISO: lastDate, numericDates: true)
+            if !relative.isEmpty {
+                sectionTitle = relative
+            }
         }
         label.text = sectionTitle
         label.textAlignment = .center
@@ -273,10 +274,12 @@ extension ChatViewController: UITableViewDelegate, UITableViewDataSource{
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat{
         let cell = tableView.dequeueReusableCell(withIdentifier: "chatCell") as! ChatTableViewCell
         
-        if let comments = sortedChat.object(forKey: sectionKeys[indexPath.section]) as? [NSDictionary]{
+        if let comments = sortedChat.object(forKey: sectionKeys[indexPath.section]) as? [NSDictionary],
+           indexPath.row < comments.count {
             
             let data:NSDictionary = comments[indexPath.row]
-            let h = CommonUtils.sharedInstance.heightString(width: cell.messageText.frame.width, font: cell.messageText.font!, string: data.object(forKey: "message") as! String)*1.3 + 30
+            let message = data.object(forKey: "message") as? String ?? ""
+            let h = CommonUtils.sharedInstance.heightString(width: cell.messageText.frame.width, font: cell.messageText.font!, string: message)*1.3 + 30
             return h
         }
         return 100.0
@@ -287,12 +290,14 @@ extension ChatViewController: UITableViewDelegate, UITableViewDataSource{
         
         let cell = tableView.dequeueReusableCell(withIdentifier: "chatCell") as! ChatTableViewCell
         
-        if let comments = sortedChat.object(forKey: sectionKeys[indexPath.section]) as? [NSDictionary]{
+        if let comments = sortedChat.object(forKey: sectionKeys[indexPath.section]) as? [NSDictionary],
+           indexPath.row < comments.count {
             
             let data:NSDictionary = comments[indexPath.row]
             cell.userNameLabel.text = NSLocalizedString("You", comment: "")
-            cell.messageText.text = data.object(forKey: "message") as! String
-            let user_id = data.object(forKey: "user_id") as! String
+            let message = data.object(forKey: "message") as? String ?? ""
+            cell.messageText.text = message
+            let user_id = data.object(forKey: "user_id") as? String ?? ""
             if (user_id == HulaUser.sharedInstance.userId){
                 // my message
                 cell.userNameLabel.text = HulaUser.sharedInstance.userNick
