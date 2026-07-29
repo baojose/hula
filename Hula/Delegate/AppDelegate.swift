@@ -103,7 +103,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         
         
         if #available(iOS 9.0, *) {
-            let isHandled = FBSDKApplicationDelegate.sharedInstance().application(app, open: url, sourceApplication: options[.sourceApplication] as! String!, annotation: options[.annotation])
+            let sourceApplication = options[.sourceApplication] as? String
+            let isHandled = FBSDKApplicationDelegate.sharedInstance().application(app, open: url, sourceApplication: sourceApplication, annotation: options[.annotation])
             return isHandled
         }
         

@@ -107,7 +107,10 @@ class HLProductPictureEditViewController: BaseViewController, UIImagePickerContr
     
     
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [String : Any]) {
-        let chosenImage = info[UIImagePickerControllerOriginalImage] as! UIImage //2
+        guard let chosenImage = info[UIImagePickerControllerOriginalImage] as? UIImage else {
+            dismiss(animated: true, completion: nil)
+            return
+        }
         let croppedImage:UIImage = self.commonUtils.cropImage(chosenImage, HulaConstants.product_image_thumb_size)
         // save the image
         self.stopSession()
@@ -177,7 +180,9 @@ class HLProductPictureEditViewController: BaseViewController, UIImagePickerContr
         picker.delegate = self;
         picker.allowsEditing = false
         picker.sourceType = .photoLibrary
-        picker.mediaTypes = UIImagePickerController.availableMediaTypes(for: .photoLibrary)!
+        // Images only — availableMediaTypes includes video and picking one
+        // crashed in didFinishPickingMediaWithInfo via as! UIImage.
+        picker.mediaTypes = ["public.image"]
         present(picker, animated: true, completion: nil)
     }
     
