@@ -172,6 +172,11 @@ class HLDataManager: NSObject {
                 let user = HulaUser.sharedInstance
                 if let dictionary = json as? [String: Any] {
                     if (dictionary["token"] as? String) != nil {
+                        // Clear any prior in-memory session before applying auth fields.
+                        // Without this, a re-login after token-expiry (which does not call
+                        // logout) can leave the previous account's profile fields in place
+                        // and later full-object PUTs write them onto the new account.
+                        HulaUser.sharedInstance.logout()
                         // access individual value in dictionary
                         
                         self.updateUserFromDict(dict: dictionary as NSDictionary)
@@ -210,12 +215,20 @@ class HLDataManager: NSObject {
                     if (dictionary["token"] as? String) != nil {
                         
                         if let us = dictionary["allUser"] as? NSDictionary {
+                            // Preserve the FB access token across logout(); logout() clears
+                            // fbToken and updateUserFromDict historically did not restore
+                            // fb_token / fbtoken from allUser, so the subsequent welcome-screen
+                            // push registration PUT would wipe the just-saved server fbtoken.
+                            let preservedFbToken = token
                             HulaUser.sharedInstance.logout();
                             //print(us)
                             // access individual value in dictionary
                             
                             self.updateUserFromDict(dict: dictionary as NSDictionary)
                             self.updateUserFromDict(dict: us as NSDictionary)
+                            if HulaUser.sharedInstance.fbToken.count == 0 {
+                                HulaUser.sharedInstance.fbToken = preservedFbToken
+                            }
                             //print(token)
                             self.writeUserData()
                         }
@@ -611,6 +624,12 @@ class HLDataManager: NSObject {
         dict.setObject(user.userPhotoURL, forKey: "userPhotoURL" as NSCopying)
         dict.setObject(user.userBio, forKey: "userBio" as NSCopying)
         dict.setObject(user.numProducts, forKey: "numProducts" as NSCopying)
+        dict.setObject(user.zip, forKey: "zip" as NSCopying)
+        dict.setObject(user.fbToken, forKey: "fbToken" as NSCopying)
+        dict.setObject(user.twToken, forKey: "twToken" as NSCopying)
+        dict.setObject(user.liToken, forKey: "liToken" as NSCopying)
+        dict.setObject(user.deviceId, forKey: "deviceId" as NSCopying)
+        dict.setObject(user.status, forKey: "status" as NSCopying)
         
         //...
         dict.write(toFile: path, atomically: false)
@@ -697,6 +716,9 @@ class HLDataManager: NSObject {
         if dict.object(forKey: "userId") as? String != nil {
             user.userId = dict.object(forKey: "userId")! as! String
         }
+        if dict.object(forKey: "_id") as? String != nil {
+            user.userId = dict.object(forKey: "_id")! as! String
+        }
         if dict.object(forKey: "userNick") as? String != nil {
             user.userNick = dict.object(forKey: "userNick")! as! String
         }
@@ -741,6 +763,45 @@ class HLDataManager: NSObject {
         }
         if let n = dict.object(forKey: "numProducts") as? Int {
             user.numProducts = n
+        }
+        if let zip = dict.object(forKey: "zip") as? String {
+            user.zip = zip
+        }
+        if let status = dict.object(forKey: "status") as? String {
+            user.status = status
+        }
+        if let fb = dict.object(forKey: "fbToken") as? String {
+            user.fbToken = fb
+        }
+        if let fb = dict.object(forKey: "fb_token") as? String {
+            user.fbToken = fb
+        }
+        if let fb = dict.object(forKey: "fbtoken") as? String {
+            user.fbToken = fb
+        }
+        if let tw = dict.object(forKey: "twToken") as? String {
+            user.twToken = tw
+        }
+        if let tw = dict.object(forKey: "tw_token") as? String {
+            user.twToken = tw
+        }
+        if let tw = dict.object(forKey: "twtoken") as? String {
+            user.twToken = tw
+        }
+        if let li = dict.object(forKey: "liToken") as? String {
+            user.liToken = li
+        }
+        if let li = dict.object(forKey: "li_token") as? String {
+            user.liToken = li
+        }
+        if let li = dict.object(forKey: "litoken") as? String {
+            user.liToken = li
+        }
+        if let device = dict.object(forKey: "deviceId") as? String {
+            user.deviceId = device
+        }
+        if let device = dict.object(forKey: "push_device_id") as? String {
+            user.deviceId = device
         }
     }
     
