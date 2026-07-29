@@ -19,7 +19,7 @@ class CommonUtils: NSObject, EasyTipViewDelegate, UIGestureRecognizerDelegate {
     var currentTip:Int = -1
     var lastTip:EasyTipView = EasyTipView(text: "");
     var startingViewController: UIViewController!
-    var bgViewToRemove : UIView!
+    var bgViewToRemove : UIView?
     var tutorialToComplete : String = ""
     
     class var sharedInstance: CommonUtils {
@@ -245,22 +245,24 @@ class CommonUtils: NSObject, EasyTipViewDelegate, UIGestureRecognizerDelegate {
     
     func showTutorial(arrayTips: [HulaTip], named: String){
         if (currentTip == -1){
+            guard arrayTips.count > 0 else { return }
             currentTipArr = arrayTips
             self.tutorialToComplete = named
             if let vc = currentTipArr[0].view.parentViewController  {
-                if bgViewToRemove != nil{
-                    bgViewToRemove.removeFromSuperview()
+                if let existing = bgViewToRemove {
+                    existing.removeFromSuperview()
                 }
-                bgViewToRemove = UIView(frame: vc.view.frame)
-                bgViewToRemove.frame.size.width = max(vc.view.frame.width, vc.view.frame.height) + 100
-                bgViewToRemove.frame.size.height = max(vc.view.frame.width, vc.view.frame.height) + 100
-                bgViewToRemove.backgroundColor = UIColor(red: 0, green: 0, blue: 0, alpha: 0.3)
+                let overlay = UIView(frame: vc.view.frame)
+                overlay.frame.size.width = max(vc.view.frame.width, vc.view.frame.height) + 100
+                overlay.frame.size.height = max(vc.view.frame.width, vc.view.frame.height) + 100
+                overlay.backgroundColor = UIColor(red: 0, green: 0, blue: 0, alpha: 0.3)
                 
                 let tap = UITapGestureRecognizer(target: self, action: #selector(removeEasyTips))
                 tap.delegate = self
-                bgViewToRemove.addGestureRecognizer(tap)
+                overlay.addGestureRecognizer(tap)
+                bgViewToRemove = overlay
                 
-                vc.view.addSubview(bgViewToRemove)
+                vc.view.addSubview(overlay)
             }
             self.showNextTip(false)
         }
@@ -277,7 +279,7 @@ class CommonUtils: NSObject, EasyTipViewDelegate, UIGestureRecognizerDelegate {
             }
             DispatchQueue.main.asyncAfter(deadline: when) {
                 
-                if (self.currentTip < self.currentTipArr.count){
+                if (self.currentTip >= 0 && self.currentTip < self.currentTipArr.count){
                     EasyTipView.show(forView: self.currentTipArr[self.currentTip].view, withinSuperview: self.currentTipArr[self.currentTip].view.parentViewController?.view, text: self.currentTipArr[self.currentTip].text, delegate:self )
                     
                     //self.lastTip = EasyTipView(text: self.currentTipArr[self.currentTip].text)
@@ -285,23 +287,11 @@ class CommonUtils: NSObject, EasyTipViewDelegate, UIGestureRecognizerDelegate {
                     
                     //self.showNextTip(false)
                 } else {
-                    self.bgViewToRemove.removeFromSuperview()
-                    self.currentTip = -1
-                    
-                    HLDataManager.sharedInstance.onboardingTutorials.setObject("done", forKey: self.tutorialToComplete as NSCopying)
-                    HLDataManager.sharedInstance.writeUserData()
+                    self.finishTutorialOverlay()
                 }
             }
         }else{
-            self.currentTip = -1
-            UIView.animate(withDuration: 0.5, animations: {
-                self.bgViewToRemove.alpha = 0
-            }, completion: {(success) in
-                self.bgViewToRemove.removeFromSuperview()
-            })
-            
-            HLDataManager.sharedInstance.onboardingTutorials.setObject("done", forKey: self.tutorialToComplete as NSCopying)
-            HLDataManager.sharedInstance.writeUserData()
+            self.finishTutorialOverlay()
         }
     }
     func easyTipViewDidDismiss(_ tipView: EasyTipView) {
@@ -309,9 +299,26 @@ class CommonUtils: NSObject, EasyTipViewDelegate, UIGestureRecognizerDelegate {
         self.showNextTip(false)
     }
     
+    func finishTutorialOverlay() {
+        self.currentTip = -1
+        if let overlay = self.bgViewToRemove {
+            UIView.animate(withDuration: 0.5, animations: {
+                overlay.alpha = 0
+            }, completion: {(success) in
+                overlay.removeFromSuperview()
+                if self.bgViewToRemove === overlay {
+                    self.bgViewToRemove = nil
+                }
+            })
+        }
+        HLDataManager.sharedInstance.onboardingTutorials.setObject("done", forKey: self.tutorialToComplete as NSCopying)
+        HLDataManager.sharedInstance.writeUserData()
+    }
+    
     func removeEasyTips(){
         //print("removing from...")
         print(self.currentTip)
+        guard self.currentTip >= 0 && self.currentTip < self.currentTipArr.count else { return }
         if let prnt = self.currentTipArr[self.currentTip].view.parentViewController?.view {
             for view in prnt.subviews {
                 if let tipView = view as? EasyTipView {

@@ -373,7 +373,13 @@ class HLProfileViewController: BaseViewController {
     
     
     func selectedImageTapped(_ sender: UITapGestureRecognizer){
-        fullScreenImage(image:profileImageView.image!, index: 1)
+        guard let image = profileImageView.image else {
+            let cameraViewController = self.storyboard?.instantiateViewController(withIdentifier: "selectPictureGeneral") as! HLPictureSelectViewController
+            cameraViewController.originalProfileVC = self
+            self.present(cameraViewController, animated: true)
+            return
+        }
+        fullScreenImage(image: image, index: 1)
     }
     
     
