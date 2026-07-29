@@ -33,4 +33,21 @@ class HulaTests: XCTestCase {
         }
     }
     
+    /// Regression: Accept/Reject used object(at:) with a stale cell tag after refresh
+    /// cleared or shrunk arrNotifications, which threw NSRangeException.
+    func testNotificationAtIndexIsBoundsSafe() {
+        let manager = HLDataManager.sharedInstance
+        let previous = manager.arrNotifications
+        defer { manager.arrNotifications = previous }
+
+        manager.arrNotifications = NSMutableArray()
+        XCTAssertNil(manager.notification(at: 0))
+        XCTAssertNil(manager.notification(at: -1))
+
+        manager.arrNotifications.add(["_id": "n1", "type": "start"] as NSDictionary)
+        XCTAssertNotNil(manager.notification(at: 0))
+        XCTAssertNil(manager.notification(at: 1))
+        XCTAssertEqual(manager.notification(at: 0)?["_id"] as? String, "n1")
+    }
+
 }

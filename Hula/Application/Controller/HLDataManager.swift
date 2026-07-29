@@ -805,6 +805,13 @@ class HLDataManager: NSObject {
         }
     }
     
+    /// Bounds-safe lookup used by Notifications UI (Accept/Reject/select/delete).
+    /// Prevents NSRangeException when a cell's tag/row is stale after a refresh shrinks the list.
+    func notification(at index: Int) -> NSDictionary? {
+        guard index >= 0 && index < arrNotifications.count else { return nil }
+        return arrNotifications.object(at: index) as? NSDictionary
+    }
+
     func loadUserNotifications(){
         //print("loading notifications...")
         if HulaUser.sharedInstance.isUserLoggedIn() {
@@ -813,15 +820,15 @@ class HLDataManager: NSObject {
             httpGet(urlstr: queryURL, taskCallback: { (ok, json) in
                 //print(ok)
                 var num_pending = 0
+                let rebuilt = NSMutableArray()
                 if (ok){
-                    self.arrNotifications = [];
                     if let array = json as? [Any] {
                         for not in array {
                             // access all objects in array
                             if let dict = not as? [String: Any]{
                                 if let status = dict["status"] as? String{
                                     if (status != "deleted"){
-                                        self.arrNotifications.add(not)
+                                        rebuilt.add(not)
                                     }
                                 }
                                 if let isread = dict["is_read"] as? Int{
@@ -833,12 +840,20 @@ class HLDataManager: NSObject {
                         }
                         
                     }
+                    // Replace the shared array on the main thread only. httpGet callbacks
+                    // run on a URLSession background queue; mutating arrNotifications there
+                    // races cellForRow / Accept / Reject on the main thread (NSRangeException).
                     DispatchQueue.main.async { // Correct
+                        self.arrNotifications = rebuilt
                         HLDataManager.sharedInstance.numNotificationsPending = num_pending
                         UIApplication.shared.applicationIconBadgeNumber = num_pending
                         self.isLoadingNotifications = false
                         
                         NotificationCenter.default.post(name: self.notificationsRecieved, object: nil)
+                    }
+                } else {
+                    DispatchQueue.main.async {
+                        self.isLoadingNotifications = false
                     }
                 }
             })
