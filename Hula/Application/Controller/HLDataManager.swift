@@ -102,6 +102,53 @@ class HLDataManager: NSObject {
             }
         })
     }
+    enum TradeDashboardBucket {
+        case current
+        case past
+        case hidden
+    }
+
+    /// Classify a trade for the dashboard lists without mutating manager state.
+    static func classifyTrade(
+        status: String?,
+        ownerId: String?,
+        turnUserId: String?,
+        viewerId: String,
+        ownerAccepted: Bool?,
+        otherAccepted: Bool?,
+        otherAgree: Bool?
+    ) -> TradeDashboardBucket {
+        guard let st = status, let ownerId = ownerId else {
+            return .hidden
+        }
+
+        var hideFromDashboard = false
+        if ownerId == viewerId {
+            if ownerAccepted == true {
+                hideFromDashboard = true
+            }
+        } else {
+            if otherAccepted == true {
+                hideFromDashboard = true
+            }
+            if otherAgree == false {
+                hideFromDashboard = true
+            }
+        }
+
+        if st != HulaConstants.end_status && st != HulaConstants.cancel_status && !hideFromDashboard {
+            if st != HulaConstants.pending_status || turnUserId == viewerId {
+                return .current
+            }
+            return .hidden
+        }
+
+        if st == HulaConstants.end_status || st == HulaConstants.review_status {
+            return .past
+        }
+        return .hidden
+    }
+
     func getTrades(taskCallback: @escaping (Bool) -> ()) {
         let queryURL = HulaConstants.apiURL + "trades"
         httpGet(urlstr: queryURL, taskCallback: { (ok, json) in
@@ -111,34 +158,24 @@ class HLDataManager: NSObject {
                 self.arrCurrentTrades = [];
                 self.arrPastTrades = []
                 if let array = json as? [NSDictionary] {
+                    let viewerId = HulaUser.sharedInstance.userId ?? ""
                     for trade in array {
-                        // access all objects in array
-                        if let st = trade.object(forKey: "status") as? String{
-                            //print(st)
-                            var hideFromDashboard = false
-                            if trade.object(forKey: "owner_id") as! String == HulaUser.sharedInstance.userId {
-                                if trade.object(forKey: "owner_accepted") as? Bool == true {
-                                    hideFromDashboard = true
-                                }
-                            } else {
-                                if trade.object(forKey: "other_accepted") as? Bool == true {
-                                    hideFromDashboard = true
-                                }
-                                if trade.object(forKey: "other_agree") as? Bool == false {
-                                    hideFromDashboard = true
-                                }
-                            }
-                            if st != HulaConstants.end_status && st != HulaConstants.cancel_status && !hideFromDashboard {
-                                // status not ended and not cancelled and not agreed
-                                if  (st != HulaConstants.pending_status || trade.object(forKey: "turn_user_id") as! String == HulaUser.sharedInstance.userId) {
-                                    // status not pending
-                                    self.arrCurrentTrades.append(trade)
-                                }
-                            } else {
-                                if st == HulaConstants.end_status || st == HulaConstants.review_status {
-                                    self.arrPastTrades.append(trade)
-                                }
-                            }
+                        let bucket = HLDataManager.classifyTrade(
+                            status: trade.object(forKey: "status") as? String,
+                            ownerId: trade.object(forKey: "owner_id") as? String,
+                            turnUserId: trade.object(forKey: "turn_user_id") as? String,
+                            viewerId: viewerId,
+                            ownerAccepted: trade.object(forKey: "owner_accepted") as? Bool,
+                            otherAccepted: trade.object(forKey: "other_accepted") as? Bool,
+                            otherAgree: trade.object(forKey: "other_agree") as? Bool
+                        )
+                        switch bucket {
+                        case .current:
+                            self.arrCurrentTrades.append(trade)
+                        case .past:
+                            self.arrPastTrades.append(trade)
+                        case .hidden:
+                            break
                         }
                         self.arrTrades.append(trade)
                     }
@@ -163,7 +200,8 @@ class HLDataManager: NSObject {
         //print("Login in progress...")
         let queryURL = HulaConstants.apiURL + "authenticate"
         var loginSuccess = "";
-        httpPost(urlstr: queryURL, postString: "email="+email+"&pass="+pass, isPut: false, taskCallback: { (ok, json) in
+        let postString = "email=" + CommonUtils.formEncodedValue(email) + "&pass=" + CommonUtils.formEncodedValue(pass)
+        httpPost(urlstr: queryURL, postString: postString, isPut: false, taskCallback: { (ok, json) in
             
             //print("done")
             //print(ok)
@@ -198,7 +236,7 @@ class HLDataManager: NSObject {
         let queryURL = HulaConstants.apiURL + "fbauth"
         var loginSuccess = false;
         
-        httpPost(urlstr: queryURL, postString: "fbtoken="+token, isPut: false, taskCallback: { (ok, json) in
+        httpPost(urlstr: queryURL, postString: "fbtoken=" + CommonUtils.formEncodedValue(token), isPut: false, taskCallback: { (ok, json) in
             
             //print("done")
             //print(ok)
@@ -318,7 +356,11 @@ class HLDataManager: NSObject {
         //print("Login in progress...")
         let queryURL = HulaConstants.apiURL + "signup"
         var signupSuccess = false;
-        httpPost(urlstr: queryURL, postString: "email="+email+"&pass="+pass+"&name="+nick+"&nick="+nick, isPut: false, taskCallback: { (ok, json) in
+        let postString = "email=" + CommonUtils.formEncodedValue(email)
+            + "&pass=" + CommonUtils.formEncodedValue(pass)
+            + "&name=" + CommonUtils.formEncodedValue(nick)
+            + "&nick=" + CommonUtils.formEncodedValue(nick)
+        httpPost(urlstr: queryURL, postString: postString, isPut: false, taskCallback: { (ok, json) in
             
             //print("done")
             //print(ok)
@@ -744,6 +786,13 @@ class HLDataManager: NSObject {
         }
     }
     
+    /// Bounds-safe notification lookup for Accept/Reject and row actions.
+    /// Stale cell tags after a background refresh must not NSRangeException.
+    func notification(at index: Int) -> NSDictionary? {
+        guard index >= 0 && index < arrNotifications.count else { return nil }
+        return arrNotifications.object(at: index) as? NSDictionary
+    }
+
     func loadUserNotifications(){
         //print("loading notifications...")
         if HulaUser.sharedInstance.isUserLoggedIn() {
