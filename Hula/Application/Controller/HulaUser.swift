@@ -161,10 +161,30 @@ class HulaUser: NSObject {
         }
     }
     func getPostString() -> String {
+        // Only include optional credentials/location fields when non-empty.
+        // Sending empty twtoken/litoken/fbtoken/push_device_id/zip/image on a full-object PUT
+        // wipes server-side social verification, push delivery, avatar, and zip after cold start
+        // (those fields are not always present in local session state).
         var str = "email=" + CommonUtils.formEncodedValue(self.userEmail) + "&name=" + CommonUtils.formEncodedValue(self.userName) + "&bio=" + CommonUtils.formEncodedValue(self.userBio)
-        str = str + "&nick=" + CommonUtils.formEncodedValue(self.userNick) + "&image=" + CommonUtils.formEncodedValue(self.userPhotoURL) + "&twtoken=" + CommonUtils.formEncodedValue(self.twToken)
-        str = str + "&litoken=" + CommonUtils.formEncodedValue(self.liToken) + "&fbtoken=" + CommonUtils.formEncodedValue(self.fbToken) + "&push_device_id=" + CommonUtils.formEncodedValue(self.deviceId)
-        str = str + "&zip=" + CommonUtils.formEncodedValue(self.zip) + "&max_trades=" + String(self.maxTrades)
+        str = str + "&nick=" + CommonUtils.formEncodedValue(self.userNick) + "&max_trades=" + String(self.maxTrades)
+        if self.userPhotoURL.count > 0 {
+            str = str + "&image=" + CommonUtils.formEncodedValue(self.userPhotoURL)
+        }
+        if self.twToken.count > 0 {
+            str = str + "&twtoken=" + CommonUtils.formEncodedValue(self.twToken)
+        }
+        if self.liToken.count > 0 {
+            str = str + "&litoken=" + CommonUtils.formEncodedValue(self.liToken)
+        }
+        if self.fbToken.count > 0 {
+            str = str + "&fbtoken=" + CommonUtils.formEncodedValue(self.fbToken)
+        }
+        if self.deviceId.count > 0 {
+            str = str + "&push_device_id=" + CommonUtils.formEncodedValue(self.deviceId)
+        }
+        if self.zip.count > 0 {
+            str = str + "&zip=" + CommonUtils.formEncodedValue(self.zip)
+        }
         
         if (self.location.coordinate.latitude != 0 && self.location.coordinate.longitude != 0){
            str = str + "&lat=\(self.location.coordinate.latitude)&lng=\(self.location.coordinate.longitude)&location_name=" + CommonUtils.formEncodedValue(self.userLocationName)
@@ -243,8 +263,11 @@ class HulaUser: NSObject {
             userLocationName = tmp;
         }
         if let tmp = with.object(forKey: "fb_token") as? String { fbToken = tmp }
+        if let tmp = with.object(forKey: "fbtoken") as? String { fbToken = tmp }
         if let tmp = with.object(forKey: "tw_token") as? String { twToken = tmp }
+        if let tmp = with.object(forKey: "twtoken") as? String { twToken = tmp }
         if let tmp = with.object(forKey: "li_token") as? String { liToken = tmp }
+        if let tmp = with.object(forKey: "litoken") as? String { liToken = tmp }
         if let tmp = with.object(forKey: "status") as? String { status = tmp }
         if let tmp = with.object(forKey: "zip") as? String { zip = tmp }
         
@@ -256,6 +279,7 @@ class HulaUser: NSObject {
         if let tmp = CommonUtils.floatFromJSON(with.object(forKey: "trades_closed")) { trades_closed = tmp }
         
         if let tmp = with.object(forKey: "deviceId") as? String { deviceId = tmp }
+        if let tmp = with.object(forKey: "push_device_id") as? String { deviceId = tmp }
         if let tmp = with.object(forKey: "max_trades") as? Int { maxTrades = tmp }
         
         

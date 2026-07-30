@@ -408,6 +408,32 @@ extension CommonUtils {
         return nil
     }
 
+    /// Soft-parse trade/acceptance flags that may arrive as Bool or 0/1 Int/NSNumber.
+    /// Rejects arbitrary numbers and strings so malformed JSON does not flip deal state.
+    /// NSNumber is checked before `as? Bool` because non-zero NSNumbers bridge to `true`.
+    static func boolFromJSON(_ value: Any?) -> Bool? {
+        if let number = value as? NSNumber {
+            if CFGetTypeID(number) == CFBooleanGetTypeID() {
+                return number.boolValue
+            }
+            let asInt = number.intValue
+            if number.doubleValue == Double(asInt) && (asInt == 0 || asInt == 1) {
+                return asInt == 1
+            }
+            return nil
+        }
+        if let v = value as? Int {
+            if v == 0 || v == 1 {
+                return v == 1
+            }
+            return nil
+        }
+        if let v = value as? Bool {
+            return v
+        }
+        return nil
+    }
+
     /// Percent-encode a single application/x-www-form-urlencoded field value.
     /// Keeps `&`/`=` as delimiters and encodes `+` so it is not decoded as a space.
     static func formEncodedValue(_ value: String) -> String {
