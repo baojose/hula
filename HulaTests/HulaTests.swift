@@ -808,4 +808,130 @@ class HulaTests: XCTestCase {
         XCTAssertEqual(trade.other_unread, 0)
     }
 
+    // MARK: - Novel coverage beyond #99/#100
+
+    /// Profile/settings PUT must not send blank optional credentials after cold start.
+    func testUserPostStringOmitsEmptyOptionalCredentials() {
+        let user = HulaUser()
+        user.userEmail = "a@b.com"
+        user.userName = "Ann"
+        user.userBio = ""
+        user.userNick = "ann"
+        user.userPhotoURL = ""
+        user.twToken = ""
+        user.liToken = ""
+        user.fbToken = ""
+        user.deviceId = ""
+        user.zip = ""
+        user.maxTrades = 2
+
+        let body = user.getPostString()
+        XCTAssertTrue(body.contains("email=a@b.com"), body)
+        XCTAssertTrue(body.contains("max_trades=2"), body)
+        XCTAssertFalse(body.contains("twtoken="), "Empty twtoken must be omitted; got \(body)")
+        XCTAssertFalse(body.contains("litoken="), "Empty litoken must be omitted; got \(body)")
+        XCTAssertFalse(body.contains("fbtoken="), "Empty fbtoken must be omitted; got \(body)")
+        XCTAssertFalse(body.contains("push_device_id="), "Empty push id must be omitted; got \(body)")
+        XCTAssertFalse(body.contains("&zip="), "Empty zip must be omitted; got \(body)")
+        XCTAssertFalse(body.contains("&image="), "Empty image must be omitted; got \(body)")
+    }
+
+    func testUserPostStringIncludesNonEmptyOptionalCredentials() {
+        let user = HulaUser()
+        user.userEmail = "a@b.com"
+        user.userName = "Ann"
+        user.userBio = "hi"
+        user.userNick = "ann"
+        user.userPhotoURL = "https://example.com/u.jpg"
+        user.twToken = "tw"
+        user.liToken = "li"
+        user.fbToken = "fb"
+        user.deviceId = "device-9"
+        user.zip = "10001"
+        user.maxTrades = 3
+
+        let body = user.getPostString()
+        XCTAssertTrue(body.contains("twtoken=tw"), body)
+        XCTAssertTrue(body.contains("litoken=li"), body)
+        XCTAssertTrue(body.contains("fbtoken=fb"), body)
+        XCTAssertTrue(body.contains("push_device_id=device-9"), body)
+        XCTAssertTrue(body.contains("zip=10001"), body)
+        XCTAssertTrue(body.contains("image=" + CommonUtils.formEncodedValue("https://example.com/u.jpg")), body)
+    }
+
+    func testUserPopulateAcceptsAlternateTokenAndPushKeys() {
+        let user = HulaUser()
+        user.populate(with: [
+            "_id": "u1",
+            "fbtoken": "fb-alt",
+            "twtoken": "tw-alt",
+            "litoken": "li-alt",
+            "push_device_id": "push-1",
+            "zip": "90210"
+        ] as NSDictionary)
+        XCTAssertEqual(user.fbToken, "fb-alt")
+        XCTAssertEqual(user.twToken, "tw-alt")
+        XCTAssertEqual(user.liToken, "li-alt")
+        XCTAssertEqual(user.deviceId, "push-1")
+        XCTAssertEqual(user.zip, "90210")
+    }
+
+    func testBoolFromJSONAcceptsBoolAndZeroOne() {
+        XCTAssertEqual(CommonUtils.boolFromJSON(true), true)
+        XCTAssertEqual(CommonUtils.boolFromJSON(false), false)
+        XCTAssertEqual(CommonUtils.boolFromJSON(NSNumber(value: true)), true)
+        XCTAssertEqual(CommonUtils.boolFromJSON(NSNumber(value: false)), false)
+        XCTAssertEqual(CommonUtils.boolFromJSON(NSNumber(value: 1)), true)
+        XCTAssertEqual(CommonUtils.boolFromJSON(NSNumber(value: 0)), false)
+        XCTAssertEqual(CommonUtils.boolFromJSON(1), true)
+        XCTAssertEqual(CommonUtils.boolFromJSON(0), false)
+        XCTAssertNil(CommonUtils.boolFromJSON(NSNumber(value: 2)))
+        XCTAssertNil(CommonUtils.boolFromJSON(NSNumber(value: -1)))
+        XCTAssertNil(CommonUtils.boolFromJSON("true"))
+        XCTAssertNil(CommonUtils.boolFromJSON(nil))
+    }
+
+    func testTradeLoadFromParsesBridgedAcceptanceFlags() {
+        let trade = HulaTrade()
+        trade.loadFrom(dict: [
+            "_id": "t1",
+            "owner_accepted": NSNumber(value: 1),
+            "other_accepted": 0,
+            "other_agree": true,
+            "owner_ready": NSNumber(value: false),
+            "other_ready": NSNumber(value: 1)
+        ] as NSDictionary)
+        XCTAssertTrue(trade.owner_accepted)
+        XCTAssertFalse(trade.other_accepted)
+        XCTAssertTrue(trade.other_agree)
+        XCTAssertFalse(trade.owner_ready)
+        XCTAssertTrue(trade.other_ready)
+
+        trade.loadFrom(dict: [
+            "_id": "t2",
+            "owner_accepted": NSNumber(value: 2),
+            "other_accepted": "yes",
+            "other_agree": NSNumber(value: -1)
+        ] as NSDictionary)
+        XCTAssertFalse(trade.owner_accepted)
+        XCTAssertFalse(trade.other_accepted)
+        // malformed other_agree leaves prior value unchanged (same soft-parse pattern as money)
+        XCTAssertTrue(trade.other_agree)
+    }
+
+    func testNotificationAtIndexIsBoundsSafe() {
+        let manager = HLDataManager.sharedInstance
+        let previous = manager.arrNotifications
+        defer { manager.arrNotifications = previous }
+
+        manager.arrNotifications = NSMutableArray()
+        XCTAssertNil(manager.notification(at: 0))
+        XCTAssertNil(manager.notification(at: -1))
+
+        manager.arrNotifications.add(["_id": "n1", "type": "start"] as NSDictionary)
+        XCTAssertNotNil(manager.notification(at: 0))
+        XCTAssertNil(manager.notification(at: 1))
+        XCTAssertEqual(manager.notification(at: 0)?["_id"] as? String, "n1")
+    }
+
 }
