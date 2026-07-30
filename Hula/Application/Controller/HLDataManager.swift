@@ -786,6 +786,13 @@ class HLDataManager: NSObject {
         }
     }
     
+    /// Bounds-safe notification lookup for Accept/Reject and row actions.
+    /// Stale cell tags after a background refresh must not NSRangeException.
+    func notification(at index: Int) -> NSDictionary? {
+        guard index >= 0 && index < arrNotifications.count else { return nil }
+        return arrNotifications.object(at: index) as? NSDictionary
+    }
+
     func loadUserNotifications(){
         //print("loading notifications...")
         if HulaUser.sharedInstance.isUserLoggedIn() {
