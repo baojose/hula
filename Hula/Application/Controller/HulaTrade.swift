@@ -137,14 +137,14 @@ class HulaTrade: NSObject {
         if (dict["other_id"] as? String) != nil {
             self.other_id = dict["other_id"] as? String
         }
-        if (dict["other_agree"] as? Bool) != nil {
-            self.other_agree = (dict["other_agree"] as? Bool)!
+        if let flag = CommonUtils.boolFromJSON(dict["other_agree"]) {
+            self.other_agree = flag
         }
-        if (dict["other_ready"] as? Bool) != nil {
-            self.other_ready = (dict["other_ready"] as? Bool)!
+        if let flag = CommonUtils.boolFromJSON(dict["other_ready"]) {
+            self.other_ready = flag
         }
-        if (dict["owner_ready"] as? Bool) != nil {
-            self.owner_ready = (dict["owner_ready"] as? Bool)!
+        if let flag = CommonUtils.boolFromJSON(dict["owner_ready"]) {
+            self.owner_ready = flag
         }
         if let str_date = dict["date"] as? String, let parsed = str_date.dateFromISO8601 {
             self.date = parsed
@@ -183,13 +183,13 @@ class HulaTrade: NSObject {
         } else {
             self.other_unread = 0
         }
-        if (dict["owner_accepted"] as? Bool) != nil {
-            self.owner_accepted = dict["owner_accepted"] as! Bool
+        if let flag = CommonUtils.boolFromJSON(dict["owner_accepted"]) {
+            self.owner_accepted = flag
         } else {
             self.owner_accepted = false
         }
-        if (dict["other_accepted"] as? Bool) != nil {
-            self.other_accepted = dict["other_accepted"] as! Bool
+        if let flag = CommonUtils.boolFromJSON(dict["other_accepted"]) {
+            self.other_accepted = flag
         } else {
             self.other_accepted = false
         }
