@@ -86,7 +86,9 @@ class HLNotificationsViewController: BaseViewController, UITableViewDelegate, UI
 
         
         let cell = tableView.dequeueReusableCell(withIdentifier: "NotificationsCategoryCell") as! HLHomeNotificationsTableViewCell
-        let notification : NSDictionary = HLDataManager.sharedInstance.arrNotifications.object(at: indexPath.row) as! NSDictionary
+        guard let notification = HLDataManager.sharedInstance.notification(at: indexPath.row) else {
+            return cell
+        }
         
         var is_old = false
         
@@ -147,7 +149,7 @@ class HLNotificationsViewController: BaseViewController, UITableViewDelegate, UI
     
     func rejectBtnTapped(_ sender:UIButton){
         let tag = sender.tag
-        let notification : NSDictionary = HLDataManager.sharedInstance.arrNotifications.object(at: tag) as! NSDictionary
+        guard let notification = HLDataManager.sharedInstance.notification(at: tag) else { return }
         
         if let notification_id = notification.object(forKey: "_id") as? String{
             markAsReadNotification(notification_id)
@@ -180,7 +182,7 @@ class HLNotificationsViewController: BaseViewController, UITableViewDelegate, UI
     func acceptBtnTapped(_ sender:UIButton){
         
         let tag = sender.tag
-        let notification : NSDictionary = HLDataManager.sharedInstance.arrNotifications.object(at: tag) as! NSDictionary
+        guard let notification = HLDataManager.sharedInstance.notification(at: tag) else { return }
         
         if let notification_id = notification.object(forKey: "_id") as? String{
             markAsReadNotification(notification_id)
@@ -212,7 +214,7 @@ class HLNotificationsViewController: BaseViewController, UITableViewDelegate, UI
         
     }
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        let notification : NSDictionary = HLDataManager.sharedInstance.arrNotifications.object(at: indexPath.row) as! NSDictionary
+        guard let notification = HLDataManager.sharedInstance.notification(at: indexPath.row) else { return }
         
         if let type = notification.object(forKey: "type") as? String{
             if (type == "trade"){
@@ -257,7 +259,7 @@ class HLNotificationsViewController: BaseViewController, UITableViewDelegate, UI
         
         if editingStyle == .delete {
             // remove the item from the data model
-            let notification : NSDictionary = HLDataManager.sharedInstance.arrNotifications.object(at: indexPath.row) as! NSDictionary
+            guard let notification = HLDataManager.sharedInstance.notification(at: indexPath.row) else { return }
             
             let cell = tableView.cellForRow(at: indexPath)
             cell?.alpha = 0.5
