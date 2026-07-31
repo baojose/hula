@@ -271,7 +271,12 @@ extension HLDashboardViewController: UICollectionViewDelegate, UICollectionViewD
             cell.emptyRoomLabel.text = ""
             //print(thisTrade)
             
-            let trade_status =  (thisTrade.object(forKey: "status") as? String)!
+            guard let trade_status = thisTrade.object(forKey: "status") as? String,
+                  let tradeId = thisTrade.object(forKey: "_id") as? String else {
+                cell.isEmptyRoom = true
+                cell.emptyRoomLabel.text = NSLocalizedString("Trade unavailable", comment: "")
+                return cell
+            }
             var status = trade_status
             if status == HulaConstants.end_status || status == HulaConstants.cancel_status {
                 status = "past"
@@ -279,26 +284,27 @@ extension HLDashboardViewController: UICollectionViewDelegate, UICollectionViewD
                 status = "current"
             }
             cell.tradeStatus = status
-            
-            cell.tradeId = (thisTrade.object(forKey: "_id") as? String)!
-            
+
+            cell.tradeId = tradeId
+
             var otherUserId = thisTrade.object(forKey: "other_id") as? String
             if otherUserId == HulaUser.sharedInstance.userId {
                 otherUserId = thisTrade.object(forKey: "owner_id") as? String
             }
-            if( otherUserId != nil){
-                cell.userImage.loadImageFromURL(urlString: CommonUtils.sharedInstance.userImageURL(userId: otherUserId!) )
-                
+            if let otherUserId = otherUserId {
+                cell.userImage.loadImageFromURL(urlString: CommonUtils.sharedInstance.userImageURL(userId: otherUserId) )
+                cell.userId = otherUserId
+            } else {
+                cell.userId = ""
             }
-            cell.userId = otherUserId!;
             cell.chatCountLabel.isHidden = true
             var owner_money : Float = 0;
             var other_money : Float = 0;
             
-            if let tmp = thisTrade.object(forKey: "owner_money") as? Float{
+            if let tmp = CommonUtils.floatFromJSON(thisTrade.object(forKey: "owner_money")) {
                 owner_money = tmp
             }
-            if let tmp = thisTrade.object(forKey: "other_money") as? Float{
+            if let tmp = CommonUtils.floatFromJSON(thisTrade.object(forKey: "other_money")) {
                 other_money = tmp
             }
             
@@ -311,11 +317,10 @@ extension HLDashboardViewController: UICollectionViewDelegate, UICollectionViewD
                     drawProducts(inCell: cell, fromArr: owner_products_arr, money: owner_money, side: "right")
                 }
                 
-                if let chat_count = thisTrade.object(forKey: "other_unread") as? Int{
-                    if chat_count > 0 {
-                        cell.chatCountLabel.text = "\(chat_count)"
-                        cell.chatCountLabel.isHidden = false
-                    }
+                if let chat_count = CommonUtils.intFromJSON(thisTrade.object(forKey: "other_unread")),
+                   chat_count > 0 {
+                    cell.chatCountLabel.text = "\(chat_count)"
+                    cell.chatCountLabel.isHidden = false
                 }
             } else {
                 if let other_products_arr = thisTrade.object(forKey: "other_products") as? [String]{
@@ -324,11 +329,10 @@ extension HLDashboardViewController: UICollectionViewDelegate, UICollectionViewD
                 if let owner_products_arr = thisTrade.object(forKey: "owner_products") as? [String]{
                     drawProducts(inCell: cell, fromArr: owner_products_arr, money: owner_money, side: "left")
                 }
-                if let chat_count = thisTrade.object(forKey: "owner_unread") as? Int{
-                    if chat_count > 0 {
-                        cell.chatCountLabel.text = "\(chat_count)"
-                        cell.chatCountLabel.isHidden = false
-                    }
+                if let chat_count = CommonUtils.intFromJSON(thisTrade.object(forKey: "owner_unread")),
+                   chat_count > 0 {
+                    cell.chatCountLabel.text = "\(chat_count)"
+                    cell.chatCountLabel.isHidden = false
                 }
             }
             
@@ -419,13 +423,19 @@ extension HLDashboardViewController: UICollectionViewDelegate, UICollectionViewD
             
             DispatchQueue.main.asyncAfter(deadline: when) {
                 if let swappPageVC = self.parent as? HLSwappPageViewController{
+                    // arrTrades can shrink while the delayed open runs (peer cancel / refresh).
+                    guard indexPath.row < swappPageVC.arrTrades.count else {
+                        return
+                    }
                     self.selectedBarter = indexPath.row
                     let thisTrade: NSDictionary = swappPageVC.arrTrades[indexPath.row]
                     self.swappPageVC?.currentTrade = thisTrade
                     self.swappPageVC?.currentIndex = indexPath.row
                     //print(swappPageVC.currentTrade!)
-                    
-                    let tradeStatus = thisTrade.object(forKey: "status") as! String
+
+                    guard let tradeStatus = thisTrade.object(forKey: "status") as? String else {
+                        return
+                    }
                     if HLDataManager.sharedInstance.tradeMode == "current" && tradeStatus != HulaConstants.review_status {
                         let vc = (self.storyboard?.instantiateViewController( withIdentifier: "barterRoom")) as! HLBarterScreenViewController
                         self.swappPageVC?.orderedViewControllers[1] = vc
@@ -434,7 +444,7 @@ extension HLDashboardViewController: UICollectionViewDelegate, UICollectionViewD
                         vc.currTrade = thisTrade
                         self.swappPageVC?.orderedViewControllers[1] = vc
                     }
-                    
+
                     self.swappPageVC?.goTo(page: 1)
                 }
                 //print(self.parent!)
