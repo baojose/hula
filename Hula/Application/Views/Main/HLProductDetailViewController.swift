@@ -288,6 +288,16 @@ class HLProductDetailViewController: BaseViewController, UIScrollViewDelegate, U
             return
                 
         }
+
+        // Options sheet calls this with a blank UIButton(), so button-title checks
+        // miss the "Currently trading" state and would POST a duplicate trade.
+        // Match seller profile: open the existing room when already trading.
+        if HLDataManager.sharedInstance.amITradingWith(currentProduct.productOwner) {
+            if let pnc = self.navigationController?.navigationController as? HulaPortraitNavigationController {
+                pnc.openSwapView()
+            }
+            return
+        }
         
         
         let viewController = self.storyboard?.instantiateViewController(withIdentifier: "alertView") as! AlertViewController
@@ -307,15 +317,6 @@ class HLProductDetailViewController: BaseViewController, UIScrollViewDelegate, U
                 viewController.okButtonText = NSLocalizedString("Accept", comment: "")
                 viewController.trigger = ""
                 viewController.message = NSLocalizedString("You're about to start a trade. One room will be reserved for this negotiation until it's finished.", comment: "")
-            }
-        }
-        
-        if let btTitle = sender.titleLabel?.text {
-            if btTitle.range(of: NSLocalizedString("Currently trading", comment: "")) != nil {
-                if let pnc = self.navigationController?.navigationController as? HulaPortraitNavigationController {
-                    pnc.openSwapView()
-                    return
-                }
             }
         }
         

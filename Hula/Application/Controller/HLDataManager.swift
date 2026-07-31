@@ -90,17 +90,27 @@ class HLDataManager: NSObject {
         httpGet(urlstr: queryURL, taskCallback: { (ok, json) in
             //print(ok)
             if (ok){
-                self.arrCategories=[];
-                if let array = json as? [Any] {
-                    for cat in array {
-                        // access all objects in array
-                        self.arrCategories.add(cat)
-                    }
+                // Build off the shared array, then publish on the main thread.
+                // Home/post/edit category tables read arrCategories on main while
+                // this URLSession callback runs in the background.
+                let categories = HLDataManager.categories(from: json)
+                DispatchQueue.main.async {
+                    self.arrCategories = categories
+                    NotificationCenter.default.post(name: self.categoriesLoaded, object: nil)
                 }
-                
-                NotificationCenter.default.post(name: self.categoriesLoaded, object: nil)
             }
         })
+    }
+
+    /// Parses category API payloads into a new array (no shared-state mutation).
+    class func categories(from json: Any?) -> NSMutableArray {
+        let categories = NSMutableArray()
+        if let array = json as? [Any] {
+            for cat in array {
+                categories.add(cat)
+            }
+        }
+        return categories
     }
     func getTrades(taskCallback: @escaping (Bool) -> ()) {
         let queryURL = HulaConstants.apiURL + "trades"
@@ -239,9 +249,23 @@ class HLDataManager: NSObject {
         HulaUser.sharedInstance.userId = ""
         
         HulaUser.sharedInstance.logout();
+        clearSessionCaches()
         self.writeUserData()
         
         
+    }
+
+    /// Drops in-memory session lists so a later logged-out UI path cannot show
+    /// the previous account's trades/notifications.
+    func clearSessionCaches() {
+        arrTrades = []
+        arrCurrentTrades = []
+        arrPastTrades = []
+        arrNotifications = []
+        numNotificationsPending = 0
+        UIApplication.shared.applicationIconBadgeNumber = 0
+        isLoadingNotifications = false
+        isInSwapVC = false
     }
     
     func amITradingWith(_ user_id: String) -> Bool{
