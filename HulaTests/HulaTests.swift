@@ -934,4 +934,234 @@ class HulaTests: XCTestCase {
         XCTAssertEqual(manager.notification(at: 0)?["_id"] as? String, "n1")
     }
 
+    // MARK: - Novel coverage beyond #101/#100/#102
+
+    /// getTrades must soft-parse 0/1 acceptance flags and skip malformed rows without crashing.
+    func testPartitionTradesHidesAcceptedRoomsWithBridgedBoolFlags() {
+        let me = "me"
+        let trades: [NSDictionary] = [
+            [
+                "_id": "active-open",
+                "status": "active",
+                "owner_id": me,
+                "turn_user_id": me,
+                "owner_accepted": 0,
+                "other_accepted": 0,
+                "other_agree": 1
+            ],
+            [
+                "_id": "owner-accepted",
+                "status": "active",
+                "owner_id": me,
+                "turn_user_id": me,
+                "owner_accepted": NSNumber(value: 1),
+                "other_accepted": 0,
+                "other_agree": true
+            ],
+            [
+                "_id": "other-declined",
+                "status": "active",
+                "owner_id": "seller",
+                "turn_user_id": me,
+                "owner_accepted": false,
+                "other_accepted": 0,
+                "other_agree": NSNumber(value: 0)
+            ],
+            [
+                "_id": "ended",
+                "status": HulaConstants.end_status,
+                "owner_id": me,
+                "turn_user_id": me,
+                "owner_accepted": true,
+                "other_accepted": true,
+                "other_agree": true
+            ],
+            [
+                "_id": "malformed-owner",
+                "status": "active",
+                "owner_id": NSNull(),
+                "turn_user_id": me
+            ]
+        ]
+
+        let partitioned = HLDataManager.partitionTrades(trades, userId: me)
+        XCTAssertEqual(partitioned.all.count, 5)
+        XCTAssertEqual(partitioned.current.count, 1)
+        XCTAssertEqual(partitioned.current.first?.object(forKey: "_id") as? String, "active-open")
+        XCTAssertEqual(partitioned.past.count, 1)
+        XCTAssertEqual(partitioned.past.first?.object(forKey: "_id") as? String, "ended")
+    }
+
+    func testMyRoomsFullUsesPublishedCurrentCount() {
+        let user = HulaUser.sharedInstance
+        let previousMax = user.maxTrades
+        let previousId = user.userId
+        let dm = HLDataManager.sharedInstance
+        let previousAll = dm.arrTrades
+        let previousCurrent = dm.arrCurrentTrades
+        let previousPast = dm.arrPastTrades
+        defer {
+            user.maxTrades = previousMax
+            user.userId = previousId
+            dm.arrTrades = previousAll
+            dm.arrCurrentTrades = previousCurrent
+            dm.arrPastTrades = previousPast
+        }
+
+        user.userId = "me"
+        user.maxTrades = 2
+        let trades: [NSDictionary] = [
+            [
+                "_id": "r1",
+                "status": "active",
+                "owner_id": "me",
+                "turn_user_id": "me",
+                "owner_accepted": false,
+                "other_accepted": false,
+                "other_agree": true
+            ],
+            [
+                "_id": "r2",
+                "status": "active",
+                "owner_id": "me",
+                "turn_user_id": "me",
+                "owner_accepted": false,
+                "other_accepted": false,
+                "other_agree": true
+            ]
+        ]
+        let partitioned = HLDataManager.partitionTrades(trades, userId: "me")
+        dm.arrTrades = partitioned.all
+        dm.arrCurrentTrades = partitioned.current
+        dm.arrPastTrades = partitioned.past
+        XCTAssertTrue(dm.myRoomsFull())
+
+        dm.arrCurrentTrades = Array(partitioned.current.prefix(1))
+        XCTAssertFalse(dm.myRoomsFull())
+    }
+
+    func testAmITradingWithSoftParsesParticipantIds() {
+        let dm = HLDataManager.sharedInstance
+        let previous = dm.arrCurrentTrades
+        defer { dm.arrCurrentTrades = previous }
+
+        dm.arrCurrentTrades = [
+            [
+                "_id": "t1",
+                "owner_id": "alice",
+                "other_id": NSNull()
+            ] as NSDictionary,
+            [
+                "_id": "t2",
+                "owner_id": "bob",
+                "other_id": "carol"
+            ] as NSDictionary
+        ]
+        XCTAssertTrue(dm.amITradingWith("alice"))
+        XCTAssertTrue(dm.amITradingWith("carol"))
+        XCTAssertFalse(dm.amITradingWith("dave"))
+    }
+
+    /// UserData.plist must round-trip optional credentials across cold start.
+    func testUserSessionCredentialSnapshotIncludesOptionalFields() {
+        let user = HulaUser()
+        user.zip = "10001"
+        user.fbToken = "fb"
+        user.twToken = "tw"
+        user.liToken = "li"
+        user.deviceId = "device-1"
+        user.status = "active"
+
+        let snapshot = HLDataManager.userSessionCredentialSnapshot(from: user)
+        XCTAssertEqual(snapshot["zip"], "10001")
+        XCTAssertEqual(snapshot["fbToken"], "fb")
+        XCTAssertEqual(snapshot["twToken"], "tw")
+        XCTAssertEqual(snapshot["liToken"], "li")
+        XCTAssertEqual(snapshot["deviceId"], "device-1")
+        XCTAssertEqual(snapshot["status"], "active")
+    }
+
+    func testApplyUserSessionCredentialsAcceptsAlternateKeys() {
+        let user = HulaUser()
+        HLDataManager.applyUserSessionCredentials(to: user, from: [
+            "zip": "90210",
+            "status": "verified",
+            "fbtoken": "fb-alt",
+            "tw_token": "tw-alt",
+            "litoken": "li-alt",
+            "push_device_id": "push-9"
+        ] as NSDictionary)
+        XCTAssertEqual(user.zip, "90210")
+        XCTAssertEqual(user.status, "verified")
+        XCTAssertEqual(user.fbToken, "fb-alt")
+        XCTAssertEqual(user.twToken, "tw-alt")
+        XCTAssertEqual(user.liToken, "li-alt")
+        XCTAssertEqual(user.deviceId, "push-9")
+    }
+
+    func testResolvedFacebookTokenFallsBackToLoginToken() {
+        XCTAssertEqual(
+            HLDataManager.resolvedFacebookToken(currentFbToken: "kept", loginToken: "login"),
+            "kept"
+        )
+        XCTAssertEqual(
+            HLDataManager.resolvedFacebookToken(currentFbToken: "", loginToken: "login-fb"),
+            "login-fb"
+        )
+    }
+
+    func testUpdateUserFromDictRestoresCredentialsAndSoftMaxTrades() {
+        let user = HulaUser.sharedInstance
+        let previousZip = user.zip
+        let previousFb = user.fbToken
+        let previousTw = user.twToken
+        let previousLi = user.liToken
+        let previousDevice = user.deviceId
+        let previousStatus = user.status
+        let previousMax = user.maxTrades
+        let previousNum = user.numProducts
+        let previousId = user.userId
+        defer {
+            user.zip = previousZip
+            user.fbToken = previousFb
+            user.twToken = previousTw
+            user.liToken = previousLi
+            user.deviceId = previousDevice
+            user.status = previousStatus
+            user.maxTrades = previousMax
+            user.numProducts = previousNum
+            user.userId = previousId
+        }
+
+        user.logout()
+        HLDataManager.sharedInstance.updateUserFromDict(dict: [
+            "_id": "user-42",
+            "max_trades": NSNumber(value: 5.0),
+            "numProducts": 7,
+            "zip": "30301",
+            "fb_token": "fb-from-api",
+            "twtoken": "tw-from-api",
+            "liToken": "li-from-api",
+            "deviceId": "dev-from-plist",
+            "status": "ok"
+        ] as NSDictionary)
+
+        XCTAssertEqual(user.userId, "user-42")
+        XCTAssertEqual(user.maxTrades, 5)
+        XCTAssertEqual(user.numProducts, 7)
+        XCTAssertEqual(user.zip, "30301")
+        XCTAssertEqual(user.fbToken, "fb-from-api")
+        XCTAssertEqual(user.twToken, "tw-from-api")
+        XCTAssertEqual(user.liToken, "li-from-api")
+        XCTAssertEqual(user.deviceId, "dev-from-plist")
+        XCTAssertEqual(user.status, "ok")
+
+        // Bool must not collapse into max_trades=1.
+        let maxBeforeBool = user.maxTrades
+        HLDataManager.sharedInstance.updateUserFromDict(dict: [
+            "max_trades": true
+        ] as NSDictionary)
+        XCTAssertEqual(user.maxTrades, maxBeforeBool)
+    }
+
 }
