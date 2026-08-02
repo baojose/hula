@@ -15,8 +15,8 @@ import LinkedinSwift
 
 
 class HLProfileViewController: BaseViewController {
-    
-    
+
+
     @IBOutlet var profileImageView: UIImageView!
     @IBOutlet var mainScrollView: UIScrollView!
     @IBOutlet var contentView: UIView!
@@ -35,30 +35,30 @@ class HLProfileViewController: BaseViewController {
     @IBOutlet weak var completeProfileTooltip: UIView!
     @IBOutlet weak var viewFeedbackBtn: UIButton!
     @IBOutlet weak var fullsizeViewReference: UIView!
-    
-    
+
+
     private let linkedinHelper = LinkedinSwiftHelper(configuration: LinkedinSwiftConfiguration(clientId: "77pqp8cu8tj7vb", clientSecret: "yx3RJzo3X9guNEhY", state: "DLKDJF46ikMMZADfdfds", permissions: ["r_basicprofile", "r_emailaddress"], redirectUrl: "https://hula.trading/"))
-    
+
     var arrFeedback: NSArray!
     var spinner: HLSpinnerUIView!
     var image_dismissing:Bool = false
     var current_image_url:String = ""
     var last_logged_user:String = ""
-    
-    
+
+
     override func viewDidLoad() {
         super.viewDidLoad()
-        
-        
+
+
         let recognizer = UITapGestureRecognizer()
         recognizer.addTarget(self, action: #selector(selectedImageTapped))
         profileImageView.addGestureRecognizer(recognizer)
-        
+
         spinner = HLSpinnerUIView()
         self.view.addSubview(spinner)
         spinner.show(inView: self.view)
-        
-        
+
+
         setupView()
     }
     override func viewWillAppear(_ animated: Bool) {
@@ -70,12 +70,12 @@ class HLProfileViewController: BaseViewController {
             }
             self.profileImageView.loadImageFromURL(urlString: HulaUser.sharedInstance.userPhotoURL)
         }
-        
+
     }
     override func viewDidAppear(_ animated: Bool) {
-        
+
         if (HulaUser.sharedInstance.isUserLoggedIn()){
-            
+
             if (HulaUser.sharedInstance.userPhotoURL != ""){
                 if (current_image_url != HulaUser.sharedInstance.userPhotoURL) {
                     //print("Changing image")
@@ -87,8 +87,8 @@ class HLProfileViewController: BaseViewController {
             } else {
                 self.profileImageView.image = UIImage(named: "profile_placeholder")
             }
-            
-            
+
+
             if (HulaUser.sharedInstance.isIncompleteProfile()){
                 // badges to inform the user
                 UIView.animate(withDuration: 0.4, animations: {
@@ -99,27 +99,27 @@ class HLProfileViewController: BaseViewController {
                 self.completeProfileTooltip.alpha = 0
                 self.settingsAlertBadge.alpha = 0
             }
-        
+
         } else {
             self.profileImageView.image = UIImage(named: "profile_placeholder")
         }
-        
+
         HLDataManager.sharedInstance.ga("my_profile")
     }
-    
+
     func setupView(){
         self.initData()
         self.initView()
-        
+
         self.getUserProfile()
         last_logged_user = HulaUser.sharedInstance.userId
-        
-        
+
+
     }
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
     }
-    
+
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         //print("Preparing for segue...")
         if let destinationVC = segue.destination as? HLFeedbackHistoryViewController{
@@ -127,8 +127,8 @@ class HLProfileViewController: BaseViewController {
             //print("Total feedback: \(destinationVC.feedbackList.count)")
         }
     }
-    
-    
+
+
     func initData() {
         arrFeedback = []
     }
@@ -136,69 +136,69 @@ class HLProfileViewController: BaseViewController {
         commonUtils.circleImageView(profileImageView)
         mainScrollView.contentSize = CGSize(width: 0, height: fullsizeViewReference.frame.size.height + 100)
         mainScrollView.contentOffset = CGPoint(x: 0.0, y: 0.0)
-        
+
         settingsAlertBadge.alpha = 0
         completeProfileTooltip.alpha = 0
-        
-        
-        
+
+
+
     }
-    
+
     // IB Actions
-    
+
     @IBAction func closeTooltip(_ sender: Any) {
         UIView.animate(withDuration: 0.4, animations: {
             self.completeProfileTooltip.alpha = 0
         })
     }
-    
+
     @IBAction func validateAction(_ sender: Any) {
         let alert = UIAlertController(title: NSLocalizedString("Select a validation method", comment: ""),
                                        message: nil,
                                        preferredStyle: .actionSheet)
-        
+
         if HulaUser.sharedInstance.fbToken.count == 0 {
             let facebookAction = UIAlertAction(title: "Facebook", style: .default, handler: { action -> Void in
                 self.facebookValidate()
             })
             alert.addAction(facebookAction)
         }
-        
+
         if HulaUser.sharedInstance.liToken.count == 0 {
             let linkedinAction = UIAlertAction(title: "Linkedin", style: .default, handler: { action -> Void in
                 self.linkedinValidate()
             })
             alert.addAction(linkedinAction)
         }
-        
-        
+
+
         if HulaUser.sharedInstance.twToken.count == 0 {
             let twitterAction = UIAlertAction(title: "Twitter", style: .default, handler: { action -> Void in
                 self.twitterValidate()
             })
             alert.addAction(twitterAction)
         }
-        
-        
+
+
         if HulaUser.sharedInstance.status != "verified" {
             let emailAction = UIAlertAction(title: "Email", style: .default, handler: { action -> Void in
                 self.emailValidate()
             })
             alert.addAction(emailAction)
         }
-        
-        
+
+
         let cancelAction = UIAlertAction(title: NSLocalizedString("Cancel", comment: ""),
                                            style: .cancel, handler: nil)
-        
+
         alert.addAction(cancelAction)
         self.present(alert, animated: true)
     }
-    
-    
-    
-    
-    
+
+
+
+
+
     func facebookValidate(){
         let loginManager = LoginManager()
         loginManager.logIn([ .publicProfile, .email ], viewController: self) { loginResult in
@@ -218,8 +218,8 @@ class HLProfileViewController: BaseViewController {
             }
         }
     }
-    
-    
+
+
     func twitterValidate(){
         //print("Opening twitter...")
         TWTRTwitter.sharedInstance().logIn(completion: { (session, error) in
@@ -236,12 +236,12 @@ class HLProfileViewController: BaseViewController {
                 NSLog("Login error: %@", error!.localizedDescription);
             }
         })
-        
+
     }
-    
-    
+
+
     func emailValidate(){
-        
+
         HulaUser.sharedInstance.resendValidationMail()
         let alert = UIAlertController(title: NSLocalizedString("Email validation", comment: ""), message: NSLocalizedString("If you're a real person with a real email, open your email and follow the instructions.", comment: ""),
             preferredStyle: UIAlertControllerStyle.alert
@@ -249,11 +249,11 @@ class HLProfileViewController: BaseViewController {
         alert.addAction(UIAlertAction(title: "OK", style: UIAlertActionStyle.default, handler: nil))
         self.present(alert, animated: true, completion: nil)
     }
-    
+
     func linkedinValidate(){
         print("Validating linkedin...")
         linkedinHelper.authorizeSuccess({ (token) in
-            
+
             print(token)
             self.verLinkedinIcon.image = UIImage(named: "icon_linkedin_on")
             self.verLinkedinIcon.bouncer()
@@ -261,33 +261,33 @@ class HLProfileViewController: BaseViewController {
             HulaUser.sharedInstance.updateServerData()
             //This token is useful for fetching profile info from LinkedIn server
         }, error: { (error) in
-            
+
             print(error.localizedDescription)
             //show respective error
         }) {
             //show sign in cancelled event
         }
     }
-    
+
     // Custom functions for ViewController
-    
+
     func getUserProfile() {
-        
+
         //print("Getting user info...")
         let queryURL = HulaConstants.apiURL + "me"
         print(queryURL)
         HLDataManager.sharedInstance.httpGet(urlstr: queryURL, taskCallback: { (ok, json) in
-            
-            
+
+
             if (ok){
                 DispatchQueue.main.async {
                     if let dictionary = json as? [String: Any] {
-                        
+
                         if let user = dictionary["user"] as? [String: Any]  {
                             //print(user)
                             self.spinner.hide()
                             HulaUser.sharedInstance.populate(with: user as NSDictionary)
-                            
+
                             if (HulaUser.sharedInstance.fbToken != ""){
                                 self.verFacebookIcon.image = UIImage(named: "icon_facebook_on")
                                 self.verFacebookIcon.bouncer()
@@ -304,7 +304,7 @@ class HLProfileViewController: BaseViewController {
                                 self.verMailIcon.image = UIImage(named: "icon_mail_on")
                                 self.verMailIcon.bouncer()
                             }
-                            
+
                             self.userFeedbackLabel.text = HulaUser.sharedInstance.getFeedback()
                             //let thumb = self.commonUtils.getThumbFor(url: HulaUser.sharedInstance.userPhotoURL)
                             self.userFullNameLabel.text = HulaUser.sharedInstance.userName
@@ -316,15 +316,15 @@ class HLProfileViewController: BaseViewController {
                             }
                             self.userNickLabel.text = HulaUser.sharedInstance.userNick
                             self.userBioLabel.text = HulaUser.sharedInstance.userBio
-                            
+
                             self.tradesStartedLabel.text = "\(Int(HulaUser.sharedInstance.trades_started))"
                             self.tradesEndedLabel.text = "\(Int(HulaUser.sharedInstance.trades_finished))"
                             self.tradesClosedLabel.text = "\(Int(HulaUser.sharedInstance.trades_closed))"
-                            
-                            
+
+
                             HLDataManager.sharedInstance.writeUserData()
-                            
-                            
+
+
                             if (HulaUser.sharedInstance.isIncompleteProfile()){
                                 // badges to inform the user
                                 UIView.animate(withDuration: 0.4, animations: {
@@ -332,7 +332,7 @@ class HLProfileViewController: BaseViewController {
                                     self.settingsAlertBadge.alpha = 1
                                 })
                             }
-                            
+
                             if let feedback = dictionary["feedback"] as? NSArray {
                                 self.arrFeedback = feedback
                             }
@@ -341,56 +341,67 @@ class HLProfileViewController: BaseViewController {
                                 app.registerForPushNotifications()
                             }
                         } else {
+                            // Authenticated response without a user object → treat as expired session.
                             self.expiredTokenAlert()
                         }
-                        
+
                     }
                 }
             } else {
-                // connection error
-                self.expiredTokenAlert()
+                // Transport/network failure is not proof the token expired; avoid UIKit-off-main present.
+                DispatchQueue.main.async {
+                    self.spinner.hide()
+                }
             }
         })
     }
-    func expiredTokenAlert(){
-        
-        let alert = UIAlertController(title: "User token expired", message: "Your Hula session is expired. Please log in again.", preferredStyle: UIAlertControllerStyle.alert)
-        
-        
-        alert.addAction(UIAlertAction(title: "OK", style: UIAlertActionStyle.default, handler: { (e) in
-            
-            DispatchQueue.main.async {
-                let viewController = self.storyboard?.instantiateViewController(withIdentifier: "identification") as! HLIdentificationViewController
-                self.navigationController?.navigationController?.pushViewController(viewController, animated: true)
-            }
-        }))
-        self.present(alert, animated: true, completion:{} )
 
-        
+    /// Network errors must not be treated as auth expiry. Only missing-user responses should.
+    class func shouldPresentExpiredTokenAlert(httpOk: Bool, hasUserObject: Bool) -> Bool {
+        return httpOk && !hasUserObject
     }
-    
-    
-    
-    
+
+    func expiredTokenAlert(){
+        let presentBlock = {
+            let alert = UIAlertController(title: "User token expired", message: "Your Hula session is expired. Please log in again.", preferredStyle: UIAlertControllerStyle.alert)
+
+            alert.addAction(UIAlertAction(title: "OK", style: UIAlertActionStyle.default, handler: { (e) in
+                DispatchQueue.main.async {
+                    let viewController = self.storyboard?.instantiateViewController(withIdentifier: "identification") as! HLIdentificationViewController
+                    self.navigationController?.navigationController?.pushViewController(viewController, animated: true)
+                }
+            }))
+            self.present(alert, animated: true, completion:{} )
+        }
+        if Thread.isMainThread {
+            presentBlock()
+        } else {
+            DispatchQueue.main.async(execute: presentBlock)
+        }
+    }
+
+
+
+
     func selectedImageTapped(_ sender: UITapGestureRecognizer){
         fullScreenImage(image:profileImageView.image!, index: 1)
     }
-    
-    
+
+
     func fullScreenImage(image: UIImage, index: Int) {
         let newImageView = UIImageView(image: image)
-        
+
         newImageView.frame = CGRect(x: self.view.frame.width/2, y: self.view.frame.height/2, width: 10, height:10)
         newImageView.backgroundColor = .black
         newImageView.contentMode = .scaleAspectFit
         newImageView.alpha = 0.0
         newImageView.tag = 10001
         newImageView.isUserInteractionEnabled = true
-        
-        
+
+
         newImageView.loadImageFromURL(urlString: HulaUser.sharedInstance.userPhotoURL)
-        
-        
+
+
         let tap = UITapGestureRecognizer(target: self, action: #selector(optionsFullscreenImage))
         newImageView.addGestureRecognizer(tap)
         let swipe = UIPanGestureRecognizer(target: self, action: #selector(dismissFullscreenImage))
@@ -404,16 +415,16 @@ class HLProfileViewController: BaseViewController {
             self.tabBarController?.tabBar.isHidden = true
         }
     }
-    
+
     func dismissFullscreenImage(_ sender: UIGestureRecognizer) {
         if (!image_dismissing){
             guard let panRecognizer = sender as? UIPanGestureRecognizer else {
                 return
             }
             let velocity = panRecognizer.velocity(in: self.view)
-            
+
             self.tabBarController?.tabBar.isHidden = false
-            
+
             UIView.animate(withDuration: 0.3, animations: {
                 sender.view?.frame = CGRect(x: self.view.frame.width/2 + velocity.x/2, y: self.view.frame.height/2 + velocity.y/2, width: 30, height:30)
                 sender.view?.alpha = 0
@@ -425,10 +436,10 @@ class HLProfileViewController: BaseViewController {
         }
     }
     func dismissFullscreenImageDirect() {
-        
-        
+
+
         self.tabBarController?.tabBar.isHidden = false
-        
+
         if let imageView = self.view.viewWithTag(10001) as? UIImageView {
             UIView.animate(withDuration: 0.3, animations: {
                 imageView.frame = CGRect(x: self.view.frame.width/2 , y: self.view.frame.height/2, width: 30, height:30)
@@ -442,24 +453,24 @@ class HLProfileViewController: BaseViewController {
     }
     func optionsFullscreenImage(_ sender: UIGestureRecognizer) {
         let alertController = UIAlertController(title: NSLocalizedString("Do you wanna change your profile picture?", comment: ""), message: nil, preferredStyle: .actionSheet)
-        
-        
+
+
         let  editButton = UIAlertAction(title: NSLocalizedString("Change image", comment: ""), style: .destructive, handler: { (action) -> Void in
             //print("Delete button tapped")
             let cameraViewController = self.storyboard?.instantiateViewController(withIdentifier: "selectPictureGeneral") as! HLPictureSelectViewController
             cameraViewController.originalProfileVC = self
             self.present(cameraViewController, animated: true)
             self.dismissFullscreenImageDirect()
-            
+
         })
         alertController.addAction(editButton)
-        
+
         let cancelButton = UIAlertAction(title: NSLocalizedString("Close", comment: ""), style: .cancel, handler: { (action) -> Void in
             //print("Cancel button tapped")
             self.dismissFullscreenImageDirect()
         })
         alertController.addAction(cancelButton)
-        
+
         self.present(alertController, animated: true)
     }
 }
