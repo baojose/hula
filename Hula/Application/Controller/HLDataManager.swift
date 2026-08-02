@@ -90,17 +90,27 @@ class HLDataManager: NSObject {
         httpGet(urlstr: queryURL, taskCallback: { (ok, json) in
             //print(ok)
             if (ok){
-                self.arrCategories=[];
-                if let array = json as? [Any] {
-                    for cat in array {
-                        // access all objects in array
-                        self.arrCategories.add(cat)
-                    }
+                // Build off the shared array, then publish on the main thread.
+                // Home/post/edit category tables read arrCategories on main while
+                // this URLSession callback runs in the background.
+                let categories = HLDataManager.categories(from: json)
+                DispatchQueue.main.async {
+                    self.arrCategories = categories
+                    NotificationCenter.default.post(name: self.categoriesLoaded, object: nil)
                 }
-                
-                NotificationCenter.default.post(name: self.categoriesLoaded, object: nil)
             }
         })
+    }
+
+    /// Parses category API payloads into a new array (no shared-state mutation).
+    class func categories(from json: Any?) -> NSMutableArray {
+        let categories = NSMutableArray()
+        if let array = json as? [Any] {
+            for cat in array {
+                categories.add(cat)
+            }
+        }
+        return categories
     }
     enum TradeDashboardBucket {
         case current
@@ -372,9 +382,23 @@ class HLDataManager: NSObject {
         HulaUser.sharedInstance.userId = ""
         
         HulaUser.sharedInstance.logout();
+        clearSessionCaches()
         self.writeUserData()
         
         
+    }
+
+    /// Drops in-memory session lists so a later logged-out UI path cannot show
+    /// the previous account's trades/notifications.
+    func clearSessionCaches() {
+        arrTrades = []
+        arrCurrentTrades = []
+        arrPastTrades = []
+        arrNotifications = []
+        numNotificationsPending = 0
+        UIApplication.shared.applicationIconBadgeNumber = 0
+        isLoadingNotifications = false
+        isInSwapVC = false
     }
     
     func amITradingWith(_ user_id: String) -> Bool{
@@ -392,24 +416,24 @@ class HLDataManager: NSObject {
     }
     
     func getTradeWith(_ user_id: String) -> String{
-        
         for tr in arrCurrentTrades{
             if let trade = tr as? [String:Any] {
-                //print(trade["owner_id"] as! String)
-                if trade["owner_id"] as! String == user_id {
-                    return trade["_id"] as! String
+                if let owner = trade["owner_id"] as? String, owner == user_id {
+                    return trade["_id"] as? String ?? ""
                 }
-                if trade["other_id"] as! String == user_id {
-                    return trade["_id"] as! String
+                if let other = trade["other_id"] as? String, other == user_id {
+                    return trade["_id"] as? String ?? ""
                 }
             }
         }
         for tr in self.arrTrades {
             if let trade = tr as? [String:Any] {
-                if let agreed = trade["other_agree"] as? Bool {
-                    if !agreed && trade["owner_id"] as! String == user_id && ((trade["status"] as! String == HulaConstants.sent_status) || (trade["status"] as! String == HulaConstants.pending_status)) {
-                        return trade["_id"] as! String
-                    }
+                // Soft-parse bridged 0/1 agree flags and skip malformed ids/status.
+                if CommonUtils.boolFromJSON(trade["other_agree"]) == false,
+                   let owner = trade["owner_id"] as? String, owner == user_id,
+                   let status = trade["status"] as? String,
+                   (status == HulaConstants.sent_status || status == HulaConstants.pending_status) {
+                    return trade["_id"] as? String ?? ""
                 }
             }
         }
@@ -418,21 +442,19 @@ class HLDataManager: NSObject {
     func amIOfferedToTradeWith(_ user_id: String) -> Bool{
         for tr in arrCurrentTrades{
             if let trade = tr as? [String:Any] {
-                if trade["other_id"] as! String == user_id && (trade["status"] as! String == HulaConstants.pending_status ) {
+                if let other = trade["other_id"] as? String, other == user_id,
+                   let status = trade["status"] as? String,
+                   status == HulaConstants.pending_status {
                     return true
                 }
             }
         }
         for tr in self.arrTrades {
             if let trade = tr as? [String:Any] {
-                if let agreed = trade["other_agree"] as? Bool {
-                    print(agreed)
-                    if !agreed && trade["owner_id"] as! String == user_id   {
-                        return true
-                    }
+                if CommonUtils.boolFromJSON(trade["other_agree"]) == false,
+                   let owner = trade["owner_id"] as? String, owner == user_id {
+                    return true
                 }
-                //print(numBids)
-                
             }
         }
         return false

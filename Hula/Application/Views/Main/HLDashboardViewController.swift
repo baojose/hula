@@ -251,7 +251,17 @@ extension HLDashboardViewController: UICollectionViewDelegate, UICollectionViewD
     
     
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return max((swappPageVC?.arrTrades.count)!, HulaUser.sharedInstance.maxTrades)
+        // swappPageVC is assigned in refreshCollectionViewData (viewWillAppear).
+        // Layout/data-source calls can run earlier; never force-unwrap the optional count.
+        return HLDashboardViewController.tradeRoomCount(
+            tradeCount: swappPageVC?.arrTrades.count,
+            maxTrades: HulaUser.sharedInstance.maxTrades
+        )
+    }
+
+    /// Room grid always shows at least maxTrades slots; nil trade list → empty rooms only.
+    class func tradeRoomCount(tradeCount: Int?, maxTrades: Int) -> Int {
+        return max(tradeCount ?? 0, maxTrades)
     }
     
     
@@ -264,10 +274,11 @@ extension HLDashboardViewController: UICollectionViewDelegate, UICollectionViewD
         
         //print(cell.frame)
         // Configure the cell
-        if ((swappPageVC?.arrTrades.count)! > indexPath.row){
+        let trades = swappPageVC?.arrTrades
+        if let trades = trades, trades.count > indexPath.row {
             //print("Drawing row \(indexPath.row)")
             cell.isEmptyRoom = false
-            let thisTrade : NSDictionary = (swappPageVC?.arrTrades[indexPath.row])!
+            let thisTrade : NSDictionary = trades[indexPath.row]
             cell.emptyRoomLabel.text = ""
             //print(thisTrade)
             
@@ -412,7 +423,7 @@ extension HLDashboardViewController: UICollectionViewDelegate, UICollectionViewD
         //print("Barter room clicked")
         //print(indexPath.row)
         
-        if ((swappPageVC?.arrTrades.count)! > indexPath.row){
+        if let trades = swappPageVC?.arrTrades, trades.count > indexPath.row {
 
             
             //let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "tradeCell", for: indexPath) as! HLTradesCollectionViewCell
@@ -423,7 +434,7 @@ extension HLDashboardViewController: UICollectionViewDelegate, UICollectionViewD
             
             DispatchQueue.main.asyncAfter(deadline: when) {
                 if let swappPageVC = self.parent as? HLSwappPageViewController{
-                    // arrTrades can shrink while the delayed open runs (peer cancel / refresh).
+                    // Re-check bounds: getTrades / mode toggles can shrink arrTrades during the delay.
                     guard indexPath.row < swappPageVC.arrTrades.count else {
                         return
                     }
