@@ -1164,4 +1164,162 @@ class HulaTests: XCTestCase {
         XCTAssertEqual(user.maxTrades, maxBeforeBool)
     }
 
+    // MARK: - Beyond #103/#104: categories, session clear, room count, soft trade lookup
+
+    func testCategoriesFromJSONBuildsNewArray() {
+        let json: [Any] = [
+            ["name": "CLOTHING", "icon": "icon_cat_clothing", "num_products": 3],
+            ["name": "SPORTS", "icon": "icon_cat_sport", "num_products": 1]
+        ]
+        let categories = HLDataManager.categories(from: json)
+        XCTAssertEqual(categories.count, 2)
+        let first = categories.object(at: 0) as? [String: Any]
+        XCTAssertEqual(first?["name"] as? String, "CLOTHING")
+    }
+
+    func testCategoriesFromNilOrMalformedIsEmpty() {
+        XCTAssertEqual(HLDataManager.categories(from: nil).count, 0)
+        XCTAssertEqual(HLDataManager.categories(from: ["not": "an array"]).count, 0)
+        XCTAssertEqual(HLDataManager.categories(from: "string").count, 0)
+    }
+
+    func testClearSessionCachesDropsTradesAndNotifications() {
+        let dm = HLDataManager.sharedInstance
+        let previousTrades = dm.arrTrades
+        let previousCurrent = dm.arrCurrentTrades
+        let previousPast = dm.arrPastTrades
+        let previousNotes = dm.arrNotifications
+        let previousPending = dm.numNotificationsPending
+        let previousLoading = dm.isLoadingNotifications
+        let previousSwap = dm.isInSwapVC
+        defer {
+            dm.arrTrades = previousTrades
+            dm.arrCurrentTrades = previousCurrent
+            dm.arrPastTrades = previousPast
+            dm.arrNotifications = previousNotes
+            dm.numNotificationsPending = previousPending
+            dm.isLoadingNotifications = previousLoading
+            dm.isInSwapVC = previousSwap
+        }
+
+        dm.arrTrades = [["_id": "t1"] as NSDictionary]
+        dm.arrCurrentTrades = [["_id": "t1", "owner_id": "u1", "other_id": "u2"] as NSDictionary]
+        dm.arrPastTrades = [["_id": "t0"] as NSDictionary]
+        dm.arrNotifications = [["_id": "n1"] as NSDictionary]
+        dm.numNotificationsPending = 4
+        dm.isLoadingNotifications = true
+        dm.isInSwapVC = true
+
+        dm.clearSessionCaches()
+
+        XCTAssertEqual(dm.arrTrades.count, 0)
+        XCTAssertEqual(dm.arrCurrentTrades.count, 0)
+        XCTAssertEqual(dm.arrPastTrades.count, 0)
+        XCTAssertEqual(dm.arrNotifications.count, 0)
+        XCTAssertEqual(dm.numNotificationsPending, 0)
+        XCTAssertFalse(dm.isLoadingNotifications)
+        XCTAssertFalse(dm.isInSwapVC)
+        XCTAssertFalse(dm.amITradingWith("u1"))
+        XCTAssertFalse(dm.myRoomsFull())
+    }
+
+    func testTradeRoomCountNilSafe() {
+        XCTAssertEqual(HLDashboardViewController.tradeRoomCount(tradeCount: nil, maxTrades: 3), 3)
+        XCTAssertEqual(HLDashboardViewController.tradeRoomCount(tradeCount: 0, maxTrades: 3), 3)
+        XCTAssertEqual(HLDashboardViewController.tradeRoomCount(tradeCount: 5, maxTrades: 3), 5)
+        XCTAssertEqual(HLDashboardViewController.tradeRoomCount(tradeCount: 2, maxTrades: 0), 2)
+    }
+
+    /// Malformed participant/_id rows must not crash when opening an existing room.
+    func testGetTradeWithSoftParsesParticipantIdsAndAgreeFlags() {
+        let dm = HLDataManager.sharedInstance
+        let previousCurrent = dm.arrCurrentTrades
+        let previousAll = dm.arrTrades
+        defer {
+            dm.arrCurrentTrades = previousCurrent
+            dm.arrTrades = previousAll
+        }
+
+        dm.arrCurrentTrades = [
+            [
+                "_id": "cur-1",
+                "owner_id": NSNull(),
+                "other_id": "carol"
+            ] as NSDictionary,
+            [
+                "_id": "cur-2",
+                "owner_id": "alice",
+                "other_id": "bob"
+            ] as NSDictionary
+        ]
+        dm.arrTrades = [
+            [
+                "_id": "offer-1",
+                "owner_id": "dave",
+                "other_agree": 0,
+                "status": HulaConstants.sent_status
+            ] as NSDictionary,
+            [
+                "_id": "offer-bad",
+                "owner_id": "erin",
+                "other_agree": true,
+                "status": HulaConstants.sent_status
+            ] as NSDictionary,
+            [
+                "_id": NSNull(),
+                "owner_id": "frank",
+                "other_agree": 0,
+                "status": HulaConstants.pending_status
+            ] as NSDictionary
+        ]
+
+        XCTAssertEqual(dm.getTradeWith("carol"), "cur-1")
+        XCTAssertEqual(dm.getTradeWith("alice"), "cur-2")
+        XCTAssertEqual(dm.getTradeWith("dave"), "offer-1")
+        XCTAssertEqual(dm.getTradeWith("erin"), "")
+        XCTAssertEqual(dm.getTradeWith("frank"), "")
+        XCTAssertEqual(dm.getTradeWith("missing"), "")
+    }
+
+    /// Offered-trade detection must tolerate NSNull ids and bridged 0/1 agree flags.
+    func testAmIOfferedToTradeWithSoftParsesStatusAndAgreeFlags() {
+        let dm = HLDataManager.sharedInstance
+        let previousCurrent = dm.arrCurrentTrades
+        let previousAll = dm.arrTrades
+        defer {
+            dm.arrCurrentTrades = previousCurrent
+            dm.arrTrades = previousAll
+        }
+
+        dm.arrCurrentTrades = [
+            [
+                "_id": "cur-pending",
+                "other_id": "peer-a",
+                "status": HulaConstants.pending_status
+            ] as NSDictionary,
+            [
+                "_id": "cur-null",
+                "other_id": NSNull(),
+                "status": HulaConstants.pending_status
+            ] as NSDictionary
+        ]
+        dm.arrTrades = [
+            [
+                "_id": "offer-open",
+                "owner_id": "peer-b",
+                "other_agree": 0
+            ] as NSDictionary,
+            [
+                "_id": "offer-closed",
+                "owner_id": "peer-c",
+                "other_agree": 1
+            ] as NSDictionary
+        ]
+
+        XCTAssertTrue(dm.amIOfferedToTradeWith("peer-a"))
+        XCTAssertTrue(dm.amIOfferedToTradeWith("peer-b"))
+        XCTAssertFalse(dm.amIOfferedToTradeWith("peer-c"))
+        XCTAssertFalse(dm.amIOfferedToTradeWith("nobody"))
+    }
+
 }
