@@ -9,32 +9,32 @@
 import UIKit
 
 class HLBarterScreenViewController: BaseViewController {
-    
-    
+
+
     @IBOutlet weak var mainViewHolder: UIView!
     @IBOutlet weak var moneyBtn: UIButton!
-    
+
     @IBOutlet weak var sectionCover: UIButton!
     @IBOutlet weak var otherProductsCollection: KDDragAndDropCollectionView!
     @IBOutlet weak var otherSelectedProductsCollection: KDDragAndDropCollectionView!
     @IBOutlet weak var myProductsCollection: KDDragAndDropCollectionView!
     @IBOutlet weak var mySelectedProductsCollection: KDDragAndDropCollectionView!
-    
+
     @IBOutlet weak var ChatFakeView: UIView!
-    
+
     @IBOutlet weak var rightBackground: UIView!
     @IBOutlet weak var leftBackground: UIView!
     @IBOutlet weak var otherProductsDragView: UIImageView!
     @IBOutlet weak var myProductsDragView: UIImageView!
-    
+
     @IBOutlet weak var addMoneyBtn2: UIButton!
     @IBOutlet weak var addMoneyBtn1: UIButton!
     @IBOutlet weak var sendOfferFakeView: UIView!
     @IBOutlet weak var otherOkFakeView: UIView!
-    
+
     @IBOutlet weak var otherProductsLabel: UILabel!
     @IBOutlet weak var myProductsLabel: UILabel!
-    
+
     var myProducts : [HulaProduct] = []
     var otherProducts : [HulaProduct] = []
     var myInitialProducts : [HulaProduct] = []
@@ -44,27 +44,48 @@ class HLBarterScreenViewController: BaseViewController {
     var myProductsDiff : [String] = []
     var otherProductsDiff : [String] = []
     var myTradeIndex: Int = 1
-    
+
     var mainSwapViewHolder: HLSwappViewController?
-    
+
     var thisTrade: HulaTrade = HulaTrade()
-    
+
     let arrowImagesName = ["","icon-product-added", "icon-product-removed", "icon-product-multipledeals"]
-    
+
     var otherUserId: String = ""
-    
+
     var didTradeMutate:Bool = false
-    
+
     var dragAndDropManager1 : KDDragAndDropManager?
     var dragAndDropManager2 : KDDragAndDropManager?
     var alreadyLoaded = false
-    
+
+    /// Inventory fetches for each side of the trade. Until both finish, live_barter
+    /// must not POST from empty local traded arrays (that wipes server product lists).
+    var myInventoryFetchFinished = false
+    var otherInventoryFetchFinished = false
+    var myInventoryFetchSucceeded = false
+    var otherInventoryFetchSucceeded = false
+
     var liveTimer = Timer()
     var productsTimer = Timer()
-    
+
     var first_time_load_other : Bool = true
     var first_time_load_owner : Bool = true
-    
+
+    /// Pure helper: only publish live_barter once both inventory callbacks have completed.
+    class func canPublishLiveBarter(ownerFetchFinished: Bool, otherFetchFinished: Bool) -> Bool {
+        return ownerFetchFinished && otherFetchFinished
+    }
+
+    /// When an inventory fetch fails, keep the trade's known product IDs instead of
+    /// synthesizing "deleted" stubs that generateProductArray would strip to empty.
+    class func productIdsForLivePublish(fetchSucceeded: Bool, localProductIds: [String], fallbackTradeIds: [String]) -> [String] {
+        if fetchSucceeded {
+            return localProductIds
+        }
+        return fallbackTradeIds.filter { !$0.isEmpty }
+    }
+
     override func viewDidLoad() {
         super.viewDidLoad()
 
@@ -73,14 +94,14 @@ class HLBarterScreenViewController: BaseViewController {
         myProductsLabel.isHidden = true
         otherProductsDragView.isHidden = true
         myProductsDragView.isHidden = true
-        
-        
-        
+
+
+
         if Device.IS_IPHONE_X {
             self.mainViewHolder.frame.origin.x = 25
             self.mainViewHolder.frame.size.width = self.view.frame.width - 50
         }
-        
+
         // draw borders on collectionviews
         let border = UIView()
         border.frame = CGRect(x:myProductsCollection.frame.width-1, y: 0, width: 1, height: self.mainViewHolder.frame.height)
@@ -90,37 +111,41 @@ class HLBarterScreenViewController: BaseViewController {
         border2.frame = CGRect(x: self.mainViewHolder.frame.width - otherProductsCollection.frame.width, y: 0, width: 1, height: self.mainViewHolder.frame.height)
         border2.backgroundColor = UIColor(red: 0, green: 0, blue: 0, alpha: 0.1)
         self.mainViewHolder.addSubview(border2)
-        
-        
+
+
         // tag each collectionview
         otherSelectedProductsCollection.currentSide = "otherSide"
         mySelectedProductsCollection.currentSide = "mySide"
         myProductsCollection.currentSide = "-"
         otherProductsCollection.currentSide = "-"
-        
-        
+
+
         if #available(iOS 11.0, *) {
             //print("####  setNeedsUpdateOfScreenEdgesDeferringSystemGestures");
             setNeedsUpdateOfScreenEdgesDeferringSystemGestures()
         }
     }
-    
-    
+
+
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
     }
-    
+
     func loadProductsArrays(){
         alreadyLoaded = true
+        myInventoryFetchFinished = false
+        otherInventoryFetchFinished = false
+        myInventoryFetchSucceeded = false
+        otherInventoryFetchSucceeded = false
         var mtp:[String] = []
         var otp:[String] = []
         if let swappPageVC = self.parent as? HLSwappPageViewController{
-            
+
             //print(swappPageVC.parent)
-            
+
             myTradeIndex = min(swappPageVC.currentIndex, swappPageVC.arrTrades.count)
-            
+
             let ct = swappPageVC.arrTrades[swappPageVC.currentIndex]
             //print("ct \(ct)")
             thisTrade.loadFrom(dict: ct)
@@ -129,33 +154,35 @@ class HLBarterScreenViewController: BaseViewController {
                 mtp = thisTrade.owner_products
                 otp = thisTrade.other_products
                 otherUserId = thisTrade.other_id
-                
+
             } else {
                 // I am the other
                 otp = thisTrade.owner_products
                 mtp = thisTrade.other_products
                 otherUserId = thisTrade.owner_id
             }
-            
-            if self.thisTrade.turn_user_id == HulaUser.sharedInstance.userId || true {
-                // "true  for forcing always my turn
-                // my turn
-                self.sectionCover.isHidden = true
-                self.addMoneyBtn1.isUserInteractionEnabled = true
-                self.addMoneyBtn2.isUserInteractionEnabled = true
-            } else {
-                self.sectionCover.isHidden = true // provisional
-                self.addMoneyBtn1.isUserInteractionEnabled = false
-                self.addMoneyBtn2.isUserInteractionEnabled = false
-                
-            }
+
+            // Keep money actions disabled until inventories finish loading so a cash
+            // edit cannot POST empty product lists via updateLiveBarter.
+            self.sectionCover.isHidden = true
+            self.addMoneyBtn1.isUserInteractionEnabled = false
+            self.addMoneyBtn2.isUserInteractionEnabled = false
             //print(otp)
             //print(mtp)
-            getUserProducts(user: otherUserId, taskCallback: {(result) in
+            getUserProducts(user: otherUserId, taskCallback: {(ok, result) in
                 //print (self.otherProducts)
-                self.otherProducts = result
-                self.otherInitialProducts = result
-                self.populateTradedProducts(list:otp, type:"other")
+                self.otherInventoryFetchFinished = true
+                self.otherInventoryFetchSucceeded = ok
+                if ok {
+                    self.otherProducts = result
+                    self.otherInitialProducts = result
+                    self.populateTradedProducts(list:otp, type:"other")
+                } else {
+                    // Preserve known trade product IDs; do not mark them deleted.
+                    self.otherProducts = []
+                    self.otherInitialProducts = []
+                    self.otherTradedProducts = self.placeholderTradedProducts(from: otp)
+                }
                 self.otherProductsCollection.reloadData()
                 self.otherSelectedProductsCollection.reloadData()
                 if self.first_time_load_other {
@@ -164,13 +191,22 @@ class HLBarterScreenViewController: BaseViewController {
                     self.animateDisolveProducts("other")
                     self.first_time_load_other = false
                 }
+                self.enableTradeMutationControlsIfReady()
             })
-            
-            getUserProducts(user: HulaUser.sharedInstance.userId, taskCallback: {(result) in
+
+            getUserProducts(user: HulaUser.sharedInstance.userId, taskCallback: {(ok, result) in
                 //print (self.myProducts)
-                self.myProducts = result
-                self.myInitialProducts = result
-                self.populateTradedProducts(list:mtp, type:"owner")
+                self.myInventoryFetchFinished = true
+                self.myInventoryFetchSucceeded = ok
+                if ok {
+                    self.myProducts = result
+                    self.myInitialProducts = result
+                    self.populateTradedProducts(list:mtp, type:"owner")
+                } else {
+                    self.myProducts = []
+                    self.myInitialProducts = []
+                    self.myTradedProducts = self.placeholderTradedProducts(from: mtp)
+                }
                 self.myProductsCollection.reloadData()
                 self.mySelectedProductsCollection.reloadData()
                 if self.first_time_load_owner {
@@ -179,29 +215,30 @@ class HLBarterScreenViewController: BaseViewController {
                     self.animateDisolveProducts("owner")
                     self.first_time_load_owner = false
                 }
+                self.enableTradeMutationControlsIfReady()
             })
             HulaTrade.sharedInstance.owner_products = thisTrade.owner_products
             HulaTrade.sharedInstance.other_products = thisTrade.other_products
-            
-            
-            
-            
+
+
+
+
             //print(thisTrade.other_money)
             //print(thisTrade.owner_money)
-            
-            
+
+
             self.addMoneyBtn1.alpha = 1
             self.addMoneyBtn2.alpha = 1
             // my draganddrop
             self.dragAndDropManager2 = KDDragAndDropManager(canvas: self.view, collectionViews: [myProductsCollection, mySelectedProductsCollection ])
             // other draganddrop
             self.dragAndDropManager1 = KDDragAndDropManager(canvas: self.view, collectionViews: [otherProductsCollection, otherSelectedProductsCollection ])
-      
-            
-            
+
+
+
             // TUTORIAL
-            
-            
+
+
             if HLDataManager.sharedInstance.onboardingTutorials.object(forKey: "barter_any_turn") as? String == nil{
                 CommonUtils.sharedInstance.showTutorial(arrayTips: [
                     HulaTip(delay: 0.4, view: self.otherProductsCollection, text: NSLocalizedString("Here is their stuff.", comment: "")),
@@ -220,8 +257,8 @@ class HLBarterScreenViewController: BaseViewController {
             } else {
                 // other's turn
             }
-            
-            
+
+
             if let thisHolderScreen = swappPageVC.parent as? HLSwappViewController {
                 self.mainSwapViewHolder = thisHolderScreen
                 self.mainSwapViewHolder?.barterDelegate = self
@@ -229,72 +266,90 @@ class HLBarterScreenViewController: BaseViewController {
             }
         }
     }
-    
-    
-    
+
+    func enableTradeMutationControlsIfReady() {
+        guard HLBarterScreenViewController.canPublishLiveBarter(
+            ownerFetchFinished: myInventoryFetchFinished,
+            otherFetchFinished: otherInventoryFetchFinished
+        ) else { return }
+        self.addMoneyBtn1.isUserInteractionEnabled = true
+        self.addMoneyBtn2.isUserInteractionEnabled = true
+    }
+
+    func placeholderTradedProducts(from ids: [String]) -> [HulaProduct] {
+        var final_arr: [HulaProduct] = []
+        for pr_id in ids {
+            if pr_id == "" { continue }
+            let tmp_prod = HulaProduct(id: pr_id, name: NSLocalizedString("Product", comment: ""), image: CommonUtils.sharedInstance.productImageURL(productId: pr_id))
+            // Intentionally not "deleted": failed inventory fetch must not strip these on publish.
+            final_arr.append(tmp_prod)
+        }
+        return final_arr
+    }
+
+
+
     func refreshProductsArrays(){
-        
-        getUserProducts(user: HulaUser.sharedInstance.userId, taskCallback: {(result) in
-            if (result.count > 0){
-                for j in 0 ... (result.count - 1) {
-                    if (self.myTradedProducts.count > 0){
-                        for i in 0 ... (self.myTradedProducts.count - 1) {
-                            if (self.myTradedProducts[i].productId == result[j].productId){
-                                //print("found product!")
-                                self.myTradedProducts[i].video_url = result[j].video_url;
-                                self.myTradedProducts[i].video_requested = result[j].video_requested;
-                                
-                            }
-                        }
-                    }
-                    if (self.myProducts.count > 0){
-                        for i in 0 ... (self.myProducts.count - 1) {
-                            if (self.myProducts[i].productId == result[j].productId){
-                                //print("found product!")
-                                self.myProducts[i].video_url = result[j].video_url;
-                                self.myProducts[i].video_requested = result[j].video_requested;
-                                
-                            }
+
+        getUserProducts(user: HulaUser.sharedInstance.userId, taskCallback: {(ok, result) in
+            guard ok, result.count > 0 else { return }
+            for j in 0 ... (result.count - 1) {
+                if (self.myTradedProducts.count > 0){
+                    for i in 0 ... (self.myTradedProducts.count - 1) {
+                        if (self.myTradedProducts[i].productId == result[j].productId){
+                            //print("found product!")
+                            self.myTradedProducts[i].video_url = result[j].video_url;
+                            self.myTradedProducts[i].video_requested = result[j].video_requested;
+
                         }
                     }
                 }
-                self.mySelectedProductsCollection.reloadData()
-                self.myProductsCollection.reloadData()
+                if (self.myProducts.count > 0){
+                    for i in 0 ... (self.myProducts.count - 1) {
+                        if (self.myProducts[i].productId == result[j].productId){
+                            //print("found product!")
+                            self.myProducts[i].video_url = result[j].video_url;
+                            self.myProducts[i].video_requested = result[j].video_requested;
+
+                        }
+                    }
+                }
             }
+            self.mySelectedProductsCollection.reloadData()
+            self.myProductsCollection.reloadData()
         });
-        
-        
-        
-        getUserProducts(user: self.otherUserId, taskCallback: {(result) in
-            if (result.count > 0){
-                for j in 0 ... (result.count - 1) {
-                    if (self.otherTradedProducts.count > 0){
-                        for i in 0 ... (self.otherTradedProducts.count - 1) {
-                            if (self.otherTradedProducts[i].productId == result[j].productId){
-                                //print("found product!")
-                                self.otherTradedProducts[i].video_url = result[j].video_url;
-                                self.otherTradedProducts[i].video_requested = result[j].video_requested;
-                                
-                            }
-                        }
-                    }
-                    if (self.otherProducts.count > 0){
-                        for i in 0 ... (self.otherProducts.count - 1) {
-                            if (self.otherProducts[i].productId == result[j].productId){
-                                //print("found product!")
-                                self.otherProducts[i].video_url = result[j].video_url;
-                                self.otherProducts[i].video_requested = result[j].video_requested;
-                            }
+
+
+
+        getUserProducts(user: self.otherUserId, taskCallback: {(ok, result) in
+            guard ok, result.count > 0 else { return }
+            for j in 0 ... (result.count - 1) {
+                if (self.otherTradedProducts.count > 0){
+                    for i in 0 ... (self.otherTradedProducts.count - 1) {
+                        if (self.otherTradedProducts[i].productId == result[j].productId){
+                            //print("found product!")
+                            self.otherTradedProducts[i].video_url = result[j].video_url;
+                            self.otherTradedProducts[i].video_requested = result[j].video_requested;
+
                         }
                     }
                 }
-                self.otherSelectedProductsCollection.reloadData()
-                self.otherProductsCollection.reloadData()
+                if (self.otherProducts.count > 0){
+                    for i in 0 ... (self.otherProducts.count - 1) {
+                        if (self.otherProducts[i].productId == result[j].productId){
+                            //print("found product!")
+                            self.otherProducts[i].video_url = result[j].video_url;
+                            self.otherProducts[i].video_requested = result[j].video_requested;
+                        }
+                    }
+                }
             }
+            self.otherSelectedProductsCollection.reloadData()
+            self.otherProductsCollection.reloadData()
         })
     }
-    
-    
+
+
     func populateTradedProducts(list: [String], type: String){
         let reference_list: [HulaProduct]
         var final_arr: [HulaProduct] = []
@@ -304,7 +359,7 @@ class HLBarterScreenViewController: BaseViewController {
         default:
             reference_list = self.myProducts
         }
-        
+
         //print(thisTrade.last_bid_diff)
         for pr_id in list{
             var found : Bool = false
@@ -314,7 +369,7 @@ class HLBarterScreenViewController: BaseViewController {
                     found = true
                 }
             }
-            
+
             if !found && pr_id != "" {
                 //self.animateDisolveProduct(pr_id, type: type)
                 let tmp_prod = HulaProduct(id: pr_id, name: NSLocalizedString("Deleted product", comment: ""), image: CommonUtils.sharedInstance.productImageURL(productId: pr_id))
@@ -322,12 +377,12 @@ class HLBarterScreenViewController: BaseViewController {
                 tmp_prod.productDescription = NSLocalizedString("This product is not available anymore.", comment: "")
                 tmp_prod.tradeStatus = 2
                 final_arr.append(tmp_prod)
-                
+
                 // update button. We cannot close the deal directly
                 self.didTradeMutate = true
                 self.mainSwapViewHolder?.controlSetupBottomBar(index: myTradeIndex + 1)
             }
-            
+
             if (self.otherProducts.count > 0){
                 for i in 0 ... (self.otherProducts.count - 1) {
                     if (self.otherProducts[i].productId == pr_id){
@@ -349,8 +404,8 @@ class HLBarterScreenViewController: BaseViewController {
                 }
             }
         }
-        
-        
+
+
         switch type {
         case "other":
             if (thisTrade.owner_id == HulaUser.sharedInstance.userId){
@@ -379,10 +434,10 @@ class HLBarterScreenViewController: BaseViewController {
             }
             myTradedProducts = final_arr
         }
-        
-        
+
+
     }
-    
+
     override func viewDidAppear(_ animated: Bool) {
         if let swappPageVC = self.parent as? HLSwappPageViewController{
             if ( swappPageVC.arrTrades.count == 0 ){
@@ -392,18 +447,18 @@ class HLBarterScreenViewController: BaseViewController {
                 }
             } else {
                 HLDataManager.sharedInstance.ga("barter_screen")
-                
+
                 scheduledTimerWithTimeInterval()
             }
         }
         view.layoutIfNeeded()
     }
-    
+
     override func viewWillDisappear(_ animated: Bool) {
         self.liveTimer.invalidate();
         self.productsTimer.invalidate();
     }
-    
+
     override func viewWillAppear(_ animated: Bool) {
         if let swappPageVC = self.parent as? HLSwappPageViewController{
             self.addMoneyBtn1.alpha = 1
@@ -426,13 +481,13 @@ class HLBarterScreenViewController: BaseViewController {
                 self.addMoneyBtn2.alpha = 0.3
             }
         }
-        
-        
+
+
     }
 
     override func preferredScreenEdgesDeferringSystemGestures() -> UIRectEdge {
         print("*preferredScreenEdges")
-        return .all	
+        return .all
     }
     /*
     // MARK: - Navigation
@@ -445,7 +500,7 @@ class HLBarterScreenViewController: BaseViewController {
     */
     func animateDisolveProducts(_ type:String){
         //print("Disolve")
-        
+
         DispatchQueue.main.async {
             var counter = 0
             if (type == "owner"){
@@ -485,26 +540,40 @@ class HLBarterScreenViewController: BaseViewController {
             }
         }
     }
-    
+
     func scheduledTimerWithTimeInterval(){
         // Scheduling timer to Call the function "updateCounting" with the interval of 1 seconds
         liveTimer = Timer.scheduledTimer(timeInterval: 2, target: self, selector: #selector(self.getLiveBarter), userInfo: nil, repeats: true);
         productsTimer = Timer.scheduledTimer(timeInterval: 5, target: self, selector: #selector(self.refreshProductsArrays), userInfo: nil, repeats: true);
     }
     func updateLiveBarter(){
-        let queryURL = HulaConstants.apiURL + "live_barter/" + self.thisTrade.tradeId;
-        
-        var otherp:String = "";
-        var ownerp:String = "";
-        if (thisTrade.owner_id == HulaUser.sharedInstance.userId){
-            // I am the owner
-            otherp = generateProductArray(from: self.otherTradedProducts).joined(separator:",");
-            ownerp = generateProductArray(from: self.myTradedProducts).joined(separator:",");
-        } else {
-            // I am the other
-            otherp = generateProductArray(from: self.myTradedProducts).joined(separator:",");
-            ownerp = generateProductArray(from: self.otherTradedProducts).joined(separator:",");
+        // Never POST empty local arrays before inventories finish loading — that wipes the trade.
+        guard HLBarterScreenViewController.canPublishLiveBarter(
+            ownerFetchFinished: myInventoryFetchFinished,
+            otherFetchFinished: otherInventoryFetchFinished
+        ) else {
+            print("Skipping live_barter publish until inventories load");
+            return
         }
+        let queryURL = HulaConstants.apiURL + "live_barter/" + self.thisTrade.tradeId;
+
+        let localOwnerIds = generateProductArray(from: (thisTrade.owner_id == HulaUser.sharedInstance.userId) ? self.myTradedProducts : self.otherTradedProducts)
+        let localOtherIds = generateProductArray(from: (thisTrade.owner_id == HulaUser.sharedInstance.userId) ? self.otherTradedProducts : self.myTradedProducts)
+        // If a side's inventory fetch failed, fall back to the trade's last known product IDs.
+        let ownerFetchOk = (thisTrade.owner_id == HulaUser.sharedInstance.userId) ? myInventoryFetchSucceeded : otherInventoryFetchSucceeded
+        let otherFetchOk = (thisTrade.owner_id == HulaUser.sharedInstance.userId) ? otherInventoryFetchSucceeded : myInventoryFetchSucceeded
+        let ownerIds = HLBarterScreenViewController.productIdsForLivePublish(
+            fetchSucceeded: ownerFetchOk,
+            localProductIds: localOwnerIds,
+            fallbackTradeIds: thisTrade.owner_products
+        )
+        let otherIds = HLBarterScreenViewController.productIdsForLivePublish(
+            fetchSucceeded: otherFetchOk,
+            localProductIds: localOtherIds,
+            fallbackTradeIds: thisTrade.other_products
+        )
+        let ownerp = ownerIds.joined(separator:",")
+        let otherp = otherIds.joined(separator:",")
         let postStr = "other_products=\(otherp)&owner_products=\(ownerp)&other_money=\(thisTrade.other_money)&owner_money=\(thisTrade.owner_money)";
         print(postStr)
         HLDataManager.sharedInstance.httpPost(urlstr: queryURL, postString: postStr, isPut: false, taskCallback:  { (ok, json) in
@@ -535,15 +604,15 @@ class HLBarterScreenViewController: BaseViewController {
             }
         })
     }
-    
+
     func updateTradeInterface(dict: NSDictionary){
         let newTrade: HulaTrade = HulaTrade();
         newTrade.loadFrom(dict: dict);
-        
+
         if (newTrade.other_products != self.thisTrade.other_products) || (newTrade.owner_products != self.thisTrade.owner_products) || (newTrade.owner_money - newTrade.other_money != self.thisTrade.owner_money - self.thisTrade.other_money){
             print ("trades are different. Updating interface");
-            
-            
+
+
             self.thisTrade = newTrade;
             var mtp:[String] = []
             var otp:[String] = []
@@ -567,22 +636,22 @@ class HLBarterScreenViewController: BaseViewController {
             self.otherSelectedProductsCollection.reloadData()
             self.animateAddedProducts("other")
             self.animateDisolveProducts("other")
-            
+
             self.populateTradedProducts(list:mtp, type:"owner")
             self.myProductsCollection.reloadData()
             self.mySelectedProductsCollection.reloadData()
             self.animateAddedProducts("owner")
             self.animateDisolveProducts("owner")
-            
-            
+
+
         }
         self.thisTrade.other_ready = newTrade.other_ready;
         self.thisTrade.owner_ready = newTrade.owner_ready;
         // update bottom bar!
         self.mainSwapViewHolder?.controlSetupBottomBar(index: myTradeIndex + 1)
-        
+
     }
-    
+
     func updateMyRemovedProducts(){
         var newArr: [HulaProduct] = []
         for i in 0 ..< self.myTradedProducts.count {
@@ -605,7 +674,7 @@ class HLBarterScreenViewController: BaseViewController {
         self.otherTradedProducts = newArr
         self.otherSelectedProductsCollection.reloadData()
     }
-    
+
     func animateAddedProducts(_ type : String){
         var array_to_traverse : [HulaProduct]
         var array_to_traverse2 : [HulaProduct]
@@ -637,8 +706,8 @@ class HLBarterScreenViewController: BaseViewController {
         var counter : Int = 0
         DispatchQueue.main.async {
         for p in array_to_traverse{
-            
-            
+
+
             //removed animations -> false
             if p.tradeStatus == 1 && false {
                 // added product
@@ -674,7 +743,7 @@ class HLBarterScreenViewController: BaseViewController {
             counter += 1
         }
         for p in array_to_traverse2{
-            
+
             //removed animations -> false
             if p.tradeStatus == 2 && false{
                 // removed product
@@ -707,8 +776,8 @@ class HLBarterScreenViewController: BaseViewController {
         }
         }
     }
-    
-    func getUserProducts(user: String, taskCallback: @escaping ([HulaProduct]) -> ()) {
+
+    func getUserProducts(user: String, taskCallback: @escaping (Bool, [HulaProduct]) -> ()) {
         //print("Getting user info...")
         if (HulaUser.sharedInstance.userId.count>0){
             let queryURL = HulaConstants.apiURL + "products/user/" + user
@@ -719,22 +788,24 @@ class HLBarterScreenViewController: BaseViewController {
                         if let dictionary = json as? [Any] {
                             //print(dictionary)
                             var productList: [HulaProduct] = []
-                            
+
                             //print(self.thisTrade.last_bid_diff)
-                            
+
                             for item in dictionary{
                                 //print("item")
                                 //print(item)
                                 if let product_data = item as? [String : Any]{
-                                    let id = product_data["_id"] as! String
-                                    let name = product_data["title"] as! String
+                                    guard let id = product_data["_id"] as? String,
+                                          let name = product_data["title"] as? String else {
+                                        continue
+                                    }
                                     var image = product_data["image_url"] as? String
                                     if (image == nil){
                                         image = CommonUtils.sharedInstance.productImageURL(productId: id)
                                     }
                                     let newProd = HulaProduct(id : id, name : name, image: image!)
                                     newProd.populate(with: product_data as NSDictionary)
-                                    
+
                                     for difprod in self.thisTrade.last_bid_diff {
                                         if (difprod == newProd.productId!) || (self.thisTrade.num_bids < 3) {
                                             // recently added
@@ -745,26 +816,33 @@ class HLBarterScreenViewController: BaseViewController {
                                             newProd.tradeStatus = 2
                                         }
                                     }
-                                    
+
                                     productList.append(newProd)
                                 }
                             }
-                            taskCallback(productList)
+                            taskCallback(true, productList)
                         } else {
-                            taskCallback([])
+                            // Malformed payload: treat as failure so callers keep trade IDs.
+                            taskCallback(false, [])
                         }
                     }
                 } else {
-                    // connection error
-                    taskCallback([])
+                    // connection error — always deliver on main
+                    DispatchQueue.main.async {
+                        taskCallback(false, [])
+                    }
                 }
             })
+        } else {
+            DispatchQueue.main.async {
+                taskCallback(false, [])
+            }
         }
     }
-    
+
     func generateProductArray(from:[HulaProduct]) -> [String]{
         var final_arr = [String]();
-        
+
         for prod in from {
             if (prod.productId != "xmoney") && (prod.productStatus != "deleted"){
                 final_arr.append(prod.productId)
@@ -773,10 +851,11 @@ class HLBarterScreenViewController: BaseViewController {
         //print(final_arr)
         return final_arr
     }
-    
+
     func updateProductsFromTrade(){
         //print("Updating products from trade...")
-        getUserProducts(user: HulaUser.sharedInstance.userId, taskCallback: {(result) in
+        getUserProducts(user: HulaUser.sharedInstance.userId, taskCallback: {(ok, result) in
+            guard ok else { return }
             var ctr = 0;
             for tr_prod in self.myTradedProducts {
                 for my_prod in result {
@@ -788,7 +867,8 @@ class HLBarterScreenViewController: BaseViewController {
                 ctr += 1
             }
         })
-        getUserProducts(user: otherUserId, taskCallback: {(result) in
+        getUserProducts(user: otherUserId, taskCallback: {(ok, result) in
+            guard ok else { return }
             var ctr = 0;
             for tr_prod in self.otherTradedProducts {
                 for other_prod in result {
@@ -801,10 +881,10 @@ class HLBarterScreenViewController: BaseViewController {
             }
         })
     }
-    
+
     @IBAction func addMoneyToOther(_ sender: Any) {
         let viewController = self.storyboard?.instantiateViewController(withIdentifier: "calculatorView") as! HLCalculatorViewController
-        
+
         viewController.calculatorDelegate = self
         viewController.side = "other"
         if thisTrade.owner_id == HulaUser.sharedInstance.userId{
@@ -816,10 +896,10 @@ class HLBarterScreenViewController: BaseViewController {
         self.didTradeMutate = true
         self.mainSwapViewHolder?.controlSetupBottomBar(index: myTradeIndex + 1)
     }
-    
+
     @IBAction func addMonewToOwner(_ sender: Any) {
         let viewController = self.storyboard?.instantiateViewController(withIdentifier: "calculatorView") as! HLCalculatorViewController
-        
+
         viewController.calculatorDelegate = self
         viewController.side = "owner"
         if thisTrade.owner_id == HulaUser.sharedInstance.userId{
@@ -834,7 +914,7 @@ class HLBarterScreenViewController: BaseViewController {
 }
 
 extension HLBarterScreenViewController: KDDragAndDropCollectionViewDataSource, UICollectionViewDelegateFlowLayout {
-    
+
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         switch collectionView.tag {
         case 1:
@@ -849,7 +929,7 @@ extension HLBarterScreenViewController: KDDragAndDropCollectionViewDataSource, U
             return 0
         }
     }
-    
+
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         //print("Collection: \(collectionView.tag) item \(indexPath.item)")
         let product:HulaProduct
@@ -866,7 +946,7 @@ extension HLBarterScreenViewController: KDDragAndDropCollectionViewDataSource, U
             product = HulaProduct(id : "nada", name : "Test product", image: "https://api.hula.trading/v1/products/59400e5ce8825609f281bc68/image")
         }
         //print(product)
-        
+
         if (product.productId == "xmoney"){
             if collectionView.tag == 2 {
                 addMonewToOwner("")
@@ -875,7 +955,7 @@ extension HLBarterScreenViewController: KDDragAndDropCollectionViewDataSource, U
             }
         } else {
             let viewController = self.storyboard?.instantiateViewController(withIdentifier: "ProductModal") as! HLProductModalViewController
-            
+
             viewController.product = product
             if collectionView.tag == 2 || collectionView.tag == 3 {
                 // product on the barter table
@@ -889,17 +969,17 @@ extension HLBarterScreenViewController: KDDragAndDropCollectionViewDataSource, U
             viewController.isTradeAgreed = self.thisTrade.other_agree
             //print("viewController.isTradeAgreed \(viewController.isTradeAgreed)")
             viewController.modalPresentationStyle = .overCurrentContext
-            
+
             self.present(viewController, animated: true)
             //print("presented vc")
         }
     }
-    
+
     // The cell that is returned must be retrieved from a call to -dequeueReusableCellWithReuseIdentifier:forIndexPath:
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        
+
         let cell: HLProductCollectionViewCell
-    
+
         let product:HulaProduct
         switch collectionView.tag {
         case 1:
@@ -918,7 +998,7 @@ extension HLBarterScreenViewController: KDDragAndDropCollectionViewDataSource, U
             cell.side = "right"
             cell.type = "select"
         case 4:
-            
+
             product = otherProducts[indexPath.item]
             cell = collectionView.dequeueReusableCell(withReuseIdentifier: "productcell4", for: indexPath) as! HLProductCollectionViewCell
             cell.side = "right"
@@ -928,10 +1008,10 @@ extension HLBarterScreenViewController: KDDragAndDropCollectionViewDataSource, U
             product = HulaProduct(id : "nada", name : "Test product", image: "https://api.hula.trading/v1/products/59400e5ce8825609f281bc68/image")
             cell = collectionView.dequeueReusableCell(withReuseIdentifier: "productcell4", for: indexPath) as! HLProductCollectionViewCell
         }
-        
+
         cell.label.text = product.productName
         //print(product.productImage)
-        
+
         let thumb = commonUtils.getThumbFor(url: product.productImage)
         cell.image.loadImageFromURL(urlString: thumb)
         //print(product.tradeStatus)
@@ -953,7 +1033,7 @@ extension HLBarterScreenViewController: KDDragAndDropCollectionViewDataSource, U
         if let t = product.video_url[thisTrade.tradeId] {
             vurl = t
         }
-        
+
         cell.statusImage.isHidden = false
         if ( vreq || vurl.count > 0 ){
             if vurl.count > 0 {
@@ -964,33 +1044,33 @@ extension HLBarterScreenViewController: KDDragAndDropCollectionViewDataSource, U
         } else {
             cell.statusImage.image = nil
         }
-        
-        
+
+
         if (product.productStatus == "deleted"){
             cell.statusImage.image = UIImage(named: "icon-product-removed")
             cell.statusImage.isHidden = false
         }
-        
+
         cell.isHidden = false
-        
-        
+
+
         if let kdCollectionView = collectionView as? KDDragAndDropCollectionView {
-            
+
             if let draggingPathOfCellBeingDragged = kdCollectionView.draggingPathOfCellBeingDragged {
-                
+
                 if draggingPathOfCellBeingDragged.item == indexPath.item {
-                    
+
                     cell.isHidden = true
-                    
+
                 }
             }
         }
-        
+
         return cell
     }
-    
+
     // MARK : KDDragAndDropCollectionViewDataSource
-    
+
     func collectionView(_ collectionView: UICollectionView, dataItemForIndexPath indexPath: IndexPath) -> AnyObject {
         let product:HulaProduct
         switch collectionView.tag {
@@ -1008,18 +1088,18 @@ extension HLBarterScreenViewController: KDDragAndDropCollectionViewDataSource, U
         return product
     }
     func collectionView(_ collectionView: UICollectionView, insertDataItem dataItem : AnyObject, atIndexPath indexPath: IndexPath) -> Void {
-        
+
         if let di = dataItem as? HulaProduct {
             switch collectionView.tag {
             case 1:
                 myProducts.insert(di, at: indexPath.item)
             case 2:
                 myTradedProducts.insert(di, at: indexPath.item)
-                
+
                 self.updateLiveBarter()
             case 3:
                 otherTradedProducts.insert(di, at: indexPath.item)
-                
+
                 self.updateLiveBarter()
             case 4:
                 otherProducts.insert(di, at: indexPath.item)
@@ -1028,7 +1108,7 @@ extension HLBarterScreenViewController: KDDragAndDropCollectionViewDataSource, U
         }
         self.didTradeMutate = true
         self.mainSwapViewHolder?.controlSetupBottomBar(index: myTradeIndex + 1)
-        
+
     }
     func collectionView(_ collectionView: UICollectionView, deleteDataItemAtIndexPath indexPath : IndexPath) -> Void {
         switch collectionView.tag {
@@ -1046,12 +1126,12 @@ extension HLBarterScreenViewController: KDDragAndDropCollectionViewDataSource, U
         }
         self.didTradeMutate = true
         self.mainSwapViewHolder?.controlSetupBottomBar(index: myTradeIndex + 1)
-        
-        
+
+
     }
-    
+
     func collectionView(_ collectionView: UICollectionView, moveDataItemFromIndexPath from: IndexPath, toIndexPath to : IndexPath) -> Void {
-        
+
         let fromDataItem: HulaProduct
         switch collectionView.tag {
         case 1:
@@ -1078,13 +1158,13 @@ extension HLBarterScreenViewController: KDDragAndDropCollectionViewDataSource, U
             myProducts.remove(at: from.item)
             myProducts.insert(fromDataItem, at: to.item)
         }
-        
+
         self.didTradeMutate = true
         self.mainSwapViewHolder?.controlSetupBottomBar(index: myTradeIndex + 1)
     }
-    
+
     func collectionView(_ collectionView: UICollectionView, indexPathForDataItem dataItem: AnyObject) -> IndexPath? {
-        
+
         if let candidate : HulaProduct = dataItem as? HulaProduct {
             let dataArr: [HulaProduct]
             switch collectionView.tag {
@@ -1098,25 +1178,25 @@ extension HLBarterScreenViewController: KDDragAndDropCollectionViewDataSource, U
                 dataArr = otherProducts
             default:
                 dataArr = []
-                
+
             }
-            
-            
+
+
             for item : HulaProduct in dataArr {
                 if candidate  == item {
-                    
+
                     let position = dataArr.index(of: item)! // ! if we are inside the condition we are guaranteed a position
                     let indexPath = IndexPath(item: position, section: 0)
                     return indexPath
                 }
             }
         }
-        
+
         return nil
-        
+
     }
-    
-    
+
+
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize
     {
         let size: CGSize
@@ -1134,23 +1214,36 @@ extension HLBarterScreenViewController: KDDragAndDropCollectionViewDataSource, U
         }
         return size
     }
-    
-    
+
+
 }
 
 extension HLBarterScreenViewController: HLBarterScreenDelegate{
     func getCurrentTradeStatus() -> HulaTrade{
         let trade = HulaTrade();
         //print(myTradedProducts)
-        if thisTrade.owner_id == HulaUser.sharedInstance.userId {
-            // my trade
-            trade.other_products = generateProductArray(from: otherTradedProducts)
-            trade.owner_products = generateProductArray(from: myTradedProducts)
-            
+        if HLBarterScreenViewController.canPublishLiveBarter(
+            ownerFetchFinished: myInventoryFetchFinished,
+            otherFetchFinished: otherInventoryFetchFinished
+        ) {
+            let localOwnerIds = generateProductArray(from: (thisTrade.owner_id == HulaUser.sharedInstance.userId) ? myTradedProducts : otherTradedProducts)
+            let localOtherIds = generateProductArray(from: (thisTrade.owner_id == HulaUser.sharedInstance.userId) ? otherTradedProducts : myTradedProducts)
+            let ownerFetchOk = (thisTrade.owner_id == HulaUser.sharedInstance.userId) ? myInventoryFetchSucceeded : otherInventoryFetchSucceeded
+            let otherFetchOk = (thisTrade.owner_id == HulaUser.sharedInstance.userId) ? otherInventoryFetchSucceeded : myInventoryFetchSucceeded
+            trade.owner_products = HLBarterScreenViewController.productIdsForLivePublish(
+                fetchSucceeded: ownerFetchOk,
+                localProductIds: localOwnerIds,
+                fallbackTradeIds: thisTrade.owner_products
+            )
+            trade.other_products = HLBarterScreenViewController.productIdsForLivePublish(
+                fetchSucceeded: otherFetchOk,
+                localProductIds: localOtherIds,
+                fallbackTradeIds: thisTrade.other_products
+            )
         } else {
-            // other user trade
-            trade.other_products = generateProductArray(from: myTradedProducts)
-            trade.owner_products = generateProductArray(from: otherTradedProducts)
+            // Inventories still loading: preserve server trade product lists for Accept/PUT.
+            trade.owner_products = thisTrade.owner_products
+            trade.other_products = thisTrade.other_products
         }
         trade.other_agree = thisTrade.other_agree
         trade.turn_user_id = thisTrade.turn_user_id
@@ -1164,18 +1257,22 @@ extension HLBarterScreenViewController: HLBarterScreenDelegate{
         trade.num_bids = thisTrade.num_bids
         return trade
     }
-    
+
     func isTradeMutated() -> Bool!{
         return self.didTradeMutate
     }
-    
+
     func reloadTrade(){
         self.alreadyLoaded = false
+        self.myInventoryFetchFinished = false
+        self.otherInventoryFetchFinished = false
+        self.myInventoryFetchSucceeded = false
+        self.otherInventoryFetchSucceeded = false
     }
 }
 
 extension HLBarterScreenViewController: CalculatorDelegate{
-    
+
     func amountSelected(amount:Int, side:String){
         print("Calculator amount: \(amount)")
         if (amount > 0){
@@ -1185,7 +1282,7 @@ extension HLBarterScreenViewController: CalculatorDelegate{
             if (side == "owner"){
                 if (thisTrade.owner_id == HulaUser.sharedInstance.userId){
                     thisTrade.owner_money = final_amount
-                    
+
                 } else {
                     thisTrade.other_money = final_amount
                 }
@@ -1224,7 +1321,7 @@ extension HLBarterScreenViewController: CalculatorDelegate{
         }
         self.updateLiveBarter()
     }
-    
+
     func removeMoneyProduct(fromProducts:[HulaProduct]) -> [HulaProduct]{
         var newArr:[HulaProduct] = []
         for prod in fromProducts{
