@@ -49,13 +49,14 @@ class HLCustomCameraViewController: BaseViewController, UIImagePickerControllerD
         picker.delegate = self
         if (PHPhotoLibrary.authorizationStatus() != .authorized){
             PHPhotoLibrary.requestAuthorization({ (st) in
-                if st == .authorized {
-                    DispatchQueue.main.async {
+                // Photo permission callbacks are not guaranteed on the main queue.
+                DispatchQueue.main.async {
+                    if st == .authorized {
                         self.initView()
                         self.initCamera()
+                    } else {
+                        self.showPermissionError()
                     }
-                } else {
-                    self.showPermissionError()
                 }
             })
         } else {
@@ -329,10 +330,21 @@ class HLCustomCameraViewController: BaseViewController, UIImagePickerControllerD
                 }
                 
             } else {
-                self.showPermissionError()
+                // Camera permission callbacks are not guaranteed on the main queue.
+                DispatchQueue.main.async {
+                    self.showPermissionError()
+                }
             }
         }
         
+    }
+    /// Still-image and permission completions must hop to main before any UIKit work.
+    static func performCameraUIUpdate(_ work: @escaping () -> Void) {
+        if Thread.isMainThread {
+            work()
+        } else {
+            DispatchQueue.main.async(execute: work)
+        }
     }
     func showPermissionError(){
         let alert = UIAlertController(title: NSLocalizedString("Permission denied", comment: ""), message: "Please allow Hula access to your camera roll and camera.", preferredStyle: .alert)
@@ -395,8 +407,13 @@ class HLCustomCameraViewController: BaseViewController, UIImagePickerControllerD
                 if let imageData = AVCaptureStillImageOutput.jpegStillImageNSDataRepresentation(CMSampleBuffer) {
                     
                     if let cameraImage = UIImage(data: imageData) {
-                        self.showImages(self.commonUtils.cropImage(cameraImage, HulaConstants.product_image_thumb_size))
-                        self.selectFromCameraButton.isHidden = false
+                        let cropped = self.commonUtils.cropImage(cameraImage, HulaConstants.product_image_thumb_size)
+                        // captureStillImageAsynchronously completes off the main thread;
+                        // showImages mutates UIImageViews and shared arrProductPhotos.
+                        HLCustomCameraViewController.performCameraUIUpdate {
+                            self.showImages(cropped)
+                            self.selectFromCameraButton.isHidden = false
+                        }
                     }
                 }
             })
