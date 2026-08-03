@@ -64,6 +64,20 @@ class HLBarterScreenViewController: BaseViewController {
     
     var first_time_load_other : Bool = true
     var first_time_load_owner : Bool = true
+
+    /// Gate live_barter POSTs until both inventory callbacks have finished at least once.
+    class func canPublishLiveBarter(ownerFetchFinished: Bool, otherFetchFinished: Bool) -> Bool {
+        return ownerFetchFinished && otherFetchFinished
+    }
+
+    /// When an inventory fetch fails, keep the trade's known product IDs instead of
+    /// posting empty local arrays that wipe server-side trade items.
+    class func productIdsForLivePublish(fetchSucceeded: Bool, localProductIds: [String], fallbackTradeIds: [String]) -> [String] {
+        if fetchSucceeded {
+            return localProductIds
+        }
+        return fallbackTradeIds.filter { !$0.isEmpty }
+    }
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -499,6 +513,14 @@ class HLBarterScreenViewController: BaseViewController {
         productsTimer = Timer.scheduledTimer(timeInterval: 5, target: self, selector: #selector(self.refreshProductsArrays), userInfo: nil, repeats: true);
     }
     func updateLiveBarter(){
+        // Avoid posting empty owner/other product lists before both inventory fetches finish.
+        guard HLBarterScreenViewController.canPublishLiveBarter(
+            ownerFetchFinished: !first_time_load_owner,
+            otherFetchFinished: !first_time_load_other
+        ) else {
+            return
+        }
+
         let queryURL = HulaConstants.apiURL + "live_barter/" + self.thisTrade.tradeId;
         
         var otherp:String = "";
