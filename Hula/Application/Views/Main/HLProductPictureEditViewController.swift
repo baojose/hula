@@ -181,6 +181,15 @@ class HLProductPictureEditViewController: BaseViewController, UIImagePickerContr
         present(picker, animated: true, completion: nil)
     }
     
+    /// Still-image completions must hop to main before session/UI work.
+    static func performCameraUIUpdate(_ work: @escaping () -> Void) {
+        if Thread.isMainThread {
+            work()
+        } else {
+            DispatchQueue.main.async(execute: work)
+        }
+    }
+
     func saveToCamera(_ sender: Any) {
         
         if let videoConnection = stillImageOutput.connection(withMediaType: AVMediaTypeVideo) {
@@ -189,11 +198,13 @@ class HLProductPictureEditViewController: BaseViewController, UIImagePickerContr
                 if let imageData = AVCaptureStillImageOutput.jpegStillImageNSDataRepresentation(CMSampleBuffer) {
                     
                     if let cameraImage = UIImage(data: imageData) {
-                        
                         let croppedImage:UIImage = self.commonUtils.cropImage(cameraImage, HulaConstants.product_image_thumb_size)
-                        self.stopSession()
-                        // save this image
-                        self.uploadImage(croppedImage)
+                        // captureStillImageAsynchronously completes off the main thread;
+                        // stopSession/dismiss must not run off-main.
+                        HLProductPictureEditViewController.performCameraUIUpdate {
+                            self.stopSession()
+                            self.uploadImage(croppedImage)
+                        }
                     }
                 }
             })
