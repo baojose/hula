@@ -363,10 +363,8 @@ class HLProfileViewController: BaseViewController {
     func expiredTokenAlert(){
         let presentBlock = {
             let alert = UIAlertController(title: "User token expired", message: "Your Hula session is expired. Please log in again.", preferredStyle: UIAlertControllerStyle.alert)
-            
-            
+
             alert.addAction(UIAlertAction(title: "OK", style: UIAlertActionStyle.default, handler: { (e) in
-                
                 DispatchQueue.main.async {
                     let viewController = self.storyboard?.instantiateViewController(withIdentifier: "identification") as! HLIdentificationViewController
                     self.navigationController?.navigationController?.pushViewController(viewController, animated: true)
