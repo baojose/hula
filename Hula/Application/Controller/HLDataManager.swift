@@ -90,62 +90,190 @@ class HLDataManager: NSObject {
         httpGet(urlstr: queryURL, taskCallback: { (ok, json) in
             //print(ok)
             if (ok){
-                self.arrCategories=[];
-                if let array = json as? [Any] {
-                    for cat in array {
-                        // access all objects in array
-                        self.arrCategories.add(cat)
-                    }
+                // Build off the shared array, then publish on the main thread.
+                // Home/post/edit category tables read arrCategories on main while
+                // this URLSession callback runs in the background.
+                let categories = HLDataManager.categories(from: json)
+                DispatchQueue.main.async {
+                    self.arrCategories = categories
+                    NotificationCenter.default.post(name: self.categoriesLoaded, object: nil)
                 }
-                
-                NotificationCenter.default.post(name: self.categoriesLoaded, object: nil)
             }
         })
     }
+
+    /// Parses category API payloads into a new array (no shared-state mutation).
+    class func categories(from json: Any?) -> NSMutableArray {
+        let categories = NSMutableArray()
+        if let array = json as? [Any] {
+            for cat in array {
+                categories.add(cat)
+            }
+        }
+        return categories
+    }
+    enum TradeDashboardBucket {
+        case current
+        case past
+        case hidden
+    }
+
+    /// Classify a trade for the dashboard lists without mutating manager state.
+    static func classifyTrade(
+        status: String?,
+        ownerId: String?,
+        turnUserId: String?,
+        viewerId: String,
+        ownerAccepted: Bool?,
+        otherAccepted: Bool?,
+        otherAgree: Bool?
+    ) -> TradeDashboardBucket {
+        guard let st = status, let ownerId = ownerId else {
+            return .hidden
+        }
+
+        var hideFromDashboard = false
+        if ownerId == viewerId {
+            if ownerAccepted == true {
+                hideFromDashboard = true
+            }
+        } else {
+            if otherAccepted == true {
+                hideFromDashboard = true
+            }
+            if otherAgree == false {
+                hideFromDashboard = true
+            }
+        }
+
+        if st != HulaConstants.end_status && st != HulaConstants.cancel_status && !hideFromDashboard {
+            if st != HulaConstants.pending_status || turnUserId == viewerId {
+                return .current
+            }
+            return .hidden
+        }
+
+        if st == HulaConstants.end_status || st == HulaConstants.review_status {
+            return .past
+        }
+        return .hidden
+    }
+
+    /// Pure categorization used by `getTrades` so trade lists can be rebuilt
+    /// without mutating the shared arrays until a main-thread publish.
+    /// Soft-parses Bool/0/1 acceptance flags so JSON bridges do not mis-bucket rooms.
+    class func partitionTrades(_ array: [NSDictionary], userId: String) -> (all: [NSDictionary], current: [NSDictionary], past: [NSDictionary]) {
+        var all: [NSDictionary] = []
+        var current: [NSDictionary] = []
+        var past: [NSDictionary] = []
+        for trade in array {
+            all.append(trade)
+            let bucket = classifyTrade(
+                status: trade.object(forKey: "status") as? String,
+                ownerId: trade.object(forKey: "owner_id") as? String,
+                turnUserId: trade.object(forKey: "turn_user_id") as? String,
+                viewerId: userId,
+                ownerAccepted: CommonUtils.boolFromJSON(trade.object(forKey: "owner_accepted")),
+                otherAccepted: CommonUtils.boolFromJSON(trade.object(forKey: "other_accepted")),
+                otherAgree: CommonUtils.boolFromJSON(trade.object(forKey: "other_agree"))
+            )
+            switch bucket {
+            case .current:
+                current.append(trade)
+            case .past:
+                past.append(trade)
+            case .hidden:
+                break
+            }
+        }
+        return (all, current, past)
+    }
+
+    /// Optional credentials that must survive UserData.plist cold-start round-trips.
+    class func userSessionCredentialSnapshot(from user: HulaUser) -> [String: String] {
+        return [
+            "zip": user.zip ?? "",
+            "fbToken": user.fbToken ?? "",
+            "twToken": user.twToken ?? "",
+            "liToken": user.liToken ?? "",
+            "deviceId": user.deviceId ?? "",
+            "status": user.status ?? ""
+        ]
+    }
+
+    /// Restore optional credentials from plist/API payloads (including alternate key names).
+    class func applyUserSessionCredentials(to user: HulaUser, from dict: NSDictionary) {
+        if let zip = dict.object(forKey: "zip") as? String {
+            user.zip = zip
+        }
+        if let status = dict.object(forKey: "status") as? String {
+            user.status = status
+        }
+        if let fb = dict.object(forKey: "fbToken") as? String {
+            user.fbToken = fb
+        }
+        if let fb = dict.object(forKey: "fb_token") as? String {
+            user.fbToken = fb
+        }
+        if let fb = dict.object(forKey: "fbtoken") as? String {
+            user.fbToken = fb
+        }
+        if let tw = dict.object(forKey: "twToken") as? String {
+            user.twToken = tw
+        }
+        if let tw = dict.object(forKey: "tw_token") as? String {
+            user.twToken = tw
+        }
+        if let tw = dict.object(forKey: "twtoken") as? String {
+            user.twToken = tw
+        }
+        if let li = dict.object(forKey: "liToken") as? String {
+            user.liToken = li
+        }
+        if let li = dict.object(forKey: "li_token") as? String {
+            user.liToken = li
+        }
+        if let li = dict.object(forKey: "litoken") as? String {
+            user.liToken = li
+        }
+        if let device = dict.object(forKey: "deviceId") as? String {
+            user.deviceId = device
+        }
+        if let device = dict.object(forKey: "push_device_id") as? String {
+            user.deviceId = device
+        }
+    }
+
+    /// After `logout()` clears fbToken, keep the login token when the profile payload omitted it.
+    class func resolvedFacebookToken(currentFbToken: String, loginToken: String) -> String {
+        if currentFbToken.count > 0 {
+            return currentFbToken
+        }
+        return loginToken
+    }
+
     func getTrades(taskCallback: @escaping (Bool) -> ()) {
         let queryURL = HulaConstants.apiURL + "trades"
         httpGet(urlstr: queryURL, taskCallback: { (ok, json) in
             //print(ok)
             if (ok){
-                self.arrTrades = [];
-                self.arrCurrentTrades = [];
-                self.arrPastTrades = []
-                if let array = json as? [NSDictionary] {
-                    for trade in array {
-                        // access all objects in array
-                        if let st = trade.object(forKey: "status") as? String{
-                            //print(st)
-                            var hideFromDashboard = false
-                            if trade.object(forKey: "owner_id") as! String == HulaUser.sharedInstance.userId {
-                                if trade.object(forKey: "owner_accepted") as? Bool == true {
-                                    hideFromDashboard = true
-                                }
-                            } else {
-                                if trade.object(forKey: "other_accepted") as? Bool == true {
-                                    hideFromDashboard = true
-                                }
-                                if trade.object(forKey: "other_agree") as? Bool == false {
-                                    hideFromDashboard = true
-                                }
-                            }
-                            if st != HulaConstants.end_status && st != HulaConstants.cancel_status && !hideFromDashboard {
-                                // status not ended and not cancelled and not agreed
-                                if  (st != HulaConstants.pending_status || trade.object(forKey: "turn_user_id") as! String == HulaUser.sharedInstance.userId) {
-                                    // status not pending
-                                    self.arrCurrentTrades.append(trade)
-                                }
-                            } else {
-                                if st == HulaConstants.end_status || st == HulaConstants.review_status {
-                                    self.arrPastTrades.append(trade)
-                                }
-                            }
-                        }
-                        self.arrTrades.append(trade)
-                    }
+                // Build replacements off the shared arrays, then publish on the main
+                // thread. URLSession callbacks run in the background; clearing
+                // arrCurrentTrades there races with myRoomsFull / amITradingWith /
+                // dashboard copies and can bypass the room cap or crash.
+                let array = json as? [NSDictionary] ?? []
+                let viewerId = HulaUser.sharedInstance.userId ?? ""
+                let partitioned = HLDataManager.partitionTrades(array, userId: viewerId)
+                DispatchQueue.main.async {
+                    self.arrTrades = partitioned.all
+                    self.arrCurrentTrades = partitioned.current
+                    self.arrPastTrades = partitioned.past
+                    taskCallback(true)
                 }
-                taskCallback(true)
             } else {
-                taskCallback(false)
+                DispatchQueue.main.async {
+                    taskCallback(false)
+                }
             }
         })
     }
@@ -163,7 +291,8 @@ class HLDataManager: NSObject {
         //print("Login in progress...")
         let queryURL = HulaConstants.apiURL + "authenticate"
         var loginSuccess = "";
-        httpPost(urlstr: queryURL, postString: "email="+email+"&pass="+pass, isPut: false, taskCallback: { (ok, json) in
+        let postString = "email=" + CommonUtils.formEncodedValue(email) + "&pass=" + CommonUtils.formEncodedValue(pass)
+        httpPost(urlstr: queryURL, postString: postString, isPut: false, taskCallback: { (ok, json) in
             
             //print("done")
             //print(ok)
@@ -172,6 +301,11 @@ class HLDataManager: NSObject {
                 let user = HulaUser.sharedInstance
                 if let dictionary = json as? [String: Any] {
                     if (dictionary["token"] as? String) != nil {
+                        // Clear any prior in-memory session before applying auth fields.
+                        // Without this, a re-login after token-expiry (which does not call
+                        // logout) can leave the previous account's profile fields in place
+                        // and later full-object PUTs write them onto the new account.
+                        HulaUser.sharedInstance.logout()
                         // access individual value in dictionary
                         
                         self.updateUserFromDict(dict: dictionary as NSDictionary)
@@ -198,7 +332,7 @@ class HLDataManager: NSObject {
         let queryURL = HulaConstants.apiURL + "fbauth"
         var loginSuccess = false;
         
-        httpPost(urlstr: queryURL, postString: "fbtoken="+token, isPut: false, taskCallback: { (ok, json) in
+        httpPost(urlstr: queryURL, postString: "fbtoken=" + CommonUtils.formEncodedValue(token), isPut: false, taskCallback: { (ok, json) in
             
             //print("done")
             //print(ok)
@@ -210,12 +344,21 @@ class HLDataManager: NSObject {
                     if (dictionary["token"] as? String) != nil {
                         
                         if let us = dictionary["allUser"] as? NSDictionary {
+                            // Preserve the FB access token across logout(); logout() clears
+                            // fbToken and updateUserFromDict historically did not restore
+                            // fb_token / fbtoken from allUser, so the subsequent welcome-screen
+                            // push registration PUT would wipe the just-saved server fbtoken.
+                            let preservedFbToken = token
                             HulaUser.sharedInstance.logout();
                             //print(us)
                             // access individual value in dictionary
                             
                             self.updateUserFromDict(dict: dictionary as NSDictionary)
                             self.updateUserFromDict(dict: us as NSDictionary)
+                            HulaUser.sharedInstance.fbToken = HLDataManager.resolvedFacebookToken(
+                                currentFbToken: HulaUser.sharedInstance.fbToken ?? "",
+                                loginToken: preservedFbToken
+                            )
                             //print(token)
                             self.writeUserData()
                         }
@@ -239,19 +382,32 @@ class HLDataManager: NSObject {
         HulaUser.sharedInstance.userId = ""
         
         HulaUser.sharedInstance.logout();
+        clearSessionCaches()
         self.writeUserData()
         
         
+    }
+
+    /// Drops in-memory session lists so a later logged-out UI path cannot show
+    /// the previous account's trades/notifications.
+    func clearSessionCaches() {
+        arrTrades = []
+        arrCurrentTrades = []
+        arrPastTrades = []
+        arrNotifications = []
+        numNotificationsPending = 0
+        UIApplication.shared.applicationIconBadgeNumber = 0
+        isLoadingNotifications = false
+        isInSwapVC = false
     }
     
     func amITradingWith(_ user_id: String) -> Bool{
         for tr in arrCurrentTrades{
             if let trade = tr as? [String:Any] {
-                //print(trade["owner_id"] as! String)
-                if trade["owner_id"] as! String == user_id {
+                if let owner = trade["owner_id"] as? String, owner == user_id {
                     return true
                 }
-                if trade["other_id"] as! String == user_id {
+                if let other = trade["other_id"] as? String, other == user_id {
                     return true
                 }
             }
@@ -260,24 +416,24 @@ class HLDataManager: NSObject {
     }
     
     func getTradeWith(_ user_id: String) -> String{
-        
         for tr in arrCurrentTrades{
             if let trade = tr as? [String:Any] {
-                //print(trade["owner_id"] as! String)
-                if trade["owner_id"] as! String == user_id {
-                    return trade["_id"] as! String
+                if let owner = trade["owner_id"] as? String, owner == user_id {
+                    return trade["_id"] as? String ?? ""
                 }
-                if trade["other_id"] as! String == user_id {
-                    return trade["_id"] as! String
+                if let other = trade["other_id"] as? String, other == user_id {
+                    return trade["_id"] as? String ?? ""
                 }
             }
         }
         for tr in self.arrTrades {
             if let trade = tr as? [String:Any] {
-                if let agreed = trade["other_agree"] as? Bool {
-                    if !agreed && trade["owner_id"] as! String == user_id && ((trade["status"] as! String == HulaConstants.sent_status) || (trade["status"] as! String == HulaConstants.pending_status)) {
-                        return trade["_id"] as! String
-                    }
+                // Soft-parse bridged 0/1 agree flags and skip malformed ids/status.
+                if CommonUtils.boolFromJSON(trade["other_agree"]) == false,
+                   let owner = trade["owner_id"] as? String, owner == user_id,
+                   let status = trade["status"] as? String,
+                   (status == HulaConstants.sent_status || status == HulaConstants.pending_status) {
+                    return trade["_id"] as? String ?? ""
                 }
             }
         }
@@ -286,21 +442,19 @@ class HLDataManager: NSObject {
     func amIOfferedToTradeWith(_ user_id: String) -> Bool{
         for tr in arrCurrentTrades{
             if let trade = tr as? [String:Any] {
-                if trade["other_id"] as! String == user_id && (trade["status"] as! String == HulaConstants.pending_status ) {
+                if let other = trade["other_id"] as? String, other == user_id,
+                   let status = trade["status"] as? String,
+                   status == HulaConstants.pending_status {
                     return true
                 }
             }
         }
         for tr in self.arrTrades {
             if let trade = tr as? [String:Any] {
-                if let agreed = trade["other_agree"] as? Bool {
-                    print(agreed)
-                    if !agreed && trade["owner_id"] as! String == user_id   {
-                        return true
-                    }
+                if CommonUtils.boolFromJSON(trade["other_agree"]) == false,
+                   let owner = trade["owner_id"] as? String, owner == user_id {
+                    return true
                 }
-                //print(numBids)
-                
             }
         }
         return false
@@ -318,7 +472,11 @@ class HLDataManager: NSObject {
         //print("Login in progress...")
         let queryURL = HulaConstants.apiURL + "signup"
         var signupSuccess = false;
-        httpPost(urlstr: queryURL, postString: "email="+email+"&pass="+pass+"&name="+nick+"&nick="+nick, isPut: false, taskCallback: { (ok, json) in
+        let postString = "email=" + CommonUtils.formEncodedValue(email)
+            + "&pass=" + CommonUtils.formEncodedValue(pass)
+            + "&name=" + CommonUtils.formEncodedValue(nick)
+            + "&nick=" + CommonUtils.formEncodedValue(nick)
+        httpPost(urlstr: queryURL, postString: postString, isPut: false, taskCallback: { (ok, json) in
             
             //print("done")
             //print(ok)
@@ -611,6 +769,12 @@ class HLDataManager: NSObject {
         dict.setObject(user.userPhotoURL, forKey: "userPhotoURL" as NSCopying)
         dict.setObject(user.userBio, forKey: "userBio" as NSCopying)
         dict.setObject(user.numProducts, forKey: "numProducts" as NSCopying)
+        // Persist optional credentials so cold start / welcome push PUTs do not wipe
+        // server-side zip, social tokens, or push device id (see getPostString omission).
+        let credentials = HLDataManager.userSessionCredentialSnapshot(from: user)
+        for (key, value) in credentials {
+            dict.setObject(value, forKey: key as NSCopying)
+        }
         
         //...
         dict.write(toFile: path, atomically: false)
@@ -697,6 +861,9 @@ class HLDataManager: NSObject {
         if dict.object(forKey: "userId") as? String != nil {
             user.userId = dict.object(forKey: "userId")! as! String
         }
+        if dict.object(forKey: "_id") as? String != nil {
+            user.userId = dict.object(forKey: "_id")! as! String
+        }
         if dict.object(forKey: "userNick") as? String != nil {
             user.userNick = dict.object(forKey: "userNick")! as! String
         }
@@ -733,17 +900,53 @@ class HLDataManager: NSObject {
         if dict.object(forKey: "location_name") as? String != nil {
             user.userLocationName = dict.object(forKey: "location_name")! as! String
         }
-        if dict.object(forKey: "max_trades") as? Int != nil {
-            user.maxTrades = dict.object(forKey: "max_trades")! as! Int
+        // Soft-parse across Int/Double/NSNumber; reject Bool so true never becomes max_trades=1.
+        if let maxTrades = CommonUtils.intFromJSON(dict.object(forKey: "max_trades")) {
+            user.maxTrades = maxTrades
         }
         if let loc = dict.object(forKey: "userLocation") as? [CGFloat] {
             user.location = CLLocation(latitude: CLLocationDegrees(loc[0]), longitude: CLLocationDegrees(loc[1]))
         }
-        if let n = dict.object(forKey: "numProducts") as? Int {
+        if let n = CommonUtils.intFromJSON(dict.object(forKey: "numProducts")) {
             user.numProducts = n
         }
+        HLDataManager.applyUserSessionCredentials(to: user, from: dict)
     }
     
+    /// Bounds-safe notification lookup for Accept/Reject and row actions.
+    /// Stale cell tags after a background refresh must not NSRangeException.
+    func notification(at index: Int) -> NSDictionary? {
+        guard index >= 0 && index < arrNotifications.count else { return nil }
+        return arrNotifications.object(at: index) as? NSDictionary
+    }
+
+    /// Build notification list + unread badge count without mutating shared state.
+    /// Soft-parses bridged `is_read` 0/1 via intFromJSON; skips deleted rows for both list and badge.
+    class func notificationsPayload(from json: Any?) -> (items: NSMutableArray, pending: Int) {
+        let items = NSMutableArray()
+        var pending = 0
+        if let array = json as? [Any] {
+            for not in array {
+                if let dict = not as? [String: Any] {
+                    guard let status = dict["status"] as? String, status != "deleted" else {
+                        continue
+                    }
+                    items.add(not)
+                    if CommonUtils.intFromJSON(dict["is_read"]) == 0 {
+                        pending += 1
+                    }
+                }
+            }
+        }
+        return (items, pending)
+    }
+
+    /// Loading flag must always clear after a response, including transport failures.
+    /// Otherwise Notifications VC's checkIfNotificationsLoaded reschedules forever.
+    class func isLoadingNotifications(afterResponseReceived ok: Bool) -> Bool {
+        return false
+    }
+
     func loadUserNotifications(){
         //print("loading notifications...")
         if HulaUser.sharedInstance.isUserLoggedIn() {
@@ -751,32 +954,19 @@ class HLDataManager: NSObject {
             let queryURL = HulaConstants.apiURL + "notifications"
             httpGet(urlstr: queryURL, taskCallback: { (ok, json) in
                 //print(ok)
-                var num_pending = 0
                 if (ok){
-                    self.arrNotifications = [];
-                    if let array = json as? [Any] {
-                        for not in array {
-                            // access all objects in array
-                            if let dict = not as? [String: Any]{
-                                if let status = dict["status"] as? String{
-                                    if (status != "deleted"){
-                                        self.arrNotifications.add(not)
-                                    }
-                                }
-                                if let isread = dict["is_read"] as? Int{
-                                    if isread == 0{
-                                        num_pending += 1
-                                    }
-                                }
-                            }
-                        }
-                        
+                    let payload = HLDataManager.notificationsPayload(from: json)
+                    DispatchQueue.main.async {
+                        self.arrNotifications = payload.items
+                        HLDataManager.sharedInstance.numNotificationsPending = payload.pending
+                        UIApplication.shared.applicationIconBadgeNumber = payload.pending
+                        self.isLoadingNotifications = HLDataManager.isLoadingNotifications(afterResponseReceived: true)
+                        NotificationCenter.default.post(name: self.notificationsRecieved, object: nil)
                     }
-                    DispatchQueue.main.async { // Correct
-                        HLDataManager.sharedInstance.numNotificationsPending = num_pending
-                        UIApplication.shared.applicationIconBadgeNumber = num_pending
-                        self.isLoadingNotifications = false
-                        
+                } else {
+                    // Transport / server failure: clear the loading flag so UI polling stops.
+                    DispatchQueue.main.async {
+                        self.isLoadingNotifications = HLDataManager.isLoadingNotifications(afterResponseReceived: false)
                         NotificationCenter.default.post(name: self.notificationsRecieved, object: nil)
                     }
                 }

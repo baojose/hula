@@ -222,6 +222,31 @@ class CommonUtils: NSObject, EasyTipViewDelegate, UIGestureRecognizerDelegate {
             return NSDate()
         }
     }
+
+    /// Safe relative-date label for optional API date strings (notifications/chat).
+    /// Returns empty string when date is missing/blank so callers never force-unwrap.
+    func relativeDateLabel(fromISO dateString: String?, numericDates: Bool = false) -> String {
+        guard let dateString = dateString, dateString.count > 0 else {
+            return ""
+        }
+        let date = isoDateToNSDate(date: dateString)
+        return timeAgoSinceDate(date: date, numericDates: numericDates)
+    }
+
+    /// Clamps a trade list index so mid-session refreshes cannot OOB-crash open rooms/chat.
+    func clampedTradeIndex(_ index: Int, tradeCount: Int) -> Int? {
+        guard tradeCount > 0 else {
+            return nil
+        }
+        if index < 0 {
+            return 0
+        }
+        if index >= tradeCount {
+            return tradeCount - 1
+        }
+        return index
+    }
+
     func userImageURL(userId: String) -> String{
         return HulaConstants.apiURL + "users/\(userId)/image"
     }
@@ -336,6 +361,187 @@ class CommonUtils: NSObject, EasyTipViewDelegate, UIGestureRecognizerDelegate {
             return nil
         }
         
+    }
+}
+
+extension CommonUtils {
+    /// Parse numeric JSON values that may arrive as Int, Double, Float, or NSNumber.
+    /// `as? Float` fails for whole-number JSON values bridged as Int/NSNumber.
+    static func floatFromJSON(_ value: Any?) -> Float? {
+        if let number = value as? NSNumber {
+            // Bool bridges as NSNumber; reject so true/false never become 1/0 money.
+            if CFGetTypeID(number) == CFBooleanGetTypeID() {
+                return nil
+            }
+            return number.floatValue
+        }
+        if let v = value as? Float {
+            return v
+        }
+        if let v = value as? Double {
+            return Float(v)
+        }
+        if let v = value as? Int {
+            return Float(v)
+        }
+        return nil
+    }
+
+    /// Parse integer JSON counts (unread badges, etc.) across Int/Double/NSNumber bridges.
+    /// Rejects Bool so `true`/`false` never become unread `1`/`0`.
+    static func intFromJSON(_ value: Any?) -> Int? {
+        if let number = value as? NSNumber {
+            if CFGetTypeID(number) == CFBooleanGetTypeID() {
+                return nil
+            }
+            return number.intValue
+        }
+        if let v = value as? Int {
+            return v
+        }
+        if let v = value as? Double {
+            return Int(v)
+        }
+        if let v = value as? Float {
+            return Int(v)
+        }
+        return nil
+    }
+
+    /// Soft-parse trade/acceptance flags that may arrive as Bool or 0/1 Int/NSNumber.
+    /// Rejects arbitrary numbers and strings so malformed JSON does not flip deal state.
+    /// NSNumber is checked before `as? Bool` because non-zero NSNumbers bridge to `true`.
+    static func boolFromJSON(_ value: Any?) -> Bool? {
+        if let number = value as? NSNumber {
+            if CFGetTypeID(number) == CFBooleanGetTypeID() {
+                return number.boolValue
+            }
+            let asInt = number.intValue
+            if number.doubleValue == Double(asInt) && (asInt == 0 || asInt == 1) {
+                return asInt == 1
+            }
+            return nil
+        }
+        if let v = value as? Int {
+            if v == 0 || v == 1 {
+                return v == 1
+            }
+            return nil
+        }
+        if let v = value as? Bool {
+            return v
+        }
+        return nil
+    }
+
+    /// Percent-encode a single application/x-www-form-urlencoded field value.
+    /// Keeps `&`/`=` as delimiters and encodes `+` so it is not decoded as a space.
+    static func formEncodedValue(_ value: String) -> String {
+        var allowed = CharacterSet.urlQueryAllowed
+        allowed.remove(charactersIn: "&=+")
+        return value.addingPercentEncoding(withAllowedCharacters: allowed) ?? ""
+    }
+
+    /// Chat section key: prefix through hour for full ISO8601, safe for short dates.
+    static func chatDateSectionKey(_ date: String) -> String? {
+        guard date.count > 0 else { return nil }
+        let prefixLen = min(13, date.count)
+        let index = date.index(date.startIndex, offsetBy: prefixLen)
+        return date.substring(to: index)
+    }
+
+    /// Build "City, Country" display text when either geocode field may be missing.
+    static func locationDisplayName(city: String?, country: String?) -> String {
+        let cityPart = city ?? ""
+        let countryPart = country ?? ""
+        if cityPart.isEmpty && countryPart.isEmpty {
+            return ""
+        }
+        if cityPart.isEmpty {
+            return countryPart
+        }
+        if countryPart.isEmpty {
+            return cityPart
+        }
+        return cityPart + ", " + countryPart
+    }
+
+    /// Path-safe email segment for `/users/resetmail/{email}` after trimming whitespace.
+    static func resetMailPathComponent(_ email: String) -> String? {
+        let trimmed = email.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard trimmed.count > 4,
+            let encoded = trimmed.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed),
+            !encoded.isEmpty else {
+                return nil
+        }
+        return encoded
+    }
+
+    /// Soft-parse a search `found_users` hit into a synthetic product row (`xx_user`).
+    /// Missing optional fields default to empty strings; missing `_id` skips the row.
+    static func searchUserProduct(from user: NSDictionary) -> HulaProduct? {
+        guard let userId = user["_id"] as? String, userId.count > 0 else {
+            return nil
+        }
+        let name = (user["name"] as? String) ?? ""
+        let nick = (user["nick"] as? String) ?? ""
+        let image = (user["image"] as? String) ?? ""
+        let hprod = HulaProduct()
+        hprod.productName = String(NSLocalizedString("User", comment: "")) + ": " + name
+            + "\n(" + nick + ")"
+        hprod.productDescription = nick
+        hprod.productImage = image
+        hprod.productId = userId
+        hprod.productCategoryId = "xx_user"
+        return hprod
+    }
+
+    /// Form-urlencoded body for `POST /feedback`.
+    static func feedbackPostString(tradeId: String, userId: String, comments: String, points: Int) -> String {
+        return "trade_id=" + formEncodedValue(tradeId)
+            + "&user_id=" + formEncodedValue(userId)
+            + "&comments=" + formEncodedValue(comments)
+            + "&val=\(points)"
+    }
+
+    /// True only when agree HTTP succeeds and the body is a JSON object (not nil/array/string).
+    static func agreeResponseSucceeded(ok: Bool, json: Any?) -> Bool {
+        return ok && (json as? [String: Any]) != nil
+    }
+
+    /// Barter `getUserProducts` identity: require `_id`, default missing title to untitled.
+    static func barterProductIdentity(from productData: [String: Any]) -> (id: String, title: String)? {
+        guard let id = productData["_id"] as? String, id.count > 0 else {
+            return nil
+        }
+        let title = (productData["title"] as? String) ?? NSLocalizedString("Untitled product", comment: "")
+        return (id, title)
+    }
+
+    /// Resolve a playable video URL for a trade; nil when missing, blank, or malformed.
+    static func playableVideoURL(videoURLs: [String: String], tradeId: String) -> URL? {
+        guard let vurl = videoURLs[tradeId], !vurl.isEmpty else {
+            return nil
+        }
+        return URL(string: vurl)
+    }
+
+    /// Soft-parse search autocomplete payloads. Always seeds with the typed keyword;
+    /// skips malformed rows and duplicates of the seed (no force-unwrap on keyword dicts).
+    static func autocompleteKeywords(from json: Any?, seed: String) -> [String] {
+        var results = [seed]
+        guard let dictionary = json as? [String: Any],
+            let keys = dictionary["keywords"] as? [Any] else {
+                return results
+        }
+        for item in keys {
+            if let nkw = item as? [String: Any],
+                let nkwStr = nkw["keyword"] as? String,
+                nkwStr != seed {
+                results.append(nkwStr)
+            }
+        }
+        return results
     }
 }
 
