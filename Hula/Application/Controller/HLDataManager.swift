@@ -920,6 +920,33 @@ class HLDataManager: NSObject {
         return arrNotifications.object(at: index) as? NSDictionary
     }
 
+    /// Build notification list + unread badge count without mutating shared state.
+    /// Soft-parses bridged `is_read` 0/1 via intFromJSON; skips deleted rows for both list and badge.
+    class func notificationsPayload(from json: Any?) -> (items: NSMutableArray, pending: Int) {
+        let items = NSMutableArray()
+        var pending = 0
+        if let array = json as? [Any] {
+            for not in array {
+                if let dict = not as? [String: Any] {
+                    guard let status = dict["status"] as? String, status != "deleted" else {
+                        continue
+                    }
+                    items.add(not)
+                    if CommonUtils.intFromJSON(dict["is_read"]) == 0 {
+                        pending += 1
+                    }
+                }
+            }
+        }
+        return (items, pending)
+    }
+
+    /// Loading flag must always clear after a response, including transport failures.
+    /// Otherwise Notifications VC's checkIfNotificationsLoaded reschedules forever.
+    class func isLoadingNotifications(afterResponseReceived ok: Bool) -> Bool {
+        return false
+    }
+
     func loadUserNotifications(){
         //print("loading notifications...")
         if HulaUser.sharedInstance.isUserLoggedIn() {
@@ -927,32 +954,19 @@ class HLDataManager: NSObject {
             let queryURL = HulaConstants.apiURL + "notifications"
             httpGet(urlstr: queryURL, taskCallback: { (ok, json) in
                 //print(ok)
-                var num_pending = 0
                 if (ok){
-                    self.arrNotifications = [];
-                    if let array = json as? [Any] {
-                        for not in array {
-                            // access all objects in array
-                            if let dict = not as? [String: Any]{
-                                if let status = dict["status"] as? String{
-                                    if (status != "deleted"){
-                                        self.arrNotifications.add(not)
-                                    }
-                                }
-                                if let isread = dict["is_read"] as? Int{
-                                    if isread == 0{
-                                        num_pending += 1
-                                    }
-                                }
-                            }
-                        }
-                        
+                    let payload = HLDataManager.notificationsPayload(from: json)
+                    DispatchQueue.main.async {
+                        self.arrNotifications = payload.items
+                        HLDataManager.sharedInstance.numNotificationsPending = payload.pending
+                        UIApplication.shared.applicationIconBadgeNumber = payload.pending
+                        self.isLoadingNotifications = HLDataManager.isLoadingNotifications(afterResponseReceived: true)
+                        NotificationCenter.default.post(name: self.notificationsRecieved, object: nil)
                     }
-                    DispatchQueue.main.async { // Correct
-                        HLDataManager.sharedInstance.numNotificationsPending = num_pending
-                        UIApplication.shared.applicationIconBadgeNumber = num_pending
-                        self.isLoadingNotifications = false
-                        
+                } else {
+                    // Transport / server failure: clear the loading flag so UI polling stops.
+                    DispatchQueue.main.async {
+                        self.isLoadingNotifications = HLDataManager.isLoadingNotifications(afterResponseReceived: false)
                         NotificationCenter.default.post(name: self.notificationsRecieved, object: nil)
                     }
                 }

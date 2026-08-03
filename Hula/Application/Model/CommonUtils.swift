@@ -525,6 +525,24 @@ extension CommonUtils {
         }
         return URL(string: vurl)
     }
+
+    /// Soft-parse search autocomplete payloads. Always seeds with the typed keyword;
+    /// skips malformed rows and duplicates of the seed (no force-unwrap on keyword dicts).
+    static func autocompleteKeywords(from json: Any?, seed: String) -> [String] {
+        var results = [seed]
+        guard let dictionary = json as? [String: Any],
+            let keys = dictionary["keywords"] as? [Any] else {
+                return results
+        }
+        for item in keys {
+            if let nkw = item as? [String: Any],
+                let nkwStr = nkw["keyword"] as? String,
+                nkwStr != seed {
+                results.append(nkwStr)
+            }
+        }
+        return results
+    }
 }
 
 extension Formatter {
