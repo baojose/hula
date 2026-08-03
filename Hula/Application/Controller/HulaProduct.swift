@@ -139,7 +139,9 @@ class HulaProduct: NSObject {
         if let tmp = with.object(forKey: "owner_id") as? String { productOwner = tmp }
         if let tmp = with.object(forKey: "video_requested") as? [String:Bool] { video_requested = tmp }
         if let tmp = with.object(forKey: "video_url") as? [String:String] { video_url = tmp }
-        if let tmp = with.object(forKey: "trading_count") as? Int { trading_count = tmp }
+        if let count = CommonUtils.intFromJSON(with.object(forKey: "trading_count")) {
+            trading_count = count
+        }
         if let tmp = with.object(forKey: "images") as? [String] {
             arrProductPhotoLink = []
             for im in tmp {
