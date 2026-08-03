@@ -1322,4 +1322,181 @@ class HulaTests: XCTestCase {
         XCTAssertFalse(dm.amIOfferedToTradeWith("nobody"))
     }
 
+    // MARK: - Beyond #105/#106: notifications, profile expiry, push gate, duplicate trade, search
+
+    func testNotificationsLoadingFlagClearsOnSuccess() {
+        XCTAssertFalse(HLDataManager.isLoadingNotifications(afterResponseReceived: true))
+    }
+
+    func testNotificationsLoadingFlagClearsOnFailure() {
+        // Previously only the success path cleared the flag, so a failed GET left
+        // isLoadingNotifications == true and checkIfNotificationsLoaded looped forever.
+        XCTAssertFalse(HLDataManager.isLoadingNotifications(afterResponseReceived: false))
+    }
+
+    func testNotificationsPayloadFiltersDeletedAndCountsUnread() {
+        let json: [Any] = [
+            ["_id": "1", "status": "active", "is_read": 0],
+            ["_id": "2", "status": "deleted", "is_read": 0],
+            ["_id": "3", "status": "active", "is_read": 1],
+            ["_id": "4", "status": "active", "is_read": NSNumber(value: 0)]
+        ]
+        let payload = HLDataManager.notificationsPayload(from: json)
+        XCTAssertEqual(payload.items.count, 3)
+        XCTAssertEqual(payload.pending, 2)
+    }
+
+    func testNotificationsPayloadHandlesNilAndMalformed() {
+        let empty = HLDataManager.notificationsPayload(from: nil)
+        XCTAssertEqual(empty.items.count, 0)
+        XCTAssertEqual(empty.pending, 0)
+
+        let bad = HLDataManager.notificationsPayload(from: ["not": "an array"])
+        XCTAssertEqual(bad.items.count, 0)
+        XCTAssertEqual(bad.pending, 0)
+    }
+
+    func testCanPublishLiveBarterRequiresBothFetches() {
+        XCTAssertFalse(HLBarterScreenViewController.canPublishLiveBarter(
+            ownerFetchFinished: false, otherFetchFinished: false))
+        XCTAssertFalse(HLBarterScreenViewController.canPublishLiveBarter(
+            ownerFetchFinished: true, otherFetchFinished: false))
+        XCTAssertFalse(HLBarterScreenViewController.canPublishLiveBarter(
+            ownerFetchFinished: false, otherFetchFinished: true))
+        XCTAssertTrue(HLBarterScreenViewController.canPublishLiveBarter(
+            ownerFetchFinished: true, otherFetchFinished: true))
+    }
+
+    func testProductIdsForLivePublishFallsBackWhenFetchFailed() {
+        let local = ["local-a"]
+        let fallback = ["trade-a", "trade-b", ""]
+        let ids = HLBarterScreenViewController.productIdsForLivePublish(
+            fetchSucceeded: false,
+            localProductIds: local,
+            fallbackTradeIds: fallback
+        )
+        XCTAssertEqual(ids, ["trade-a", "trade-b"])
+    }
+
+    func testProductIdsForLivePublishUsesLocalWhenFetchSucceeded() {
+        let local = ["local-a", "local-b"]
+        let fallback = ["trade-a"]
+        let ids = HLBarterScreenViewController.productIdsForLivePublish(
+            fetchSucceeded: true,
+            localProductIds: local,
+            fallbackTradeIds: fallback
+        )
+        XCTAssertEqual(ids, ["local-a", "local-b"])
+    }
+
+    func testExpiredTokenAlertOnlyForMissingUserOnSuccess() {
+        XCTAssertTrue(HLProfileViewController.shouldPresentExpiredTokenAlert(
+            httpOk: true, hasUserObject: false))
+        XCTAssertFalse(HLProfileViewController.shouldPresentExpiredTokenAlert(
+            httpOk: true, hasUserObject: true))
+        XCTAssertFalse(HLProfileViewController.shouldPresentExpiredTokenAlert(
+            httpOk: false, hasUserObject: false))
+        XCTAssertFalse(HLProfileViewController.shouldPresentExpiredTokenAlert(
+            httpOk: false, hasUserObject: true))
+    }
+
+    func testAddToTradeNextStepPrefersExistingRoomOverBlankButtonTitle() {
+        // Options sheet calls addToTradeAction(UIButton()) with no title — must still
+        // open the existing room when already trading instead of posting a duplicate.
+        let openExisting = HLProductDetailViewController.addToTradeNextStep(
+            isLoggedIn: true,
+            alreadyTradingWithOwner: true,
+            numProducts: 2,
+            roomsFull: false
+        )
+        if case .openExistingTrade = openExisting {} else {
+            XCTFail("expected openExistingTrade when already trading")
+        }
+
+        let confirm = HLProductDetailViewController.addToTradeNextStep(
+            isLoggedIn: true,
+            alreadyTradingWithOwner: false,
+            numProducts: 2,
+            roomsFull: false
+        )
+        if case .alertConfirmNewTrade = confirm {} else {
+            XCTFail("expected alertConfirmNewTrade for a new trade")
+        }
+
+        let login = HLProductDetailViewController.addToTradeNextStep(
+            isLoggedIn: false,
+            alreadyTradingWithOwner: false,
+            numProducts: 0,
+            roomsFull: false
+        )
+        if case .requireLogin = login {} else {
+            XCTFail("expected requireLogin when logged out")
+        }
+
+        let noProducts = HLProductDetailViewController.addToTradeNextStep(
+            isLoggedIn: true,
+            alreadyTradingWithOwner: false,
+            numProducts: 0,
+            roomsFull: false
+        )
+        if case .alertNoProducts = noProducts {} else {
+            XCTFail("expected alertNoProducts when inventory is empty")
+        }
+
+        let roomsFull = HLProductDetailViewController.addToTradeNextStep(
+            isLoggedIn: true,
+            alreadyTradingWithOwner: false,
+            numProducts: 1,
+            roomsFull: true
+        )
+        if case .alertRoomsFull = roomsFull {} else {
+            XCTFail("expected alertRoomsFull when rooms are capped")
+        }
+    }
+
+    func testPortraitNavigationControllerFindsNestedPortraitShell() {
+        let app = AppDelegate()
+        let portrait = HulaPortraitNavigationController()
+        let tab = UITabBarController()
+        tab.viewControllers = [UINavigationController(rootViewController: UIViewController()), portrait]
+        tab.selectedIndex = 1
+
+        XCTAssertTrue(app.portraitNavigationController(from: portrait) === portrait)
+        XCTAssertTrue(app.portraitNavigationController(from: tab) === portrait)
+        XCTAssertNil(app.portraitNavigationController(from: nil))
+        XCTAssertNil(app.portraitNavigationController(from: UIViewController()))
+    }
+
+    func testAutocompleteKeywordsSoftParsesAndSeeds() {
+        let json: [String: Any] = [
+            "keywords": [
+                ["keyword": "bike"],
+                ["keyword": "bike"], // duplicate of seed skipped below via seed check after first
+                ["keyword": "bicycle"],
+                ["not_a_keyword": true],
+                "string-row",
+                ["keyword": NSNull()]
+            ]
+        ]
+        let keywords = CommonUtils.autocompleteKeywords(from: json, seed: "bike")
+        XCTAssertEqual(keywords, ["bike", "bicycle"])
+
+        XCTAssertEqual(CommonUtils.autocompleteKeywords(from: nil, seed: "hat"), ["hat"])
+        XCTAssertEqual(CommonUtils.autocompleteKeywords(from: ["keywords": "bad"], seed: "hat"), ["hat"])
+    }
+
+    func testProductPopulateParsesBridgedTradingCount() {
+        let product = HulaProduct()
+        product.populate(with: [
+            "trading_count": NSNumber(value: 4)
+        ] as NSDictionary)
+        XCTAssertEqual(product.trading_count, 4)
+
+        let before = product.trading_count
+        product.populate(with: [
+            "trading_count": true
+        ] as NSDictionary)
+        XCTAssertEqual(product.trading_count, before)
+    }
+
 }
