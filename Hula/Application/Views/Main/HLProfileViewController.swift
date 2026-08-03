@@ -271,6 +271,12 @@ class HLProfileViewController: BaseViewController {
     
     // Custom functions for ViewController
     
+    /// Only alert on successful /me responses that lack a user object.
+    /// Transport failures must not force re-login or present UIKit off-main.
+    class func shouldPresentExpiredTokenAlert(httpOk: Bool, hasUserObject: Bool) -> Bool {
+        return httpOk && !hasUserObject
+    }
+
     func getUserProfile() {
         
         //print("Getting user info...")
@@ -340,33 +346,39 @@ class HLProfileViewController: BaseViewController {
                                 let app = UIApplication.shared.delegate as! AppDelegate
                                 app.registerForPushNotifications()
                             }
-                        } else {
+                        } else if HLProfileViewController.shouldPresentExpiredTokenAlert(httpOk: true, hasUserObject: false) {
                             self.expiredTokenAlert()
                         }
                         
                     }
                 }
             } else {
-                // connection error
-                self.expiredTokenAlert()
+                // Transient network errors are not session expiry; just hide spinner.
+                DispatchQueue.main.async {
+                    self.spinner.hide()
+                }
             }
         })
     }
     func expiredTokenAlert(){
-        
-        let alert = UIAlertController(title: "User token expired", message: "Your Hula session is expired. Please log in again.", preferredStyle: UIAlertControllerStyle.alert)
-        
-        
-        alert.addAction(UIAlertAction(title: "OK", style: UIAlertActionStyle.default, handler: { (e) in
+        let presentBlock = {
+            let alert = UIAlertController(title: "User token expired", message: "Your Hula session is expired. Please log in again.", preferredStyle: UIAlertControllerStyle.alert)
             
-            DispatchQueue.main.async {
-                let viewController = self.storyboard?.instantiateViewController(withIdentifier: "identification") as! HLIdentificationViewController
-                self.navigationController?.navigationController?.pushViewController(viewController, animated: true)
-            }
-        }))
-        self.present(alert, animated: true, completion:{} )
-
-        
+            
+            alert.addAction(UIAlertAction(title: "OK", style: UIAlertActionStyle.default, handler: { (e) in
+                
+                DispatchQueue.main.async {
+                    let viewController = self.storyboard?.instantiateViewController(withIdentifier: "identification") as! HLIdentificationViewController
+                    self.navigationController?.navigationController?.pushViewController(viewController, animated: true)
+                }
+            }))
+            self.present(alert, animated: true, completion:{} )
+        }
+        if Thread.isMainThread {
+            presentBlock()
+        } else {
+            DispatchQueue.main.async(execute: presentBlock)
+        }
     }
     
     
