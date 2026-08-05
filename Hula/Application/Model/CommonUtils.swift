@@ -543,6 +543,17 @@ extension CommonUtils {
         }
         return results
     }
+
+    /// Album pickers must request images only — `availableMediaTypes` includes video,
+    /// and video picks previously crashed via `as! UIImage`.
+    static func photoLibraryImageMediaTypes() -> [String] {
+        return ["public.image"]
+    }
+
+    /// Soft-extract the original UIImage from a picker info dictionary.
+    static func pickedOriginalImage(from info: [String: Any]) -> UIImage? {
+        return info[UIImagePickerControllerOriginalImage] as? UIImage
+    }
 }
 
 extension Formatter {
