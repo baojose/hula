@@ -1499,4 +1499,70 @@ class HulaTests: XCTestCase {
         XCTAssertEqual(product.trading_count, before)
     }
 
+    // MARK: - Beyond #107/#108: camera main-thread hops, album soft-parse, Facebook deep-link
+
+    func testCustomCameraUIUpdateRunsInlineOnMainThread() {
+        var ran = false
+        HLCustomCameraViewController.performCameraUIUpdate {
+            XCTAssertTrue(Thread.isMainThread)
+            ran = true
+        }
+        XCTAssertTrue(ran)
+    }
+
+    func testPictureSelectUIUpdateRunsInlineOnMainThread() {
+        var ran = false
+        HLPictureSelectViewController.performCameraUIUpdate {
+            XCTAssertTrue(Thread.isMainThread)
+            ran = true
+        }
+        XCTAssertTrue(ran)
+    }
+
+    func testProductPictureEditUIUpdateRunsInlineOnMainThread() {
+        var ran = false
+        HLProductPictureEditViewController.performCameraUIUpdate {
+            XCTAssertTrue(Thread.isMainThread)
+            ran = true
+        }
+        XCTAssertTrue(ran)
+    }
+
+    func testCameraUIUpdateHopsFromBackgroundThread() {
+        let expectation = self.expectation(description: "camera UI hops to main")
+        DispatchQueue.global(qos: .userInitiated).async {
+            HLCustomCameraViewController.performCameraUIUpdate {
+                XCTAssertTrue(Thread.isMainThread)
+                expectation.fulfill()
+            }
+        }
+        waitForExpectations(timeout: 2.0, handler: nil)
+    }
+
+    func testPhotoLibraryImageMediaTypesAreImagesOnly() {
+        let types = CommonUtils.photoLibraryImageMediaTypes()
+        XCTAssertEqual(types, ["public.image"])
+        XCTAssertFalse(types.contains("public.movie"))
+    }
+
+    func testPickedOriginalImageSoftParsesInfoDictionary() {
+        XCTAssertNil(CommonUtils.pickedOriginalImage(from: [:]))
+        XCTAssertNil(CommonUtils.pickedOriginalImage(from: [
+            UIImagePickerControllerOriginalImage: "not-an-image"
+        ]))
+        let image = UIImage()
+        let picked = CommonUtils.pickedOriginalImage(from: [
+            UIImagePickerControllerOriginalImage: image
+        ])
+        XCTAssertTrue(picked === image)
+    }
+
+    func testFacebookSourceApplicationSoftReadsOptions() {
+        XCTAssertNil(AppDelegate.facebookSourceApplication(from: [:]))
+        let source = AppDelegate.facebookSourceApplication(from: [
+            .sourceApplication: "com.facebook.Facebook"
+        ])
+        XCTAssertEqual(source, "com.facebook.Facebook")
+    }
+
 }
