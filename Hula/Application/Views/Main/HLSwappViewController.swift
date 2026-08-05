@@ -227,15 +227,23 @@ class HLSwappViewController: UIViewController {
                     return
                 }
                 let thisTrade: NSDictionary = swappPageVC.arrTrades[swappPageVC.currentIndex]
-                if let chat = thisTrade.object(forKey: "chat") as? [NSDictionary]{
-                    chatVC.chat = chat
-                    chatVC.trade_id = thisTrade.object(forKey: "_id") as? String ?? ""
-                    //print(chat)
-                    self.backFromChat = true
-                    self.chatCountLbl.isHidden = true
-                }
+                // trade_id must be set even when `chat` is missing/null/non-array;
+                // otherwise ChatViewController hits trades//chat and drops messages.
+                let config = HLSwappViewController.chatConfiguration(from: thisTrade)
+                chatVC.trade_id = config.tradeId
+                chatVC.chat = config.chat
+                //print(chat)
+                self.backFromChat = true
+                self.chatCountLbl.isHidden = true
             }
         }
+    }
+
+    /// Extract chat seed data for the trade-room → Chat segue.
+    static func chatConfiguration(from trade: NSDictionary) -> (tradeId: String, chat: [NSDictionary]) {
+        let tradeId = trade.object(forKey: "_id") as? String ?? ""
+        let chat = trade.object(forKey: "chat") as? [NSDictionary] ?? []
+        return (tradeId, chat)
     }
     
     
