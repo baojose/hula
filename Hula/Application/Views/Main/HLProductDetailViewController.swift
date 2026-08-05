@@ -275,50 +275,81 @@ class HLProductDetailViewController: BaseViewController, UIScrollViewDelegate, U
         self.navigationController?.pushViewController(viewController, animated: true)
     }
     
+    /// Options-sheet callers pass a blank UIButton(), so button-title checks miss
+    /// "Currently trading" and would POST a duplicate trade. Prefer peer trading state.
+    enum AddToTradeNextStep {
+        case requireLogin
+        case openExistingTrade
+        case alertNoProducts
+        case alertRoomsFull
+        case alertConfirmNewTrade
+    }
+
+    class func addToTradeNextStep(
+        isLoggedIn: Bool,
+        alreadyTradingWithOwner: Bool,
+        numProducts: Int,
+        roomsFull: Bool
+    ) -> AddToTradeNextStep {
+        if !isLoggedIn {
+            return .requireLogin
+        }
+        if alreadyTradingWithOwner {
+            return .openExistingTrade
+        }
+        if numProducts == 0 {
+            return .alertNoProducts
+        }
+        if roomsFull {
+            return .alertRoomsFull
+        }
+        return .alertConfirmNewTrade
+    }
+
     @IBAction func addToTradeAction(_ sender: UIButton) {
-        
-        if !HulaUser.sharedInstance.isUserLoggedIn() {
-            //print( self.tabBarController )
-            
+        let ownerId = currentProduct.productOwner ?? ""
+        let step = HLProductDetailViewController.addToTradeNextStep(
+            isLoggedIn: HulaUser.sharedInstance.isUserLoggedIn(),
+            alreadyTradingWithOwner: HLDataManager.sharedInstance.amITradingWith(ownerId),
+            numProducts: HulaUser.sharedInstance.numProducts,
+            roomsFull: HLDataManager.sharedInstance.myRoomsFull()
+        )
+
+        switch step {
+        case .requireLogin:
             if let tb = self.tabBarController as? BaseTabBarViewController {
                 tb.openUserIdentification()
             }
             print("User is not logged in!")
-                
             return
-                
+        case .openExistingTrade:
+            if let pnc = self.navigationController?.navigationController as? HulaPortraitNavigationController {
+                pnc.openSwapView()
+            }
+            return
+        case .alertNoProducts, .alertRoomsFull, .alertConfirmNewTrade:
+            break
         }
-        
-        
+
         let viewController = self.storyboard?.instantiateViewController(withIdentifier: "alertView") as! AlertViewController
         viewController.delegate = self
-        if (HulaUser.sharedInstance.numProducts == 0){
+        switch step {
+        case .alertNoProducts:
             viewController.isCancelVisible = true
             viewController.cancelButtonText = NSLocalizedString("Add stuff", comment: "")
             viewController.trigger = "noproduct"
             viewController.message = NSLocalizedString("Sorry! If you want to trade, you have to upload your stuff.", comment: "")
-        } else {
-            if HLDataManager.sharedInstance.myRoomsFull() {
-                viewController.isCancelVisible = false
-                viewController.trigger = "fullrooms"
-                viewController.message = NSLocalizedString("Sorry! your Trade Rooms are busy. Turn your phone, get in the Trade Room and request a new one.", comment: "")
-            } else {
-                viewController.isCancelVisible = true
-                viewController.okButtonText = NSLocalizedString("Accept", comment: "")
-                viewController.trigger = ""
-                viewController.message = NSLocalizedString("You're about to start a trade. One room will be reserved for this negotiation until it's finished.", comment: "")
-            }
+        case .alertRoomsFull:
+            viewController.isCancelVisible = false
+            viewController.trigger = "fullrooms"
+            viewController.message = NSLocalizedString("Sorry! your Trade Rooms are busy. Turn your phone, get in the Trade Room and request a new one.", comment: "")
+        default:
+            viewController.isCancelVisible = true
+            viewController.okButtonText = NSLocalizedString("Accept", comment: "")
+            viewController.trigger = ""
+            viewController.message = NSLocalizedString("You're about to start a trade. One room will be reserved for this negotiation until it's finished.", comment: "")
         }
-        
-        if let btTitle = sender.titleLabel?.text {
-            if btTitle.range(of: NSLocalizedString("Currently trading", comment: "")) != nil {
-                if let pnc = self.navigationController?.navigationController as? HulaPortraitNavigationController {
-                    pnc.openSwapView()
-                    return
-                }
-            }
-        }
-        
+
         self.present(viewController, animated: true)
     }
     

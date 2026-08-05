@@ -69,7 +69,9 @@ class NewPaswordViewController: UIViewController {
             self.present(viewController, animated: true)
             return
         }
-        HLDataManager.sharedInstance.httpPost(urlstr: queryURL, postString: "current_pass=\(current_pass)&new_pass=\(new_pass)", isPut: false, taskCallback: { (ok, json) in
+        let postString = "current_pass=" + CommonUtils.formEncodedValue(current_pass)
+            + "&new_pass=" + CommonUtils.formEncodedValue(new_pass)
+        HLDataManager.sharedInstance.httpPost(urlstr: queryURL, postString: postString, isPut: false, taskCallback: { (ok, json) in
             
             if (ok){
                 if let dict = json as? [String:Any]{

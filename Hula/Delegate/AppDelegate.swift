@@ -103,7 +103,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         
         
         if #available(iOS 9.0, *) {
-            let isHandled = FBSDKApplicationDelegate.sharedInstance().application(app, open: url, sourceApplication: options[.sourceApplication] as! String!, annotation: options[.annotation])
+            let sourceApplication = AppDelegate.facebookSourceApplication(from: options)
+            let isHandled = FBSDKApplicationDelegate.sharedInstance().application(app, open: url, sourceApplication: sourceApplication, annotation: options[.annotation])
             return isHandled
         }
         
@@ -111,6 +112,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         //if url.pathComponents
         
         return false
+    }
+
+    /// Soft-read Facebook deep-link sourceApplication — missing keys must not force-cast crash.
+    class func facebookSourceApplication(from options: [UIApplicationOpenURLOptionsKey : Any]) -> String? {
+        return options[.sourceApplication] as? String
     }
     func registerForPushNotifications() {
         if #available(iOS 10.0, *) {
@@ -171,13 +177,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 let banner = Banner(title: NSLocalizedString("Notification", comment: ""), subtitle: text, backgroundColor: HulaConstants.appMainColor)
                 banner.dismissesOnTap = true
                 banner.didTapBlock = {
-                    //print("tapped")
-                    let storyboard = UIStoryboard(name: "Main", bundle: nil)
-                    let myModalViewController = storyboard.instantiateViewController(withIdentifier: "swappView")
-                    myModalViewController.modalPresentationStyle = UIModalPresentationStyle.fullScreen
-                    myModalViewController.modalTransitionStyle = UIModalTransitionStyle.coverVertical
-                    self.window?.rootViewController?.present(myModalViewController, animated: true, completion: nil)
-                    
+                    // Presenting swappView directly skipped the login gate in
+                    // openSwapView and could surface stale in-memory trades after logout.
+                    if let portraitNav = self.portraitNavigationController(from: self.window?.rootViewController) {
+                        portraitNav.openSwapView()
+                    }
                 }
                 banner.show(duration: 5.0)
                 HLDataManager.sharedInstance.loadUserNotifications()
@@ -186,6 +190,39 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         } else {
             print("error")
         }
+    }
+
+    /// Walk the presented/tab/nav hierarchy to find the portrait shell that owns openSwapView.
+    func portraitNavigationController(from root: UIViewController?) -> HulaPortraitNavigationController? {
+        if let portraitNav = root as? HulaPortraitNavigationController {
+            return portraitNav
+        }
+        if let nav = root as? UINavigationController {
+            if let portraitNav = nav as? HulaPortraitNavigationController {
+                return portraitNav
+            }
+            for child in nav.viewControllers {
+                if let found = portraitNavigationController(from: child) {
+                    return found
+                }
+            }
+        }
+        if let tab = root as? UITabBarController {
+            if let found = portraitNavigationController(from: tab.selectedViewController) {
+                return found
+            }
+            for child in tab.viewControllers ?? [] {
+                if let found = portraitNavigationController(from: child) {
+                    return found
+                }
+            }
+        }
+        for child in root?.childViewControllers ?? [] {
+            if let found = portraitNavigationController(from: child) {
+                return found
+            }
+        }
+        return nil
     }
 }
 
