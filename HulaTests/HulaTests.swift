@@ -1565,4 +1565,95 @@ class HulaTests: XCTestCase {
         XCTAssertEqual(source, "com.facebook.Facebook")
     }
 
+    // MARK: - Product form body and complete-profile title wipe (#110)
+
+    func testProductFormPostStringDoesNotSplitOnAmpersandInTitle() {
+        let body = CommonUtils.productFormPostString(
+            title: "Toys & Games",
+            description: "Fun=stuff",
+            condition: "used",
+            categoryId: "cat-1",
+            imagesCSV: "a.jpg,b.jpg",
+            latitude: 1.5,
+            longitude: -2.5
+        )
+
+        // A naive split on '&' must still yield exactly the expected keys.
+        let pairs = body.components(separatedBy: "&")
+        XCTAssertEqual(pairs.count, 7)
+        XCTAssertTrue(pairs[0].hasPrefix("title="))
+        XCTAssertTrue(pairs[1].hasPrefix("description="))
+        XCTAssertTrue(pairs[2].hasPrefix("condition="))
+        XCTAssertTrue(pairs[3].hasPrefix("category_id="))
+        XCTAssertTrue(pairs[4].hasPrefix("images="))
+        XCTAssertEqual(pairs[5], "lat=1.5")
+        XCTAssertEqual(pairs[6], "lng=-2.5")
+
+        // urlHostAllowed would leave the title ampersand unescaped and create a bogus field.
+        XCTAssertFalse(body.contains("title=Toys "))
+        XCTAssertTrue(body.contains("%26"))
+    }
+
+    func testResolvedProductFieldsKeepsExistingTitleWhenFieldBlank() {
+        let resolved = HLCompleteProductProfileViewController.resolvedProductFields(
+            titleField: "",
+            descriptionField: "Still a great item",
+            existingTitle: "Untitled product",
+            existingDescription: ""
+        )
+        XCTAssertEqual(resolved.title, "Untitled product")
+        XCTAssertEqual(resolved.description, "Still a great item")
+    }
+
+    func testResolvedProductFieldsUsesTypedTitle() {
+        let resolved = HLCompleteProductProfileViewController.resolvedProductFields(
+            titleField: "  Bike  ",
+            descriptionField: "  lightly used  ",
+            existingTitle: "Untitled product",
+            existingDescription: "old"
+        )
+        XCTAssertEqual(resolved.title, "Bike")
+        XCTAssertEqual(resolved.description, "lightly used")
+    }
+
+    func testResolvedProductFieldsFallsBackToUntitledWhenNoTitleAnywhere() {
+        let resolved = HLCompleteProductProfileViewController.resolvedProductFields(
+            titleField: nil,
+            descriptionField: "desc",
+            existingTitle: nil,
+            existingDescription: nil
+        )
+        XCTAssertEqual(resolved.title, NSLocalizedString("Untitled product", comment: ""))
+        XCTAssertEqual(resolved.description, "desc")
+    }
+
+    // MARK: - Trade chat segue configuration (#110)
+
+    func testChatConfigurationSetsTradeIdWhenChatMissing() {
+        let config = HLSwappViewController.chatConfiguration(from: [
+            "_id": "trade-abc"
+        ] as NSDictionary)
+        XCTAssertEqual(config.tradeId, "trade-abc")
+        XCTAssertEqual(config.chat.count, 0)
+    }
+
+    func testChatConfigurationSetsTradeIdWhenChatNullTyped() {
+        let config = HLSwappViewController.chatConfiguration(from: [
+            "_id": "trade-xyz",
+            "chat": NSNull()
+        ] as NSDictionary)
+        XCTAssertEqual(config.tradeId, "trade-xyz")
+        XCTAssertEqual(config.chat.count, 0)
+    }
+
+    func testChatConfigurationPreservesExistingMessages() {
+        let message: NSDictionary = ["user_id": "u1", "message": "hi", "date": "2026-01-01T00:00:00.000Z"]
+        let config = HLSwappViewController.chatConfiguration(from: [
+            "_id": "trade-1",
+            "chat": [message]
+        ] as NSDictionary)
+        XCTAssertEqual(config.tradeId, "trade-1")
+        XCTAssertEqual(config.chat.count, 1)
+        XCTAssertEqual(config.chat[0].object(forKey: "message") as? String, "hi")
+    }
 }
