@@ -714,8 +714,9 @@ class HLBarterScreenViewController: BaseViewController {
             let queryURL = HulaConstants.apiURL + "products/user/" + user
             //print(queryURL)
             HLDataManager.sharedInstance.httpGet(urlstr: queryURL, taskCallback: { (ok, json) in
-                if (ok){
-                    DispatchQueue.main.async {
+                // httpGet callbacks run on a URLSession queue; callers reload UICollectionViews.
+                DispatchQueue.main.async {
+                    if (ok){
                         if let dictionary = json as? [Any] {
                             //print(dictionary)
                             var productList: [HulaProduct] = []
@@ -753,10 +754,10 @@ class HLBarterScreenViewController: BaseViewController {
                         } else {
                             taskCallback([])
                         }
+                    } else {
+                        // connection error — still on main so callers can safely touch UIKit
+                        taskCallback([])
                     }
-                } else {
-                    // connection error
-                    taskCallback([])
                 }
             })
         }
