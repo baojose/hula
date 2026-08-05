@@ -394,15 +394,16 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
         //print(HLDataManager.sharedInstance.newProduct.arrProductPhotoLink)
         //print(dataManager.newProduct.arrProductPhotoLink)
         let product_images_array = dataManager.newProduct.arrProductPhotoLink.joined(separator: ",")
-        var dataString:String = "title=" + dataManager.newProduct.productName.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)!
-        dataString += "&description=" + dataManager.newProduct.productDescription.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)!
-        dataString += "&condition=" + dataManager.newProduct.productCondition.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)!
-        dataString += "&category_id=" + dataManager.newProduct.productCategoryId.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)!
-        dataString += "&images=" + product_images_array.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)!
-        dataString += "&lat=\(HulaUser.sharedInstance.location.coordinate.latitude)"
-        dataString += "&lng=\(HulaUser.sharedInstance.location.coordinate.longitude)"
-        //print(dataString)
-        return dataString
+        // urlHostAllowed leaves &=+ unescaped and corrupts adjacent form fields.
+        return CommonUtils.productFormPostString(
+            title: dataManager.newProduct.productName ?? "",
+            description: dataManager.newProduct.productDescription ?? "",
+            condition: dataManager.newProduct.productCondition ?? "",
+            categoryId: dataManager.newProduct.productCategoryId ?? "",
+            imagesCSV: product_images_array,
+            latitude: HulaUser.sharedInstance.location.coordinate.latitude,
+            longitude: HulaUser.sharedInstance.location.coordinate.longitude
+        )
     }
     
     func uploadImages() {
