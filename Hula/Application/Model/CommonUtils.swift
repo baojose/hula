@@ -339,6 +339,35 @@ class CommonUtils: NSObject, EasyTipViewDelegate, UIGestureRecognizerDelegate {
     }
 }
 
+extension CommonUtils {
+    /// Percent-encode a single application/x-www-form-urlencoded field value.
+    /// Keeps `&`/`=` as delimiters and encodes `+` so it is not decoded as a space.
+    /// Note: `CharacterSet.urlHostAllowed` is NOT safe here — it leaves `&=+` unescaped.
+    static func formEncodedValue(_ value: String) -> String {
+        var allowed = CharacterSet.urlQueryAllowed
+        allowed.remove(charactersIn: "&=+")
+        return value.addingPercentEncoding(withAllowedCharacters: allowed) ?? ""
+    }
+
+    /// Build the product create/update form body with delimiter-safe encoding.
+    static func productFormPostString(title: String,
+                                      description: String,
+                                      condition: String,
+                                      categoryId: String,
+                                      imagesCSV: String,
+                                      latitude: Double,
+                                      longitude: Double) -> String {
+        var dataString = "title=" + formEncodedValue(title)
+        dataString += "&description=" + formEncodedValue(description)
+        dataString += "&condition=" + formEncodedValue(condition)
+        dataString += "&category_id=" + formEncodedValue(categoryId)
+        dataString += "&images=" + formEncodedValue(imagesCSV)
+        dataString += "&lat=\(latitude)"
+        dataString += "&lng=\(longitude)"
+        return dataString
+    }
+}
+
 extension Formatter {
     static let iso8601: DateFormatter = {
         let formatter = DateFormatter()
