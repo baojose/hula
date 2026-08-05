@@ -103,7 +103,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         
         
         if #available(iOS 9.0, *) {
-            let sourceApplication = options[.sourceApplication] as? String
+            let sourceApplication = AppDelegate.facebookSourceApplication(from: options)
             let isHandled = FBSDKApplicationDelegate.sharedInstance().application(app, open: url, sourceApplication: sourceApplication, annotation: options[.annotation])
             return isHandled
         }
@@ -112,6 +112,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         //if url.pathComponents
         
         return false
+    }
+
+    /// Soft-read Facebook deep-link sourceApplication — missing keys must not force-cast crash.
+    class func facebookSourceApplication(from options: [UIApplicationOpenURLOptionsKey : Any]) -> String? {
+        return options[.sourceApplication] as? String
     }
     func registerForPushNotifications() {
         if #available(iOS 10.0, *) {
