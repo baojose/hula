@@ -140,14 +140,10 @@ class HLSearchResultViewController: BaseViewController, UITableViewDataSource, U
                     let thumb = commonUtils.getThumbFor(url: user_img)
                     cell.productOwnerImage.loadImageFromURL(urlString: thumb)
                 }
-                let up = user.object(forKey: "feedback_points") as? Float
-                let uc = user.object(forKey: "feedback_count") as? Float
-                if (up != nil) && (uc != nil) && (uc != 0) {
-                    let perc_trade = round( up! / uc! * 100)
-                    cell.productTradeRate.text = "\(perc_trade)%"
-                } else {
-                    cell.productTradeRate.text = "-"
-                }
+                cell.productTradeRate.text = CommonUtils.feedbackTradeRateLabel(
+                    points: user.object(forKey: "feedback_points"),
+                    count: user.object(forKey: "feedback_count")
+                )
                 cell.productDistance.text = "(" + commonUtils.getDistanceFrom(loc: product.productLocation) + ")"
                 /*
                 if let loc = user.object(forKey: "location") as? [Float]{
