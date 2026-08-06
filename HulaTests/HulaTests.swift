@@ -1656,4 +1656,66 @@ class HulaTests: XCTestCase {
         XCTAssertEqual(config.chat.count, 1)
         XCTAssertEqual(config.chat[0].object(forKey: "message") as? String, "hi")
     }
+
+    // MARK: - Soft network JSON and chat/feedback guards (beyond #109/#110)
+
+    func testJsonObjectParsesValidPayload() {
+        let data = "{\"ok\":true,\"n\":2}".data(using: .utf8)!
+        let json = HLDataManager.jsonObject(from: data) as? [String: Any]
+        XCTAssertEqual(json?["ok"] as? Bool, true)
+        XCTAssertEqual(json?["n"] as? Int, 2)
+    }
+
+    func testJsonObjectRejectsHTMLAndEmptyBodies() {
+        let html = "<html>gateway timeout</html>".data(using: .utf8)!
+        XCTAssertNil(HLDataManager.jsonObject(from: html))
+        XCTAssertNil(HLDataManager.jsonObject(from: Data()))
+        let truncated = "{not-json".data(using: .utf8)!
+        XCTAssertNil(HLDataManager.jsonObject(from: truncated))
+    }
+
+    func testChatRequestURLRejectsBlankTradeId() {
+        XCTAssertNil(ChatViewController.chatRequestURL(apiBase: "https://hula.trading/api/", tradeId: ""))
+        XCTAssertNil(ChatViewController.chatRequestURL(apiBase: "https://hula.trading/api/", tradeId: "   "))
+        XCTAssertEqual(
+            ChatViewController.chatRequestURL(apiBase: "https://hula.trading/api/", tradeId: " trade-1 "),
+            "https://hula.trading/api/trades/trade-1/chat"
+        )
+    }
+
+    func testFeedbackTradeRateLabelAcceptsBridgedIntegerScores() {
+        // Whole-number JSON bridges as Int/NSNumber; `as? Float` would yield "-" here.
+        XCTAssertEqual(
+            CommonUtils.feedbackTradeRateLabel(points: 9 as Int, count: 10 as Int),
+            "90%"
+        )
+        XCTAssertEqual(
+            CommonUtils.feedbackTradeRateLabel(points: NSNumber(value: 3), count: NSNumber(value: 4)),
+            "75%"
+        )
+        XCTAssertEqual(CommonUtils.feedbackTradeRateLabel(points: 1, count: 0), "-")
+        XCTAssertEqual(CommonUtils.feedbackTradeRateLabel(points: nil, count: 2), "-")
+        XCTAssertEqual(CommonUtils.feedbackTradeRateLabel(points: true, count: 1), "-")
+    }
+
+    func testDeliverUserProductsOnMainRunsInlineOnMainThread() {
+        var delivered: [HulaProduct]?
+        let product = HulaProduct(id: "p1", name: "Lamp", image: "")
+        HLBarterScreenViewController.deliverUserProductsOnMain([product]) { products in
+            delivered = products
+        }
+        XCTAssertEqual(delivered?.count, 1)
+        XCTAssertEqual(delivered?.first?.productId, "p1")
+    }
+
+    func testDeliverUserProductsOnMainHopsFromBackgroundThread() {
+        let expectation = self.expectation(description: "inventory delivered on main")
+        DispatchQueue.global(qos: .userInitiated).async {
+            HLBarterScreenViewController.deliverUserProductsOnMain([]) { _ in
+                XCTAssertTrue(Thread.isMainThread)
+                expectation.fulfill()
+            }
+        }
+        waitForExpectations(timeout: 2.0, handler: nil)
+    }
 }
