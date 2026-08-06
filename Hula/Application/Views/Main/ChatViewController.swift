@@ -83,26 +83,36 @@ class ChatViewController: UIViewController {
     }
     */
 
+    /// Chat load/send path. Empty trade_id must not hit `trades//chat`.
+    static func chatRequestURL(apiBase: String, tradeId: String) -> String? {
+        let trimmed = tradeId.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard trimmed.count > 0 else {
+            return nil
+        }
+        return apiBase + "trades/\(trimmed)/chat"
+    }
+
     func refreshChat(forze: Bool){
         //print("refreshing...")
         //print("trade id: \(trade_id)")
-        let queryURL = HulaConstants.apiURL + "trades/\(trade_id)/chat"
-        HLDataManager.sharedInstance.httpGet(urlstr: queryURL, taskCallback: { (ok, json) in
-            //print("done")
-            //print(ok)
-            //print(json!)
-            if (ok){
-                if let dictionary = json as? [NSDictionary] {
-                    DispatchQueue.main.async(execute: {
-                        self.chat = dictionary
-                        self.updateData(forze: forze)
-                    })
-                } else {
+        if let queryURL = ChatViewController.chatRequestURL(apiBase: HulaConstants.apiURL, tradeId: trade_id) {
+            HLDataManager.sharedInstance.httpGet(urlstr: queryURL, taskCallback: { (ok, json) in
+                //print("done")
+                //print(ok)
+                //print(json!)
+                if (ok){
+                    if let dictionary = json as? [NSDictionary] {
+                        DispatchQueue.main.async(execute: {
+                            self.chat = dictionary
+                            self.updateData(forze: forze)
+                        })
+                    } else {
+                        
+                    }
                     
                 }
-                
-            }
-        })
+            })
+        }
         
         
         if UIDeviceOrientationIsPortrait(UIDevice.current.orientation) {
@@ -145,14 +155,14 @@ class ChatViewController: UIViewController {
     
     
     @IBAction func sendChatTextAction(_ sender: Any) {
-        var tx = self.chatTextField.text!
+        var tx = self.chatTextField.text ?? ""
         if tx.count > 300 {
             tx = String( tx.prefix(300)  );
         }
         //print("Sending...")
         //print("trade id: \(self.trade_id)")
-        if tx.count > 0 {
-            let queryURL = HulaConstants.apiURL + "trades/\(self.trade_id)/chat"
+        if tx.count > 0,
+            let queryURL = ChatViewController.chatRequestURL(apiBase: HulaConstants.apiURL, tradeId: self.trade_id) {
             HLDataManager.sharedInstance.httpPost(urlstr: queryURL, postString: "message=" + CommonUtils.formEncodedValue(tx), isPut: false, taskCallback: { (ok, json) in
                 //print("done")
                 //print(ok)

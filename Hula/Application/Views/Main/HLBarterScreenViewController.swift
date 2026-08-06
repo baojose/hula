@@ -78,6 +78,17 @@ class HLBarterScreenViewController: BaseViewController {
         }
         return fallbackTradeIds.filter { !$0.isEmpty }
     }
+
+    /// Inventory callbacks always publish on the main queue so callers can reload UIKit.
+    class func deliverUserProductsOnMain(_ products: [HulaProduct], callback: @escaping ([HulaProduct]) -> Void) {
+        if Thread.isMainThread {
+            callback(products)
+        } else {
+            DispatchQueue.main.async {
+                callback(products)
+            }
+        }
+    }
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -782,13 +793,13 @@ class HLBarterScreenViewController: BaseViewController {
                                     productList.append(newProd)
                                 }
                             }
-                            taskCallback(productList)
+                            HLBarterScreenViewController.deliverUserProductsOnMain(productList, callback: taskCallback)
                         } else {
-                            taskCallback([])
+                            HLBarterScreenViewController.deliverUserProductsOnMain([], callback: taskCallback)
                         }
                     } else {
                         // connection error — still on main so callers can safely touch UIKit
-                        taskCallback([])
+                        HLBarterScreenViewController.deliverUserProductsOnMain([], callback: taskCallback)
                     }
                 }
             })

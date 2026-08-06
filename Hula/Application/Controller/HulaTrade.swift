@@ -75,8 +75,8 @@ class HulaTrade: NSObject {
                 //print(json!)
                 if let dictionary = json as? NSDictionary {
                     //print(dictionary)
-                    if ((dictionary["id"] as? String) != nil){
-                        self.tradeId = dictionary["id"] as! String
+                    if let newId = dictionary["id"] as? String, newId.count > 0 {
+                        self.tradeId = newId
                     }
                 }
             }

@@ -573,6 +573,17 @@ extension CommonUtils {
         dataString += "&lng=\(longitude)"
         return dataString
     }
+
+    /// Home/search seller trade-rate label. Integer JSON feedback must not become "-".
+    static func feedbackTradeRateLabel(points: Any?, count: Any?) -> String {
+        guard let up = floatFromJSON(points),
+            let uc = floatFromJSON(count),
+            uc != 0 else {
+                return "-"
+        }
+        let perc = Int(round(up / uc * 100))
+        return "\(perc)%"
+    }
 }
 
 extension Formatter {

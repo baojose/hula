@@ -560,10 +560,18 @@ class HLDataManager: NSObject {
     }
     
     
+    /// Soft-parse a network body. HTML/empty/invalid payloads must not crash via `try!`.
+    class func jsonObject(from data: Data) -> Any? {
+        return try? JSONSerialization.jsonObject(with: data, options: [])
+    }
+
     func httpGet(urlstr:String, taskCallback: @escaping (Bool, Any?) -> ()) {
-        let url = URL(string: urlstr)
-        //print(url!)
-        var request:URLRequest = URLRequest(url: url!)
+        guard let url = URL(string: urlstr) else {
+            taskCallback(false, nil)
+            return
+        }
+        //print(url)
+        var request:URLRequest = URLRequest(url: url)
         
         let user = HulaUser.sharedInstance
         //print(user.token)
@@ -585,7 +593,10 @@ class HLDataManager: NSObject {
             //print(request)
             //print(response)
             //print(data.count)
-            let json = try! JSONSerialization.jsonObject(with: data, options: [])
+            guard let json = HLDataManager.jsonObject(from: data) else {
+                taskCallback(false, nil)
+                return
+            }
             //print(json)
             taskCallback(true, json as AnyObject?)
         }
@@ -594,8 +605,11 @@ class HLDataManager: NSObject {
     }
 
     func httpPost(urlstr:String, postString:String, isPut: Bool, taskCallback: @escaping (Bool, Any?) -> ()) {
-        let url = URL(string: urlstr)
-        var request = URLRequest(url: url!)
+        guard let url = URL(string: urlstr) else {
+            taskCallback(false, nil)
+            return
+        }
+        var request = URLRequest(url: url)
         if (isPut){
             request.httpMethod = "PUT"
         } else {
@@ -611,7 +625,10 @@ class HLDataManager: NSObject {
         //print(request.httpMethod!)
         let task = URLSession.shared.dataTask(with: request) { data, response, error in
             guard let data = data, error == nil else {                                                 // check for fundamental networking error
-                print(error!)
+                if let error = error {
+                    print(error)
+                }
+                taskCallback(false, nil)
                 return
             }
             
@@ -619,7 +636,10 @@ class HLDataManager: NSObject {
                 print("statusCode should be 200, but is \(httpStatus.statusCode)")
                 print(response ?? "No response")
             }
-            let json = try! JSONSerialization.jsonObject(with: data, options: [])
+            guard let json = HLDataManager.jsonObject(from: data) else {
+                taskCallback(false, nil)
+                return
+            }
             taskCallback(true, json as AnyObject?)
         }
         task.resume()
@@ -655,16 +675,22 @@ class HLDataManager: NSObject {
             
             let task = session.dataTask(with: request) { data, response, error in
                 guard let data = data, error == nil else {                                                 // check for fundamental networking error
-                    print(error!)
+                    if let error = error {
+                        print(error)
+                    }
+                    taskCallback(false, nil)
                     return
                 }
                 
                 if let httpStatus = response as? HTTPURLResponse, httpStatus.statusCode != 200 {           // check for http errors
                     print("statusCode should be 200, but is \(httpStatus.statusCode)")
                     print(response ?? "No response")
+                    taskCallback(false, nil)
                 } else {
-                    
-                    let json = try! JSONSerialization.jsonObject(with: data, options: [])
+                    guard let json = HLDataManager.jsonObject(from: data) else {
+                        taskCallback(false, nil)
+                        return
+                    }
                     taskCallback(true, json as AnyObject?)
                 }
             }
@@ -703,16 +729,22 @@ class HLDataManager: NSObject {
             
             let task = session.dataTask(with: request) { data, response, error in
                 guard let data = data, error == nil else {                                                 // check for fundamental networking error
-                    print(error!)
+                    if let error = error {
+                        print(error)
+                    }
+                    taskCallback(false, nil)
                     return
                 }
                 
                 if let httpStatus = response as? HTTPURLResponse, httpStatus.statusCode != 200 {           // check for http errors
                     print("statusCode should be 200, but is \(httpStatus.statusCode)")
                     print(response ?? "No response")
+                    taskCallback(false, nil)
                 } else {
-                    
-                    let json = try! JSONSerialization.jsonObject(with: data, options: [])
+                    guard let json = HLDataManager.jsonObject(from: data) else {
+                        taskCallback(false, nil)
+                        return
+                    }
                     taskCallback(true, json as AnyObject?)
                 }
             }
