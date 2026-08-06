@@ -222,16 +222,28 @@ class HLSwappViewController: UIViewController {
         
         if let chatVC = segue.destination as? ChatViewController {
             if let swappPageVC = self.childViewControllers.first as? HLSwappPageViewController {
-                let thisTrade: NSDictionary = swappPageVC.arrTrades[swappPageVC.currentIndex]
-                if let chat = thisTrade.object(forKey: "chat") as? [NSDictionary]{
-                    chatVC.chat = chat
-                    chatVC.trade_id = (thisTrade.object(forKey: "_id") as? String)!
-                    //print(chat)
-                    self.backFromChat = true
-                    self.chatCountLbl.isHidden = true
+                guard swappPageVC.currentIndex >= 0,
+                      swappPageVC.currentIndex < swappPageVC.arrTrades.count else {
+                    return
                 }
+                let thisTrade: NSDictionary = swappPageVC.arrTrades[swappPageVC.currentIndex]
+                // trade_id must be set even when `chat` is missing/null/non-array;
+                // otherwise ChatViewController hits trades//chat and drops messages.
+                let config = HLSwappViewController.chatConfiguration(from: thisTrade)
+                chatVC.trade_id = config.tradeId
+                chatVC.chat = config.chat
+                //print(chat)
+                self.backFromChat = true
+                self.chatCountLbl.isHidden = true
             }
         }
+    }
+
+    /// Extract chat seed data for the trade-room → Chat segue.
+    static func chatConfiguration(from trade: NSDictionary) -> (tradeId: String, chat: [NSDictionary]) {
+        let tradeId = trade.object(forKey: "_id") as? String ?? ""
+        let chat = trade.object(forKey: "chat") as? [NSDictionary] ?? []
+        return (tradeId, chat)
     }
     
     
@@ -564,28 +576,32 @@ class HLSwappViewController: UIViewController {
             self.threeDotsView.isHidden = true;
             
             if let swappPageVC = self.childViewControllers.first as? HLSwappPageViewController {
-                if swappPageVC.arrTrades.count > 0 {
+                if swappPageVC.arrTrades.count > 0,
+                   swappPageVC.currentIndex >= 0,
+                   swappPageVC.currentIndex < swappPageVC.arrTrades.count {
                     last_index_setup = swappPageVC.currentIndex
                     let thisTrade: NSDictionary = swappPageVC.arrTrades[swappPageVC.currentIndex]
                     var other_user_id = ""
                     var chat_count = 0
-                    
+
                     // check chat counter
-                    if (HulaUser.sharedInstance.userId == thisTrade.object(forKey: "owner_id") as! String){
+                    let ownerId = thisTrade.object(forKey: "owner_id") as? String ?? ""
+                    let otherId = thisTrade.object(forKey: "other_id") as? String ?? ""
+                    if (HulaUser.sharedInstance.userId == ownerId){
                         // I am the owner
-                        other_user_id = thisTrade.object(forKey: "other_id") as! String
+                        other_user_id = otherId
                         if let ch_c = thisTrade.object(forKey: "owner_unread") as? Int{
                             chat_count = ch_c
                         }
                     } else {
-                        other_user_id = thisTrade.object(forKey: "owner_id") as! String
+                        other_user_id = ownerId
                         if let ch_c = thisTrade.object(forKey: "other_unread") as? Int{
                             chat_count = ch_c
                         }
                     }
-                    
-                    
-                    let currentStatus = thisTrade.object(forKey: "status") as! String
+
+
+                    let currentStatus = thisTrade.object(forKey: "status") as? String ?? ""
                     if currentStatus == HulaConstants.cancel_status || currentStatus == HulaConstants.end_status {
                         // closed or removed trade!
                         
@@ -595,7 +611,7 @@ class HLSwappViewController: UIViewController {
                         self.remainingTimeLabel.alpha = 0
                         self.threeDotsView.isHidden = true
                         
-                    } else {
+                    } else if currentStatus.count > 0 {
                         if currentStatus == HulaConstants.review_status {
                             // pending exchange
                             
@@ -787,16 +803,18 @@ class HLSwappViewController: UIViewController {
             var other_user_id = ""
             for oldTrade in HLDataManager.sharedInstance.arrPastTrades {
                 let thisTrade: NSDictionary = oldTrade
-                
+
                 // check chat counter
-                if (HulaUser.sharedInstance.userId == thisTrade.object(forKey: "owner_id") as! String){
+                let ownerId = thisTrade.object(forKey: "owner_id") as? String ?? ""
+                let otherId = thisTrade.object(forKey: "other_id") as? String ?? ""
+                if (HulaUser.sharedInstance.userId == ownerId){
                     // I am the owner
-                    other_user_id = thisTrade.object(forKey: "other_id") as! String
+                    other_user_id = otherId
                     if let ch_c = thisTrade.object(forKey: "owner_unread") as? Int{
                         chat_count = ch_c
                     }
                 } else {
-                    other_user_id = thisTrade.object(forKey: "owner_id") as! String
+                    other_user_id = ownerId
                     if let ch_c = thisTrade.object(forKey: "other_unread") as? Int{
                         chat_count = ch_c
                     }

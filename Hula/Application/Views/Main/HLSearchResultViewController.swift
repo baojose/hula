@@ -140,14 +140,10 @@ class HLSearchResultViewController: BaseViewController, UITableViewDataSource, U
                     let thumb = commonUtils.getThumbFor(url: user_img)
                     cell.productOwnerImage.loadImageFromURL(urlString: thumb)
                 }
-                let up = user.object(forKey: "feedback_points") as? Float
-                let uc = user.object(forKey: "feedback_count") as? Float
-                if (up != nil) && (uc != nil) && (uc != 0) {
-                    let perc_trade = round( up! / uc! * 100)
-                    cell.productTradeRate.text = "\(perc_trade)%"
-                } else {
-                    cell.productTradeRate.text = "-"
-                }
+                cell.productTradeRate.text = CommonUtils.feedbackTradeRateLabel(
+                    points: user.object(forKey: "feedback_points"),
+                    count: user.object(forKey: "feedback_count")
+                )
                 cell.productDistance.text = "(" + commonUtils.getDistanceFrom(loc: product.productLocation) + ")"
                 /*
                 if let loc = user.object(forKey: "location") as? [Float]{
@@ -266,7 +262,11 @@ class HLSearchResultViewController: BaseViewController, UITableViewDataSource, U
     
     func getFilteredList(){
         filteredList = []
-        for prod in (productsList as? [NSDictionary])!{
+        guard let products = productsList as? [NSDictionary] else {
+            productsTableView.reloadData()
+            return
+        }
+        for prod in products {
             let hprod = HulaProduct()
             var isValidCond = false
             var isValidDist = false
@@ -303,15 +303,12 @@ class HLSearchResultViewController: BaseViewController, UITableViewDataSource, U
         filteredList.sort { $0.distance < $1.distance  }
         print(filteredList)
         
-        for us in (foundUsersList as? [NSDictionary])!{
-            let hprod = HulaProduct()
-            hprod.productName = String(NSLocalizedString("User", comment: "")) + ": " + (us["name"] as! String)
-                + "\n(" + (us["nick"] as! String) + ")";
-            hprod.productDescription = us["nick"] as! String;
-            hprod.productImage = us["image"] as! String;
-            hprod.productId = us["_id"] as! String;
-            hprod.productCategoryId = "xx_user";
-            filteredList.append(hprod)
+        if let users = foundUsersList as? [NSDictionary] {
+            for us in users {
+                if let hprod = CommonUtils.searchUserProduct(from: us) {
+                    filteredList.append(hprod)
+                }
+            }
         }
         
         

@@ -161,13 +161,33 @@ class HulaUser: NSObject {
         }
     }
     func getPostString() -> String {
-        var str = "email=" + self.userEmail + "&name=" + self.userName + "&bio=" + self.userBio
-        str = str + "&nick=" + self.userNick + "&image=" + self.userPhotoURL + "&twtoken=" + self.twToken
-        str = str + "&litoken=" + self.liToken + "&fbtoken=" + self.fbToken + "&push_device_id=" + self.deviceId
-        str = str + "&zip=" + self.zip + "&max_trades=" + String(self.maxTrades)
+        // Only include optional credentials/location fields when non-empty.
+        // Sending empty twtoken/litoken/fbtoken/push_device_id/zip/image on a full-object PUT
+        // wipes server-side social verification, push delivery, avatar, and zip after cold start
+        // (those fields are not always present in local session state).
+        var str = "email=" + CommonUtils.formEncodedValue(self.userEmail) + "&name=" + CommonUtils.formEncodedValue(self.userName) + "&bio=" + CommonUtils.formEncodedValue(self.userBio)
+        str = str + "&nick=" + CommonUtils.formEncodedValue(self.userNick) + "&max_trades=" + String(self.maxTrades)
+        if self.userPhotoURL.count > 0 {
+            str = str + "&image=" + CommonUtils.formEncodedValue(self.userPhotoURL)
+        }
+        if self.twToken.count > 0 {
+            str = str + "&twtoken=" + CommonUtils.formEncodedValue(self.twToken)
+        }
+        if self.liToken.count > 0 {
+            str = str + "&litoken=" + CommonUtils.formEncodedValue(self.liToken)
+        }
+        if self.fbToken.count > 0 {
+            str = str + "&fbtoken=" + CommonUtils.formEncodedValue(self.fbToken)
+        }
+        if self.deviceId.count > 0 {
+            str = str + "&push_device_id=" + CommonUtils.formEncodedValue(self.deviceId)
+        }
+        if self.zip.count > 0 {
+            str = str + "&zip=" + CommonUtils.formEncodedValue(self.zip)
+        }
         
         if (self.location.coordinate.latitude != 0 && self.location.coordinate.longitude != 0){
-           str = str + "&lat=\(self.location.coordinate.latitude)&lng=\(self.location.coordinate.longitude)&location_name=" + self.userLocationName
+           str = str + "&lat=\(self.location.coordinate.latitude)&lng=\(self.location.coordinate.longitude)&location_name=" + CommonUtils.formEncodedValue(self.userLocationName)
         }
         return str
     }
@@ -181,8 +201,53 @@ class HulaUser: NSObject {
         }
         return res
     }
-    
-    
+
+    private func coordinateValue(from value: Any) -> CLLocationDegrees? {
+        if value is Bool {
+            return nil
+        }
+        if let number = value as? NSNumber {
+            let type = String(cString: number.objCType)
+            if type == "c" || type == "B" {
+                return nil
+            }
+            return CLLocationDegrees(number.doubleValue)
+        }
+        if let value = value as? Double {
+            return CLLocationDegrees(value)
+        }
+        if let value = value as? Float {
+            return CLLocationDegrees(value)
+        }
+        if let value = value as? CGFloat {
+            return CLLocationDegrees(value)
+        }
+        if let value = value as? Int {
+            return CLLocationDegrees(value)
+        }
+        return nil
+    }
+
+    private func coordinatePair(from value: Any?) -> (latitude: CLLocationDegrees, longitude: CLLocationDegrees)? {
+        var coordinates: [Any]
+        if let tmp = value as? [Any] {
+            coordinates = tmp
+        } else if let tmp = value as? NSArray {
+            coordinates = []
+            for item in tmp {
+                coordinates.append(item)
+            }
+        } else {
+            return nil
+        }
+
+        guard coordinates.count >= 2,
+            let latitude = coordinateValue(from: coordinates[0]),
+            let longitude = coordinateValue(from: coordinates[1]) else {
+                return nil
+        }
+        return (latitude, longitude)
+    }
     
     func populate(with: NSDictionary){
         if let tmp = with.object(forKey: "_id") as? String { userId = tmp }
@@ -191,29 +256,30 @@ class HulaUser: NSObject {
         if let tmp = with.object(forKey: "bio") as? String { userBio = tmp }
         if let tmp = with.object(forKey: "email") as? String { userEmail = tmp }
         if let tmp = with.object(forKey: "image") as? String { userPhotoURL = tmp }
-        if let tmp = with.object(forKey: "location") as? [CGFloat]  {
-            let lat = tmp[0]
-            let lon = tmp[1]
-            location = CLLocation(latitude:CLLocationDegrees(lat), longitude:CLLocationDegrees(lon));
+        if let coordinates = coordinatePair(from: with.object(forKey: "location")) {
+            location = CLLocation(latitude: coordinates.latitude, longitude: coordinates.longitude)
         }
         if let tmp = with.object(forKey: "location_name") as? String  {
             userLocationName = tmp;
         }
         if let tmp = with.object(forKey: "fb_token") as? String { fbToken = tmp }
+        if let tmp = with.object(forKey: "fbtoken") as? String { fbToken = tmp }
         if let tmp = with.object(forKey: "tw_token") as? String { twToken = tmp }
+        if let tmp = with.object(forKey: "twtoken") as? String { twToken = tmp }
         if let tmp = with.object(forKey: "li_token") as? String { liToken = tmp }
+        if let tmp = with.object(forKey: "litoken") as? String { liToken = tmp }
         if let tmp = with.object(forKey: "status") as? String { status = tmp }
         if let tmp = with.object(forKey: "zip") as? String { zip = tmp }
         
-        if let tmp = with.object(forKey: "feedback_count") as? Float { feedback_count = tmp }
-        if let tmp = with.object(forKey: "feedback_points") as? Float { feedback_points = tmp }
-        
-        
-        if let tmp = with.object(forKey: "trades_started") as? Float { trades_started = tmp }
-        if let tmp = with.object(forKey: "trades_finished") as? Float { trades_finished = tmp }
-        if let tmp = with.object(forKey: "trades_closed") as? Float { trades_closed = tmp }
+        if let tmp = CommonUtils.floatFromJSON(with.object(forKey: "feedback_count")) { feedback_count = tmp }
+        if let tmp = CommonUtils.floatFromJSON(with.object(forKey: "feedback_points")) { feedback_points = tmp }
+
+        if let tmp = CommonUtils.floatFromJSON(with.object(forKey: "trades_started")) { trades_started = tmp }
+        if let tmp = CommonUtils.floatFromJSON(with.object(forKey: "trades_finished")) { trades_finished = tmp }
+        if let tmp = CommonUtils.floatFromJSON(with.object(forKey: "trades_closed")) { trades_closed = tmp }
         
         if let tmp = with.object(forKey: "deviceId") as? String { deviceId = tmp }
+        if let tmp = with.object(forKey: "push_device_id") as? String { deviceId = tmp }
         if let tmp = with.object(forKey: "max_trades") as? Int { maxTrades = tmp }
         
         
