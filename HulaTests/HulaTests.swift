@@ -1718,4 +1718,188 @@ class HulaTests: XCTestCase {
         }
         waitForExpectations(timeout: 2.0, handler: nil)
     }
+
+    // MARK: - Beyond #111/#112: cash sync, reputation, soft unread, session strings
+
+    func testTradeOfferChangedDetectsEqualOffsetCashIncrease() {
+        let current = HulaTrade()
+        current.owner_products = ["p1"]
+        current.other_products = ["p2"]
+        current.owner_money = 0
+        current.other_money = 0
+
+        let incoming = HulaTrade()
+        incoming.owner_products = ["p1"]
+        incoming.other_products = ["p2"]
+        incoming.owner_money = 10
+        incoming.other_money = 10
+
+        // Net difference is unchanged (0), but each side moved — must detect.
+        XCTAssertTrue(HLBarterScreenViewController.tradeOfferChanged(from: current, to: incoming))
+    }
+
+    func testTradeOfferChangedIgnoresIdenticalCashAndProducts() {
+        let current = HulaTrade()
+        current.owner_products = ["p1"]
+        current.other_products = ["p2"]
+        current.owner_money = 5
+        current.other_money = 2
+
+        let incoming = HulaTrade()
+        incoming.owner_products = ["p1"]
+        incoming.other_products = ["p2"]
+        incoming.owner_money = 5
+        incoming.other_money = 2
+
+        XCTAssertFalse(HLBarterScreenViewController.tradeOfferChanged(from: current, to: incoming))
+    }
+
+    func testTradeOfferChangedDetectsSingleSideCashChange() {
+        let current = HulaTrade()
+        current.owner_money = 0
+        current.other_money = 0
+
+        let incoming = HulaTrade()
+        incoming.owner_money = 25
+        incoming.other_money = 0
+
+        XCTAssertTrue(HLBarterScreenViewController.tradeOfferChanged(from: current, to: incoming))
+    }
+
+    func testSellerMeetsReputationAllowsAllWhenFilterIsZero() {
+        XCTAssertTrue(HLSearchResultViewController.sellerMeetsReputation(nil, minimumPercent: 0))
+    }
+
+    func testSellerMeetsReputationRejectsMissingSellerWhenThresholdSet() {
+        XCTAssertFalse(HLSearchResultViewController.sellerMeetsReputation(nil, minimumPercent: 80))
+    }
+
+    func testSellerMeetsReputationUsesFeedbackRatioWithBridgedIntegers() {
+        // Whole-number JSON bridges as Int/NSNumber; `as? Float` would empty results.
+        let strong: NSDictionary = [
+            "feedback_points": 9 as Int,
+            "feedback_count": 10 as Int
+        ]
+        let weak: NSDictionary = [
+            "feedback_points": NSNumber(value: 5),
+            "feedback_count": NSNumber(value: 10)
+        ]
+        let floatPayload: NSDictionary = [
+            "feedback_points": Float(9),
+            "feedback_count": Float(10)
+        ]
+        XCTAssertTrue(HLSearchResultViewController.sellerMeetsReputation(strong, minimumPercent: 80))
+        XCTAssertFalse(HLSearchResultViewController.sellerMeetsReputation(weak, minimumPercent: 80))
+        XCTAssertTrue(HLSearchResultViewController.sellerMeetsReputation(floatPayload, minimumPercent: 90))
+    }
+
+    func testSellerMeetsReputationRejectsZeroFeedbackCountAndBooleans() {
+        let zeroCount: NSDictionary = [
+            "feedback_points": Float(0),
+            "feedback_count": Float(0)
+        ]
+        let boolNoise: NSDictionary = [
+            "feedback_points": true,
+            "feedback_count": 10 as Int
+        ]
+        XCTAssertFalse(HLSearchResultViewController.sellerMeetsReputation(zeroCount, minimumPercent: 80))
+        XCTAssertFalse(HLSearchResultViewController.sellerMeetsReputation(boolNoise, minimumPercent: 80))
+    }
+
+    func testReputationFilterTagPreservesNinetyNinePercent() {
+        let filterVC = HLFilterViewController()
+        XCTAssertEqual(filterVC.getTagForRep(99), 11)
+        XCTAssertEqual(filterVC.getRepForTag(11), 99)
+        XCTAssertEqual(filterVC.getTagForRep(95), 10)
+        XCTAssertEqual(filterVC.getRepForTag(10), 95)
+    }
+
+    func testPeerChatContextUsesOwnerUnreadWhenViewerIsOwner() {
+        let trade: NSDictionary = [
+            "owner_id": "me",
+            "other_id": "peer",
+            "owner_unread": NSNumber(value: 3),
+            "other_unread": 9 as Int
+        ]
+        let ctx = HLSwappViewController.peerChatContext(from: trade, viewerId: "me")
+        XCTAssertEqual(ctx.peerId, "peer")
+        XCTAssertEqual(ctx.unread, 3)
+    }
+
+    func testPeerChatContextUsesOtherUnreadWhenViewerIsPeer() {
+        let trade: NSDictionary = [
+            "owner_id": "owner",
+            "other_id": "me",
+            "owner_unread": 2 as Int,
+            "other_unread": NSNumber(value: 4.0)
+        ]
+        let ctx = HLSwappViewController.peerChatContext(from: trade, viewerId: "me")
+        XCTAssertEqual(ctx.peerId, "owner")
+        XCTAssertEqual(ctx.unread, 4)
+    }
+
+    func testPeerChatContextDefaultsMissingUnreadAndRejectsBool() {
+        let missing: NSDictionary = [
+            "owner_id": "me",
+            "other_id": "peer"
+        ]
+        XCTAssertEqual(HLSwappViewController.peerChatContext(from: missing, viewerId: "me").unread, 0)
+
+        let boolUnread: NSDictionary = [
+            "owner_id": "me",
+            "other_id": "peer",
+            "owner_unread": true
+        ]
+        XCTAssertEqual(HLSwappViewController.peerChatContext(from: boolUnread, viewerId: "me").unread, 0)
+    }
+
+    func testStringFieldPicksFirstPresentAlternateKey() {
+        let dict: NSDictionary = [
+            "nick": "handle",
+            "name": "Full Name"
+        ]
+        XCTAssertEqual(HLDataManager.stringField(dict, keys: ["userNick", "nick"]), "handle")
+        XCTAssertEqual(HLDataManager.stringField(dict, keys: ["userName", "name"]), "Full Name")
+        XCTAssertNil(HLDataManager.stringField(dict, keys: ["token", "missing"]))
+        XCTAssertNil(HLDataManager.stringField(["token": 1] as NSDictionary, keys: ["token"]))
+    }
+
+    func testUpdateUserFromDictUsesAlternateStringKeysWithoutForceCast() {
+        let user = HulaUser.sharedInstance
+        let previousId = user.userId
+        let previousNick = user.userNick
+        let previousName = user.userName
+        let previousEmail = user.userEmail
+        let previousBio = user.userBio
+        let previousPhoto = user.userPhotoURL
+        let previousLocationName = user.userLocationName
+        defer {
+            user.userId = previousId
+            user.userNick = previousNick
+            user.userName = previousName
+            user.userEmail = previousEmail
+            user.userBio = previousBio
+            user.userPhotoURL = previousPhoto
+            user.userLocationName = previousLocationName
+        }
+
+        user.logout()
+        HLDataManager.sharedInstance.updateUserFromDict(dict: [
+            "_id": "alt-user",
+            "nick": "n1",
+            "name": "Ada",
+            "email": "ada@example.com",
+            "bio": "builder",
+            "image": "https://cdn.example/ada.jpg",
+            "location_name": "Atlanta"
+        ] as NSDictionary)
+
+        XCTAssertEqual(user.userId, "alt-user")
+        XCTAssertEqual(user.userNick, "n1")
+        XCTAssertEqual(user.userName, "Ada")
+        XCTAssertEqual(user.userEmail, "ada@example.com")
+        XCTAssertEqual(user.userBio, "builder")
+        XCTAssertEqual(user.userPhotoURL, "https://cdn.example/ada.jpg")
+        XCTAssertEqual(user.userLocationName, "Atlanta")
+    }
 }
