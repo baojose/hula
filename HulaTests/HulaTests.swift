@@ -13,24 +13,73 @@ class HulaTests: XCTestCase {
     
     override func setUp() {
         super.setUp()
-        // Put setup code here. This method is called before the invocation of each test method in the class.
     }
     
     override func tearDown() {
-        // Put teardown code here. This method is called after the invocation of each test method in the class.
         super.tearDown()
     }
     
-    func testExample() {
-        // This is an example of a functional test case.
-        // Use XCTAssert and related functions to verify your tests produce the correct results.
+    // MARK: - Album / profile picker (Aug 7 critical)
+    
+    func testPictureSelectPickerInfoRejectsMissingImage() {
+        // Video picks (or empty info) have no OriginalImage — must not force-cast.
+        XCTAssertNil(HLPictureSelectViewController.imageFromPickerInfo([:]))
+        XCTAssertNil(HLPictureSelectViewController.imageFromPickerInfo([
+            UIImagePickerControllerMediaType: "public.movie"
+        ]))
     }
     
-    func testPerformanceExample() {
-        // This is an example of a performance test case.
-        self.measure {
-            // Put the code you want to measure the time of here.
-        }
+    func testPictureSelectPickerInfoAcceptsImage() {
+        let image = UIImage()
+        let extracted = HLPictureSelectViewController.imageFromPickerInfo([
+            UIImagePickerControllerOriginalImage: image
+        ])
+        XCTAssertNotNil(extracted)
     }
     
+    func testCustomCameraPickerInfoRejectsMissingImage() {
+        XCTAssertNil(HLCustomCameraViewController.imageFromPickerInfo([:]))
+        XCTAssertNil(HLCustomCameraViewController.imageFromPickerInfo([
+            UIImagePickerControllerMediaType: "public.movie"
+        ]))
+    }
+    
+    func testCustomCameraPickerInfoAcceptsImage() {
+        let image = UIImage()
+        let extracted = HLCustomCameraViewController.imageFromPickerInfo([
+            UIImagePickerControllerOriginalImage: image
+        ])
+        XCTAssertNotNil(extracted)
+    }
+    
+    // MARK: - Seller profile pending-offer gate (Aug 7 critical)
+    
+    func testShouldOfferStartTradeWhenIdle() {
+        XCTAssertTrue(HLDataManager.shouldOfferStartTradeAction(
+            tradingWith: false,
+            pendingInboundOffer: false
+        ))
+    }
+    
+    func testShouldNotOfferStartTradeWhenAlreadyTrading() {
+        XCTAssertFalse(HLDataManager.shouldOfferStartTradeAction(
+            tradingWith: true,
+            pendingInboundOffer: false
+        ))
+    }
+    
+    func testShouldNotOfferStartTradeWhenPendingInboundOffer() {
+        // Options → "Trade with this user" must not POST a second room while Accept/Decline is showing.
+        XCTAssertFalse(HLDataManager.shouldOfferStartTradeAction(
+            tradingWith: false,
+            pendingInboundOffer: true
+        ))
+    }
+    
+    func testShouldNotOfferStartTradeWhenBothTradingAndPending() {
+        XCTAssertFalse(HLDataManager.shouldOfferStartTradeAction(
+            tradingWith: true,
+            pendingInboundOffer: true
+        ))
+    }
 }

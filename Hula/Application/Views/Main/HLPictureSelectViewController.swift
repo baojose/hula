@@ -82,12 +82,21 @@ class HLPictureSelectViewController: BaseViewController, UIImagePickerController
     }
     
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [String : Any]) {
-        let chosenImage = info[UIImagePickerControllerOriginalImage] as! UIImage //2
+        // Soft-unwrap: video (or non-image) picks have no OriginalImage and used to crash via as! UIImage.
+        guard let chosenImage = HLPictureSelectViewController.imageFromPickerInfo(info) else {
+            dismiss(animated: true, completion: nil)
+            return
+        }
         let croppedImage:UIImage = self.commonUtils.cropImage(chosenImage, HulaConstants.product_image_thumb_size)
         // save the image
         uploadImage(croppedImage)
         //dismiss(animated:true, completion: nil) //5
         dismissToPreviousPage(croppedImage)
+    }
+    
+    /// Testable extract of UIImagePickerController image payload (nil for video / missing keys).
+    class func imageFromPickerInfo(_ info: [String: Any]) -> UIImage? {
+        return info[UIImagePickerControllerOriginalImage] as? UIImage
     }
     func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
         dismiss(animated: true, completion: nil)
@@ -177,8 +186,9 @@ class HLPictureSelectViewController: BaseViewController, UIImagePickerController
     func openImagePicker(){
         picker.allowsEditing = false
         picker.sourceType = .photoLibrary
-        //picker.mediaTypes = [kUTTypeImage as String]
-        //print(picker.mediaTypes)
+        // Images only — default photoLibrary media types include video; picking one
+        // crashed in didFinishPickingMediaWithInfo via as! UIImage.
+        picker.mediaTypes = ["public.image"]
         present(picker, animated: true, completion: nil)
     }
     

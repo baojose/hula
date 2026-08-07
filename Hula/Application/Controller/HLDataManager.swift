@@ -306,6 +306,12 @@ class HLDataManager: NSObject {
         return false
     }
     
+    /// Whether seller-profile options should show "Trade with this user" (start a NEW trade).
+    /// False when already in an active room OR when a pending inbound offer needs Accept/Decline instead.
+    class func shouldOfferStartTradeAction(tradingWith: Bool, pendingInboundOffer: Bool) -> Bool {
+        return !tradingWith && !pendingInboundOffer
+    }
+    
     func myRoomsFull() -> Bool{
         if (arrCurrentTrades.count >= HulaUser.sharedInstance.maxTrades){
             return true
