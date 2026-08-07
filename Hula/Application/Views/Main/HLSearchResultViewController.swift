@@ -260,6 +260,25 @@ class HLSearchResultViewController: BaseViewController, UITableViewDataSource, U
         })
     }
     
+    /// Reputation filter: `minimumPercent == 0` means "All". Otherwise require
+    /// seller `feedback_points / feedback_count * 100 >= minimumPercent`.
+    /// Uses floatFromJSON so whole-number JSON (Int/NSNumber) still counts.
+    class func sellerMeetsReputation(_ user: NSDictionary?, minimumPercent: Int) -> Bool {
+        if minimumPercent <= 0 {
+            return true
+        }
+        guard let user = user else {
+            return false
+        }
+        guard let up = CommonUtils.floatFromJSON(user.object(forKey: "feedback_points")),
+              let uc = CommonUtils.floatFromJSON(user.object(forKey: "feedback_count")),
+              uc != 0 else {
+            return false
+        }
+        let perc = Int(round(up / uc * 100))
+        return perc >= minimumPercent
+    }
+
     func getFilteredList(){
         filteredList = []
         guard let products = productsList as? [NSDictionary] else {
@@ -278,10 +297,8 @@ class HLSearchResultViewController: BaseViewController, UITableViewDataSource, U
                 isValidCond = true
             }
             
-            
-            if filterReputation == 0 {
-                isValidRep = true
-            }
+            let seller = usersList.object(forKey: hprod.productOwner) as? NSDictionary
+            isValidRep = HLSearchResultViewController.sellerMeetsReputation(seller, minimumPercent: filterReputation)
             
             
             if filterDistance == 0.0 || commonUtils.getCGDistanceFrom(loc: hprod.productLocation) < filterDistance {

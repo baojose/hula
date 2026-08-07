@@ -885,52 +885,42 @@ class HLDataManager: NSObject {
         //print (self.onboardingTutorials)
     }//eom
     
+    /// First non-empty string among alternate API/plist keys. Avoids force-casts
+    /// when restoring session fields from cold-start dictionaries.
+    class func stringField(_ dict: NSDictionary, keys: [String]) -> String? {
+        for key in keys {
+            if let value = dict.object(forKey: key) as? String {
+                return value
+            }
+        }
+        return nil
+    }
+
     func updateUserFromDict(dict: NSDictionary){
         let user = HulaUser.sharedInstance
-        if dict.object(forKey: "token") as? String != nil {
-            user.token = dict.object(forKey: "token")! as! String
+        if let token = HLDataManager.stringField(dict, keys: ["token"]) {
+            user.token = token
         }
-        if dict.object(forKey: "userId") as? String != nil {
-            user.userId = dict.object(forKey: "userId")! as! String
+        if let userId = HLDataManager.stringField(dict, keys: ["userId", "_id"]) {
+            user.userId = userId
         }
-        if dict.object(forKey: "_id") as? String != nil {
-            user.userId = dict.object(forKey: "_id")! as! String
+        if let nick = HLDataManager.stringField(dict, keys: ["userNick", "nick"]) {
+            user.userNick = nick
         }
-        if dict.object(forKey: "userNick") as? String != nil {
-            user.userNick = dict.object(forKey: "userNick")! as! String
+        if let name = HLDataManager.stringField(dict, keys: ["userName", "name"]) {
+            user.userName = name
         }
-        if dict.object(forKey: "nick") as? String != nil {
-            user.userNick = dict.object(forKey: "nick")! as! String
+        if let email = HLDataManager.stringField(dict, keys: ["userEmail", "email"]) {
+            user.userEmail = email
         }
-        if dict.object(forKey: "userName") as? String != nil {
-            user.userName = dict.object(forKey: "userName")! as! String
+        if let bio = HLDataManager.stringField(dict, keys: ["userBio", "bio"]) {
+            user.userBio = bio
         }
-        if dict.object(forKey: "name") as? String != nil {
-            user.userName = dict.object(forKey: "name")! as! String
+        if let photo = HLDataManager.stringField(dict, keys: ["userPhotoURL", "image"]) {
+            user.userPhotoURL = photo
         }
-        if dict.object(forKey: "userEmail") as? String != nil {
-            user.userEmail = dict.object(forKey: "userEmail")! as! String
-        }
-        if dict.object(forKey: "email") as? String != nil {
-            user.userEmail = dict.object(forKey: "email")! as! String
-        }
-        if dict.object(forKey: "userBio") as? String != nil {
-            user.userBio = dict.object(forKey: "userBio")! as! String
-        }
-        if dict.object(forKey: "bio") as? String != nil {
-            user.userBio = dict.object(forKey: "bio")! as! String
-        }
-        if dict.object(forKey: "userPhotoURL") as? String != nil {
-            user.userPhotoURL = dict.object(forKey: "userPhotoURL")! as! String
-        }
-        if dict.object(forKey: "image") as? String != nil {
-            user.userPhotoURL = dict.object(forKey: "image")! as! String
-        }
-        if dict.object(forKey: "userLocationName") as? String != nil {
-            user.userLocationName = dict.object(forKey: "userLocationName")! as! String
-        }
-        if dict.object(forKey: "location_name") as? String != nil {
-            user.userLocationName = dict.object(forKey: "location_name")! as! String
+        if let locationName = HLDataManager.stringField(dict, keys: ["userLocationName", "location_name"]) {
+            user.userLocationName = locationName
         }
         // Soft-parse across Int/Double/NSNumber; reject Bool so true never becomes max_trades=1.
         if let maxTrades = CommonUtils.intFromJSON(dict.object(forKey: "max_trades")) {

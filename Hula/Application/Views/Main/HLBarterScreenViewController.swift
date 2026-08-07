@@ -576,11 +576,21 @@ class HLBarterScreenViewController: BaseViewController {
         })
     }
     
+    /// Detects offer changes that must refresh the barter UI / local trade snapshot.
+    /// Compares each cash side independently — a net-difference check misses equal
+    /// offsets (e.g. both sides 0→10) and leaves Accept/Send with stale money.
+    class func tradeOfferChanged(from current: HulaTrade, to incoming: HulaTrade) -> Bool {
+        return incoming.other_products != current.other_products
+            || incoming.owner_products != current.owner_products
+            || incoming.owner_money != current.owner_money
+            || incoming.other_money != current.other_money
+    }
+
     func updateTradeInterface(dict: NSDictionary){
         let newTrade: HulaTrade = HulaTrade();
         newTrade.loadFrom(dict: dict);
         
-        if (newTrade.other_products != self.thisTrade.other_products) || (newTrade.owner_products != self.thisTrade.owner_products) || (newTrade.owner_money - newTrade.other_money != self.thisTrade.owner_money - self.thisTrade.other_money){
+        if HLBarterScreenViewController.tradeOfferChanged(from: self.thisTrade, to: newTrade) {
             print ("trades are different. Updating interface");
             
             
