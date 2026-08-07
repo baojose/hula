@@ -19,14 +19,14 @@ class HLCustomCameraViewController: BaseViewController, UIImagePickerControllerD
     @IBOutlet var imageView2: UIImageView!
     @IBOutlet var imageView3: UIImageView!
     @IBOutlet var imageView4: UIImageView!
-    
+
     //@IBOutlet weak var imgOverlay: UIImageView!
     @IBOutlet weak var btnCapture: UIButton!
-    
+
     @IBOutlet var cameraOptionView: UIView!
     @IBOutlet var selectFromCameraButton: UIButton!
-    
-    
+
+
     // vars related with Camera
     let captureSession = AVCaptureSession()
     let stillImageOutput = AVCaptureStillImageOutput()
@@ -34,16 +34,16 @@ class HLCustomCameraViewController: BaseViewController, UIImagePickerControllerD
     var captureDevice : AVCaptureDevice?
     var currentEditingIndex: Int = 0
     var image_dismissing: Bool = false
-    
+
     // vars related with Photo Albums
     var arrAlbumPhotos: NSMutableArray!
     var arrSelectedIndexs: NSMutableArray!
     fileprivate let imageManager = PHCachingImageManager()
-    
+
     let picker = UIImagePickerController()
-    
-    
-    
+
+
+
     override func viewDidLoad() {
         super.viewDidLoad()
         picker.delegate = self
@@ -62,8 +62,8 @@ class HLCustomCameraViewController: BaseViewController, UIImagePickerControllerD
             self.initView()
             self.initCamera()
         }
-        
-        
+
+
         let appDelegate = UIApplication.shared.delegate as! AppDelegate
         appDelegate.allowRotation = false
     }
@@ -71,25 +71,25 @@ class HLCustomCameraViewController: BaseViewController, UIImagePickerControllerD
         //print("resetting images based on real content")
         self.initData()
     }
-    
+
     override func viewDidAppear(_ animated: Bool) {
-        
+
     }
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
     }
-    
+
     func initView(){
-        
+
         dataManager.newProduct = HulaProduct.init()
-        
+
         pageTitleLabel.attributedText = commonUtils.attributedStringWithTextSpacing(pageTitleLabel.text!, 2.33)
         commonUtils.setRoundedRectBorderImageView(imageView1, 1.0, UIColor.init(white: 1, alpha: 0.9), 0.0)
         commonUtils.setRoundedRectBorderImageView(imageView2, 1.0, UIColor.init(white: 1, alpha: 0.9), 0.0)
         commonUtils.setRoundedRectBorderImageView(imageView3, 1.0, UIColor.init(white: 1, alpha: 0.9), 0.0)
         commonUtils.setRoundedRectBorderImageView(imageView4, 1.0, UIColor.init(white: 1, alpha: 0.9), 0.0)
-        
-        
+
+
         let recognizer1 = UITapGestureRecognizer()
         recognizer1.addTarget(self, action: #selector(selectedImageTapped))
         let recognizer2 = UITapGestureRecognizer()
@@ -103,12 +103,12 @@ class HLCustomCameraViewController: BaseViewController, UIImagePickerControllerD
         imageView3.addGestureRecognizer(recognizer3)
         imageView4.addGestureRecognizer(recognizer4)
     }
-    
+
     @IBAction func dismissCameraNoproduct(_ sender: Any) {
         HLDataManager.sharedInstance.uploadMode = false
         self.dismiss(animated: true, completion: nil)
     }
-    
+
     func initData(){
         arrAlbumPhotos = NSMutableArray.init()
         arrSelectedIndexs = NSMutableArray.init()
@@ -117,7 +117,7 @@ class HLCustomCameraViewController: BaseViewController, UIImagePickerControllerD
         imageView2.image = nil
         imageView3.image = nil
         imageView4.image = nil
-        
+
         if dataManager.newProduct.arrProductPhotos.count > 0 {
             for i in 0 ..< dataManager.newProduct.arrProductPhotos.count{
                 if i == 0 {
@@ -136,10 +136,10 @@ class HLCustomCameraViewController: BaseViewController, UIImagePickerControllerD
         }
     }
 
-    
-    
-    
-    
+
+
+
+
     func selectedImageTapped(_ sender: UITapGestureRecognizer){
         //print("Touches began")
         let tappedIndex: Int = (sender.view?.tag)!
@@ -154,10 +154,10 @@ class HLCustomCameraViewController: BaseViewController, UIImagePickerControllerD
     func fullScreenImage(image: UIImage, index: Int) {
         print("opening full screen...")
         currentEditingIndex = index
-        
-        
+
+
         let newImageView = UIImageView(image: image)
-        
+
         newImageView.frame = CGRect(x: self.view.frame.width/2, y: self.view.frame.height/2, width: 10, height:10)
         newImageView.backgroundColor = .black
         newImageView.contentMode = .scaleAspectFit
@@ -178,17 +178,17 @@ class HLCustomCameraViewController: BaseViewController, UIImagePickerControllerD
             self.tabBarController?.tabBar.isHidden = true
         }
     }
-    
+
     func dismissFullscreenImage(_ sender: UIGestureRecognizer) {
         if (!image_dismissing){
             guard let panRecognizer = sender as? UIPanGestureRecognizer else {
                 return
             }
             let velocity = panRecognizer.velocity(in: self.view)
-            
+
             self.navigationController?.isNavigationBarHidden = false
             self.tabBarController?.tabBar.isHidden = false
-            
+
             UIView.animate(withDuration: 0.3, animations: {
                 sender.view?.frame = CGRect(x: self.view.frame.width/2 + velocity.x/2, y: self.view.frame.height/2 + velocity.y/2, width: 30, height:30)
                 sender.view?.alpha = 0
@@ -200,7 +200,7 @@ class HLCustomCameraViewController: BaseViewController, UIImagePickerControllerD
         }
     }
     func dismissFullscreenImageDirect() {
-        
+
         if let imageView = self.view.viewWithTag(10001) as? UIImageView {
             UIView.animate(withDuration: 0.3, animations: {
                 imageView.frame = CGRect(x: self.view.frame.width/2 , y: self.view.frame.height/2, width: 30, height:30)
@@ -214,9 +214,9 @@ class HLCustomCameraViewController: BaseViewController, UIImagePickerControllerD
     }
     func optionsFullscreenImage(_ sender: UIGestureRecognizer) {
         let alertController = UIAlertController(title: NSLocalizedString("Image options...", comment: ""), message: nil, preferredStyle: .actionSheet)
-        
-        
-        
+
+
+
         if (self.currentEditingIndex != 0){
             let setDefaultButton = UIAlertAction(title: NSLocalizedString("Set image as default", comment: ""), style: .default, handler: { (action) -> Void in
                 swap(&self.dataManager.newProduct.arrProductPhotos[0], &self.dataManager.newProduct.arrProductPhotos[self.currentEditingIndex])
@@ -225,8 +225,8 @@ class HLCustomCameraViewController: BaseViewController, UIImagePickerControllerD
             })
             alertController.addAction(setDefaultButton)
         }
-        
-        
+
+
         let  deleteButton = UIAlertAction(title: NSLocalizedString("Delete image", comment: ""), style: .destructive, handler: { (action) -> Void in
             //print("Delete button tapped")
             self.dataManager.newProduct.arrProductPhotos.removeObject(at: self.currentEditingIndex);
@@ -234,19 +234,19 @@ class HLCustomCameraViewController: BaseViewController, UIImagePickerControllerD
             self.initData()
         })
         alertController.addAction(deleteButton)
-        
+
         let cancelButton = UIAlertAction(title: NSLocalizedString("Cancel", comment: ""), style: .cancel, handler: { (action) -> Void in
             //print("Cancel button tapped")
         })
-        
-        
+
+
         alertController.addAction(cancelButton)
-        
+
         self.present(alertController, animated: true)
     }
 
-    
-    
+
+
     //MARK: - Delegates
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [String : Any]) {
         // Soft-unwrap: video (or non-image) picks have no OriginalImage and used to crash via as! UIImage.
@@ -261,12 +261,12 @@ class HLCustomCameraViewController: BaseViewController, UIImagePickerControllerD
     func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
         dismiss(animated: true, completion: nil)
     }
-    
+
     /// Testable extract of UIImagePickerController image payload (nil for video / missing keys).
     class func imageFromPickerInfo(_ info: [String: Any]) -> UIImage? {
         return info[UIImagePickerControllerOriginalImage] as? UIImage
     }
-    
+
     func openImagePicker(){
         picker.allowsEditing = false
         picker.sourceType = .photoLibrary
@@ -275,9 +275,9 @@ class HLCustomCameraViewController: BaseViewController, UIImagePickerControllerD
         picker.mediaTypes = ["public.image"]
         present(picker, animated: true, completion: nil)
     }
-    
+
     // IB Actions
-    
+
     @IBAction func goNextPage(_ sender: UIButton) {
         // images taken. Let's go to the next step
         let viewController = self.storyboard?.instantiateViewController(withIdentifier: "postProductPage") as! HLPostProductViewController
@@ -287,12 +287,12 @@ class HLCustomCameraViewController: BaseViewController, UIImagePickerControllerD
     @IBAction func cameraOption(_ sender: Any) {
         //changeTakePhotoWithMode(0)
     }
-    
+
     @IBAction func showAlbum(_ sender: Any) {
         //changeTakePhotoWithMode(1)
         openImagePicker()
     }
-    
+
     @IBAction func actionCameraCapture(_ sender: AnyObject) {
         let flashView = UIView()
         flashView.frame = self.view.frame
@@ -305,21 +305,21 @@ class HLCustomCameraViewController: BaseViewController, UIImagePickerControllerD
             flashView.removeFromSuperview()
         }
 
-        
-        
+
+
         saveToCamera()
     }
-    
-    
-    
-    
+
+
+
+
     // custom functions on VC
-    
+
     func initCamera(){
         AVCaptureDevice.requestAccess(forMediaType: AVMediaTypeVideo) { response in
             if response {
                 //access granted
-                
+
                 DispatchQueue.main.async {
                     self.selectFromCameraButton.isEnabled = false
                     self.selectFromCameraButton.alpha = 0.4
@@ -338,16 +338,16 @@ class HLCustomCameraViewController: BaseViewController, UIImagePickerControllerD
                     }
                     self.beginSession()
                 }
-                
+
             } else {
                 self.showPermissionError()
             }
         }
-        
+
     }
     func showPermissionError(){
         let alert = UIAlertController(title: NSLocalizedString("Permission denied", comment: ""), message: "Please allow Hula access to your camera roll and camera.", preferredStyle: .alert)
-        
+
         alert.addAction(UIAlertAction(title: "Open Settings", style: .default, handler: { (_) -> Void in
             guard let settingsUrl = URL(string: UIApplicationOpenSettingsURLString) else {
                 return
@@ -361,7 +361,7 @@ class HLCustomCameraViewController: BaseViewController, UIImagePickerControllerD
             }
         }));
         alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
-        
+
         self.present(alert, animated: true)
     }
     func beginSession() {
@@ -371,16 +371,16 @@ class HLCustomCameraViewController: BaseViewController, UIImagePickerControllerD
         do {
             try captureSession.addInput(AVCaptureDeviceInput(device: captureDevice))
             stillImageOutput.outputSettings = [AVVideoCodecKey:AVVideoCodecJPEG]
-            
+
             if captureSession.canAddOutput(stillImageOutput) {
                 captureSession.addOutput(stillImageOutput)
             }
-            
+
         }
         catch {
             print("error: \(error.localizedDescription)")
         }
-        
+
         guard let previewLayer = AVCaptureVideoPreviewLayer(session: captureSession) else {
             print("no preview layer")
             return
@@ -389,22 +389,22 @@ class HLCustomCameraViewController: BaseViewController, UIImagePickerControllerD
         //previewLayer.videoGravity = AVLayerVideoGravityResizeAspect
         previewLayer.connection.videoOrientation = AVCaptureVideoOrientation.portrait
         viewCamera.layer.addSublayer(previewLayer)
-        
+
         previewLayer.frame = CGRect(x:0, y:0,  width: viewCamera.layer.frame.width, height:viewCamera.layer.frame.height);
         captureSession.startRunning()
-        
+
         self.view.addSubview(navView)
         //self.view.addSubview(imgOverlay)
         self.view.addSubview(controlView)
     }
-    
+
     func saveToCamera() {
-        
+
         if let videoConnection = stillImageOutput.connection(withMediaType: AVMediaTypeVideo) {
-            
+
             stillImageOutput.captureStillImageAsynchronously(from: videoConnection, completionHandler: { (CMSampleBuffer, Error) in
                 if let imageData = AVCaptureStillImageOutput.jpegStillImageNSDataRepresentation(CMSampleBuffer) {
-                    
+
                     if let cameraImage = UIImage(data: imageData) {
                         self.showImages(self.commonUtils.cropImage(cameraImage, HulaConstants.product_image_thumb_size))
                         self.selectFromCameraButton.isHidden = false
@@ -413,7 +413,7 @@ class HLCustomCameraViewController: BaseViewController, UIImagePickerControllerD
             })
         }
     }
-    
+
     func isSelectedImage(_ index: Int!) -> Int{
         var isSelected = -1
         for i in 0 ..< arrSelectedIndexs.count{
@@ -444,8 +444,8 @@ class HLCustomCameraViewController: BaseViewController, UIImagePickerControllerD
         }
         selectFromCameraButton.isEnabled = true
         selectFromCameraButton.alpha = 1
-        
-        
+
+
         dataManager.newProduct.arrProductPhotos = NSMutableArray.init()
         if imageView1.image != nil {dataManager.newProduct.arrProductPhotos.add(imageView1.image! as UIImage)}
         if imageView2.image != nil {dataManager.newProduct.arrProductPhotos.add(imageView2.image! as UIImage)}
@@ -466,8 +466,8 @@ class HLCustomCameraViewController: BaseViewController, UIImagePickerControllerD
             imageView4.image = nil
         }
     }
-    
+
     func productImagesPreViews(){
-        
+
     }
 }

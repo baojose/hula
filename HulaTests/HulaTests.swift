@@ -10,17 +10,17 @@ import XCTest
 @testable import Hula
 
 class HulaTests: XCTestCase {
-    
+
     override func setUp() {
         super.setUp()
     }
-    
+
     override func tearDown() {
         super.tearDown()
     }
-    
+
     // MARK: - Album / profile picker (Aug 7 critical)
-    
+
     func testPictureSelectPickerInfoRejectsMissingImage() {
         // Video picks (or empty info) have no OriginalImage — must not force-cast.
         XCTAssertNil(HLPictureSelectViewController.imageFromPickerInfo([:]))
@@ -28,7 +28,7 @@ class HulaTests: XCTestCase {
             UIImagePickerControllerMediaType: "public.movie"
         ]))
     }
-    
+
     func testPictureSelectPickerInfoAcceptsImage() {
         let image = UIImage()
         let extracted = HLPictureSelectViewController.imageFromPickerInfo([
@@ -36,14 +36,14 @@ class HulaTests: XCTestCase {
         ])
         XCTAssertNotNil(extracted)
     }
-    
+
     func testCustomCameraPickerInfoRejectsMissingImage() {
         XCTAssertNil(HLCustomCameraViewController.imageFromPickerInfo([:]))
         XCTAssertNil(HLCustomCameraViewController.imageFromPickerInfo([
             UIImagePickerControllerMediaType: "public.movie"
         ]))
     }
-    
+
     func testCustomCameraPickerInfoAcceptsImage() {
         let image = UIImage()
         let extracted = HLCustomCameraViewController.imageFromPickerInfo([
@@ -51,23 +51,23 @@ class HulaTests: XCTestCase {
         ])
         XCTAssertNotNil(extracted)
     }
-    
+
     // MARK: - Seller profile pending-offer gate (Aug 7 critical)
-    
+
     func testShouldOfferStartTradeWhenIdle() {
         XCTAssertTrue(HLDataManager.shouldOfferStartTradeAction(
             tradingWith: false,
             pendingInboundOffer: false
         ))
     }
-    
+
     func testShouldNotOfferStartTradeWhenAlreadyTrading() {
         XCTAssertFalse(HLDataManager.shouldOfferStartTradeAction(
             tradingWith: true,
             pendingInboundOffer: false
         ))
     }
-    
+
     func testShouldNotOfferStartTradeWhenPendingInboundOffer() {
         // Options → "Trade with this user" must not POST a second room while Accept/Decline is showing.
         XCTAssertFalse(HLDataManager.shouldOfferStartTradeAction(
@@ -75,7 +75,7 @@ class HulaTests: XCTestCase {
             pendingInboundOffer: true
         ))
     }
-    
+
     func testShouldNotOfferStartTradeWhenBothTradingAndPending() {
         XCTAssertFalse(HLDataManager.shouldOfferStartTradeAction(
             tradingWith: true,
