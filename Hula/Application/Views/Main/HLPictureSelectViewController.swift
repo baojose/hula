@@ -11,8 +11,8 @@ import AVFoundation
 import Photos
 
 class HLPictureSelectViewController: BaseViewController, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
-    
-    
+
+
     @IBOutlet weak var titleLabel: UILabel!
     @IBOutlet weak var viewCamera: UIView!
     @IBOutlet weak var navView: UIView!
@@ -25,36 +25,36 @@ class HLPictureSelectViewController: BaseViewController, UIImagePickerController
     var captureDevice : AVCaptureDevice?
     var resultingImage: String = ""
     var backCam:Bool = true
-    
+
     var originalSettingsVC:HLSettingViewController?
     var originalProfileVC:HLProfileViewController?
-    
+
     // vars related with Photo Albums
     var arrAlbumPhotos: NSMutableArray!
     var arrSelectedIndexs: NSMutableArray!
     fileprivate let imageManager = PHCachingImageManager()
-    
+
     let picker = UIImagePickerController()
-    
-    
+
+
     override var prefersStatusBarHidden: Bool {
         return true
     }
-    
+
     override func viewDidLoad() {
         super.viewDidLoad()
 
         // Do any additional setup after loading the view.
         picker.delegate = self
-        
-        
+
+
         self.initView()
         self.initCamera()
         self.beginSession()
-        
+
         let appDelegate = UIApplication.shared.delegate as! AppDelegate
         appDelegate.allowRotation = false
-        
+
     }
     func initView(){
         titleLabel.attributedText = commonUtils.attributedStringWithTextSpacing(titleLabel.text!, 2.33)
@@ -80,21 +80,30 @@ class HLPictureSelectViewController: BaseViewController, UIImagePickerController
             }
         }
     }
-    
+
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [String : Any]) {
-        let chosenImage = info[UIImagePickerControllerOriginalImage] as! UIImage //2
+        // Soft-unwrap: video (or non-image) picks have no OriginalImage and used to crash via as! UIImage.
+        guard let chosenImage = HLPictureSelectViewController.imageFromPickerInfo(info) else {
+            dismiss(animated: true, completion: nil)
+            return
+        }
         let croppedImage:UIImage = self.commonUtils.cropImage(chosenImage, HulaConstants.product_image_thumb_size)
         // save the image
         uploadImage(croppedImage)
         //dismiss(animated:true, completion: nil) //5
         dismissToPreviousPage(croppedImage)
     }
+
+    /// Testable extract of UIImagePickerController image payload (nil for video / missing keys).
+    class func imageFromPickerInfo(_ info: [String: Any]) -> UIImage? {
+        return info[UIImagePickerControllerOriginalImage] as? UIImage
+    }
     func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
         dismiss(animated: true, completion: nil)
     }
-    
-    
-    
+
+
+
     func beginSession() {
         if captureDevice == nil {
             return
@@ -102,16 +111,16 @@ class HLPictureSelectViewController: BaseViewController, UIImagePickerController
         do {
             try captureSession.addInput(AVCaptureDeviceInput(device: captureDevice))
             stillImageOutput.outputSettings = [AVVideoCodecKey:AVVideoCodecJPEG]
-            
+
             if captureSession.canAddOutput(stillImageOutput) {
                 captureSession.addOutput(stillImageOutput)
             }
-            
+
         }
         catch {
             print("error: \(error.localizedDescription)")
         }
-        
+
         guard let previewLayer = AVCaptureVideoPreviewLayer(session: captureSession) else {
             print("no preview layer")
             return
@@ -121,29 +130,29 @@ class HLPictureSelectViewController: BaseViewController, UIImagePickerController
         viewCamera.layer.addSublayer(previewLayer)
         previewLayer.frame = CGRect(x:0, y:0,  width: viewCamera.layer.frame.width, height:viewCamera.layer.frame.height);
         captureSession.startRunning()
-        
+
         self.view.addSubview(navView)
         //self.view.addSubview(imgOverlay)
         self.view.addSubview(controlView)
     }
     func stopSession() {
-        
+
         captureSession.stopRunning()
-        
-        
+
+
         for i : AVCaptureDeviceInput in (self.captureSession.inputs as! [AVCaptureDeviceInput]){
             self.captureSession.removeInput(i)
         }
-        
-        
+
+
     }
-    
+
 
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
     }
-    
+
     @IBAction func closeCameraTapped(_ sender: Any) {
         self.dismissToPreviousPage(sender)
     }
@@ -158,7 +167,7 @@ class HLPictureSelectViewController: BaseViewController, UIImagePickerController
         beginSession()
     }
     @IBAction func takePhotoAction(_ sender: Any) {
-        
+
         let flashView = UIView()
         flashView.frame = self.view.frame
         flashView.backgroundColor = UIColor.white
@@ -169,28 +178,29 @@ class HLPictureSelectViewController: BaseViewController, UIImagePickerController
         }) { (success) in
             flashView.removeFromSuperview()
         }
-        
-        
+
+
         saveToCamera(sender)
         //dismissToPreviousPage(sender)
     }
     func openImagePicker(){
         picker.allowsEditing = false
         picker.sourceType = .photoLibrary
-        //picker.mediaTypes = [kUTTypeImage as String]
-        //print(picker.mediaTypes)
+        // Images only — default photoLibrary media types include video; picking one
+        // crashed in didFinishPickingMediaWithInfo via as! UIImage.
+        picker.mediaTypes = ["public.image"]
         present(picker, animated: true, completion: nil)
     }
-    
+
     func saveToCamera(_ sender: Any) {
-        
+
         if let videoConnection = stillImageOutput.connection(withMediaType: AVMediaTypeVideo) {
-            
+
             stillImageOutput.captureStillImageAsynchronously(from: videoConnection, completionHandler: { (CMSampleBuffer, Error) in
                 if let imageData = AVCaptureStillImageOutput.jpegStillImageNSDataRepresentation(CMSampleBuffer) {
-                    
+
                     if let cameraImage = UIImage(data: imageData) {
-                        
+
                         self.stopSession()
                         // save this image
                         let croppedImage:UIImage = self.commonUtils.cropImage(cameraImage, HulaConstants.product_image_thumb_size)
@@ -200,8 +210,8 @@ class HLPictureSelectViewController: BaseViewController, UIImagePickerController
             })
         }
     }
-    
-    
+
+
     func uploadImage(_ image:UIImage) {
         //print("Getting user info...")
         //print("Uploading images...")
@@ -217,7 +227,7 @@ class HLPictureSelectViewController: BaseViewController, UIImagePickerController
                                 print(pos)
                                 self.resultingImage = HulaConstants.staticServerURL + filePath
                                 HulaUser.sharedInstance.userPhotoURL = self.resultingImage
-                                
+
                                 HulaUser.sharedInstance.updateServerData()
                                 HLDataManager.sharedInstance.writeUserData()
                                 //print(self.originalSettingsVC)
