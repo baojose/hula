@@ -107,7 +107,10 @@ class HLProductPictureEditViewController: BaseViewController, UIImagePickerContr
     
     
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [String : Any]) {
-        let chosenImage = info[UIImagePickerControllerOriginalImage] as! UIImage //2
+        guard let chosenImage = CommonUtils.pickedOriginalImage(from: info) else {
+            dismiss(animated: true, completion: nil)
+            return
+        }
         let croppedImage:UIImage = self.commonUtils.cropImage(chosenImage, HulaConstants.product_image_thumb_size)
         // save the image
         self.stopSession()
@@ -177,10 +180,21 @@ class HLProductPictureEditViewController: BaseViewController, UIImagePickerContr
         picker.delegate = self;
         picker.allowsEditing = false
         picker.sourceType = .photoLibrary
-        picker.mediaTypes = UIImagePickerController.availableMediaTypes(for: .photoLibrary)!
+        // Images only — availableMediaTypes includes video and picking one
+        // crashed in didFinishPickingMediaWithInfo via as! UIImage.
+        picker.mediaTypes = CommonUtils.photoLibraryImageMediaTypes()
         present(picker, animated: true, completion: nil)
     }
     
+    /// Still-image completions must hop to main before session/UI work.
+    static func performCameraUIUpdate(_ work: @escaping () -> Void) {
+        if Thread.isMainThread {
+            work()
+        } else {
+            DispatchQueue.main.async(execute: work)
+        }
+    }
+
     func saveToCamera(_ sender: Any) {
         
         if let videoConnection = stillImageOutput.connection(withMediaType: AVMediaTypeVideo) {
@@ -189,11 +203,13 @@ class HLProductPictureEditViewController: BaseViewController, UIImagePickerContr
                 if let imageData = AVCaptureStillImageOutput.jpegStillImageNSDataRepresentation(CMSampleBuffer) {
                     
                     if let cameraImage = UIImage(data: imageData) {
-                        
                         let croppedImage:UIImage = self.commonUtils.cropImage(cameraImage, HulaConstants.product_image_thumb_size)
-                        self.stopSession()
-                        // save this image
-                        self.uploadImage(croppedImage)
+                        // captureStillImageAsynchronously completes off the main thread;
+                        // stopSession/dismiss must not run off-main.
+                        HLProductPictureEditViewController.performCameraUIUpdate {
+                            self.stopSession()
+                            self.uploadImage(croppedImage)
+                        }
                     }
                 }
             })

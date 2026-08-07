@@ -308,7 +308,17 @@ class HLPostProductViewController: BaseViewController {
         self.presentingViewController?.presentingViewController?.dismiss(animated: true, completion: nil)
     }
     @IBAction func publishNewProduct(_ sender: Any) {
-            dataManager.newProduct.productName = NSLocalizedString("Untitled product", comment: "")
+        guard dataManager.newProduct.arrProductPhotos.firstObject as? UIImage != nil else {
+            let alert = UIAlertController(
+                title: NSLocalizedString("Add a photo", comment: ""),
+                message: NSLocalizedString("Please add at least one photo before publishing.", comment: ""),
+                preferredStyle: .alert
+            )
+            alert.addAction(UIAlertAction(title: NSLocalizedString("Ok", comment: ""), style: .default, handler: nil))
+            self.present(alert, animated: true, completion: nil)
+            return
+        }
+        dataManager.newProduct.productName = NSLocalizedString("Untitled product", comment: "")
         NotificationCenter.default.post(name: NSNotification.Name(rawValue: "uploadModeUpdateDesign"), object: nil)
         self.presentingViewController?.presentingViewController?.dismiss(animated: true, completion: nil)
     }
@@ -341,15 +351,31 @@ extension HLPostProductViewController: UITableViewDelegate, UITableViewDataSourc
         return cell
     }
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        
+        // Publishing with zero photos creates an orphan listing then crashes when
+        // the complete-profile sheet force-casts arrProductPhotos[0].
+        guard dataManager.newProduct.arrProductPhotos.firstObject as? UIImage != nil else {
+            let alert = UIAlertController(
+                title: NSLocalizedString("Add a photo", comment: ""),
+                message: NSLocalizedString("Please add at least one photo before publishing.", comment: ""),
+                preferredStyle: .alert
+            )
+            alert.addAction(UIAlertAction(title: NSLocalizedString("Ok", comment: ""), style: .default, handler: nil))
+            self.present(alert, animated: true, completion: nil)
+            return
+        }
+
         let category : NSDictionary = dataManager.arrCategories.object(at: indexPath.row) as! NSDictionary
         print(category)
-        dataManager.newProduct.productCategory = category.object(forKey: "name") as! String
-        dataManager.newProduct.productCategoryId = category.object(forKey: "_id") as! String
-        
+        guard let categoryName = category.object(forKey: "name") as? String,
+              let categoryId = category.object(forKey: "_id") as? String else {
+            return
+        }
+        dataManager.newProduct.productCategory = categoryName
+        dataManager.newProduct.productCategoryId = categoryId
+
         dataManager.newProduct.productName = NSLocalizedString("Untitled product", comment: "")
         NotificationCenter.default.post(name: NSNotification.Name(rawValue: "uploadModeUpdateDesign"), object: nil)
-        
+
         self.presentingViewController?.presentingViewController?.dismiss(animated: true, completion: nil)
     }
     

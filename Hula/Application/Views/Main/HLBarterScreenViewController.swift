@@ -64,6 +64,31 @@ class HLBarterScreenViewController: BaseViewController {
     
     var first_time_load_other : Bool = true
     var first_time_load_owner : Bool = true
+
+    /// Gate live_barter POSTs until both inventory callbacks have finished at least once.
+    class func canPublishLiveBarter(ownerFetchFinished: Bool, otherFetchFinished: Bool) -> Bool {
+        return ownerFetchFinished && otherFetchFinished
+    }
+
+    /// When an inventory fetch fails, keep the trade's known product IDs instead of
+    /// posting empty local arrays that wipe server-side trade items.
+    class func productIdsForLivePublish(fetchSucceeded: Bool, localProductIds: [String], fallbackTradeIds: [String]) -> [String] {
+        if fetchSucceeded {
+            return localProductIds
+        }
+        return fallbackTradeIds.filter { !$0.isEmpty }
+    }
+
+    /// Inventory callbacks always publish on the main queue so callers can reload UIKit.
+    class func deliverUserProductsOnMain(_ products: [HulaProduct], callback: @escaping ([HulaProduct]) -> Void) {
+        if Thread.isMainThread {
+            callback(products)
+        } else {
+            DispatchQueue.main.async {
+                callback(products)
+            }
+        }
+    }
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -119,9 +144,16 @@ class HLBarterScreenViewController: BaseViewController {
             
             //print(swappPageVC.parent)
             
-            myTradeIndex = min(swappPageVC.currentIndex, swappPageVC.arrTrades.count)
-            
-            let ct = swappPageVC.arrTrades[swappPageVC.currentIndex]
+            // currentIndex can become stale if arrTrades shrinks during an open session.
+            guard let safeIndex = CommonUtils.sharedInstance.clampedTradeIndex(
+                swappPageVC.currentIndex,
+                tradeCount: swappPageVC.arrTrades.count
+            ) else {
+                return
+            }
+            myTradeIndex = safeIndex
+
+            let ct = swappPageVC.arrTrades[myTradeIndex]
             //print("ct \(ct)")
             thisTrade.loadFrom(dict: ct)
             if (thisTrade.owner_id == HulaUser.sharedInstance.userId){
@@ -492,6 +524,14 @@ class HLBarterScreenViewController: BaseViewController {
         productsTimer = Timer.scheduledTimer(timeInterval: 5, target: self, selector: #selector(self.refreshProductsArrays), userInfo: nil, repeats: true);
     }
     func updateLiveBarter(){
+        // Avoid posting empty owner/other product lists before both inventory fetches finish.
+        guard HLBarterScreenViewController.canPublishLiveBarter(
+            ownerFetchFinished: !first_time_load_owner,
+            otherFetchFinished: !first_time_load_other
+        ) else {
+            return
+        }
+
         let queryURL = HulaConstants.apiURL + "live_barter/" + self.thisTrade.tradeId;
         
         var otherp:String = "";
@@ -536,11 +576,21 @@ class HLBarterScreenViewController: BaseViewController {
         })
     }
     
+    /// Detects offer changes that must refresh the barter UI / local trade snapshot.
+    /// Compares each cash side independently — a net-difference check misses equal
+    /// offsets (e.g. both sides 0→10) and leaves Accept/Send with stale money.
+    class func tradeOfferChanged(from current: HulaTrade, to incoming: HulaTrade) -> Bool {
+        return incoming.other_products != current.other_products
+            || incoming.owner_products != current.owner_products
+            || incoming.owner_money != current.owner_money
+            || incoming.other_money != current.other_money
+    }
+
     func updateTradeInterface(dict: NSDictionary){
         let newTrade: HulaTrade = HulaTrade();
         newTrade.loadFrom(dict: dict);
         
-        if (newTrade.other_products != self.thisTrade.other_products) || (newTrade.owner_products != self.thisTrade.owner_products) || (newTrade.owner_money - newTrade.other_money != self.thisTrade.owner_money - self.thisTrade.other_money){
+        if HLBarterScreenViewController.tradeOfferChanged(from: self.thisTrade, to: newTrade) {
             print ("trades are different. Updating interface");
             
             
@@ -714,8 +764,9 @@ class HLBarterScreenViewController: BaseViewController {
             let queryURL = HulaConstants.apiURL + "products/user/" + user
             //print(queryURL)
             HLDataManager.sharedInstance.httpGet(urlstr: queryURL, taskCallback: { (ok, json) in
-                if (ok){
-                    DispatchQueue.main.async {
+                // httpGet callbacks run on a URLSession queue; callers reload UICollectionViews.
+                DispatchQueue.main.async {
+                    if (ok){
                         if let dictionary = json as? [Any] {
                             //print(dictionary)
                             var productList: [HulaProduct] = []
@@ -726,8 +777,11 @@ class HLBarterScreenViewController: BaseViewController {
                                 //print("item")
                                 //print(item)
                                 if let product_data = item as? [String : Any]{
-                                    let id = product_data["_id"] as! String
-                                    let name = product_data["title"] as! String
+                                    guard let identity = CommonUtils.barterProductIdentity(from: product_data) else {
+                                        continue
+                                    }
+                                    let id = identity.id
+                                    let name = identity.title
                                     var image = product_data["image_url"] as? String
                                     if (image == nil){
                                         image = CommonUtils.sharedInstance.productImageURL(productId: id)
@@ -749,14 +803,14 @@ class HLBarterScreenViewController: BaseViewController {
                                     productList.append(newProd)
                                 }
                             }
-                            taskCallback(productList)
+                            HLBarterScreenViewController.deliverUserProductsOnMain(productList, callback: taskCallback)
                         } else {
-                            taskCallback([])
+                            HLBarterScreenViewController.deliverUserProductsOnMain([], callback: taskCallback)
                         }
+                    } else {
+                        // connection error — still on main so callers can safely touch UIKit
+                        HLBarterScreenViewController.deliverUserProductsOnMain([], callback: taskCallback)
                     }
-                } else {
-                    // connection error
-                    taskCallback([])
                 }
             })
         }

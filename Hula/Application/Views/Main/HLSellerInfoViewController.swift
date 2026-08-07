@@ -249,8 +249,11 @@ class HLSellerInfoViewController: BaseViewController, UITableViewDelegate, UITab
                 if (ok){
                     print(json!)
                     if (json as? [String: Any]) != nil {
-                        if let pnc = self.navigationController?.navigationController as? HulaPortraitNavigationController {
-                            pnc.openSwapView()
+                        // httpGet completes off the main thread; present Trade Rooms on main.
+                        DispatchQueue.main.async {
+                            if let pnc = self.navigationController?.navigationController as? HulaPortraitNavigationController {
+                                pnc.openSwapView()
+                            }
                         }
                     }
                     //NotificationCenter.default.post(name: self.signupRecieved, object: signupSuccess)
