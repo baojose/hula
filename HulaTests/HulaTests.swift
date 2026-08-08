@@ -10,27 +10,68 @@ import XCTest
 @testable import Hula
 
 class HulaTests: XCTestCase {
-    
+
     override func setUp() {
         super.setUp()
-        // Put setup code here. This method is called before the invocation of each test method in the class.
     }
-    
+
     override func tearDown() {
-        // Put teardown code here. This method is called after the invocation of each test method in the class.
         super.tearDown()
     }
-    
-    func testExample() {
-        // This is an example of a functional test case.
-        // Use XCTAssert and related functions to verify your tests produce the correct results.
+
+    // MARK: - Complete-profile Done inventory index (Aug 8 critical)
+
+    func testIndexOfProductFindsNonLastIncompleteProduct() {
+        let a = HulaProduct(id: "a", name: "A", image: "")
+        let b = HulaProduct(id: "b", name: "Untitled product", image: "")
+        let c = HulaProduct(id: "c", name: "C", image: "")
+        let products = [a, b, c]
+        XCTAssertEqual(HLMyProductsViewController.indexOfProduct(withId: "b", in: products), 1)
+        XCTAssertNotEqual(HLMyProductsViewController.indexOfProduct(withId: "b", in: products), products.count - 1)
     }
-    
-    func testPerformanceExample() {
-        // This is an example of a performance test case.
-        self.measure {
-            // Put the code you want to measure the time of here.
-        }
+
+    func testIndexOfProductMissingIdReturnsNil() {
+        let a = HulaProduct(id: "a", name: "A", image: "")
+        XCTAssertNil(HLMyProductsViewController.indexOfProduct(withId: "missing", in: [a]))
+        XCTAssertNil(HLMyProductsViewController.indexOfProduct(withId: "", in: [a]))
     }
-    
+
+    // MARK: - My Products payload / false session expiry
+
+    func testProductsListPayloadAcceptsArray() {
+        XCTAssertTrue(HLMyProductsViewController.isProductsListPayload([]))
+        XCTAssertTrue(HLMyProductsViewController.isProductsListPayload([["_id": "1"]]))
+    }
+
+    func testProductsListPayloadRejectsErrorObject() {
+        // httpGet treats any JSON as ok=true; error objects must not force re-login.
+        XCTAssertFalse(HLMyProductsViewController.isProductsListPayload(["message": "Unauthorized"]))
+        XCTAssertFalse(HLMyProductsViewController.isProductsListPayload(nil))
+        XCTAssertFalse(HLMyProductsViewController.isProductsListPayload("bad"))
+    }
+
+    // MARK: - Home category num_products soft parse
+
+    func testCategoryProductCountSoftParsesMissingAndNumberTypes() {
+        XCTAssertEqual(HLHomeViewController.categoryProductCount(from: [:]), 0)
+        XCTAssertEqual(HLHomeViewController.categoryProductCount(from: ["num_products": 12]), 12)
+        XCTAssertEqual(HLHomeViewController.categoryProductCount(from: ["num_products": NSNumber(value: 7)]), 7)
+        XCTAssertEqual(HLHomeViewController.categoryProductCount(from: ["num_products": 3.0]), 3)
+    }
+
+    // MARK: - Shared image URL loader
+
+    func testResolvedImageURLFallsBackForMalformedString() {
+        let malformed = "https://hula.trading/files/user/photo with spaces.jpg"
+        let resolved = UIImageView.resolvedImageURL(from: malformed)
+        XCTAssertNotNil(resolved)
+        XCTAssertEqual(resolved?.absoluteString, HulaConstants.noProductThumb)
+    }
+
+    func testResolvedImageURLAcceptsValidAndEmpty() {
+        let valid = UIImageView.resolvedImageURL(from: "https://hula.trading/files/user/ok.jpg")
+        XCTAssertEqual(valid?.absoluteString, "https://hula.trading/files/user/ok.jpg")
+        let empty = UIImageView.resolvedImageURL(from: "")
+        XCTAssertEqual(empty?.absoluteString, HulaConstants.noProductThumb)
+    }
 }
