@@ -1406,6 +1406,7 @@ class HulaTests: XCTestCase {
         let openExisting = HLProductDetailViewController.addToTradeNextStep(
             isLoggedIn: true,
             alreadyTradingWithOwner: true,
+            pendingInboundOffer: false,
             numProducts: 2,
             roomsFull: false
         )
@@ -1416,6 +1417,7 @@ class HulaTests: XCTestCase {
         let confirm = HLProductDetailViewController.addToTradeNextStep(
             isLoggedIn: true,
             alreadyTradingWithOwner: false,
+            pendingInboundOffer: false,
             numProducts: 2,
             roomsFull: false
         )
@@ -1426,6 +1428,7 @@ class HulaTests: XCTestCase {
         let login = HLProductDetailViewController.addToTradeNextStep(
             isLoggedIn: false,
             alreadyTradingWithOwner: false,
+            pendingInboundOffer: false,
             numProducts: 0,
             roomsFull: false
         )
@@ -1436,6 +1439,7 @@ class HulaTests: XCTestCase {
         let noProducts = HLProductDetailViewController.addToTradeNextStep(
             isLoggedIn: true,
             alreadyTradingWithOwner: false,
+            pendingInboundOffer: false,
             numProducts: 0,
             roomsFull: false
         )
@@ -1446,6 +1450,7 @@ class HulaTests: XCTestCase {
         let roomsFull = HLProductDetailViewController.addToTradeNextStep(
             isLoggedIn: true,
             alreadyTradingWithOwner: false,
+            pendingInboundOffer: false,
             numProducts: 1,
             roomsFull: true
         )
@@ -1901,5 +1906,121 @@ class HulaTests: XCTestCase {
         XCTAssertEqual(user.userBio, "builder")
         XCTAssertEqual(user.userPhotoURL, "https://cdn.example/ada.jpg")
         XCTAssertEqual(user.userLocationName, "Atlanta")
+    }
+
+    // MARK: - Beyond #113/#114: pending-offer gates + session location soft-parse
+
+    func testShouldOfferStartTradeWhenIdle() {
+        XCTAssertTrue(HLDataManager.shouldOfferStartTradeAction(
+            tradingWith: false,
+            pendingInboundOffer: false
+        ))
+    }
+
+    func testShouldNotOfferStartTradeWhenAlreadyTrading() {
+        XCTAssertFalse(HLDataManager.shouldOfferStartTradeAction(
+            tradingWith: true,
+            pendingInboundOffer: false
+        ))
+    }
+
+    func testShouldNotOfferStartTradeWhenPendingInboundOffer() {
+        // Options → "Trade with this user" must not POST a second room while Accept/Decline is showing.
+        XCTAssertFalse(HLDataManager.shouldOfferStartTradeAction(
+            tradingWith: false,
+            pendingInboundOffer: true
+        ))
+    }
+
+    func testShouldNotOfferStartTradeWhenBothTradingAndPending() {
+        XCTAssertFalse(HLDataManager.shouldOfferStartTradeAction(
+            tradingWith: true,
+            pendingInboundOffer: true
+        ))
+    }
+
+    func testAddToTradeNextStepIgnoresPendingInboundOffer() {
+        // Product-detail Options / Trade CTA must not burn a second room while seller
+        // Accept/Decline is still the active inbound offer.
+        let pending = HLProductDetailViewController.addToTradeNextStep(
+            isLoggedIn: true,
+            alreadyTradingWithOwner: false,
+            pendingInboundOffer: true,
+            numProducts: 2,
+            roomsFull: false
+        )
+        if case .ignorePendingInboundOffer = pending {} else {
+            XCTFail("expected ignorePendingInboundOffer when inbound offer is pending")
+        }
+
+        // Active rooms still win over pending-inbound so the existing room opens.
+        let openExisting = HLProductDetailViewController.addToTradeNextStep(
+            isLoggedIn: true,
+            alreadyTradingWithOwner: true,
+            pendingInboundOffer: true,
+            numProducts: 2,
+            roomsFull: false
+        )
+        if case .openExistingTrade = openExisting {} else {
+            XCTFail("expected openExistingTrade to prefer an active room")
+        }
+    }
+
+    func testLocationFromJSONAcceptsBridgedNumberArrays() {
+        let fromNSNumber = CommonUtils.location(fromJSON: [
+            NSNumber(value: 33.749),
+            NSNumber(value: -84.388)
+        ])
+        XCTAssertNotNil(fromNSNumber)
+        XCTAssertEqual(fromNSNumber!.coordinate.latitude, 33.749, accuracy: 0.000001)
+        XCTAssertEqual(fromNSNumber!.coordinate.longitude, -84.388, accuracy: 0.000001)
+
+        let fromNSArray = CommonUtils.location(fromJSON: NSArray(array: [
+            NSNumber(value: 40.7128),
+            NSNumber(value: -74.006)
+        ]))
+        XCTAssertNotNil(fromNSArray)
+        XCTAssertEqual(fromNSArray!.coordinate.latitude, 40.7128, accuracy: 0.000001)
+        XCTAssertEqual(fromNSArray!.coordinate.longitude, -74.006, accuracy: 0.000001)
+    }
+
+    func testLocationFromJSONRejectsBoolAndMalformedPayloads() {
+        XCTAssertNil(CommonUtils.location(fromJSON: nil))
+        XCTAssertNil(CommonUtils.location(fromJSON: [NSNumber(value: 1.0)]))
+        XCTAssertNil(CommonUtils.location(fromJSON: [true, NSNumber(value: -84.0)]))
+        XCTAssertNil(CommonUtils.location(fromJSON: ["north", "west"]))
+        XCTAssertNil(CommonUtils.location(fromJSON: "not coordinates"))
+    }
+
+    func testUpdateUserFromDictSoftParsesUserLocationArrays() {
+        let user = HulaUser.sharedInstance
+        let previousLocation = user.location
+        defer { user.location = previousLocation }
+
+        user.location = CLLocation(latitude: 0, longitude: 0)
+        HLDataManager.sharedInstance.updateUserFromDict(dict: [
+            "userLocation": [
+                NSNumber(value: 41.3874),
+                NSNumber(value: 2.1686)
+            ]
+        ] as NSDictionary)
+        assertLocation(user.location, latitude: 41.3874, longitude: 2.1686)
+
+        // API-shaped `location` key is accepted when userLocation is absent.
+        user.location = CLLocation(latitude: 0, longitude: 0)
+        HLDataManager.sharedInstance.updateUserFromDict(dict: [
+            "location": NSArray(array: [
+                NSNumber(value: -33.865143),
+                NSNumber(value: 151.2099)
+            ])
+        ] as NSDictionary)
+        assertLocation(user.location, latitude: -33.865143, longitude: 151.2099)
+
+        // Malformed payloads must not wipe a good session location.
+        user.location = CLLocation(latitude: 10.5, longitude: -20.25)
+        HLDataManager.sharedInstance.updateUserFromDict(dict: [
+            "userLocation": [true, NSNumber(value: 1.0)]
+        ] as NSDictionary)
+        assertLocation(user.location, latitude: 10.5, longitude: -20.25)
     }
 }
