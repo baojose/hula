@@ -112,6 +112,20 @@ class HLHomeViewController: BaseViewController, UIScrollViewDelegate, UITextFiel
         }
         searchTxtField.addTarget(self, action: #selector(searchTextDidChange(_:)), for: UIControlEvents.editingChanged)
     }
+
+    /// Soft-parse category `num_products` — missing/null/NSNumber must not crash Categories tab.
+    class func categoryProductCount(from category: NSDictionary) -> Int {
+        if let v = category.object(forKey: "num_products") as? Int {
+            return v
+        }
+        if let v = category.object(forKey: "num_products") as? Double {
+            return Int(v)
+        }
+        if let v = category.object(forKey: "num_products") as? NSNumber {
+            return v.intValue
+        }
+        return 0
+    }
     // Custom functions for ViewController
     func getNearProducts() {
         
@@ -267,7 +281,7 @@ class HLHomeViewController: BaseViewController, UIScrollViewDelegate, UITextFiel
                 print("\"\(cat_name)\" = \"\(cat_name)\";");
                 cell.categoryName.attributedText = commonUtils.attributedStringWithTextSpacing(NSLocalizedString(cat_name, comment: ""), CGFloat(2.33))
                 cell.categoryImage.image = UIImage.init(named: category.object(forKey: "icon") as! String)
-                cell.categoryProductNum.text = String(format:NSLocalizedString("%i products", comment: ""), (category.object(forKey: "num_products") as! Int))
+                cell.categoryProductNum.text = String(format:NSLocalizedString("%i products", comment: ""), HLHomeViewController.categoryProductCount(from: category))
                 return cell
             }
         }

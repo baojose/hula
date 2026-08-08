@@ -365,17 +365,20 @@ extension String {
 let imageCache = NSCache<AnyObject, AnyObject>()
 
 extension UIImageView {
-    func loadImageFromURL(urlString: String) {
-        
-        
-        var _urlString = ""
-        if (urlString == ""){
-            _urlString = HulaConstants.noProductThumb
-        } else {
-            _urlString = urlString
+    /// Resolve a loadable URL; invalid strings (spaces, bad encoding) fall back to the placeholder.
+    class func resolvedImageURL(from urlString: String) -> URL? {
+        let candidate = (urlString == "") ? HulaConstants.noProductThumb : urlString
+        if let url = URL(string: candidate) {
+            return url
         }
-        
-        let url = URL(string: _urlString)!
+        return URL(string: HulaConstants.noProductThumb)
+    }
+
+    func loadImageFromURL(urlString: String) {
+        // Malformed API/upload URLs make URL(string:) nil — never force-unwrap.
+        guard let url = UIImageView.resolvedImageURL(from: urlString) else {
+            return
+        }
         self.kf.indicatorType = .activity
         self.kf.setImage(with: url, options: [.transition(.fade(0.5))]) { (im, er, ty, ur) in
             if !(er == nil) {

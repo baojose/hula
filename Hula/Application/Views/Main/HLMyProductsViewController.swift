@@ -213,6 +213,22 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
     // Custom functions for ViewController
     
     
+    /// Locate a product by id so Complete Profile Done updates the edited row, not always the last row.
+    class func indexOfProduct(withId productId: String, in products: [HulaProduct]) -> Int? {
+        guard productId.count > 0 else { return nil }
+        for (idx, product) in products.enumerated() {
+            if product.productId == productId {
+                return idx
+            }
+        }
+        return nil
+    }
+
+    /// `products/user/{id}` must return an array. Object/error JSON must not force re-login.
+    class func isProductsListPayload(_ json: Any?) -> Bool {
+        return json is [Any]
+    }
+
     func newPostModeDesign(_ notification: NSNotification) {
         //print("NewPostMode")
         //print(HLDataManager.sharedInstance.newProduct.productId)
@@ -220,9 +236,13 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
         if dataManager.uploadMode == true {
             // just if we are coming back from product creation
             if HLDataManager.sharedInstance.newProduct.productId.count > 0 && self.arrayProducts.count > 0{
-                // item already exists and is being updated
-                // this should not happen
-                self.arrayProducts[self.arrayProducts.count - 1] = dataManager.newProduct
+                // item already exists and is being updated — match by id (incomplete reopen is often not last)
+                if let idx = HLMyProductsViewController.indexOfProduct(
+                    withId: HLDataManager.sharedInstance.newProduct.productId,
+                    in: self.arrayProducts
+                ) {
+                    self.arrayProducts[idx] = dataManager.newProduct
+                }
                 updateProduct()
                 
                 productTableView.reloadData()
@@ -274,7 +294,8 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
                     DispatchQueue.main.async {
                         self.spinner.hide()
                         
-                        if let dictionary = json as? [Any] {
+                        if HLMyProductsViewController.isProductsListPayload(json),
+                           let dictionary = json as? [Any] {
                             let products_arr = dictionary
                             
                             self.arrayProducts = []
@@ -295,20 +316,17 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
                                 self.noProductsView.isHidden = false
                             }
                         } else {
-                            let alert = UIAlertController(title: "User token expired", message: "Your Hula session is expired. Please log in again.", preferredStyle: UIAlertControllerStyle.alert)
-                            alert.addAction(UIAlertAction(title: "Ok", style: UIAlertActionStyle.default, handler: nil))
-                            self.present(alert, animated: true, completion: {
-                                //print("going to login page")
-                                self.openUserIdentification()
-                            })
+                            // Non-array JSON (API error objects, etc.) is not proof the token expired.
+                            // Keep the existing list; do not force re-login (distinct from Profile /me expiry).
                         }
                         self.productTableView.reloadData()
                         HLDataManager.sharedInstance.writeUserData()
                     }
                 } else {
-                    // connection error
-                    //print("Connection error")
-                    self.noProductsView.isHidden = true
+                    // connection error — hide spinner on main; do not treat as expired session
+                    DispatchQueue.main.async {
+                        self.spinner.hide()
+                    }
                 }
             })
         }
