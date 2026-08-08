@@ -556,6 +556,60 @@ extension CommonUtils {
         return info[UIImagePickerControllerOriginalImage] as? UIImage
     }
 
+    /// Soft-parse a lat/lng pair from JSON/plist arrays (NSNumber/Int/Double/CGFloat).
+    /// Rejects Bool/NSNumber-bool so true never becomes latitude 1.
+    static func coordinatePair(from value: Any?) -> (latitude: CLLocationDegrees, longitude: CLLocationDegrees)? {
+        var coordinates: [Any]
+        if let tmp = value as? [Any] {
+            coordinates = tmp
+        } else if let tmp = value as? NSArray {
+            coordinates = []
+            for item in tmp {
+                coordinates.append(item)
+            }
+        } else {
+            return nil
+        }
+
+        guard coordinates.count >= 2,
+            let latitude = coordinateValue(from: coordinates[0]),
+            let longitude = coordinateValue(from: coordinates[1]) else {
+                return nil
+        }
+        return (latitude, longitude)
+    }
+
+    static func location(fromJSON value: Any?) -> CLLocation? {
+        guard let pair = coordinatePair(from: value) else { return nil }
+        return CLLocation(latitude: pair.latitude, longitude: pair.longitude)
+    }
+
+    private static func coordinateValue(from value: Any) -> CLLocationDegrees? {
+        if value is Bool {
+            return nil
+        }
+        if let number = value as? NSNumber {
+            let type = String(cString: number.objCType)
+            if type == "c" || type == "B" {
+                return nil
+            }
+            return CLLocationDegrees(number.doubleValue)
+        }
+        if let value = value as? Double {
+            return CLLocationDegrees(value)
+        }
+        if let value = value as? Float {
+            return CLLocationDegrees(value)
+        }
+        if let value = value as? CGFloat {
+            return CLLocationDegrees(value)
+        }
+        if let value = value as? Int {
+            return CLLocationDegrees(value)
+        }
+        return nil
+    }
+
     /// Build the product create/update form body with delimiter-safe encoding.
     static func productFormPostString(title: String,
                                       description: String,

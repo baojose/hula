@@ -280,6 +280,7 @@ class HLProductDetailViewController: BaseViewController, UIScrollViewDelegate, U
     enum AddToTradeNextStep {
         case requireLogin
         case openExistingTrade
+        case ignorePendingInboundOffer
         case alertNoProducts
         case alertRoomsFull
         case alertConfirmNewTrade
@@ -288,6 +289,7 @@ class HLProductDetailViewController: BaseViewController, UIScrollViewDelegate, U
     class func addToTradeNextStep(
         isLoggedIn: Bool,
         alreadyTradingWithOwner: Bool,
+        pendingInboundOffer: Bool,
         numProducts: Int,
         roomsFull: Bool
     ) -> AddToTradeNextStep {
@@ -296,6 +298,11 @@ class HLProductDetailViewController: BaseViewController, UIScrollViewDelegate, U
         }
         if alreadyTradingWithOwner {
             return .openExistingTrade
+        }
+        // Pending inbound offers live in arrTrades (Accept/Decline on seller profile).
+        // Starting a second outbound room burns a slot and makes getTradeWith prefer it.
+        if pendingInboundOffer {
+            return .ignorePendingInboundOffer
         }
         if numProducts == 0 {
             return .alertNoProducts
@@ -311,6 +318,7 @@ class HLProductDetailViewController: BaseViewController, UIScrollViewDelegate, U
         let step = HLProductDetailViewController.addToTradeNextStep(
             isLoggedIn: HulaUser.sharedInstance.isUserLoggedIn(),
             alreadyTradingWithOwner: HLDataManager.sharedInstance.amITradingWith(ownerId),
+            pendingInboundOffer: HLDataManager.sharedInstance.amIOfferedToTradeWith(ownerId),
             numProducts: HulaUser.sharedInstance.numProducts,
             roomsFull: HLDataManager.sharedInstance.myRoomsFull()
         )
@@ -326,6 +334,8 @@ class HLProductDetailViewController: BaseViewController, UIScrollViewDelegate, U
             if let pnc = self.navigationController?.navigationController as? HulaPortraitNavigationController {
                 pnc.openSwapView()
             }
+            return
+        case .ignorePendingInboundOffer:
             return
         case .alertNoProducts, .alertRoomsFull, .alertConfirmNewTrade:
             break
@@ -367,13 +377,19 @@ class HLProductDetailViewController: BaseViewController, UIScrollViewDelegate, U
                 let alert = UIAlertController(title: NSLocalizedString("Product options", comment: ""),
                                               message: nil,
                                               preferredStyle: .actionSheet)
-        
-                
-                
-                let removeAction = UIAlertAction(title: NSLocalizedString("Add product to barter screen", comment: ""), style: .default, handler: { action -> Void in
-                    self.addToTradeAction( UIButton() )
-                })
-                alert.addAction(removeAction)
+
+                let ownerId = currentProduct.productOwner ?? ""
+                // Same duplicate-room risk as seller Options: hide start-trade while already
+                // trading or while a pending inbound offer still needs Accept/Decline.
+                if HLDataManager.shouldOfferStartTradeAction(
+                    tradingWith: HLDataManager.sharedInstance.amITradingWith(ownerId),
+                    pendingInboundOffer: HLDataManager.sharedInstance.amIOfferedToTradeWith(ownerId)
+                ) {
+                    let removeAction = UIAlertAction(title: NSLocalizedString("Add product to barter screen", comment: ""), style: .default, handler: { action -> Void in
+                        self.addToTradeAction( UIButton() )
+                    })
+                    alert.addAction(removeAction)
+                }
         
                 let reportAction = UIAlertAction(title: NSLocalizedString("Report this product as abusive", comment: ""), style: .destructive, handler: { action -> Void in
                     
@@ -433,6 +449,11 @@ extension HLProductDetailViewController: AlertDelegate{
                 if let productId = currentProduct.productId {
                     //print(productId)
                     let otherId = currentProduct.productOwner
+                    // Re-check pending inbound offer before POSTing — stale confirm alerts
+                    // must not create a second room while Accept/Decline is still active.
+                    if HLDataManager.sharedInstance.amIOfferedToTradeWith(otherId ?? "") {
+                        return
+                    }
                     if (HulaUser.sharedInstance.userId.count>0){
                         // user is loggedin
                         DispatchQueue.main.async {

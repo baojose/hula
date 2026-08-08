@@ -460,6 +460,12 @@ class HLDataManager: NSObject {
         return false
     }
     
+    /// Seller Options → "Trade with this user" must not appear (or POST) while already
+    /// trading or while a pending inbound offer still needs Accept/Decline.
+    class func shouldOfferStartTradeAction(tradingWith: Bool, pendingInboundOffer: Bool) -> Bool {
+        return !tradingWith && !pendingInboundOffer
+    }
+
     func myRoomsFull() -> Bool{
         if (arrCurrentTrades.count >= HulaUser.sharedInstance.maxTrades){
             return true
@@ -926,8 +932,11 @@ class HLDataManager: NSObject {
         if let maxTrades = CommonUtils.intFromJSON(dict.object(forKey: "max_trades")) {
             user.maxTrades = maxTrades
         }
-        if let loc = dict.object(forKey: "userLocation") as? [CGFloat] {
-            user.location = CLLocation(latitude: CLLocationDegrees(loc[0]), longitude: CLLocationDegrees(loc[1]))
+        // Soft-parse session/API location arrays. `as? [CGFloat]` drops NSNumber-bridged
+        // plist/JSON coords and leaves the user at (0,0) after relaunch/login.
+        if let loc = CommonUtils.location(fromJSON: dict.object(forKey: "userLocation"))
+            ?? CommonUtils.location(fromJSON: dict.object(forKey: "location")) {
+            user.location = loc
         }
         if let n = CommonUtils.intFromJSON(dict.object(forKey: "numProducts")) {
             user.numProducts = n
