@@ -112,6 +112,21 @@ class HLHomeViewController: BaseViewController, UIScrollViewDelegate, UITextFiel
         }
         searchTxtField.addTarget(self, action: #selector(searchTextDidChange(_:)), for: UIControlEvents.editingChanged)
     }
+
+    /// Soft-parse category `num_products` — missing/null/NSNumber must not crash Categories tab.
+    class func categoryProductCount(from category: NSDictionary) -> Int {
+        if let v = category.object(forKey: "num_products") as? Int {
+            return v
+        }
+        if let v = category.object(forKey: "num_products") as? Double {
+            return Int(v)
+        }
+        if let v = category.object(forKey: "num_products") as? NSNumber {
+            return v.intValue
+        }
+        return 0
+    }
+
     // Custom functions for ViewController
     func getNearProducts() {
         
@@ -245,14 +260,10 @@ class HLHomeViewController: BaseViewController, UIScrollViewDelegate, UITextFiel
                         let thumb = commonUtils.getThumbFor(url: user_img)
                         cell.productOwnerImage.loadImageFromURL(urlString: thumb)
                     }
-                    let up = user.object(forKey: "feedback_points") as? Float
-                    let uc = user.object(forKey: "feedback_count") as? Float
-                    if (up != nil) && (uc != nil) && (uc != 0) {
-                        let perc_trade = round( up! / uc! * 100)
-                        cell.productTradeRate.text = "\(perc_trade)%"
-                    } else {
-                        cell.productTradeRate.text = "-"
-                    }
+                    cell.productTradeRate.text = CommonUtils.feedbackTradeRateLabel(
+                        points: user.object(forKey: "feedback_points"),
+                        count: user.object(forKey: "feedback_count")
+                    )
                     cell.productDistance.text = "(" + commonUtils.getDistanceFrom(loc: product.productLocation) + ")"
                 }
                 
@@ -267,7 +278,7 @@ class HLHomeViewController: BaseViewController, UIScrollViewDelegate, UITextFiel
                 print("\"\(cat_name)\" = \"\(cat_name)\";");
                 cell.categoryName.attributedText = commonUtils.attributedStringWithTextSpacing(NSLocalizedString(cat_name, comment: ""), CGFloat(2.33))
                 cell.categoryImage.image = UIImage.init(named: category.object(forKey: "icon") as! String)
-                cell.categoryProductNum.text = String(format:NSLocalizedString("%i products", comment: ""), (category.object(forKey: "num_products") as! Int))
+                cell.categoryProductNum.text = String(format:NSLocalizedString("%i products", comment: ""), HLHomeViewController.categoryProductCount(from: category))
                 return cell
             }
         }
@@ -435,21 +446,15 @@ class HLHomeViewController: BaseViewController, UIScrollViewDelegate, UITextFiel
             let queryURL = HulaConstants.apiURL + "search/auto/" + encodedKw!   
             //print(queryURL)
             HLDataManager.sharedInstance.httpGet(urlstr: queryURL, taskCallback: { (ok, json) in
-                self.filteredKeywordsArray.removeAllObjects()
-                self.filteredKeywordsArray.add(kw)
-                if (ok){
-                    DispatchQueue.main.async {
-                        if let dictionary = json as? [String:Any] {
-                            //print(dictionary)
-                            if let keys = dictionary["keywords"] as?  [Any] {
-                                for i in 0 ..< keys.count {
-                                    let nkw = keys[i] as! [String:Any]
-                                    let nkw_str = nkw["keyword"] as! String
-                                    if (nkw_str != kw){
-                                        self.filteredKeywordsArray.add(nkw_str)
-                                    }
-                                }
-                            }
+                // Mutate the shared keyword array only on the main thread. URLSession
+                // callbacks run in the background; overlapping searches race with
+                // searchProduct's main-thread removeAllObjects / table reads.
+                DispatchQueue.main.async {
+                    self.filteredKeywordsArray.removeAllObjects()
+                    if (ok){
+                        let keywords = CommonUtils.autocompleteKeywords(from: json, seed: kw)
+                        for keyword in keywords {
+                            self.filteredKeywordsArray.add(keyword)
                         }
                         if self.filteredKeywordsArray.count == 0 {
                             self.noResultView.isHidden = false
@@ -459,10 +464,10 @@ class HLHomeViewController: BaseViewController, UIScrollViewDelegate, UITextFiel
                             self.tableContainView.isHidden = false
                         }
                         self.productTableView.reloadData()
+                    } else {
+                        // connection error
+                        print("Connection error")
                     }
-                } else {
-                    // connection error
-                    print("Connection error")
                 }
             })
         }

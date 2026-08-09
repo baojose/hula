@@ -211,7 +211,30 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
     
     
     // Custom functions for ViewController
-    
+
+    /// Locate a product by id so Complete Profile Done updates the edited row, not always the last row.
+    class func indexOfProduct(withId productId: String, in products: [HulaProduct]) -> Int? {
+        guard productId.count > 0 else { return nil }
+        for (idx, product) in products.enumerated() {
+            if product.productId == productId {
+                return idx
+            }
+        }
+        return nil
+    }
+
+    /// `products/user/{id}` must return an array. Object/error JSON must not force re-login.
+    class func isProductsListPayload(_ json: Any?) -> Bool {
+        return json is [Any]
+    }
+
+    /// Soft-parse upload callback `position` so non-numeric/out-of-range values cannot crash.
+    class func uploadSlotIndex(from position: String?, maxSlots: Int = 4) -> Int? {
+        guard let position = position, let idx = Int(position), idx >= 0, idx < maxSlots else {
+            return nil
+        }
+        return idx
+    }
     
     func newPostModeDesign(_ notification: NSNotification) {
         //print("NewPostMode")
@@ -219,36 +242,55 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
         //print(dataManager.uploadMode)
         if dataManager.uploadMode == true {
             // just if we are coming back from product creation
-            if HLDataManager.sharedInstance.newProduct.productId.count > 0 && self.arrayProducts.count > 0{
-                // item already exists and is being updated
-                // this should not happen
-                self.arrayProducts[self.arrayProducts.count - 1] = dataManager.newProduct
+            let newProduct = HLDataManager.sharedInstance.newProduct
+            var existingIndex = self.arrayProducts.index(where: { $0 === newProduct })
+            if existingIndex == nil && newProduct.productId.count > 0 {
+                // After getUserProducts refresh, instances differ but productId matches.
+                existingIndex = HLMyProductsViewController.indexOfProduct(
+                    withId: newProduct.productId,
+                    in: self.arrayProducts
+                )
+            }
+
+            if let idx = existingIndex {
+                // Already tracking this create/update — never start a second create.
+                // Complete-profile "Done" re-enters here while productId may still be empty.
+                self.arrayProducts[idx] = newProduct
+                if newProduct.productId.count > 0 {
+                    updateProduct()
+                }
+                productTableView.reloadData()
+                productTableView.setContentOffset(CGPoint(x: 0.0, y: 0.0), animated: false)
+            } else if newProduct.productId.count > 0 {
+                // Known product id with no matching row: do not clobber the last inventory slot.
+                // Keep local list intact and persist via updateProduct only.
                 updateProduct()
-                
                 productTableView.reloadData()
                 productTableView.setContentOffset(CGPoint(x: 0.0, y: 0.0), animated: false)
             } else {
-                
-                
-                self.arrayProducts.append(HLDataManager.sharedInstance.newProduct)
+                self.arrayProducts.append(newProduct)
                 //start of uploading and saving product
                 uploadImages()
                 uploadProduct()
-                
+
                 // wait 2 seconds and open the details view
                 let when = DispatchTime.now() + 2
                 DispatchQueue.main.asyncAfter(deadline: when) {
+                    guard let firstPhoto = self.dataManager.newProduct.arrProductPhotos.firstObject as? UIImage else {
+                        // No local photo to preview; keep uploadMode so a later update can still persist.
+                        return
+                    }
                     let viewController = self.storyboard?.instantiateViewController(withIdentifier: "completeProductProfilePage") as! HLCompleteProductProfileViewController
-                    viewController.productImage = self.dataManager.newProduct.arrProductPhotos[0] as! UIImage
+                    viewController.productImage = firstPhoto
                     self.present(viewController, animated: true)
-                    
+
                     // next time coming to this VC, go straight to the update process
                     HLDataManager.sharedInstance.uploadMode = false
                 }
                 // refresh table
                 productTableView.reloadData()
                 productTableView.setContentOffset(CGPoint(x: 0.0, y: 0.0), animated: false)
-                
+
                 if let newCell = productTableView.cellForRow(at: IndexPath(row: 0, section: 0)) as? HLMyProductTableViewCell{
                     newCell.alpha = 0
                     let when = DispatchTime.now() + 0.3 // change 2 to desired number of seconds
@@ -258,8 +300,6 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
                     }
                 }
             }
-            
-            
         }
     }
     
@@ -274,7 +314,8 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
                     DispatchQueue.main.async {
                         self.spinner.hide()
                         
-                        if let dictionary = json as? [Any] {
+                        if HLMyProductsViewController.isProductsListPayload(json),
+                           let dictionary = json as? [Any] {
                             let products_arr = dictionary
                             
                             self.arrayProducts = []
@@ -295,20 +336,17 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
                                 self.noProductsView.isHidden = false
                             }
                         } else {
-                            let alert = UIAlertController(title: "User token expired", message: "Your Hula session is expired. Please log in again.", preferredStyle: UIAlertControllerStyle.alert)
-                            alert.addAction(UIAlertAction(title: "Ok", style: UIAlertActionStyle.default, handler: nil))
-                            self.present(alert, animated: true, completion: {
-                                //print("going to login page")
-                                self.openUserIdentification()
-                            })
+                            // Non-array JSON (API error objects, etc.) is not proof the token expired.
+                            // Keep the existing list; do not force re-login (distinct from Profile /me expiry).
                         }
                         self.productTableView.reloadData()
                         HLDataManager.sharedInstance.writeUserData()
                     }
                 } else {
-                    // connection error
-                    //print("Connection error")
-                    self.noProductsView.isHidden = true
+                    // connection error — hide spinner on main; do not treat as expired session
+                    DispatchQueue.main.async {
+                        self.spinner.hide()
+                    }
                 }
             })
         }
@@ -327,6 +365,9 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
                             //print(dictionary)
                             if let product_id = dictionary["product_id"] as? String {
                                 HLDataManager.sharedInstance.newProduct.productId = product_id
+                                // Persist title/description/images that may have been set while create was in flight
+                                // (complete-profile Done before product_id arrived).
+                                self.updateProduct()
                             }
                         }
                         
@@ -376,15 +417,16 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
         //print(HLDataManager.sharedInstance.newProduct.arrProductPhotoLink)
         //print(dataManager.newProduct.arrProductPhotoLink)
         let product_images_array = dataManager.newProduct.arrProductPhotoLink.joined(separator: ",")
-        var dataString:String = "title=" + dataManager.newProduct.productName.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)!
-        dataString += "&description=" + dataManager.newProduct.productDescription.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)!
-        dataString += "&condition=" + dataManager.newProduct.productCondition.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)!
-        dataString += "&category_id=" + dataManager.newProduct.productCategoryId.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)!
-        dataString += "&images=" + product_images_array.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)!
-        dataString += "&lat=\(HulaUser.sharedInstance.location.coordinate.latitude)"
-        dataString += "&lng=\(HulaUser.sharedInstance.location.coordinate.longitude)"
-        //print(dataString)
-        return dataString
+        // urlHostAllowed leaves &=+ unescaped and corrupts adjacent form fields.
+        return CommonUtils.productFormPostString(
+            title: dataManager.newProduct.productName ?? "",
+            description: dataManager.newProduct.productDescription ?? "",
+            condition: dataManager.newProduct.productCondition ?? "",
+            categoryId: dataManager.newProduct.productCategoryId ?? "",
+            imagesCSV: product_images_array,
+            latitude: HulaUser.sharedInstance.location.coordinate.latitude,
+            longitude: HulaUser.sharedInstance.location.coordinate.longitude
+        )
     }
     
     func uploadImages() {
@@ -404,16 +446,18 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
                                 DispatchQueue.main.async {
                                     if let dictionary = json as? [String: Any] {
                                         if let filePath:String = dictionary["path"] as? String {
-                                            if let pos = dictionary["position"] as? String {
-                                                //print(pos)
+                                            if let slot = HLMyProductsViewController.uploadSlotIndex(
+                                                from: dictionary["position"] as? String
+                                            ) {
+                                                //print(slot)
                                                 //print(filePath)
                                                 self.images_already_uploaded += 1
-                                                self.arrayImagesURL[Int(pos)!] = HulaConstants.staticServerURL + filePath
+                                                self.arrayImagesURL[slot] = HulaConstants.staticServerURL + filePath
                                                 HLDataManager.sharedInstance.newProduct.arrProductPhotoLink = self.arrayImagesURL
-                                                if Int(pos) == 0 {
+                                                if slot == 0 {
                                                     HLDataManager.sharedInstance.newProduct.productImage = HulaConstants.staticServerURL + filePath
                                                 }
-                                                //print(self.arrayImagesURL[Int(pos)!])
+                                                //print(self.arrayImagesURL[slot])
                                                 if (self.images_already_uploaded == self.images_to_upload){
                                                     self.updateProduct()
                                                 }
