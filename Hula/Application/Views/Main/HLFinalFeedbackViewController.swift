@@ -219,11 +219,24 @@ class HLFinalFeedbackViewController: UIViewController {
         let dataString:String = "trade_id=\(self.trade_id_closed)&user_id=\(self.user_id_closed)&comments=\(comments)&val=\(points)"
         print(dataString)
         HLDataManager.sharedInstance.httpPost(urlstr: queryURL, postString: dataString, isPut: false, taskCallback: { (ok, json) in
-            if (ok){
-                print(json!)
-                DispatchQueue.main.async {
-                    self.dismiss(animated: true, completion: {
-                    })
+            // Always leave the post-deal modal on the main thread — transport failures
+            // previously dropped the httpPost callback and left this screen stuck.
+            DispatchQueue.main.async {
+                if ok {
+                    if json != nil {
+                        print(json!)
+                    }
+                    self.dismiss(animated: true, completion: nil)
+                } else {
+                    // Stay on the modal so the user can tap OK again after reconnecting.
+                    self.step = 2
+                    let alert = UIAlertController(
+                        title: NSLocalizedString("Could not send feedback", comment: ""),
+                        message: NSLocalizedString("Please check your connection and try again.", comment: ""),
+                        preferredStyle: .alert
+                    )
+                    alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: ""), style: .default, handler: nil))
+                    self.present(alert, animated: true, completion: nil)
                 }
             }
         })
