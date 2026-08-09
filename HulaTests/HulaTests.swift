@@ -2023,4 +2023,136 @@ class HulaTests: XCTestCase {
         ] as NSDictionary)
         assertLocation(user.location, latitude: 10.5, longitude: -20.25)
     }
+
+    // MARK: - Complete-profile Done inventory index (#116)
+
+    func testIndexOfProductFindsNonLastIncompleteProduct() {
+        let a = HulaProduct(id: "a", name: "A", image: "")
+        let b = HulaProduct(id: "b", name: "Untitled product", image: "")
+        let c = HulaProduct(id: "c", name: "C", image: "")
+        let products = [a, b, c]
+        XCTAssertEqual(HLMyProductsViewController.indexOfProduct(withId: "b", in: products), 1)
+        XCTAssertNotEqual(HLMyProductsViewController.indexOfProduct(withId: "b", in: products), products.count - 1)
+    }
+
+    func testIndexOfProductMissingIdReturnsNil() {
+        let a = HulaProduct(id: "a", name: "A", image: "")
+        XCTAssertNil(HLMyProductsViewController.indexOfProduct(withId: "missing", in: [a]))
+        XCTAssertNil(HLMyProductsViewController.indexOfProduct(withId: "", in: [a]))
+    }
+
+    // MARK: - My Products payload / false session expiry (#116)
+
+    func testProductsListPayloadAcceptsArray() {
+        XCTAssertTrue(HLMyProductsViewController.isProductsListPayload([]))
+        XCTAssertTrue(HLMyProductsViewController.isProductsListPayload([["_id": "1"]]))
+    }
+
+    func testProductsListPayloadRejectsErrorObject() {
+        // httpGet treats any JSON as ok=true; error objects must not force re-login.
+        XCTAssertFalse(HLMyProductsViewController.isProductsListPayload(["message": "Unauthorized"]))
+        XCTAssertFalse(HLMyProductsViewController.isProductsListPayload(nil))
+        XCTAssertFalse(HLMyProductsViewController.isProductsListPayload("bad"))
+    }
+
+    // MARK: - Home category num_products soft parse (#116)
+
+    func testCategoryProductCountSoftParsesMissingAndNumberTypes() {
+        XCTAssertEqual(HLHomeViewController.categoryProductCount(from: [:]), 0)
+        XCTAssertEqual(HLHomeViewController.categoryProductCount(from: ["num_products": 12]), 12)
+        XCTAssertEqual(HLHomeViewController.categoryProductCount(from: ["num_products": NSNumber(value: 7)]), 7)
+        XCTAssertEqual(HLHomeViewController.categoryProductCount(from: ["num_products": 3.0]), 3)
+    }
+
+    // MARK: - Shared image URL loader (#116)
+
+    func testResolvedImageURLFallsBackForMalformedString() {
+        let malformed = "https://hula.trading/files/user/photo with spaces.jpg"
+        let resolved = UIImageView.resolvedImageURL(from: malformed)
+        XCTAssertNotNil(resolved)
+        XCTAssertEqual(resolved?.absoluteString, HulaConstants.noProductThumb)
+    }
+
+    func testResolvedImageURLAcceptsValidAndEmpty() {
+        let valid = UIImageView.resolvedImageURL(from: "https://hula.trading/files/user/ok.jpg")
+        XCTAssertEqual(valid?.absoluteString, "https://hula.trading/files/user/ok.jpg")
+        let empty = UIImageView.resolvedImageURL(from: "")
+        XCTAssertEqual(empty?.absoluteString, HulaConstants.noProductThumb)
+    }
+
+    // MARK: - Live-barter inventory fetch-failure placeholders (#106 wiring)
+
+    func testPlaceholderTradedProductsKeepIdsAndAreNotDeleted() {
+        let placeholders = HLBarterScreenViewController.placeholderTradedProducts(from: ["p1", "", "p2"])
+        XCTAssertEqual(placeholders.map { $0.productId }, ["p1", "p2"])
+        for product in placeholders {
+            XCTAssertNotEqual(product.productStatus, "deleted")
+        }
+        // generateProductArray strips only deleted/xmoney — placeholders must survive publish.
+        let vc = HLBarterScreenViewController()
+        XCTAssertEqual(vc.generateProductArray(from: placeholders), ["p1", "p2"])
+    }
+
+    func testProductIdsForLivePublishFallbackSurvivesEmptyLocalArrays() {
+        // Failed inventory leaves local arrays empty; Accept/live_barter must keep trade IDs.
+        let ids = HLBarterScreenViewController.productIdsForLivePublish(
+            fetchSucceeded: false,
+            localProductIds: [],
+            fallbackTradeIds: ["keep-a", "keep-b"]
+        )
+        XCTAssertEqual(ids, ["keep-a", "keep-b"])
+        XCTAssertFalse(ids.isEmpty)
+    }
+
+    // MARK: - Upload slot / picture-edit position soft parse
+
+    func testUploadSlotIndexAcceptsInRangePositions() {
+        XCTAssertEqual(HLMyProductsViewController.uploadSlotIndex(from: "0"), 0)
+        XCTAssertEqual(HLMyProductsViewController.uploadSlotIndex(from: "3"), 3)
+    }
+
+    func testUploadSlotIndexRejectsBlankNonNumericAndOutOfRange() {
+        XCTAssertNil(HLMyProductsViewController.uploadSlotIndex(from: nil))
+        XCTAssertNil(HLMyProductsViewController.uploadSlotIndex(from: ""))
+        XCTAssertNil(HLMyProductsViewController.uploadSlotIndex(from: "x"))
+        XCTAssertNil(HLMyProductsViewController.uploadSlotIndex(from: "4"))
+        XCTAssertNil(HLMyProductsViewController.uploadSlotIndex(from: "-1"))
+    }
+
+    func testUploadedImagePositionAcceptsOneBasedSlots() {
+        XCTAssertEqual(HLProductPictureEditViewController.uploadedImagePosition(from: "1"), 1)
+        XCTAssertEqual(HLProductPictureEditViewController.uploadedImagePosition(from: "4"), 4)
+        XCTAssertNil(HLProductPictureEditViewController.uploadedImagePosition(from: "0"))
+        XCTAssertNil(HLProductPictureEditViewController.uploadedImagePosition(from: "bad"))
+        XCTAssertNil(HLProductPictureEditViewController.uploadedImagePosition(from: nil))
+    }
+
+    // MARK: - Swapp remaining-time soft parse
+
+    func testRemainingResponseHoursLabelRejectsMissingOrMalformed() {
+        XCTAssertNil(HLSwappViewController.remainingResponseHoursLabel(lastUpdate: nil))
+        XCTAssertNil(HLSwappViewController.remainingResponseHoursLabel(lastUpdate: ""))
+        XCTAssertNil(HLSwappViewController.remainingResponseHoursLabel(lastUpdate: NSNumber(value: 1)))
+        XCTAssertNil(HLSwappViewController.remainingResponseHoursLabel(lastUpdate: "not-a-date"))
+    }
+
+    func testRemainingResponseHoursLabelReturnsNonNegativeHours() {
+        let now = Date(timeIntervalSince1970: 1_700_000_000)
+        let lastUpdate = now.addingTimeInterval(-2 * 60 * 60).iso8601
+        let label = HLSwappViewController.remainingResponseHoursLabel(
+            lastUpdate: lastUpdate,
+            now: now,
+            courtesyHours: 72
+        )
+        XCTAssertNotNil(label)
+        XCTAssertFalse(label?.hasPrefix("-") ?? true)
+        XCTAssertNotEqual(label, "")
+
+        let expired = HLSwappViewController.remainingResponseHoursLabel(
+            lastUpdate: now.addingTimeInterval(-100 * 60 * 60).iso8601,
+            now: now,
+            courtesyHours: 72
+        )
+        XCTAssertEqual(expired, "0")
+    }
 }
