@@ -383,7 +383,11 @@ class HLProfileViewController: BaseViewController {
     
     
     func selectedImageTapped(_ sender: UITapGestureRecognizer){
-        fullScreenImage(image:profileImageView.image!, index: 1)
+        // Avatar may still be nil while Kingfisher loads (or after a failed load).
+        // Settings already nil-guards; Profile must too (PR#98 only covered product modal/edit).
+        if let image = profileImageView.image {
+            fullScreenImage(image: image, index: 1)
+        }
     }
     
     

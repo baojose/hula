@@ -211,7 +211,30 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
     
     
     // Custom functions for ViewController
-    
+
+    /// Locate a product by id so Complete Profile Done updates the edited row, not always the last row.
+    class func indexOfProduct(withId productId: String, in products: [HulaProduct]) -> Int? {
+        guard productId.count > 0 else { return nil }
+        for (idx, product) in products.enumerated() {
+            if product.productId == productId {
+                return idx
+            }
+        }
+        return nil
+    }
+
+    /// `products/user/{id}` must return an array. Object/error JSON must not force re-login.
+    class func isProductsListPayload(_ json: Any?) -> Bool {
+        return json is [Any]
+    }
+
+    /// Soft-parse upload callback `position` so non-numeric/out-of-range values cannot crash.
+    class func uploadSlotIndex(from position: String?, maxSlots: Int = 4) -> Int? {
+        guard let position = position, let idx = Int(position), idx >= 0, idx < maxSlots else {
+            return nil
+        }
+        return idx
+    }
     
     func newPostModeDesign(_ notification: NSNotification) {
         //print("NewPostMode")
@@ -223,7 +246,10 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
             var existingIndex = self.arrayProducts.index(where: { $0 === newProduct })
             if existingIndex == nil && newProduct.productId.count > 0 {
                 // After getUserProducts refresh, instances differ but productId matches.
-                existingIndex = self.arrayProducts.index(where: { $0.productId == newProduct.productId })
+                existingIndex = HLMyProductsViewController.indexOfProduct(
+                    withId: newProduct.productId,
+                    in: self.arrayProducts
+                )
             }
 
             if let idx = existingIndex {
@@ -235,11 +261,10 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
                 }
                 productTableView.reloadData()
                 productTableView.setContentOffset(CGPoint(x: 0.0, y: 0.0), animated: false)
-            } else if newProduct.productId.count > 0 && self.arrayProducts.count > 0 {
-                // Fallback: update the most recently added row
-                self.arrayProducts[self.arrayProducts.count - 1] = newProduct
+            } else if newProduct.productId.count > 0 {
+                // Known product id with no matching row: do not clobber the last inventory slot.
+                // Keep local list intact and persist via updateProduct only.
                 updateProduct()
-
                 productTableView.reloadData()
                 productTableView.setContentOffset(CGPoint(x: 0.0, y: 0.0), animated: false)
             } else {
@@ -289,7 +314,8 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
                     DispatchQueue.main.async {
                         self.spinner.hide()
                         
-                        if let dictionary = json as? [Any] {
+                        if HLMyProductsViewController.isProductsListPayload(json),
+                           let dictionary = json as? [Any] {
                             let products_arr = dictionary
                             
                             self.arrayProducts = []
@@ -310,20 +336,17 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
                                 self.noProductsView.isHidden = false
                             }
                         } else {
-                            let alert = UIAlertController(title: "User token expired", message: "Your Hula session is expired. Please log in again.", preferredStyle: UIAlertControllerStyle.alert)
-                            alert.addAction(UIAlertAction(title: "Ok", style: UIAlertActionStyle.default, handler: nil))
-                            self.present(alert, animated: true, completion: {
-                                //print("going to login page")
-                                self.openUserIdentification()
-                            })
+                            // Non-array JSON (API error objects, etc.) is not proof the token expired.
+                            // Keep the existing list; do not force re-login (distinct from Profile /me expiry).
                         }
                         self.productTableView.reloadData()
                         HLDataManager.sharedInstance.writeUserData()
                     }
                 } else {
-                    // connection error
-                    //print("Connection error")
-                    self.noProductsView.isHidden = true
+                    // connection error — hide spinner on main; do not treat as expired session
+                    DispatchQueue.main.async {
+                        self.spinner.hide()
+                    }
                 }
             })
         }
@@ -423,16 +446,18 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
                                 DispatchQueue.main.async {
                                     if let dictionary = json as? [String: Any] {
                                         if let filePath:String = dictionary["path"] as? String {
-                                            if let pos = dictionary["position"] as? String {
-                                                //print(pos)
+                                            if let slot = HLMyProductsViewController.uploadSlotIndex(
+                                                from: dictionary["position"] as? String
+                                            ) {
+                                                //print(slot)
                                                 //print(filePath)
                                                 self.images_already_uploaded += 1
-                                                self.arrayImagesURL[Int(pos)!] = HulaConstants.staticServerURL + filePath
+                                                self.arrayImagesURL[slot] = HulaConstants.staticServerURL + filePath
                                                 HLDataManager.sharedInstance.newProduct.arrProductPhotoLink = self.arrayImagesURL
-                                                if Int(pos) == 0 {
+                                                if slot == 0 {
                                                     HLDataManager.sharedInstance.newProduct.productImage = HulaConstants.staticServerURL + filePath
                                                 }
-                                                //print(self.arrayImagesURL[Int(pos)!])
+                                                //print(self.arrayImagesURL[slot])
                                                 if (self.images_already_uploaded == self.images_to_upload){
                                                     self.updateProduct()
                                                 }
