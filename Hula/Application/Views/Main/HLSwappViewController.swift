@@ -68,6 +68,30 @@ class HLSwappViewController: UIViewController {
     let kTagProductsReceived: Int = 90441
     
     var firstLoad : Bool = true
+
+    /// Soft-parse trade `last_update` into remaining courtesy hours for the waiting-turn label.
+    /// Missing/malformed dates return nil so callers can hide the label instead of crashing.
+    class func remainingResponseHoursLabel(
+        lastUpdate: Any?,
+        now: Date = Date(),
+        courtesyHours: Double = HulaConstants.courtesyTime
+    ) -> String? {
+        guard let h_str = lastUpdate as? String, !h_str.isEmpty,
+              let date = h_str.dateFromISO8601?.addingTimeInterval(courtesyHours * 60.0 * 60.0) else {
+            return nil
+        }
+        let formatter = DateComponentsFormatter()
+        formatter.allowedUnits = [.hour]
+        formatter.unitsStyle = .short
+        guard var str_hours = formatter.string(from: now, to: date) else {
+            return nil
+        }
+        str_hours = (str_hours.replacingOccurrences(of: " hr", with: " h"))
+        if str_hours.hasPrefix("-") {
+            str_hours = "0"
+        }
+        return str_hours
+    }
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -638,21 +662,14 @@ class HLSwappViewController: UIViewController {
                                     self.otherOfferBtn.alpha = 0
                                     self.mainCentralLabel.alpha=1;
                                     self.mainCentralLabel.text = NSLocalizedString("Waiting for user reply", comment: "")
-                                    let h_str = thisTrade.object(forKey: "last_update") as! String
-                                    let date = h_str.dateFromISO8601?.addingTimeInterval(HulaConstants.courtesyTime * 60.0 * 60.0)
-                                    //print(date)
-                                    
-                                    let formatter = DateComponentsFormatter()
-                                    formatter.allowedUnits = [.hour]
-                                    formatter.unitsStyle = .short
-                                    var str_hours = formatter.string(from: Date(), to: date!)!
-                                    str_hours = (str_hours.replacingOccurrences(of: " hr", with: " h"))
-                                    if (str_hours[0] == "-"){
-                                        str_hours = "0";
+                                    if let str_hours = HLSwappViewController.remainingResponseHoursLabel(
+                                        lastUpdate: thisTrade.object(forKey: "last_update")
+                                    ) {
+                                        self.remainingTimeLabel.alpha = 1
+                                        self.remainingTimeLabel.text = NSLocalizedString("Remaining time for response:", comment: "") + " \(str_hours)"
+                                    } else {
+                                        self.remainingTimeLabel.alpha = 0
                                     }
-                                    
-                                    self.remainingTimeLabel.alpha = 1
-                                    self.remainingTimeLabel.text = NSLocalizedString("Remaining time for response:", comment: "") + " \(str_hours)"
                                     self.threeDotsView.isHidden = false;
                                     
                                 } else {

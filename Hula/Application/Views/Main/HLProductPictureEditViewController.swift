@@ -217,6 +217,14 @@ class HLProductPictureEditViewController: BaseViewController, UIImagePickerContr
     }
     
     
+    /// Soft-parse 1-based upload `position` for applyUploadedImage; reject non-numeric/blank.
+    class func uploadedImagePosition(from position: String?) -> Int? {
+        guard let position = position, let pos = Int(position), pos >= 1 else {
+            return nil
+        }
+        return pos
+    }
+
     func uploadImage(_ image:UIImage) {
         //print("Getting user info...")
         print("Uploading images...")
@@ -228,13 +236,15 @@ class HLProductPictureEditViewController: BaseViewController, UIImagePickerContr
                         //print(dictionary)
                         if let filePath:String = dictionary["path"] as? String {
                             //print(filePath)
-                            if let pos = dictionary["position"] as? String {
+                            if let pos = HLProductPictureEditViewController.uploadedImagePosition(
+                                from: dictionary["position"] as? String
+                            ) {
                                 //print(pos)
                                 self.resultingImage = HulaConstants.staticServerURL + filePath
                                 //print(self.resultingImage)
                                 
                                 
-                                self.prodDelegate?.imageUploaded(path:self.resultingImage, pos: Int(pos)! )
+                                self.prodDelegate?.imageUploaded(path:self.resultingImage, pos: pos )
                                 
                                 //print("sent to delegate")
                                 //print("dismiss")
