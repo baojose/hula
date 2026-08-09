@@ -213,18 +213,17 @@ class HLPictureSelectViewController: BaseViewController, UIImagePickerController
                         print(dictionary)
                         if let filePath:String = dictionary["path"] as? String {
                             print(filePath)
-                            if let pos = dictionary["position"] as? String {
-                                print(pos)
-                                self.resultingImage = HulaConstants.staticServerURL + filePath
-                                HulaUser.sharedInstance.userPhotoURL = self.resultingImage
-                                
-                                HulaUser.sharedInstance.updateServerData()
-                                HLDataManager.sharedInstance.writeUserData()
-                                //print(self.originalSettingsVC)
-                                self.originalSettingsVC?.smallProfileImage.loadImageFromURL(urlString: HulaUser.sharedInstance.userPhotoURL)
-                                self.originalProfileVC?.profileImageView.loadImageFromURL(urlString: HulaUser.sharedInstance.userPhotoURL)
-                                self.dismissToPreviousPage(self.resultingImage)
-                            }
+                            // Profile photo only needs the uploaded path. Gating on `position as? String`
+                            // silently dropped successful uploads when the API echoed a number.
+                            self.resultingImage = HulaConstants.staticServerURL + filePath
+                            HulaUser.sharedInstance.userPhotoURL = self.resultingImage
+
+                            HulaUser.sharedInstance.updateServerData()
+                            HLDataManager.sharedInstance.writeUserData()
+                            //print(self.originalSettingsVC)
+                            self.originalSettingsVC?.smallProfileImage.loadImageFromURL(urlString: HulaUser.sharedInstance.userPhotoURL)
+                            self.originalProfileVC?.profileImageView.loadImageFromURL(urlString: HulaUser.sharedInstance.userPhotoURL)
+                            self.dismissToPreviousPage(self.resultingImage)
                         }
                     }
                 }

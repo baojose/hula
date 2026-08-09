@@ -212,13 +212,14 @@ class HLProductPictureEditViewController: BaseViewController, UIImagePickerContr
                         //print(dictionary)
                         if let filePath:String = dictionary["path"] as? String {
                             //print(filePath)
-                            if let pos = dictionary["position"] as? String {
-                                //print(pos)
+                            // Accept String or numeric JSON position; 1-based edit slots map via Int value.
+                            if let slot = HLMyProductsViewController.uploadSlotIndex(from: dictionary["position"], maxSlots: 100) {
+                                //print(slot)
                                 self.resultingImage = HulaConstants.staticServerURL + filePath
                                 //print(self.resultingImage)
                                 
                                 
-                                self.prodDelegate?.imageUploaded(path:self.resultingImage, pos: Int(pos)! )
+                                self.prodDelegate?.imageUploaded(path:self.resultingImage, pos: slot )
                                 
                                 //print("sent to delegate")
                                 //print("dismiss")
