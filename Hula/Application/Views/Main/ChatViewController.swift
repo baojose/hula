@@ -23,6 +23,20 @@ class ChatViewController: UIViewController {
     
     var keyboardHeight:CGFloat = 150
     var timer: Timer!
+
+    static let maxChatMessageLength = 300
+
+    /// Returns a sendable message, or nil when over the limit (do not silently truncate).
+    class func validatedChatMessage(_ text: String?) -> String? {
+        let tx = (text ?? "").trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)
+        guard tx.count > 0 else {
+            return nil
+        }
+        if tx.count > maxChatMessageLength {
+            return nil
+        }
+        return tx
+    }
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -146,34 +160,39 @@ class ChatViewController: UIViewController {
     
     
     @IBAction func sendChatTextAction(_ sender: Any) {
-        var tx = self.chatTextField.text!
-        if tx.count > 300 {
-            tx = String( tx.prefix(300)  );
+        let raw = self.chatTextField.text ?? ""
+        if raw.count > ChatViewController.maxChatMessageLength {
+            let alert = UIAlertController(
+                title: NSLocalizedString("Message too long", comment: ""),
+                message: NSLocalizedString("Please keep trade chat messages to 300 characters or fewer.", comment: ""),
+                preferredStyle: .alert
+            )
+            alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: ""), style: .default, handler: nil))
+            self.present(alert, animated: true, completion: nil)
+            return
+        }
+        guard let tx = ChatViewController.validatedChatMessage(raw) else {
+            return
         }
         //print("Sending...")
         //print("trade id: \(self.trade_id)")
-        if tx.count > 0 {
-            let queryURL = HulaConstants.apiURL + "trades/\(self.trade_id)/chat"
-            HLDataManager.sharedInstance.httpPost(urlstr: queryURL, postString: "message=\(tx)", isPut: false, taskCallback: { (ok, json) in
-                //print("done")
-                //print(ok)
-                if (ok){
-                    if (json as? NSDictionary) != nil {
-                        DispatchQueue.main.async(execute: {
-                            self.chatTextField.text = ""
-                            self.refreshChat(forze:true)
-                        })
-                    } else {
-                        
-                    }
-                    
+        let queryURL = HulaConstants.apiURL + "trades/\(self.trade_id)/chat"
+        HLDataManager.sharedInstance.httpPost(urlstr: queryURL, postString: "message=\(tx)", isPut: false, taskCallback: { (ok, json) in
+            //print("done")
+            //print(ok)
+            if (ok){
+                if (json as? NSDictionary) != nil {
+                    DispatchQueue.main.async(execute: {
+                        self.chatTextField.text = ""
+                        self.refreshChat(forze:true)
+                    })
                 }
-                HLDataManager.sharedInstance.getTrades {(succ) in
-                    // trades refreshed
-                    print("Trades loaded from chat")
-                }
-            })
-        }
+            }
+            HLDataManager.sharedInstance.getTrades {(succ) in
+                // trades refreshed
+                print("Trades loaded from chat")
+            }
+        })
     }
     
     

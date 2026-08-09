@@ -453,7 +453,11 @@ class HLDataManager: NSObject {
         //print(request.httpMethod!)
         let task = URLSession.shared.dataTask(with: request) { data, response, error in
             guard let data = data, error == nil else {                                                 // check for fundamental networking error
-                print(error!)
+                // Always invoke the callback so callers (e.g. final feedback dismiss) are not left hanging.
+                if let error = error {
+                    print(error)
+                }
+                taskCallback(false, nil)
                 return
             }
             
