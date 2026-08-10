@@ -228,12 +228,40 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
         return json is [Any]
     }
 
-    /// Soft-parse upload callback `position` so non-numeric/out-of-range values cannot crash.
-    class func uploadSlotIndex(from position: String?, maxSlots: Int = 4) -> Int? {
-        guard let position = position, let idx = Int(position), idx >= 0, idx < maxSlots else {
+    /// Soft-parse upload callback `position` (String or numeric JSON). Invalid/out-of-range → nil.
+    class func uploadSlotIndex(from position: Any?, maxSlots: Int = 4) -> Int? {
+        let idx: Int?
+        if let s = position as? String {
+            idx = Int(s)
+        } else if let i = position as? Int {
+            idx = i
+        } else if let d = position as? Double {
+            idx = Int(d)
+        } else if let n = position as? NSNumber {
+            let objCType = String(cString: n.objCType)
+            if objCType == "c" || objCType == "B" {
+                idx = nil
+            } else {
+                idx = n.intValue
+            }
+        } else {
+            idx = nil
+        }
+        guard let slot = idx, slot >= 0, slot < maxSlots else {
             return nil
         }
-        return idx
+        return slot
+    }
+
+    /// Create flow posts product + uploads images in parallel. Attach images only once both sides are ready.
+    class func shouldAttachUploadedImages(productId: String?, imagesToUpload: Int, imagesAlreadyUploaded: Int) -> Bool {
+        guard let productId = productId, productId.count > 0 else {
+            return false
+        }
+        if imagesToUpload <= 0 {
+            return true
+        }
+        return imagesAlreadyUploaded >= imagesToUpload
     }
     
     func newPostModeDesign(_ notification: NSNotification) {
@@ -365,9 +393,15 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
                             //print(dictionary)
                             if let product_id = dictionary["product_id"] as? String {
                                 HLDataManager.sharedInstance.newProduct.productId = product_id
-                                // Persist title/description/images that may have been set while create was in flight
-                                // (complete-profile Done before product_id arrived).
-                                self.updateProduct()
+                                // Images may have finished before create returned; attach them only when both sides are ready.
+                                // Also persists title/description set while create was in flight (complete-profile Done).
+                                if HLMyProductsViewController.shouldAttachUploadedImages(
+                                    productId: product_id,
+                                    imagesToUpload: self.images_to_upload,
+                                    imagesAlreadyUploaded: self.images_already_uploaded
+                                ) {
+                                    self.updateProduct()
+                                }
                             }
                         }
                         
@@ -447,7 +481,7 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
                                     if let dictionary = json as? [String: Any] {
                                         if let filePath:String = dictionary["path"] as? String {
                                             if let slot = HLMyProductsViewController.uploadSlotIndex(
-                                                from: dictionary["position"] as? String
+                                                from: dictionary["position"]
                                             ) {
                                                 //print(slot)
                                                 //print(filePath)
@@ -458,7 +492,12 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
                                                     HLDataManager.sharedInstance.newProduct.productImage = HulaConstants.staticServerURL + filePath
                                                 }
                                                 //print(self.arrayImagesURL[slot])
-                                                if (self.images_already_uploaded == self.images_to_upload){
+                                                // Only PUT when create has assigned productId; otherwise uploadProduct will attach.
+                                                if HLMyProductsViewController.shouldAttachUploadedImages(
+                                                    productId: HLDataManager.sharedInstance.newProduct.productId,
+                                                    imagesToUpload: self.images_to_upload,
+                                                    imagesAlreadyUploaded: self.images_already_uploaded
+                                                ) {
                                                     self.updateProduct()
                                                 }
                                                 self.notify("Uploaded image \(self.images_already_uploaded) of \(self.images_to_upload).")

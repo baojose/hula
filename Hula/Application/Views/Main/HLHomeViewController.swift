@@ -127,6 +127,25 @@ class HLHomeViewController: BaseViewController, UIScrollViewDelegate, UITextFiel
         return 0
     }
 
+    /// Soft-parse category `name`/`icon` for table cells — missing keys must not force-cast crash.
+    class func categoryPresentation(from category: NSDictionary) -> (name: String, icon: String)? {
+        guard let name = HLDataManager.stringField(category, keys: ["name"]), name.count > 0 else {
+            return nil
+        }
+        let icon = HLDataManager.stringField(category, keys: ["icon"]) ?? ""
+        return (name, icon)
+    }
+
+    /// Soft-parse category selection (`name` + `_id`) for Post/Edit pickers.
+    class func categorySelection(from category: NSDictionary) -> (name: String, id: String)? {
+        guard let name = HLDataManager.stringField(category, keys: ["name"]),
+              let id = HLDataManager.stringField(category, keys: ["_id"]),
+              name.count > 0, id.count > 0 else {
+            return nil
+        }
+        return (name, id)
+    }
+
     // Custom functions for ViewController
     func getNearProducts() {
         
@@ -274,10 +293,13 @@ class HLHomeViewController: BaseViewController, UIScrollViewDelegate, UITextFiel
             } else {
                 let cell = tableView.dequeueReusableCell(withIdentifier: "homeCategoryCell") as! HLHomeCategoryTableViewCell
                 let category : NSDictionary = dataManager.arrCategories.object(at: indexPath.row) as! NSDictionary
-                let cat_name = category.object(forKey: "name") as! String;
-                print("\"\(cat_name)\" = \"\(cat_name)\";");
-                cell.categoryName.attributedText = commonUtils.attributedStringWithTextSpacing(NSLocalizedString(cat_name, comment: ""), CGFloat(2.33))
-                cell.categoryImage.image = UIImage.init(named: category.object(forKey: "icon") as! String)
+                if let presentation = HLHomeViewController.categoryPresentation(from: category) {
+                    print("\"\(presentation.name)\" = \"\(presentation.name)\";");
+                    cell.categoryName.attributedText = commonUtils.attributedStringWithTextSpacing(NSLocalizedString(presentation.name, comment: ""), CGFloat(2.33))
+                    if presentation.icon.count > 0 {
+                        cell.categoryImage.image = UIImage.init(named: presentation.icon)
+                    }
+                }
                 cell.categoryProductNum.text = String(format:NSLocalizedString("%i products", comment: ""), HLHomeViewController.categoryProductCount(from: category))
                 return cell
             }

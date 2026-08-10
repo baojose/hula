@@ -344,9 +344,12 @@ extension HLPostProductViewController: UITableViewDelegate, UITableViewDataSourc
         
         let cell = tableView.dequeueReusableCell(withIdentifier: "completeProductProfileCategoryCell") as! HLHomeCategoryTableViewCell
         let category : NSDictionary = dataManager.arrCategories.object(at: indexPath.row) as! NSDictionary
-        
-        cell.categoryName.attributedText = commonUtils.attributedStringWithTextSpacing(category.object(forKey: "name") as! String, CGFloat(2.33))
-        cell.categoryImage.image = UIImage.init(named: category.object(forKey: "icon") as! String)
+        if let presentation = HLHomeViewController.categoryPresentation(from: category) {
+            cell.categoryName.attributedText = commonUtils.attributedStringWithTextSpacing(presentation.name, CGFloat(2.33))
+            if presentation.icon.count > 0 {
+                cell.categoryImage.image = UIImage.init(named: presentation.icon)
+            }
+        }
         
         return cell
     }
@@ -366,12 +369,11 @@ extension HLPostProductViewController: UITableViewDelegate, UITableViewDataSourc
 
         let category : NSDictionary = dataManager.arrCategories.object(at: indexPath.row) as! NSDictionary
         print(category)
-        guard let categoryName = category.object(forKey: "name") as? String,
-              let categoryId = category.object(forKey: "_id") as? String else {
+        guard let selection = HLHomeViewController.categorySelection(from: category) else {
             return
         }
-        dataManager.newProduct.productCategory = categoryName
-        dataManager.newProduct.productCategoryId = categoryId
+        dataManager.newProduct.productCategory = selection.name
+        dataManager.newProduct.productCategoryId = selection.id
 
         dataManager.newProduct.productName = NSLocalizedString("Untitled product", comment: "")
         NotificationCenter.default.post(name: NSNotification.Name(rawValue: "uploadModeUpdateDesign"), object: nil)
