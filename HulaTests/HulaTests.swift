@@ -2111,6 +2111,17 @@ class HulaTests: XCTestCase {
         XCTAssertEqual(HLMyProductsViewController.uploadSlotIndex(from: "3"), 3)
     }
 
+    func testUploadSlotIndexAcceptsStringAndNumericJSON() {
+        XCTAssertEqual(HLMyProductsViewController.uploadSlotIndex(from: "0"), 0)
+        XCTAssertEqual(HLMyProductsViewController.uploadSlotIndex(from: "2"), 2)
+        XCTAssertEqual(HLMyProductsViewController.uploadSlotIndex(from: 1), 1)
+        XCTAssertEqual(HLMyProductsViewController.uploadSlotIndex(from: NSNumber(value: 3)), 3)
+        XCTAssertNil(HLMyProductsViewController.uploadSlotIndex(from: "4"))
+        XCTAssertNil(HLMyProductsViewController.uploadSlotIndex(from: -1))
+        XCTAssertNil(HLMyProductsViewController.uploadSlotIndex(from: true))
+        XCTAssertNil(HLMyProductsViewController.uploadSlotIndex(from: nil))
+    }
+
     func testUploadSlotIndexRejectsBlankNonNumericAndOutOfRange() {
         XCTAssertNil(HLMyProductsViewController.uploadSlotIndex(from: nil))
         XCTAssertNil(HLMyProductsViewController.uploadSlotIndex(from: ""))
@@ -2122,8 +2133,12 @@ class HulaTests: XCTestCase {
     func testUploadedImagePositionAcceptsOneBasedSlots() {
         XCTAssertEqual(HLProductPictureEditViewController.uploadedImagePosition(from: "1"), 1)
         XCTAssertEqual(HLProductPictureEditViewController.uploadedImagePosition(from: "4"), 4)
+        XCTAssertEqual(HLProductPictureEditViewController.uploadedImagePosition(from: 2), 2)
+        XCTAssertEqual(HLProductPictureEditViewController.uploadedImagePosition(from: NSNumber(value: 3)), 3)
         XCTAssertNil(HLProductPictureEditViewController.uploadedImagePosition(from: "0"))
+        XCTAssertNil(HLProductPictureEditViewController.uploadedImagePosition(from: 0))
         XCTAssertNil(HLProductPictureEditViewController.uploadedImagePosition(from: "bad"))
+        XCTAssertNil(HLProductPictureEditViewController.uploadedImagePosition(from: true))
         XCTAssertNil(HLProductPictureEditViewController.uploadedImagePosition(from: nil))
     }
 
@@ -2154,5 +2169,105 @@ class HulaTests: XCTestCase {
             courtesyHours: 72
         )
         XCTAssertEqual(expired, "0")
+    }
+
+    // MARK: - Feedback history score bridging (#118)
+
+    func testFeedbackScorePercentAcceptsIntegerStarValues() {
+        XCTAssertEqual(HLFeedbackHistoryViewController.feedbackScorePercent(from: 5), "100%")
+        XCTAssertEqual(HLFeedbackHistoryViewController.feedbackScorePercent(from: 4), "80%")
+        XCTAssertEqual(HLFeedbackHistoryViewController.feedbackScorePercent(from: 1), "20%")
+        XCTAssertEqual(HLFeedbackHistoryViewController.feedbackScorePercent(from: NSNumber(value: 3)), "60%")
+    }
+
+    func testFeedbackScorePercentAcceptsFloatingStarValues() {
+        XCTAssertEqual(HLFeedbackHistoryViewController.feedbackScorePercent(from: 4.5 as Double), "90%")
+        XCTAssertEqual(HLFeedbackHistoryViewController.feedbackScorePercent(from: Float(2)), "40%")
+        XCTAssertEqual(HLFeedbackHistoryViewController.feedbackScorePercent(from: CGFloat(5)), "100%")
+    }
+
+    func testFeedbackScorePercentRejectsBoolAndMissing() {
+        XCTAssertNil(HLFeedbackHistoryViewController.feedbackScorePercent(from: true))
+        XCTAssertNil(HLFeedbackHistoryViewController.feedbackScorePercent(from: false))
+        XCTAssertNil(HLFeedbackHistoryViewController.feedbackScorePercent(from: nil))
+        XCTAssertNil(HLFeedbackHistoryViewController.feedbackScorePercent(from: "5"))
+    }
+
+    // MARK: - Product create image attach race (#118)
+
+    func testShouldAttachUploadedImagesWaitsForProductId() {
+        XCTAssertFalse(HLMyProductsViewController.shouldAttachUploadedImages(
+            productId: "",
+            imagesToUpload: 2,
+            imagesAlreadyUploaded: 2
+        ))
+        XCTAssertFalse(HLMyProductsViewController.shouldAttachUploadedImages(
+            productId: nil,
+            imagesToUpload: 1,
+            imagesAlreadyUploaded: 1
+        ))
+        XCTAssertTrue(HLMyProductsViewController.shouldAttachUploadedImages(
+            productId: "abc123",
+            imagesToUpload: 2,
+            imagesAlreadyUploaded: 2
+        ))
+    }
+
+    func testShouldAttachUploadedImagesWaitsForAllUploads() {
+        XCTAssertFalse(HLMyProductsViewController.shouldAttachUploadedImages(
+            productId: "abc123",
+            imagesToUpload: 3,
+            imagesAlreadyUploaded: 1
+        ))
+        XCTAssertTrue(HLMyProductsViewController.shouldAttachUploadedImages(
+            productId: "abc123",
+            imagesToUpload: 0,
+            imagesAlreadyUploaded: 0
+        ))
+    }
+
+    // MARK: - Chat message validation (no silent truncation) (#118)
+
+    func testValidatedChatMessageRejectsOverLimitWithoutTruncating() {
+        // Swift 3: repeating takes Character (String overload is Swift 4+).
+        let long = String(repeating: Character("a"), count: ChatViewController.maxChatMessageLength + 1)
+        XCTAssertNil(ChatViewController.validatedChatMessage(long))
+    }
+
+    func testValidatedChatMessageAcceptsBoundaryAndTrims() {
+        let exact = String(repeating: Character("b"), count: ChatViewController.maxChatMessageLength)
+        XCTAssertEqual(ChatViewController.validatedChatMessage(exact), exact)
+        XCTAssertEqual(ChatViewController.validatedChatMessage("  hello  "), "hello")
+        XCTAssertNil(ChatViewController.validatedChatMessage("   "))
+        XCTAssertNil(ChatViewController.validatedChatMessage(nil))
+    }
+
+    // MARK: - Category name/icon/_id soft parse
+
+    func testCategoryPresentationRequiresNonEmptyName() {
+        let ok = HLHomeViewController.categoryPresentation(from: [
+            "name": "Electronics",
+            "icon": "cat_electronics"
+        ])
+        XCTAssertEqual(ok?.name, "Electronics")
+        XCTAssertEqual(ok?.icon, "cat_electronics")
+
+        XCTAssertNil(HLHomeViewController.categoryPresentation(from: ["icon": "x"]))
+        XCTAssertNil(HLHomeViewController.categoryPresentation(from: ["name": ""]))
+        let missingIcon = HLHomeViewController.categoryPresentation(from: ["name": "Books"])
+        XCTAssertEqual(missingIcon?.name, "Books")
+        XCTAssertEqual(missingIcon?.icon, "")
+    }
+
+    func testCategorySelectionRequiresNameAndId() {
+        let ok = HLHomeViewController.categorySelection(from: [
+            "name": "Sports",
+            "_id": "cat-9"
+        ])
+        XCTAssertEqual(ok?.name, "Sports")
+        XCTAssertEqual(ok?.id, "cat-9")
+        XCTAssertNil(HLHomeViewController.categorySelection(from: ["name": "Sports"]))
+        XCTAssertNil(HLHomeViewController.categorySelection(from: ["_id": "cat-9"]))
+        XCTAssertNil(HLHomeViewController.categorySelection(from: ["name": "", "_id": "cat-9"]))
     }
 }
