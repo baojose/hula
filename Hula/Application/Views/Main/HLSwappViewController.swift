@@ -68,6 +68,30 @@ class HLSwappViewController: UIViewController {
     let kTagProductsReceived: Int = 90441
     
     var firstLoad : Bool = true
+
+    /// Soft-parse trade `last_update` into remaining courtesy hours for the waiting-turn label.
+    /// Missing/malformed dates return nil so callers can hide the label instead of crashing.
+    class func remainingResponseHoursLabel(
+        lastUpdate: Any?,
+        now: Date = Date(),
+        courtesyHours: Double = HulaConstants.courtesyTime
+    ) -> String? {
+        guard let h_str = lastUpdate as? String, !h_str.isEmpty,
+              let date = h_str.dateFromISO8601?.addingTimeInterval(courtesyHours * 60.0 * 60.0) else {
+            return nil
+        }
+        let formatter = DateComponentsFormatter()
+        formatter.allowedUnits = [.hour]
+        formatter.unitsStyle = .short
+        guard var str_hours = formatter.string(from: now, to: date) else {
+            return nil
+        }
+        str_hours = (str_hours.replacingOccurrences(of: " hr", with: " h"))
+        if str_hours.hasPrefix("-") {
+            str_hours = "0"
+        }
+        return str_hours
+    }
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -222,16 +246,41 @@ class HLSwappViewController: UIViewController {
         
         if let chatVC = segue.destination as? ChatViewController {
             if let swappPageVC = self.childViewControllers.first as? HLSwappPageViewController {
-                let thisTrade: NSDictionary = swappPageVC.arrTrades[swappPageVC.currentIndex]
-                if let chat = thisTrade.object(forKey: "chat") as? [NSDictionary]{
-                    chatVC.chat = chat
-                    chatVC.trade_id = (thisTrade.object(forKey: "_id") as? String)!
-                    //print(chat)
-                    self.backFromChat = true
-                    self.chatCountLbl.isHidden = true
+                guard swappPageVC.currentIndex >= 0,
+                      swappPageVC.currentIndex < swappPageVC.arrTrades.count else {
+                    return
                 }
+                let thisTrade: NSDictionary = swappPageVC.arrTrades[swappPageVC.currentIndex]
+                // trade_id must be set even when `chat` is missing/null/non-array;
+                // otherwise ChatViewController hits trades//chat and drops messages.
+                let config = HLSwappViewController.chatConfiguration(from: thisTrade)
+                chatVC.trade_id = config.tradeId
+                chatVC.chat = config.chat
+                //print(chat)
+                self.backFromChat = true
+                self.chatCountLbl.isHidden = true
             }
         }
+    }
+
+    /// Extract chat seed data for the trade-room → Chat segue.
+    static func chatConfiguration(from trade: NSDictionary) -> (tradeId: String, chat: [NSDictionary]) {
+        let tradeId = trade.object(forKey: "_id") as? String ?? ""
+        let chat = trade.object(forKey: "chat") as? [NSDictionary] ?? []
+        return (tradeId, chat)
+    }
+
+    /// Peer id + viewer unread badge for a trade dict.
+    /// Soft-parses unread via intFromJSON so bridged NSNumber counts are not dropped.
+    static func peerChatContext(from trade: NSDictionary, viewerId: String) -> (peerId: String, unread: Int) {
+        let ownerId = trade.object(forKey: "owner_id") as? String ?? ""
+        let otherId = trade.object(forKey: "other_id") as? String ?? ""
+        if viewerId == ownerId {
+            let unread = CommonUtils.intFromJSON(trade.object(forKey: "owner_unread")) ?? 0
+            return (otherId, unread)
+        }
+        let unread = CommonUtils.intFromJSON(trade.object(forKey: "other_unread")) ?? 0
+        return (ownerId, unread)
     }
     
     
@@ -564,28 +613,20 @@ class HLSwappViewController: UIViewController {
             self.threeDotsView.isHidden = true;
             
             if let swappPageVC = self.childViewControllers.first as? HLSwappPageViewController {
-                if swappPageVC.arrTrades.count > 0 {
+                if swappPageVC.arrTrades.count > 0,
+                   swappPageVC.currentIndex >= 0,
+                   swappPageVC.currentIndex < swappPageVC.arrTrades.count {
                     last_index_setup = swappPageVC.currentIndex
                     let thisTrade: NSDictionary = swappPageVC.arrTrades[swappPageVC.currentIndex]
-                    var other_user_id = ""
-                    var chat_count = 0
-                    
-                    // check chat counter
-                    if (HulaUser.sharedInstance.userId == thisTrade.object(forKey: "owner_id") as! String){
-                        // I am the owner
-                        other_user_id = thisTrade.object(forKey: "other_id") as! String
-                        if let ch_c = thisTrade.object(forKey: "owner_unread") as? Int{
-                            chat_count = ch_c
-                        }
-                    } else {
-                        other_user_id = thisTrade.object(forKey: "owner_id") as! String
-                        if let ch_c = thisTrade.object(forKey: "other_unread") as? Int{
-                            chat_count = ch_c
-                        }
-                    }
-                    
-                    
-                    let currentStatus = thisTrade.object(forKey: "status") as! String
+                    let peer = HLSwappViewController.peerChatContext(
+                        from: thisTrade,
+                        viewerId: HulaUser.sharedInstance.userId
+                    )
+                    let other_user_id = peer.peerId
+                    let chat_count = peer.unread
+
+
+                    let currentStatus = thisTrade.object(forKey: "status") as? String ?? ""
                     if currentStatus == HulaConstants.cancel_status || currentStatus == HulaConstants.end_status {
                         // closed or removed trade!
                         
@@ -595,7 +636,7 @@ class HLSwappViewController: UIViewController {
                         self.remainingTimeLabel.alpha = 0
                         self.threeDotsView.isHidden = true
                         
-                    } else {
+                    } else if currentStatus.count > 0 {
                         if currentStatus == HulaConstants.review_status {
                             // pending exchange
                             
@@ -621,21 +662,14 @@ class HLSwappViewController: UIViewController {
                                     self.otherOfferBtn.alpha = 0
                                     self.mainCentralLabel.alpha=1;
                                     self.mainCentralLabel.text = NSLocalizedString("Waiting for user reply", comment: "")
-                                    let h_str = thisTrade.object(forKey: "last_update") as! String
-                                    let date = h_str.dateFromISO8601?.addingTimeInterval(HulaConstants.courtesyTime * 60.0 * 60.0)
-                                    //print(date)
-                                    
-                                    let formatter = DateComponentsFormatter()
-                                    formatter.allowedUnits = [.hour]
-                                    formatter.unitsStyle = .short
-                                    var str_hours = formatter.string(from: Date(), to: date!)!
-                                    str_hours = (str_hours.replacingOccurrences(of: " hr", with: " h"))
-                                    if (str_hours[0] == "-"){
-                                        str_hours = "0";
+                                    if let str_hours = HLSwappViewController.remainingResponseHoursLabel(
+                                        lastUpdate: thisTrade.object(forKey: "last_update")
+                                    ) {
+                                        self.remainingTimeLabel.alpha = 1
+                                        self.remainingTimeLabel.text = NSLocalizedString("Remaining time for response:", comment: "") + " \(str_hours)"
+                                    } else {
+                                        self.remainingTimeLabel.alpha = 0
                                     }
-                                    
-                                    self.remainingTimeLabel.alpha = 1
-                                    self.remainingTimeLabel.text = NSLocalizedString("Remaining time for response:", comment: "") + " \(str_hours)"
                                     self.threeDotsView.isHidden = false;
                                     
                                 } else {
@@ -787,20 +821,12 @@ class HLSwappViewController: UIViewController {
             var other_user_id = ""
             for oldTrade in HLDataManager.sharedInstance.arrPastTrades {
                 let thisTrade: NSDictionary = oldTrade
-                
-                // check chat counter
-                if (HulaUser.sharedInstance.userId == thisTrade.object(forKey: "owner_id") as! String){
-                    // I am the owner
-                    other_user_id = thisTrade.object(forKey: "other_id") as! String
-                    if let ch_c = thisTrade.object(forKey: "owner_unread") as? Int{
-                        chat_count = ch_c
-                    }
-                } else {
-                    other_user_id = thisTrade.object(forKey: "owner_id") as! String
-                    if let ch_c = thisTrade.object(forKey: "other_unread") as? Int{
-                        chat_count = ch_c
-                    }
-                }
+                let peer = HLSwappViewController.peerChatContext(
+                    from: thisTrade,
+                    viewerId: HulaUser.sharedInstance.userId
+                )
+                other_user_id = peer.peerId
+                chat_count = peer.unread
             }
             if chat_count > 0 {
                 self.pastChatCountLbl.isHidden = false

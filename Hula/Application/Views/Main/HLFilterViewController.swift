@@ -165,6 +165,8 @@ class HLFilterViewController: BaseViewController {
             d = 9;
         case 95:
             d = 10;
+        case 99:
+            d = 11;
         default:
             d = 6
         }
