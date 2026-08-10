@@ -467,6 +467,8 @@ class HLSwappViewController: UIViewController {
                     
                     
                     self.sendDataToServer(queryURL: queryURL2, dataString: dataString, buttonTag:buttonTag);
+                } else {
+                    self.presentTradeUpdateFailureAlert()
                 }
             }
             );
@@ -500,10 +502,32 @@ class HLSwappViewController: UIViewController {
                     self.present(viewController, animated: true)
                 }
             } else {
-                // connection error
-                print("Connection error")
+                self.presentTradeUpdateFailureAlert()
             }
         })
+    }
+
+    func presentTradeUpdateFailureAlert() {
+        DispatchQueue.main.async {
+            self.showAlert(
+                message: NSLocalizedString("Could not update the trade. Please try again.", comment: ""),
+                trigger: "notrade",
+                cancelVisible: false,
+                okText: NSLocalizedString("OK", comment: "")
+            )
+        }
+    }
+
+    /// Close Deal / donation confirmations start an async `/ready`→PUT. Returning to lobby
+    /// immediately abandons the room before success/failure UI can run.
+    class func shouldReturnToLobbyAfterAlert(trigger: String, response: String) -> Bool {
+        if trigger == "notrade" {
+            return false
+        }
+        if trigger == "doit" || trigger == "donation" {
+            return false
+        }
+        return true
     }
     @IBAction func showUserAction(_ sender: Any) {
         //print (prevUser)
@@ -904,17 +928,11 @@ extension HLSwappViewController: AlertDelegate{
         
         
         DispatchQueue.main.async {
-            if trigger == "notrade"{
-                return
-            }
-            
             if trigger == "donation"{
                 if response == "ok"{
                     if let tradeStatus = self.barterDelegate?.getCurrentTradeStatus() {
                         self.executeOfferOptions(tradeStatus, buttonTag: self.tempTag)
                     }
-                } else {
-                    return
                 }
             }
             if trigger == "doit"{
@@ -922,8 +940,6 @@ extension HLSwappViewController: AlertDelegate{
                     if let tradeStatus = self.barterDelegate?.getCurrentTradeStatus() {
                         self.executeOfferOptions(tradeStatus, buttonTag: self.tempTag)
                     }
-                } else {
-                    return
                 }
             }
             if trigger == "share" && response == "ok"{
@@ -936,8 +952,10 @@ extension HLSwappViewController: AlertDelegate{
                 self.feedback_sent(response:response)
             }
             
-            if let swappPageVC = self.childViewControllers.first as? HLSwappPageViewController {
-                swappPageVC.goTo(page: 0)
+            if HLSwappViewController.shouldReturnToLobbyAfterAlert(trigger: trigger, response: response) {
+                if let swappPageVC = self.childViewControllers.first as? HLSwappPageViewController {
+                    swappPageVC.goTo(page: 0)
+                }
             }
             
             

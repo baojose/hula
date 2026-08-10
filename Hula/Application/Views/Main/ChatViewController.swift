@@ -105,12 +105,20 @@ class ChatViewController: UIViewController {
         })
         
         
-        if UIDeviceOrientationIsPortrait(UIDevice.current.orientation) {
+        // Portrait auto-dismiss used to live here and in rotated(). rotated() was disabled;
+        // keep the poll path consistent so composing drafts are not wiped by orientation flicker.
+        if ChatViewController.shouldAutoDismissForOrientation(UIDevice.current.orientation) {
             DispatchQueue.main.async(execute: {
                 self.dismiss(animated: true, completion: nil)
             })
         }
         
+    }
+
+    /// Chat is landscape-first; do not auto-dismiss on portrait polls (draft loss).
+    /// Explicit close remains via `closeChatAction`.
+    class func shouldAutoDismissForOrientation(_ orientation: UIDeviceOrientation) -> Bool {
+        return false
     }
     
     func updateData(forze: Bool){

@@ -13,24 +13,42 @@ class HulaTests: XCTestCase {
     
     override func setUp() {
         super.setUp()
-        // Put setup code here. This method is called before the invocation of each test method in the class.
     }
     
     override func tearDown() {
-        // Put teardown code here. This method is called after the invocation of each test method in the class.
         super.tearDown()
     }
-    
-    func testExample() {
-        // This is an example of a functional test case.
-        // Use XCTAssert and related functions to verify your tests produce the correct results.
+
+    // MARK: - Close Deal / donation: stay in room until network completes
+
+    func testShouldNotReturnToLobbyAfterCloseDealConfirmation() {
+        XCTAssertFalse(HLSwappViewController.shouldReturnToLobbyAfterAlert(trigger: "doit", response: "ok"))
+        XCTAssertFalse(HLSwappViewController.shouldReturnToLobbyAfterAlert(trigger: "doit", response: "cancel"))
     }
-    
-    func testPerformanceExample() {
-        // This is an example of a performance test case.
-        self.measure {
-            // Put the code you want to measure the time of here.
-        }
+
+    func testShouldNotReturnToLobbyAfterDonationConfirmation() {
+        XCTAssertFalse(HLSwappViewController.shouldReturnToLobbyAfterAlert(trigger: "donation", response: "ok"))
+        XCTAssertFalse(HLSwappViewController.shouldReturnToLobbyAfterAlert(trigger: "donation", response: "cancel"))
     }
-    
+
+    func testShouldNotReturnToLobbyForTradeFailureAlert() {
+        XCTAssertFalse(HLSwappViewController.shouldReturnToLobbyAfterAlert(trigger: "notrade", response: "ok"))
+    }
+
+    func testShouldReturnToLobbyAfterSuccessAcknowledged() {
+        XCTAssertTrue(HLSwappViewController.shouldReturnToLobbyAfterAlert(trigger: "deal_review", response: "ok"))
+        XCTAssertTrue(HLSwappViewController.shouldReturnToLobbyAfterAlert(trigger: "deal_closed", response: "ok"))
+        XCTAssertTrue(HLSwappViewController.shouldReturnToLobbyAfterAlert(trigger: "feedback_sent", response: "ok"))
+        XCTAssertTrue(HLSwappViewController.shouldReturnToLobbyAfterAlert(trigger: "", response: "ok"))
+    }
+
+    // MARK: - Chat: no portrait poll auto-dismiss
+
+    func testChatShouldNotAutoDismissOnPortraitOrientation() {
+        XCTAssertFalse(ChatViewController.shouldAutoDismissForOrientation(.portrait))
+        XCTAssertFalse(ChatViewController.shouldAutoDismissForOrientation(.portraitUpsideDown))
+        XCTAssertFalse(ChatViewController.shouldAutoDismissForOrientation(.landscapeLeft))
+        XCTAssertFalse(ChatViewController.shouldAutoDismissForOrientation(.faceUp))
+        XCTAssertFalse(ChatViewController.shouldAutoDismissForOrientation(.unknown))
+    }
 }
