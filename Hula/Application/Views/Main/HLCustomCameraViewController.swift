@@ -426,14 +426,20 @@ class HLCustomCameraViewController: BaseViewController, UIImagePickerControllerD
     }
     
     func isSelectedImage(_ index: Int!) -> Int{
-        var isSelected = -1
-        for i in 0 ..< arrSelectedIndexs.count{
-            if arrSelectedIndexs.object(at: i) as! Int == index {
-                isSelected = i
-                break
+        return HLCustomCameraViewController.indexOfSelectedAlbumItem(
+            matching: index,
+            in: arrSelectedIndexs
+        )
+    }
+
+    /// Soft-scan album selection indexes — bridged NSNumber/Int values must not force-cast crash.
+    class func indexOfSelectedAlbumItem(matching index: Int, in selectedIndexes: NSArray) -> Int {
+        for i in 0 ..< selectedIndexes.count {
+            if let value = CommonUtils.intFromJSON(selectedIndexes.object(at: i)), value == index {
+                return i
             }
         }
-        return isSelected
+        return -1
     }
     //
     func showImages(_ image: UIImage){

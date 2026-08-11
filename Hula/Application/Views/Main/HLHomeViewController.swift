@@ -146,6 +146,14 @@ class HLHomeViewController: BaseViewController, UIScrollViewDelegate, UITextFiel
         return (name, id)
     }
 
+    /// Soft-read autocomplete keyword rows — malformed/non-String entries must not force-cast crash.
+    class func keyword(at index: Int, in array: NSArray) -> String? {
+        guard index >= 0, index < array.count else {
+            return nil
+        }
+        return array.object(at: index) as? String
+    }
+
     // Custom functions for ViewController
     func getNearProducts() {
         
@@ -243,7 +251,7 @@ class HLHomeViewController: BaseViewController, UIScrollViewDelegate, UITextFiel
         
         if self.isSearching == true {
             let cell = tableView.dequeueReusableCell(withIdentifier: "homeSearchCell") as! HLHomeSearchTableViewCell
-            let keyword: String = filteredKeywordsArray.object(at: indexPath.row) as! String
+            let keyword = HLHomeViewController.keyword(at: indexPath.row, in: filteredKeywordsArray) ?? ""
             cell.productMainNameLabel.attributedText = commonUtils.attributedStringWithTextSpacing(keyword, CGFloat(1.0))
             return cell
         }else{
@@ -311,7 +319,10 @@ class HLHomeViewController: BaseViewController, UIScrollViewDelegate, UITextFiel
             searchResultViewController.searchByCategory = false
             let category : NSDictionary = [:]
             searchResultViewController.categoryToSearch = category
-            searchResultViewController.keywordToSearch = self.filteredKeywordsArray.object(at: indexPath.row) as! String
+            guard let keyword = HLHomeViewController.keyword(at: indexPath.row, in: filteredKeywordsArray) else {
+                return
+            }
+            searchResultViewController.keywordToSearch = keyword
             self.navigationController?.pushViewController(searchResultViewController, animated: true)
         } else {
             if (isNearYou){
