@@ -2270,4 +2270,92 @@ class HulaTests: XCTestCase {
         XCTAssertNil(HLHomeViewController.categorySelection(from: ["_id": "cat-9"]))
         XCTAssertNil(HLHomeViewController.categorySelection(from: ["name": "", "_id": "cat-9"]))
     }
+
+    // MARK: - Close Deal / donation: stay in room until network completes (#120)
+
+    func testShouldNotReturnToLobbyAfterCloseDealConfirmation() {
+        XCTAssertFalse(HLSwappViewController.shouldReturnToLobbyAfterAlert(trigger: "doit", response: "ok"))
+        XCTAssertFalse(HLSwappViewController.shouldReturnToLobbyAfterAlert(trigger: "doit", response: "cancel"))
+    }
+
+    func testShouldNotReturnToLobbyAfterDonationConfirmation() {
+        XCTAssertFalse(HLSwappViewController.shouldReturnToLobbyAfterAlert(trigger: "donation", response: "ok"))
+        XCTAssertFalse(HLSwappViewController.shouldReturnToLobbyAfterAlert(trigger: "donation", response: "cancel"))
+    }
+
+    func testShouldNotReturnToLobbyForTradeFailureAlert() {
+        XCTAssertFalse(HLSwappViewController.shouldReturnToLobbyAfterAlert(trigger: "notrade", response: "ok"))
+    }
+
+    func testShouldReturnToLobbyAfterSuccessAcknowledged() {
+        XCTAssertTrue(HLSwappViewController.shouldReturnToLobbyAfterAlert(trigger: "deal_review", response: "ok"))
+        XCTAssertTrue(HLSwappViewController.shouldReturnToLobbyAfterAlert(trigger: "deal_closed", response: "ok"))
+        XCTAssertTrue(HLSwappViewController.shouldReturnToLobbyAfterAlert(trigger: "feedback_sent", response: "ok"))
+        XCTAssertTrue(HLSwappViewController.shouldReturnToLobbyAfterAlert(trigger: "", response: "ok"))
+    }
+
+    // MARK: - Chat: no portrait poll auto-dismiss (#120)
+
+    func testChatShouldNotAutoDismissOnPortraitOrientation() {
+        XCTAssertFalse(ChatViewController.shouldAutoDismissForOrientation(.portrait))
+        XCTAssertFalse(ChatViewController.shouldAutoDismissForOrientation(.portraitUpsideDown))
+        XCTAssertFalse(ChatViewController.shouldAutoDismissForOrientation(.landscapeLeft))
+        XCTAssertFalse(ChatViewController.shouldAutoDismissForOrientation(.faceUp))
+        XCTAssertFalse(ChatViewController.shouldAutoDismissForOrientation(.unknown))
+    }
+
+    // MARK: - Search autocomplete keyword soft-read
+
+    func testKeywordAtIndexSoftReadsStringRows() {
+        let rows: NSArray = ["bike", "board", NSNumber(value: 3)]
+        XCTAssertEqual(HLHomeViewController.keyword(at: 0, in: rows), "bike")
+        XCTAssertEqual(HLHomeViewController.keyword(at: 1, in: rows), "board")
+        XCTAssertNil(HLHomeViewController.keyword(at: 2, in: rows))
+        XCTAssertNil(HLHomeViewController.keyword(at: -1, in: rows))
+        XCTAssertNil(HLHomeViewController.keyword(at: 99, in: rows))
+    }
+
+    // MARK: - Camera album selection index soft-parse
+
+    func testIndexOfSelectedAlbumItemAcceptsBridgedNumbers() {
+        let selected: NSArray = [NSNumber(value: 2), 5, "7"]
+        XCTAssertEqual(HLCustomCameraViewController.indexOfSelectedAlbumItem(matching: 2, in: selected), 0)
+        XCTAssertEqual(HLCustomCameraViewController.indexOfSelectedAlbumItem(matching: 5, in: selected), 1)
+        XCTAssertEqual(HLCustomCameraViewController.indexOfSelectedAlbumItem(matching: 7, in: selected), -1)
+        XCTAssertEqual(HLCustomCameraViewController.indexOfSelectedAlbumItem(matching: 9, in: selected), -1)
+    }
+
+    func testIndexOfSelectedAlbumItemRejectsBool() {
+        let selected: NSArray = [true, false]
+        XCTAssertEqual(HLCustomCameraViewController.indexOfSelectedAlbumItem(matching: 1, in: selected), -1)
+        XCTAssertEqual(HLCustomCameraViewController.indexOfSelectedAlbumItem(matching: 0, in: selected), -1)
+    }
+
+    // MARK: - Auth notification soft-parse
+
+    func testLoginResultMessageRequiresString() {
+        XCTAssertEqual(HLLogInViewController.loginResultMessage(from: "ok"), "ok")
+        XCTAssertEqual(HLLogInViewController.loginResultMessage(from: "bad password"), "bad password")
+        XCTAssertNil(HLLogInViewController.loginResultMessage(from: true))
+        XCTAssertNil(HLLogInViewController.loginResultMessage(from: NSNumber(value: 1)))
+        XCTAssertNil(HLLogInViewController.loginResultMessage(from: nil))
+    }
+
+    func testSignupAuthNotificationSucceededSoftParsesBoolFlags() {
+        XCTAssertTrue(HLSignUpViewController.authNotificationSucceeded(true))
+        XCTAssertFalse(HLSignUpViewController.authNotificationSucceeded(false))
+        XCTAssertTrue(HLSignUpViewController.authNotificationSucceeded(NSNumber(value: true)))
+        XCTAssertTrue(HLSignUpViewController.authNotificationSucceeded(1))
+        XCTAssertFalse(HLSignUpViewController.authNotificationSucceeded(0))
+        XCTAssertFalse(HLSignUpViewController.authNotificationSucceeded(2))
+        XCTAssertFalse(HLSignUpViewController.authNotificationSucceeded("ok"))
+        XCTAssertFalse(HLSignUpViewController.authNotificationSucceeded(nil))
+    }
+
+    func testFacebookAuthNotificationSucceededSoftParsesBoolFlags() {
+        XCTAssertTrue(HLIdentificationViewController.authNotificationSucceeded(true))
+        XCTAssertFalse(HLIdentificationViewController.authNotificationSucceeded(false))
+        XCTAssertFalse(HLIdentificationViewController.authNotificationSucceeded("ok"))
+        XCTAssertFalse(HLIdentificationViewController.authNotificationSucceeded(nil))
+    }
 }
