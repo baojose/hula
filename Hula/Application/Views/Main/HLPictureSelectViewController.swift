@@ -82,7 +82,10 @@ class HLPictureSelectViewController: BaseViewController, UIImagePickerController
     }
     
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [String : Any]) {
-        let chosenImage = info[UIImagePickerControllerOriginalImage] as! UIImage //2
+        guard let chosenImage = CommonUtils.pickedOriginalImage(from: info) else {
+            dismiss(animated: true, completion: nil)
+            return
+        }
         let croppedImage:UIImage = self.commonUtils.cropImage(chosenImage, HulaConstants.product_image_thumb_size)
         // save the image
         uploadImage(croppedImage)
@@ -177,11 +180,21 @@ class HLPictureSelectViewController: BaseViewController, UIImagePickerController
     func openImagePicker(){
         picker.allowsEditing = false
         picker.sourceType = .photoLibrary
-        //picker.mediaTypes = [kUTTypeImage as String]
-        //print(picker.mediaTypes)
+        // Images only — availableMediaTypes includes video and picking one
+        // crashed in didFinishPickingMediaWithInfo via as! UIImage.
+        picker.mediaTypes = CommonUtils.photoLibraryImageMediaTypes()
         present(picker, animated: true, completion: nil)
     }
     
+    /// Still-image completions must hop to main before session/UI work.
+    static func performCameraUIUpdate(_ work: @escaping () -> Void) {
+        if Thread.isMainThread {
+            work()
+        } else {
+            DispatchQueue.main.async(execute: work)
+        }
+    }
+
     func saveToCamera(_ sender: Any) {
         
         if let videoConnection = stillImageOutput.connection(withMediaType: AVMediaTypeVideo) {
@@ -190,11 +203,12 @@ class HLPictureSelectViewController: BaseViewController, UIImagePickerController
                 if let imageData = AVCaptureStillImageOutput.jpegStillImageNSDataRepresentation(CMSampleBuffer) {
                     
                     if let cameraImage = UIImage(data: imageData) {
-                        
-                        self.stopSession()
-                        // save this image
                         let croppedImage:UIImage = self.commonUtils.cropImage(cameraImage, HulaConstants.product_image_thumb_size)
-                        self.uploadImage(croppedImage)
+                        // captureStillImageAsynchronously completes off the main thread.
+                        HLPictureSelectViewController.performCameraUIUpdate {
+                            self.stopSession()
+                            self.uploadImage(croppedImage)
+                        }
                     }
                 }
             })
@@ -213,18 +227,17 @@ class HLPictureSelectViewController: BaseViewController, UIImagePickerController
                         print(dictionary)
                         if let filePath:String = dictionary["path"] as? String {
                             print(filePath)
-                            if let pos = dictionary["position"] as? String {
-                                print(pos)
-                                self.resultingImage = HulaConstants.staticServerURL + filePath
-                                HulaUser.sharedInstance.userPhotoURL = self.resultingImage
-                                
-                                HulaUser.sharedInstance.updateServerData()
-                                HLDataManager.sharedInstance.writeUserData()
-                                //print(self.originalSettingsVC)
-                                self.originalSettingsVC?.smallProfileImage.loadImageFromURL(urlString: HulaUser.sharedInstance.userPhotoURL)
-                                self.originalProfileVC?.profileImageView.loadImageFromURL(urlString: HulaUser.sharedInstance.userPhotoURL)
-                                self.dismissToPreviousPage(self.resultingImage)
-                            }
+                            // Profile photo only needs the uploaded path. Gating on `position as? String`
+                            // silently dropped successful uploads when the API echoed a number.
+                            self.resultingImage = HulaConstants.staticServerURL + filePath
+                            HulaUser.sharedInstance.userPhotoURL = self.resultingImage
+
+                            HulaUser.sharedInstance.updateServerData()
+                            HLDataManager.sharedInstance.writeUserData()
+                            //print(self.originalSettingsVC)
+                            self.originalSettingsVC?.smallProfileImage.loadImageFromURL(urlString: HulaUser.sharedInstance.userPhotoURL)
+                            self.originalProfileVC?.profileImageView.loadImageFromURL(urlString: HulaUser.sharedInstance.userPhotoURL)
+                            self.dismissToPreviousPage(self.resultingImage)
                         }
                     }
                 }
