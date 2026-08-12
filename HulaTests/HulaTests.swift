@@ -13,24 +13,47 @@ class HulaTests: XCTestCase {
     
     override func setUp() {
         super.setUp()
-        // Put setup code here. This method is called before the invocation of each test method in the class.
     }
     
     override func tearDown() {
-        // Put teardown code here. This method is called after the invocation of each test method in the class.
         super.tearDown()
     }
-    
-    func testExample() {
-        // This is an example of a functional test case.
-        // Use XCTAssert and related functions to verify your tests produce the correct results.
+
+    // MARK: - Onboarding tip index safety (CommonUtils.removeEasyTips)
+
+    func testTipIndexInvalidWhenFinishedTutorial() {
+        // showNextTip sets currentTip = -1 after the last tip while the dim
+        // overlay can still receive taps for ~0.5s.
+        XCTAssertFalse(CommonUtils.isValidTipIndex(-1, count: 3))
+        XCTAssertFalse(CommonUtils.isValidTipIndex(-1, count: 0))
     }
-    
-    func testPerformanceExample() {
-        // This is an example of a performance test case.
-        self.measure {
-            // Put the code you want to measure the time of here.
-        }
+
+    func testTipIndexValidOnlyInsideBounds() {
+        XCTAssertTrue(CommonUtils.isValidTipIndex(0, count: 1))
+        XCTAssertTrue(CommonUtils.isValidTipIndex(2, count: 3))
+        XCTAssertFalse(CommonUtils.isValidTipIndex(3, count: 3))
+        XCTAssertFalse(CommonUtils.isValidTipIndex(0, count: 0))
     }
-    
+
+    // MARK: - Profile avatar upload JSON (HLPictureSelectViewController)
+
+    func testProfileImageURLFromPathIgnoresMissingPosition() {
+        // Former code required position as String; API often returns a number,
+        // which left the camera UI stuck after stopSession().
+        let json: [String: Any] = ["path": "uploads/avatar.jpg", "position": 10]
+        let url = HLPictureSelectViewController.profileImageURL(fromUploadJSON: json)
+        XCTAssertEqual(url, HulaConstants.staticServerURL + "uploads/avatar.jpg")
+    }
+
+    func testProfileImageURLFromPathWithStringPosition() {
+        let json: [String: Any] = ["path": "uploads/avatar.jpg", "position": "10"]
+        let url = HLPictureSelectViewController.profileImageURL(fromUploadJSON: json)
+        XCTAssertEqual(url, HulaConstants.staticServerURL + "uploads/avatar.jpg")
+    }
+
+    func testProfileImageURLNilWithoutPath() {
+        XCTAssertNil(HLPictureSelectViewController.profileImageURL(fromUploadJSON: ["position": 10]))
+        XCTAssertNil(HLPictureSelectViewController.profileImageURL(fromUploadJSON: nil))
+        XCTAssertNil(HLPictureSelectViewController.profileImageURL(fromUploadJSON: ["path": ""]))
+    }
 }
