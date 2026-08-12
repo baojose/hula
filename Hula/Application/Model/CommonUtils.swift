@@ -285,6 +285,7 @@ class CommonUtils: NSObject, EasyTipViewDelegate, UIGestureRecognizerDelegate {
                     
                     //self.showNextTip(false)
                 } else {
+                    self.disarmTutorialOverlay()
                     self.bgViewToRemove.removeFromSuperview()
                     self.currentTip = -1
                     
@@ -293,6 +294,9 @@ class CommonUtils: NSObject, EasyTipViewDelegate, UIGestureRecognizerDelegate {
                 }
             }
         }else{
+            // Tutorial finished: disarm overlay taps before fade so removeEasyTips
+            // cannot index currentTipArr with currentTip == -1.
+            self.disarmTutorialOverlay()
             self.currentTip = -1
             UIView.animate(withDuration: 0.5, animations: {
                 self.bgViewToRemove.alpha = 0
@@ -308,10 +312,31 @@ class CommonUtils: NSObject, EasyTipViewDelegate, UIGestureRecognizerDelegate {
         //print("dismissed")
         self.showNextTip(false)
     }
+
+    /// True when `index` can safely subscript a tip array of `count` items.
+    class func isValidTipIndex(_ index: Int, count: Int) -> Bool {
+        return index >= 0 && index < count
+    }
+
+    func disarmTutorialOverlay() {
+        if bgViewToRemove != nil, let gestures = bgViewToRemove.gestureRecognizers {
+            for gesture in gestures {
+                bgViewToRemove.removeGestureRecognizer(gesture)
+            }
+        }
+    }
     
     func removeEasyTips(){
         //print("removing from...")
         print(self.currentTip)
+        // After the last tip, showNextTip sets currentTip = -1 while the dim
+        // overlay may still be fading; tapping it must not crash.
+        guard CommonUtils.isValidTipIndex(self.currentTip, count: self.currentTipArr.count) else {
+            if self.bgViewToRemove != nil {
+                self.bgViewToRemove.removeFromSuperview()
+            }
+            return
+        }
         if let prnt = self.currentTipArr[self.currentTip].view.parentViewController?.view {
             for view in prnt.subviews {
                 if let tipView = view as? EasyTipView {
