@@ -269,48 +269,44 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
             let queryURL = HulaConstants.apiURL + "products/user/" + HulaUser.sharedInstance.userId
             //print(queryURL)
             HLDataManager.sharedInstance.httpGet(urlstr: queryURL, taskCallback: { (ok, json) in
-                //print(json)
-                if (ok){
-                    DispatchQueue.main.async {
+                let products_arr = json as? [Any]
+                let ui = BlockingNetworkLoadUI.outcome(ok: ok, payloadUsable: products_arr != nil)
+                DispatchQueue.main.async {
+                    if ui.hideSpinner {
                         self.spinner.hide()
-                        
-                        if let dictionary = json as? [Any] {
-                            let products_arr = dictionary
-                            
-                            self.arrayProducts = []
-                            for pr in products_arr {
-                                if let tmp = pr as? NSDictionary{
-                                    let prod = HulaProduct()
-                                    prod.populate(with: tmp)
-                                    self.arrayProducts.append(prod)
-                                }
+                    }
+
+                    if ui.applyPayload, let products_arr = products_arr {
+                        self.arrayProducts = []
+                        for pr in products_arr {
+                            if let tmp = pr as? NSDictionary{
+                                let prod = HulaProduct()
+                                prod.populate(with: tmp)
+                                self.arrayProducts.append(prod)
                             }
-                            HulaUser.sharedInstance.numProducts = self.arrayProducts.count
-                            
-                            
-                            HulaUser.sharedInstance.arrayProducts = dictionary
-                            if (self.arrayProducts.count != 0){
-                                self.noProductsView.isHidden = true
-                            } else {
-                                self.noProductsView.isHidden = false
-                            }
+                        }
+                        HulaUser.sharedInstance.numProducts = self.arrayProducts.count
+                        HulaUser.sharedInstance.arrayProducts = products_arr
+                        if (self.arrayProducts.count != 0){
+                            self.noProductsView.isHidden = true
                         } else {
-                            let alert = UIAlertController(title: "User token expired", message: "Your Hula session is expired. Please log in again.", preferredStyle: UIAlertControllerStyle.alert)
-                            alert.addAction(UIAlertAction(title: "Ok", style: UIAlertActionStyle.default, handler: nil))
-                            self.present(alert, animated: true, completion: {
-                                //print("going to login page")
-                                self.openUserIdentification()
-                            })
+                            self.noProductsView.isHidden = false
                         }
                         self.productTableView.reloadData()
                         HLDataManager.sharedInstance.writeUserData()
+                    } else if ui.treatAsExpiredSession {
+                        let alert = UIAlertController(title: "User token expired", message: "Your Hula session is expired. Please log in again.", preferredStyle: UIAlertControllerStyle.alert)
+                        alert.addAction(UIAlertAction(title: "Ok", style: UIAlertActionStyle.default, handler: nil))
+                        self.present(alert, animated: true, completion: {
+                            self.openUserIdentification()
+                        })
+                    } else {
+                        self.noProductsView.isHidden = true
                     }
-                } else {
-                    // connection error
-                    //print("Connection error")
-                    self.noProductsView.isHidden = true
                 }
             })
+        } else {
+            spinner.hide()
         }
     }
     func uploadProduct() {

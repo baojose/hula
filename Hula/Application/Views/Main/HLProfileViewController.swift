@@ -277,78 +277,67 @@ class HLProfileViewController: BaseViewController {
         let queryURL = HulaConstants.apiURL + "me"
         print(queryURL)
         HLDataManager.sharedInstance.httpGet(urlstr: queryURL, taskCallback: { (ok, json) in
-            
-            
-            if (ok){
-                DispatchQueue.main.async {
-                    if let dictionary = json as? [String: Any] {
-                        
-                        if let user = dictionary["user"] as? [String: Any]  {
-                            //print(user)
-                            self.spinner.hide()
-                            HulaUser.sharedInstance.populate(with: user as NSDictionary)
-                            
-                            if (HulaUser.sharedInstance.fbToken != ""){
-                                self.verFacebookIcon.image = UIImage(named: "icon_facebook_on")
-                                self.verFacebookIcon.bouncer()
-                            }
-                            if (HulaUser.sharedInstance.liToken != ""){
-                                self.verLinkedinIcon.image = UIImage(named: "icon_linkedin_on")
-                                self.verLinkedinIcon.bouncer()
-                            }
-                            if (HulaUser.sharedInstance.twToken != ""){
-                                self.verTwitterIcon.image = UIImage(named: "icon_twitter_on")
-                                self.verTwitterIcon.bouncer()
-                            }
-                            if (HulaUser.sharedInstance.status == "verified"){
-                                self.verMailIcon.image = UIImage(named: "icon_mail_on")
-                                self.verMailIcon.bouncer()
-                            }
-                            
-                            self.userFeedbackLabel.text = HulaUser.sharedInstance.getFeedback()
-                            //let thumb = self.commonUtils.getThumbFor(url: HulaUser.sharedInstance.userPhotoURL)
-                            self.userFullNameLabel.text = HulaUser.sharedInstance.userName
-                            self.current_image_url = HulaUser.sharedInstance.userPhotoURL
-                            if (self.current_image_url != "") {
-                                self.profileImageView.loadImageFromURL(urlString: HulaUser.sharedInstance.userPhotoURL)
-                            } else {
-                                self.profileImageView.image = UIImage(named: "profile_placeholder")
-                            }
-                            self.userNickLabel.text = HulaUser.sharedInstance.userNick
-                            self.userBioLabel.text = HulaUser.sharedInstance.userBio
-                            
-                            self.tradesStartedLabel.text = "\(Int(HulaUser.sharedInstance.trades_started))"
-                            self.tradesEndedLabel.text = "\(Int(HulaUser.sharedInstance.trades_finished))"
-                            self.tradesClosedLabel.text = "\(Int(HulaUser.sharedInstance.trades_closed))"
-                            
-                            
-                            HLDataManager.sharedInstance.writeUserData()
-                            
-                            
-                            if (HulaUser.sharedInstance.isIncompleteProfile()){
-                                // badges to inform the user
-                                UIView.animate(withDuration: 0.4, animations: {
-                                    self.completeProfileTooltip.alpha = 1
-                                    self.settingsAlertBadge.alpha = 1
-                                })
-                            }
-                            
-                            if let feedback = dictionary["feedback"] as? NSArray {
-                                self.arrFeedback = feedback
-                            }
-                            DispatchQueue.main.async {
-                                let app = UIApplication.shared.delegate as! AppDelegate
-                                app.registerForPushNotifications()
-                            }
-                        } else {
-                            self.expiredTokenAlert()
-                        }
-                        
-                    }
+            let dictionary = json as? [String: Any]
+            let userPayload = dictionary?["user"] as? [String: Any]
+            let ui = BlockingNetworkLoadUI.outcome(ok: ok, payloadUsable: userPayload != nil)
+            DispatchQueue.main.async {
+                if ui.hideSpinner {
+                    self.spinner.hide()
                 }
-            } else {
-                // connection error
-                self.expiredTokenAlert()
+                if ui.applyPayload, let user = userPayload {
+                    HulaUser.sharedInstance.populate(with: user as NSDictionary)
+                    
+                    if (HulaUser.sharedInstance.fbToken != ""){
+                        self.verFacebookIcon.image = UIImage(named: "icon_facebook_on")
+                        self.verFacebookIcon.bouncer()
+                    }
+                    if (HulaUser.sharedInstance.liToken != ""){
+                        self.verLinkedinIcon.image = UIImage(named: "icon_linkedin_on")
+                        self.verLinkedinIcon.bouncer()
+                    }
+                    if (HulaUser.sharedInstance.twToken != ""){
+                        self.verTwitterIcon.image = UIImage(named: "icon_twitter_on")
+                        self.verTwitterIcon.bouncer()
+                    }
+                    if (HulaUser.sharedInstance.status == "verified"){
+                        self.verMailIcon.image = UIImage(named: "icon_mail_on")
+                        self.verMailIcon.bouncer()
+                    }
+                    
+                    self.userFeedbackLabel.text = HulaUser.sharedInstance.getFeedback()
+                    self.userFullNameLabel.text = HulaUser.sharedInstance.userName
+                    self.current_image_url = HulaUser.sharedInstance.userPhotoURL
+                    if (self.current_image_url != "") {
+                        self.profileImageView.loadImageFromURL(urlString: HulaUser.sharedInstance.userPhotoURL)
+                    } else {
+                        self.profileImageView.image = UIImage(named: "profile_placeholder")
+                    }
+                    self.userNickLabel.text = HulaUser.sharedInstance.userNick
+                    self.userBioLabel.text = HulaUser.sharedInstance.userBio
+                    
+                    self.tradesStartedLabel.text = "\(Int(HulaUser.sharedInstance.trades_started))"
+                    self.tradesEndedLabel.text = "\(Int(HulaUser.sharedInstance.trades_finished))"
+                    self.tradesClosedLabel.text = "\(Int(HulaUser.sharedInstance.trades_closed))"
+                    
+                    HLDataManager.sharedInstance.writeUserData()
+                    
+                    if (HulaUser.sharedInstance.isIncompleteProfile()){
+                        UIView.animate(withDuration: 0.4, animations: {
+                            self.completeProfileTooltip.alpha = 1
+                            self.settingsAlertBadge.alpha = 1
+                        })
+                    }
+                    
+                    if let feedback = dictionary?["feedback"] as? NSArray {
+                        self.arrFeedback = feedback
+                    }
+                    DispatchQueue.main.async {
+                        let app = UIApplication.shared.delegate as! AppDelegate
+                        app.registerForPushNotifications()
+                    }
+                } else if ui.treatAsExpiredSession {
+                    self.expiredTokenAlert()
+                }
             }
         })
     }

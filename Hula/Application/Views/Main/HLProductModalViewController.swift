@@ -339,31 +339,27 @@ class HLProductModalViewController: UIViewController, UIImagePickerControllerDel
         //print("Got a video")
         
         if let pickedVideo:NSURL = (info[UIImagePickerControllerMediaURL] as? NSURL) {
-            // Save video to the main photo album
-            //print(pickedVideo.relativePath)
-            /*
-            let selectorToCall = #selector(HLProductModalViewController.videoWasSavedSuccessfully)
-            UISaveVideoAtPathToSavedPhotosAlbum(pickedVideo.relativePath!, self, selectorToCall, nil)
-            
-             */
-            // Save the video to the app directory so we can play it later
             let videoData = NSData(contentsOf: pickedVideo as URL)
-            
-            
-            
             let paths = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true) as NSArray
             let documentsDirectory = paths[0] as! NSString
-            let path = documentsDirectory.appendingPathComponent("testvideo.mov")
-            videoPath = NSURL(string: path )
-            videoData?.write(toFile: path, atomically: false)
-            //self.dismiss(animated: true, completion: nil)
+            let fileName = VideoProofUploadPolicy.fileName(productId: product.productId ?? "", tradeId: currentTradeId)
+            let path = documentsDirectory.appendingPathComponent(fileName)
+            videoPath = NSURL(fileURLWithPath: path)
+            var writeSucceeded = false
+            if let videoData = videoData {
+                writeSucceeded = videoData.write(toFile: path, atomically: true)
+            }
+            guard VideoProofUploadPolicy.shouldUpload(dataAvailable: videoData != nil, writeSucceeded: writeSucceeded) else {
+                notify(NSLocalizedString("Could not save video. Please try again.", comment: ""))
+                HLDataManager.sharedInstance.onlyLandscapeView = false
+                imagePicker.dismiss(animated: true, completion: nil)
+                return
+            }
             notify(NSLocalizedString("Uploading video...", comment: ""))
             videoBtn.setTitle(NSLocalizedString(" Uploading", comment: ""), for: .normal)
-            // three-dots animation
             
             HLDataManager.sharedInstance.uploadVideo(path, productId: product.productId, tradeId: self.currentTradeId, taskCallback: { (success, json) in
                 print("Uploaded")
-                //print(json)
                 DispatchQueue.main.async {
                     if let dict = json as? [String: Any] {
                         if let vp = dict["path"] as? String{
@@ -375,7 +371,6 @@ class HLProductModalViewController: UIViewController, UIImagePickerControllerDel
                     self.videoBtn.setImage(UIImage(named: "video-player-icon-red"), for: .normal)
                     self.videoBtn.tag = 43909
                     self.notify(NSLocalizedString("Video uploaded!", comment: ""))
-                    //self.setupVideoButtons()
                     self.refreshProduct()
                 }
                 

@@ -229,37 +229,33 @@ class HLSearchResultViewController: BaseViewController, UITableViewDataSource, U
         }
         print(queryURL)
         HLDataManager.sharedInstance.httpGet(urlstr: queryURL, taskCallback: { (ok, json) in
-            if (ok){
-                DispatchQueue.main.async {
-                    if let dictionary = json as? [String: Any] {
-                        self.spinner.hide()
-                        print(dictionary)
-                        if let products = dictionary["products"] as? NSArray {
-                            //print(products)
-                            self.productsList = products
-                            if let ful = dictionary["found_users"] as? NSArray {
-                                self.foundUsersList = ful;
-                            } else {
-                                self.foundUsersList = [];
-                            }
+            let dictionary = json as? [String: Any]
+            let ui = BlockingNetworkLoadUI.outcome(ok: ok, payloadUsable: dictionary != nil)
+            DispatchQueue.main.async {
+                if ui.hideSpinner {
+                    self.spinner.hide()
+                }
+                if ui.applyPayload, let dictionary = dictionary {
+                    print(dictionary)
+                    if let products = dictionary["products"] as? NSArray {
+                        self.productsList = products
+                        if let ful = dictionary["found_users"] as? NSArray {
+                            self.foundUsersList = ful;
+                        } else {
+                            self.foundUsersList = [];
                         }
-                        if let users = dictionary["users"] as? NSDictionary {
-                            //print(products)
-                            self.usersList = users 
-                        }
-                        
                     }
-                    self.getFilteredList()
-                    self.productsTableView.reloadData()
-                    if (self.filteredList.count == 0){
-                        self.productsTableView.isHidden = true
-                    } else {
-                        self.productsTableView.isHidden = false
+                    if let users = dictionary["users"] as? NSDictionary {
+                        self.usersList = users
                     }
                 }
-            } else {
-                // connection error
-                print("Connection error")
+                self.getFilteredList()
+                self.productsTableView.reloadData()
+                if (self.filteredList.count == 0){
+                    self.productsTableView.isHidden = true
+                } else {
+                    self.productsTableView.isHidden = false
+                }
             }
         })
     }
