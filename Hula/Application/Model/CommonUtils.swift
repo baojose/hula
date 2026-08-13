@@ -12,6 +12,7 @@ import CoreLocation
 import EasyTipView
 import Kingfisher
 import AVKit
+import AVFoundation
 
 class CommonUtils: NSObject, EasyTipViewDelegate, UIGestureRecognizerDelegate {
     
@@ -222,6 +223,31 @@ class CommonUtils: NSObject, EasyTipViewDelegate, UIGestureRecognizerDelegate {
             return NSDate()
         }
     }
+
+    /// Safe relative-date label for optional API date strings (notifications/chat).
+    /// Returns empty string when date is missing/blank so callers never force-unwrap.
+    func relativeDateLabel(fromISO dateString: String?, numericDates: Bool = false) -> String {
+        guard let dateString = dateString, dateString.count > 0 else {
+            return ""
+        }
+        let date = isoDateToNSDate(date: dateString)
+        return timeAgoSinceDate(date: date, numericDates: numericDates)
+    }
+
+    /// Clamps a trade list index so mid-session refreshes cannot OOB-crash open rooms/chat.
+    func clampedTradeIndex(_ index: Int, tradeCount: Int) -> Int? {
+        guard tradeCount > 0 else {
+            return nil
+        }
+        if index < 0 {
+            return 0
+        }
+        if index >= tradeCount {
+            return tradeCount - 1
+        }
+        return index
+    }
+
     func userImageURL(userId: String) -> String{
         return HulaConstants.apiURL + "users/\(userId)/image"
     }
@@ -285,6 +311,7 @@ class CommonUtils: NSObject, EasyTipViewDelegate, UIGestureRecognizerDelegate {
                     
                     //self.showNextTip(false)
                 } else {
+                    self.disarmTutorialOverlay()
                     self.bgViewToRemove.removeFromSuperview()
                     self.currentTip = -1
                     
@@ -293,6 +320,9 @@ class CommonUtils: NSObject, EasyTipViewDelegate, UIGestureRecognizerDelegate {
                 }
             }
         }else{
+            // Tutorial finished: disarm overlay taps before fade so removeEasyTips
+            // cannot index currentTipArr with currentTip == -1.
+            self.disarmTutorialOverlay()
             self.currentTip = -1
             UIView.animate(withDuration: 0.5, animations: {
                 self.bgViewToRemove.alpha = 0
@@ -308,10 +338,31 @@ class CommonUtils: NSObject, EasyTipViewDelegate, UIGestureRecognizerDelegate {
         //print("dismissed")
         self.showNextTip(false)
     }
+
+    /// True when `index` can safely subscript a tip array of `count` items.
+    class func isValidTipIndex(_ index: Int, count: Int) -> Bool {
+        return index >= 0 && index < count
+    }
+
+    func disarmTutorialOverlay() {
+        if bgViewToRemove != nil, let gestures = bgViewToRemove.gestureRecognizers {
+            for gesture in gestures {
+                bgViewToRemove.removeGestureRecognizer(gesture)
+            }
+        }
+    }
     
     func removeEasyTips(){
         //print("removing from...")
         print(self.currentTip)
+        // After the last tip, showNextTip sets currentTip = -1 while the dim
+        // overlay may still be fading; tapping it must not crash.
+        guard CommonUtils.isValidTipIndex(self.currentTip, count: self.currentTipArr.count) else {
+            if self.bgViewToRemove != nil {
+                self.bgViewToRemove.removeFromSuperview()
+            }
+            return
+        }
         if let prnt = self.currentTipArr[self.currentTip].view.parentViewController?.view {
             for view in prnt.subviews {
                 if let tipView = view as? EasyTipView {
@@ -336,6 +387,295 @@ class CommonUtils: NSObject, EasyTipViewDelegate, UIGestureRecognizerDelegate {
             return nil
         }
         
+    }
+}
+
+extension CommonUtils {
+    /// Parse numeric JSON values that may arrive as Int, Double, Float, or NSNumber.
+    /// `as? Float` fails for whole-number JSON values bridged as Int/NSNumber.
+    static func floatFromJSON(_ value: Any?) -> Float? {
+        if let number = value as? NSNumber {
+            // Bool bridges as NSNumber; reject so true/false never become 1/0 money.
+            if CFGetTypeID(number) == CFBooleanGetTypeID() {
+                return nil
+            }
+            return number.floatValue
+        }
+        if let v = value as? Float {
+            return v
+        }
+        if let v = value as? Double {
+            return Float(v)
+        }
+        if let v = value as? Int {
+            return Float(v)
+        }
+        return nil
+    }
+
+    /// Parse integer JSON counts (unread badges, etc.) across Int/Double/NSNumber bridges.
+    /// Rejects Bool so `true`/`false` never become unread `1`/`0`.
+    static func intFromJSON(_ value: Any?) -> Int? {
+        if let number = value as? NSNumber {
+            if CFGetTypeID(number) == CFBooleanGetTypeID() {
+                return nil
+            }
+            return number.intValue
+        }
+        if let v = value as? Int {
+            return v
+        }
+        if let v = value as? Double {
+            return Int(v)
+        }
+        if let v = value as? Float {
+            return Int(v)
+        }
+        return nil
+    }
+
+    /// Soft-parse trade/acceptance flags that may arrive as Bool or 0/1 Int/NSNumber.
+    /// Rejects arbitrary numbers and strings so malformed JSON does not flip deal state.
+    /// NSNumber is checked before `as? Bool` because non-zero NSNumbers bridge to `true`.
+    static func boolFromJSON(_ value: Any?) -> Bool? {
+        if let number = value as? NSNumber {
+            if CFGetTypeID(number) == CFBooleanGetTypeID() {
+                return number.boolValue
+            }
+            let asInt = number.intValue
+            if number.doubleValue == Double(asInt) && (asInt == 0 || asInt == 1) {
+                return asInt == 1
+            }
+            return nil
+        }
+        if let v = value as? Int {
+            if v == 0 || v == 1 {
+                return v == 1
+            }
+            return nil
+        }
+        if let v = value as? Bool {
+            return v
+        }
+        return nil
+    }
+
+    /// Percent-encode a single application/x-www-form-urlencoded field value.
+    /// Keeps `&`/`=` as delimiters and encodes `+` so it is not decoded as a space.
+    /// Note: `CharacterSet.urlHostAllowed` is NOT safe here — it leaves `&=+` unescaped.
+    static func formEncodedValue(_ value: String) -> String {
+        var allowed = CharacterSet.urlQueryAllowed
+        allowed.remove(charactersIn: "&=+")
+        return value.addingPercentEncoding(withAllowedCharacters: allowed) ?? ""
+    }
+
+    /// Chat section key: prefix through hour for full ISO8601, safe for short dates.
+    static func chatDateSectionKey(_ date: String) -> String? {
+        guard date.count > 0 else { return nil }
+        let prefixLen = min(13, date.count)
+        let index = date.index(date.startIndex, offsetBy: prefixLen)
+        return date.substring(to: index)
+    }
+
+    /// Build "City, Country" display text when either geocode field may be missing.
+    static func locationDisplayName(city: String?, country: String?) -> String {
+        let cityPart = city ?? ""
+        let countryPart = country ?? ""
+        if cityPart.isEmpty && countryPart.isEmpty {
+            return ""
+        }
+        if cityPart.isEmpty {
+            return countryPart
+        }
+        if countryPart.isEmpty {
+            return cityPart
+        }
+        return cityPart + ", " + countryPart
+    }
+
+    /// Path-safe email segment for `/users/resetmail/{email}` after trimming whitespace.
+    static func resetMailPathComponent(_ email: String) -> String? {
+        let trimmed = email.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard trimmed.count > 4,
+            let encoded = trimmed.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed),
+            !encoded.isEmpty else {
+                return nil
+        }
+        return encoded
+    }
+
+    /// Soft-parse a search `found_users` hit into a synthetic product row (`xx_user`).
+    /// Missing optional fields default to empty strings; missing `_id` skips the row.
+    static func searchUserProduct(from user: NSDictionary) -> HulaProduct? {
+        guard let userId = user["_id"] as? String, userId.count > 0 else {
+            return nil
+        }
+        let name = (user["name"] as? String) ?? ""
+        let nick = (user["nick"] as? String) ?? ""
+        let image = (user["image"] as? String) ?? ""
+        let hprod = HulaProduct()
+        hprod.productName = String(NSLocalizedString("User", comment: "")) + ": " + name
+            + "\n(" + nick + ")"
+        hprod.productDescription = nick
+        hprod.productImage = image
+        hprod.productId = userId
+        hprod.productCategoryId = "xx_user"
+        return hprod
+    }
+
+    /// Form-urlencoded body for `POST /feedback`.
+    static func feedbackPostString(tradeId: String, userId: String, comments: String, points: Int) -> String {
+        return "trade_id=" + formEncodedValue(tradeId)
+            + "&user_id=" + formEncodedValue(userId)
+            + "&comments=" + formEncodedValue(comments)
+            + "&val=\(points)"
+    }
+
+    /// True only when agree HTTP succeeds and the body is a JSON object (not nil/array/string).
+    static func agreeResponseSucceeded(ok: Bool, json: Any?) -> Bool {
+        return ok && (json as? [String: Any]) != nil
+    }
+
+    /// Barter `getUserProducts` identity: require `_id`, default missing title to untitled.
+    static func barterProductIdentity(from productData: [String: Any]) -> (id: String, title: String)? {
+        guard let id = productData["_id"] as? String, id.count > 0 else {
+            return nil
+        }
+        let title = (productData["title"] as? String) ?? NSLocalizedString("Untitled product", comment: "")
+        return (id, title)
+    }
+
+    /// Resolve a playable video URL for a trade; nil when missing, blank, or malformed.
+    static func playableVideoURL(videoURLs: [String: String], tradeId: String) -> URL? {
+        guard let vurl = videoURLs[tradeId], !vurl.isEmpty else {
+            return nil
+        }
+        return URL(string: vurl)
+    }
+
+    /// Soft-parse search autocomplete payloads. Always seeds with the typed keyword;
+    /// skips malformed rows and duplicates of the seed (no force-unwrap on keyword dicts).
+    static func autocompleteKeywords(from json: Any?, seed: String) -> [String] {
+        var results = [seed]
+        guard let dictionary = json as? [String: Any],
+            let keys = dictionary["keywords"] as? [Any] else {
+                return results
+        }
+        for item in keys {
+            if let nkw = item as? [String: Any],
+                let nkwStr = nkw["keyword"] as? String,
+                nkwStr != seed {
+                results.append(nkwStr)
+            }
+        }
+        return results
+    }
+
+    /// Album pickers must request images only — `availableMediaTypes` includes video,
+    /// and video picks previously crashed via `as! UIImage`.
+    static func photoLibraryImageMediaTypes() -> [String] {
+        return ["public.image"]
+    }
+
+    /// Soft-extract the original UIImage from a picker info dictionary.
+    static func pickedOriginalImage(from info: [String: Any]) -> UIImage? {
+        return info[UIImagePickerControllerOriginalImage] as? UIImage
+    }
+
+    /// Soft-filter capture-session inputs. `inputs as! [AVCaptureDeviceInput]` crashes
+    /// when the session contains non-device inputs (or is empty/bridged).
+    static func captureDeviceInputs(from sessionInputs: [Any]?) -> [AVCaptureDeviceInput] {
+        guard let sessionInputs = sessionInputs else { return [] }
+        var inputs: [AVCaptureDeviceInput] = []
+        for item in sessionInputs {
+            if let input = item as? AVCaptureDeviceInput {
+                inputs.append(input)
+            }
+        }
+        return inputs
+    }
+
+    /// Soft-parse a lat/lng pair from JSON/plist arrays (NSNumber/Int/Double/CGFloat).
+    /// Rejects Bool/NSNumber-bool so true never becomes latitude 1.
+    static func coordinatePair(from value: Any?) -> (latitude: CLLocationDegrees, longitude: CLLocationDegrees)? {
+        var coordinates: [Any]
+        if let tmp = value as? [Any] {
+            coordinates = tmp
+        } else if let tmp = value as? NSArray {
+            coordinates = []
+            for item in tmp {
+                coordinates.append(item)
+            }
+        } else {
+            return nil
+        }
+
+        guard coordinates.count >= 2,
+            let latitude = coordinateValue(from: coordinates[0]),
+            let longitude = coordinateValue(from: coordinates[1]) else {
+                return nil
+        }
+        return (latitude, longitude)
+    }
+
+    static func location(fromJSON value: Any?) -> CLLocation? {
+        guard let pair = coordinatePair(from: value) else { return nil }
+        return CLLocation(latitude: pair.latitude, longitude: pair.longitude)
+    }
+
+    private static func coordinateValue(from value: Any) -> CLLocationDegrees? {
+        if value is Bool {
+            return nil
+        }
+        if let number = value as? NSNumber {
+            let type = String(cString: number.objCType)
+            if type == "c" || type == "B" {
+                return nil
+            }
+            return CLLocationDegrees(number.doubleValue)
+        }
+        if let value = value as? Double {
+            return CLLocationDegrees(value)
+        }
+        if let value = value as? Float {
+            return CLLocationDegrees(value)
+        }
+        if let value = value as? CGFloat {
+            return CLLocationDegrees(value)
+        }
+        if let value = value as? Int {
+            return CLLocationDegrees(value)
+        }
+        return nil
+    }
+
+    /// Build the product create/update form body with delimiter-safe encoding.
+    static func productFormPostString(title: String,
+                                      description: String,
+                                      condition: String,
+                                      categoryId: String,
+                                      imagesCSV: String,
+                                      latitude: Double,
+                                      longitude: Double) -> String {
+        var dataString = "title=" + formEncodedValue(title)
+        dataString += "&description=" + formEncodedValue(description)
+        dataString += "&condition=" + formEncodedValue(condition)
+        dataString += "&category_id=" + formEncodedValue(categoryId)
+        dataString += "&images=" + formEncodedValue(imagesCSV)
+        dataString += "&lat=\(latitude)"
+        dataString += "&lng=\(longitude)"
+        return dataString
+    }
+
+    /// Home/search seller trade-rate label. Integer JSON feedback must not become "-".
+    static func feedbackTradeRateLabel(points: Any?, count: Any?) -> String {
+        guard let up = floatFromJSON(points),
+            let uc = floatFromJSON(count),
+            uc != 0 else {
+                return "-"
+        }
+        let perc = Int(round(up / uc * 100))
+        return "\(perc)%"
     }
 }
 
@@ -365,17 +705,20 @@ extension String {
 let imageCache = NSCache<AnyObject, AnyObject>()
 
 extension UIImageView {
-    func loadImageFromURL(urlString: String) {
-        
-        
-        var _urlString = ""
-        if (urlString == ""){
-            _urlString = HulaConstants.noProductThumb
-        } else {
-            _urlString = urlString
+    /// Resolve a loadable URL; invalid strings (spaces, bad encoding) fall back to the placeholder.
+    class func resolvedImageURL(from urlString: String) -> URL? {
+        let candidate = (urlString == "") ? HulaConstants.noProductThumb : urlString
+        if let url = URL(string: candidate) {
+            return url
         }
-        
-        let url = URL(string: _urlString)!
+        return URL(string: HulaConstants.noProductThumb)
+    }
+
+    func loadImageFromURL(urlString: String) {
+        // Malformed API/upload URLs make URL(string:) nil — never force-unwrap.
+        guard let url = UIImageView.resolvedImageURL(from: urlString) else {
+            return
+        }
         self.kf.indicatorType = .activity
         self.kf.setImage(with: url, options: [.transition(.fade(0.5))]) { (im, er, ty, ur) in
             if !(er == nil) {
