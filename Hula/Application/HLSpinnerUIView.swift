@@ -33,6 +33,11 @@ class HLSpinnerUIView: UIView {
     }
     
     func hide(){
+        spinning = false
+        guard spinner != nil else {
+            removeFromSuperview()
+            return
+        }
         UIView.animate(withDuration: 0.1, animations: {
             self.spinner.transform = CGAffineTransform(scaleX: 0.1, y: 0.1)
         }, completion: { success in
@@ -40,7 +45,6 @@ class HLSpinnerUIView: UIView {
             for subUIView in self.subviews as [UIView] {
                 subUIView.removeFromSuperview()
             }
-            self.spinning = false
             self.removeFromSuperview()
         })
     }

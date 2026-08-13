@@ -326,25 +326,22 @@ extension HLSellerInfoViewController: AlertDelegate{
             if(HulaUser.sharedInstance.userId != otherId){
                 if (HulaUser.sharedInstance.userId.count>0){
                     // user is loggedin
-                    DispatchQueue.main.async {
-                        UIView.animate(withDuration: 0.3, animations: {
-                            self.addToTradeViewContainer.frame = self.view.frame
-                        })
-                    }
-                    
                     let queryURL = HulaConstants.apiURL + "trades/"
                     let dataString:String = "product_id=&other_id=\(otherId!)"
                     HLDataManager.sharedInstance.httpPost(urlstr: queryURL, postString: dataString, isPut: false, taskCallback: { (ok, json) in
-                        if (ok){
-                            // show barter screen
-                            DispatchQueue.main.async {
+                        let expandOverlay = StartTradeUIPolicy.shouldExpandOverlay(postCompleted: true, postSucceeded: ok)
+                        let openSwap = StartTradeUIPolicy.shouldOpenSwapView(postSucceeded: ok)
+                        DispatchQueue.main.async {
+                            if expandOverlay {
+                                UIView.animate(withDuration: 0.3, animations: {
+                                    self.addToTradeViewContainer.frame = self.view.frame
+                                })
+                            }
+                            if openSwap {
                                 if let pnc = self.navigationController?.navigationController as? HulaPortraitNavigationController {
                                     pnc.openSwapView()
                                 }
                             }
-                        } else {
-                            // connection error
-                            print("Connection error")
                         }
                     })
                 }

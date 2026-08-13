@@ -404,28 +404,23 @@ extension HLProductDetailViewController: AlertDelegate{
                     let otherId = currentProduct.productOwner
                     if (HulaUser.sharedInstance.userId.count>0){
                         // user is loggedin
-                        DispatchQueue.main.async {
-                            UIView.animate(withDuration: 0.5, animations: {
-                                self.addToTradeViewContainer.frame.size.height = self.view.frame.height
-                                self.addToTradeViewContainer.frame.origin.y = 0
-                                //print(self.addToTradeViewContainer.frame)
-                                //self.addToTradeViewContainer.layoutIfNeeded()
-                            })
-                        }
                         let queryURL = HulaConstants.apiURL + "trades/"
                         let dataString:String = "product_id=\(productId)&other_id=\(otherId!)"
                         HLDataManager.sharedInstance.httpPost(urlstr: queryURL, postString: dataString, isPut: false, taskCallback: { (ok, json) in
-                            if (ok){
-                                // show barter screen
-                                DispatchQueue.main.async {
-                                    
+                            let expandOverlay = StartTradeUIPolicy.shouldExpandOverlay(postCompleted: true, postSucceeded: ok)
+                            let openSwap = StartTradeUIPolicy.shouldOpenSwapView(postSucceeded: ok)
+                            DispatchQueue.main.async {
+                                if expandOverlay {
+                                    UIView.animate(withDuration: 0.5, animations: {
+                                        self.addToTradeViewContainer.frame.size.height = self.view.frame.height
+                                        self.addToTradeViewContainer.frame.origin.y = 0
+                                    })
+                                }
+                                if openSwap {
                                     if let pnc = self.navigationController?.navigationController as? HulaPortraitNavigationController {
                                         pnc.openSwapView()
                                     }
                                 }
-                            } else {
-                                // connection error
-                                print("Connection error")
                             }
                         })
                     }
