@@ -2358,4 +2358,150 @@ class HulaTests: XCTestCase {
         XCTAssertFalse(HLIdentificationViewController.authNotificationSucceeded("ok"))
         XCTAssertFalse(HLIdentificationViewController.authNotificationSucceeded(nil))
     }
+
+    // MARK: - Barter cash chip drag-out (#122)
+
+    /// Dragging an `xmoney` chip out of a trade tray must zero the matching cash field.
+    func testMoneyAfterRemovingCashChipClearsMatchingSide() {
+        let ownerMine = HLBarterScreenViewController.moneyAfterRemovingCashChip(
+            productId: "xmoney",
+            trayIsMySide: true,
+            amITradeOwner: true,
+            ownerMoney: 25,
+            otherMoney: 10
+        )
+        XCTAssertEqual(ownerMine.ownerMoney, 0)
+        XCTAssertEqual(ownerMine.otherMoney, 10)
+
+        let ownerPeer = HLBarterScreenViewController.moneyAfterRemovingCashChip(
+            productId: "xmoney",
+            trayIsMySide: false,
+            amITradeOwner: true,
+            ownerMoney: 25,
+            otherMoney: 10
+        )
+        XCTAssertEqual(ownerPeer.ownerMoney, 25)
+        XCTAssertEqual(ownerPeer.otherMoney, 0)
+
+        let otherMine = HLBarterScreenViewController.moneyAfterRemovingCashChip(
+            productId: "xmoney",
+            trayIsMySide: true,
+            amITradeOwner: false,
+            ownerMoney: 25,
+            otherMoney: 10
+        )
+        XCTAssertEqual(otherMine.ownerMoney, 25)
+        XCTAssertEqual(otherMine.otherMoney, 0)
+
+        let otherPeer = HLBarterScreenViewController.moneyAfterRemovingCashChip(
+            productId: "xmoney",
+            trayIsMySide: false,
+            amITradeOwner: false,
+            ownerMoney: 25,
+            otherMoney: 10
+        )
+        XCTAssertEqual(otherPeer.ownerMoney, 0)
+        XCTAssertEqual(otherPeer.otherMoney, 10)
+    }
+
+    /// Removing a normal product must not touch cash fields.
+    func testMoneyAfterRemovingCashChipIgnoresNormalProducts() {
+        let result = HLBarterScreenViewController.moneyAfterRemovingCashChip(
+            productId: "abc123",
+            trayIsMySide: true,
+            amITradeOwner: true,
+            ownerMoney: 40,
+            otherMoney: 5
+        )
+        XCTAssertEqual(result.ownerMoney, 40)
+        XCTAssertEqual(result.otherMoney, 5)
+
+        let nilId = HLBarterScreenViewController.moneyAfterRemovingCashChip(
+            productId: nil,
+            trayIsMySide: true,
+            amITradeOwner: true,
+            ownerMoney: 40,
+            otherMoney: 5
+        )
+        XCTAssertEqual(nilId.ownerMoney, 40)
+        XCTAssertEqual(nilId.otherMoney, 5)
+    }
+
+    // MARK: - Onboarding tip index safety (#123)
+
+    func testTipIndexInvalidWhenFinishedTutorial() {
+        // showNextTip sets currentTip = -1 after the last tip while the dim
+        // overlay can still receive taps for ~0.5s.
+        XCTAssertFalse(CommonUtils.isValidTipIndex(-1, count: 3))
+        XCTAssertFalse(CommonUtils.isValidTipIndex(-1, count: 0))
+    }
+
+    func testTipIndexValidOnlyInsideBounds() {
+        XCTAssertTrue(CommonUtils.isValidTipIndex(0, count: 1))
+        XCTAssertTrue(CommonUtils.isValidTipIndex(2, count: 3))
+        XCTAssertFalse(CommonUtils.isValidTipIndex(3, count: 3))
+        XCTAssertFalse(CommonUtils.isValidTipIndex(0, count: 0))
+    }
+
+    // MARK: - Profile avatar upload JSON (#123)
+
+    func testProfileImageURLFromPathIgnoresMissingPosition() {
+        // Former code required position as String; API often returns a number,
+        // which left the camera UI stuck after stopSession().
+        let json: [String: Any] = ["path": "uploads/avatar.jpg", "position": 10]
+        let url = HLPictureSelectViewController.profileImageURL(fromUploadJSON: json)
+        XCTAssertEqual(url, HulaConstants.staticServerURL + "uploads/avatar.jpg")
+    }
+
+    func testProfileImageURLFromPathWithStringPosition() {
+        let json: [String: Any] = ["path": "uploads/avatar.jpg", "position": "10"]
+        let url = HLPictureSelectViewController.profileImageURL(fromUploadJSON: json)
+        XCTAssertEqual(url, HulaConstants.staticServerURL + "uploads/avatar.jpg")
+    }
+
+    func testProfileImageURLNilWithoutPath() {
+        XCTAssertNil(HLPictureSelectViewController.profileImageURL(fromUploadJSON: ["position": 10]))
+        XCTAssertNil(HLPictureSelectViewController.profileImageURL(fromUploadJSON: nil))
+        XCTAssertNil(HLPictureSelectViewController.profileImageURL(fromUploadJSON: ["path": ""]))
+    }
+
+    func testShouldDismissAfterProfileUploadIgnoresAppliedFlag() {
+        // Camera path (shouldDismiss true) must leave the screen even when
+        // the upload payload is unusable. Album path already dismissed.
+        XCTAssertTrue(HLPictureSelectViewController.shouldDismissAfterProfileUpload(shouldDismiss: true, appliedPhoto: false))
+        XCTAssertTrue(HLPictureSelectViewController.shouldDismissAfterProfileUpload(shouldDismiss: true, appliedPhoto: true))
+        XCTAssertFalse(HLPictureSelectViewController.shouldDismissAfterProfileUpload(shouldDismiss: false, appliedPhoto: false))
+        XCTAssertFalse(HLPictureSelectViewController.shouldDismissAfterProfileUpload(shouldDismiss: false, appliedPhoto: true))
+    }
+
+    // MARK: - Auth transport-failure publish
+
+    func testEmailLoginPublishesConnectionErrorWhenTransportFails() {
+        let connectionError = HLDataManager.publishedEmailLoginResult(httpOk: false, parsed: "")
+        XCTAssertFalse(connectionError.isEmpty)
+        XCTAssertNotEqual(connectionError, "ok")
+        XCTAssertEqual(
+            HLDataManager.publishedEmailLoginResult(httpOk: false, parsed: "ok"),
+            connectionError
+        )
+        XCTAssertEqual(HLDataManager.publishedEmailLoginResult(httpOk: true, parsed: "ok"), "ok")
+        XCTAssertEqual(
+            HLDataManager.publishedEmailLoginResult(httpOk: true, parsed: "bad password"),
+            "bad password"
+        )
+    }
+
+    func testBoolAuthResultIsFalseWhenTransportFails() {
+        XCTAssertTrue(HLDataManager.publishedBoolAuthResult(httpOk: true, parsed: true))
+        XCTAssertFalse(HLDataManager.publishedBoolAuthResult(httpOk: true, parsed: false))
+        XCTAssertFalse(HLDataManager.publishedBoolAuthResult(httpOk: false, parsed: true))
+        XCTAssertFalse(HLDataManager.publishedBoolAuthResult(httpOk: false, parsed: false))
+    }
+
+    // MARK: - Capture session input soft-filter
+
+    func testCaptureDeviceInputsSkipsNonDeviceInputs() {
+        XCTAssertEqual(CommonUtils.captureDeviceInputs(from: []).count, 0)
+        XCTAssertEqual(CommonUtils.captureDeviceInputs(from: ["not-input", 1, true]).count, 0)
+    }
 }
