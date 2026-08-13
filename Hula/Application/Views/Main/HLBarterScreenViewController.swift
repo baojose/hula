@@ -1147,17 +1147,70 @@ extension HLBarterScreenViewController: KDDragAndDropCollectionViewDataSource, U
         self.mainSwapViewHolder?.controlSetupBottomBar(index: myTradeIndex + 1)
         
     }
+    /// When a cash chip (`xmoney`) is dragged out of a trade tray, zero the matching
+    /// money field. Product arrays alone do not carry cash (`generateProductArray`
+    /// skips `xmoney`), so leaving `owner_money`/`other_money` set causes
+    /// `updateLiveBarter` and Accept/Send to republish cash the user removed.
+    /// `trayIsMySide` matches collection tags 2 (my traded) vs 3 (other traded).
+    static func moneyAfterRemovingCashChip(
+        productId: String?,
+        trayIsMySide: Bool,
+        amITradeOwner: Bool,
+        ownerMoney: Float,
+        otherMoney: Float
+    ) -> (ownerMoney: Float, otherMoney: Float) {
+        guard productId == "xmoney" else {
+            return (ownerMoney, otherMoney)
+        }
+        if trayIsMySide {
+            if amITradeOwner {
+                return (0, otherMoney)
+            }
+            return (ownerMoney, 0)
+        }
+        if amITradeOwner {
+            return (ownerMoney, 0)
+        }
+        return (0, otherMoney)
+    }
+
     func collectionView(_ collectionView: UICollectionView, deleteDataItemAtIndexPath indexPath : IndexPath) -> Void {
         switch collectionView.tag {
         case 1:
+            guard indexPath.item < myProducts.count else { break }
             myProducts.remove( at: indexPath.item)
         case 2:
+            guard indexPath.item < myTradedProducts.count else { break }
+            let removed = myTradedProducts[indexPath.item]
             myTradedProducts.remove( at: indexPath.item)
+            let amIOwner = thisTrade.owner_id == HulaUser.sharedInstance.userId
+            let updated = HLBarterScreenViewController.moneyAfterRemovingCashChip(
+                productId: removed.productId,
+                trayIsMySide: true,
+                amITradeOwner: amIOwner,
+                ownerMoney: thisTrade.owner_money,
+                otherMoney: thisTrade.other_money
+            )
+            thisTrade.owner_money = updated.ownerMoney
+            thisTrade.other_money = updated.otherMoney
             self.updateLiveBarter()
         case 3:
+            guard indexPath.item < otherTradedProducts.count else { break }
+            let removed = otherTradedProducts[indexPath.item]
             otherTradedProducts.remove( at: indexPath.item)
+            let amIOwner = thisTrade.owner_id == HulaUser.sharedInstance.userId
+            let updated = HLBarterScreenViewController.moneyAfterRemovingCashChip(
+                productId: removed.productId,
+                trayIsMySide: false,
+                amITradeOwner: amIOwner,
+                ownerMoney: thisTrade.owner_money,
+                otherMoney: thisTrade.other_money
+            )
+            thisTrade.owner_money = updated.ownerMoney
+            thisTrade.other_money = updated.otherMoney
             self.updateLiveBarter()
         case 4:
+            guard indexPath.item < otherProducts.count else { break }
             otherProducts.remove( at: indexPath.item)
         default: break
         }

@@ -285,6 +285,20 @@ class HLDataManager: NSObject {
         guard let builder = GAIDictionaryBuilder.createScreenView() else { return }
         tracker.send(builder.build() as [NSObject : AnyObject])
     }
+
+    /// Email login observers wait on `loginRecieved`. Transport failures must still
+    /// publish a string so the login UI is not left spinning.
+    class func publishedEmailLoginResult(httpOk: Bool, parsed: String) -> String {
+        if httpOk {
+            return parsed
+        }
+        return NSLocalizedString("Connection error. Please try again.", comment: "")
+    }
+
+    /// Facebook/signup observers wait on a Bool. Transport failures must publish false.
+    class func publishedBoolAuthResult(httpOk: Bool, parsed: Bool) -> Bool {
+        return httpOk && parsed
+    }
     
     func loginUser(email:String, pass:String) {
         
@@ -322,9 +336,9 @@ class HLDataManager: NSObject {
                     user.token = ""
                     loginSuccess = NSLocalizedString("Incorrect login. Please try again.", comment: "");
                 }
-                self.lastServerMessage = loginSuccess
-                NotificationCenter.default.post(name: self.loginRecieved, object: loginSuccess)
             }
+            self.lastServerMessage = HLDataManager.publishedEmailLoginResult(httpOk: ok, parsed: loginSuccess)
+            NotificationCenter.default.post(name: self.loginRecieved, object: self.lastServerMessage)
         })
     }
     
@@ -368,9 +382,11 @@ class HLDataManager: NSObject {
                 } else {
                     user.token = ""
                 }
-                
-                NotificationCenter.default.post(name: self.fbLoginRecieved, object: loginSuccess)
             }
+            NotificationCenter.default.post(
+                name: self.fbLoginRecieved,
+                object: HLDataManager.publishedBoolAuthResult(httpOk: ok, parsed: loginSuccess)
+            )
         })
  
     }
@@ -509,8 +525,11 @@ class HLDataManager: NSObject {
                     user.token = ""
                     self.lastServerMessage = NSLocalizedString("Server response unexpected", comment: "")
                 }
-                NotificationCenter.default.post(name: self.signupRecieved, object: signupSuccess)
             }
+            NotificationCenter.default.post(
+                name: self.signupRecieved,
+                object: HLDataManager.publishedBoolAuthResult(httpOk: ok, parsed: signupSuccess)
+            )
         })
     }
     

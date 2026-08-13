@@ -87,8 +87,8 @@ class HLPictureSelectViewController: BaseViewController, UIImagePickerController
             return
         }
         let croppedImage:UIImage = self.commonUtils.cropImage(chosenImage, HulaConstants.product_image_thumb_size)
-        // save the image
-        uploadImage(croppedImage)
+        // Album flow already dismisses here; camera capture dismisses from uploadImage.
+        uploadImage(croppedImage, shouldDismiss: false)
         //dismiss(animated:true, completion: nil) //5
         dismissToPreviousPage(croppedImage)
     }
@@ -134,7 +134,7 @@ class HLPictureSelectViewController: BaseViewController, UIImagePickerController
         captureSession.stopRunning()
         
         
-        for i : AVCaptureDeviceInput in (self.captureSession.inputs as! [AVCaptureDeviceInput]){
+        for i in CommonUtils.captureDeviceInputs(from: self.captureSession.inputs) {
             self.captureSession.removeInput(i)
         }
         
@@ -216,34 +216,49 @@ class HLPictureSelectViewController: BaseViewController, UIImagePickerController
     }
     
     
-    func uploadImage(_ image:UIImage) {
+    /// Build the public profile photo URL from an upload response.
+    /// Position is unused for avatars and may arrive as String or Number — do not gate on it.
+    class func profileImageURL(fromUploadJSON json: Any?) -> String? {
+        guard let dictionary = json as? [String: Any],
+              let filePath = dictionary["path"] as? String, filePath.characters.count > 0 else {
+            return nil
+        }
+        return HulaConstants.staticServerURL + filePath
+    }
+
+    /// Camera path stops the capture session before upload; always leave this screen
+    /// when `shouldDismiss` is true, even if the payload is unusable.
+    class func shouldDismissAfterProfileUpload(shouldDismiss: Bool, appliedPhoto: Bool) -> Bool {
+        return shouldDismiss
+    }
+
+    func uploadImage(_ image:UIImage, shouldDismiss: Bool = true) {
         //print("Getting user info...")
         //print("Uploading images...")
         dataManager.uploadImage(image, itemPosition:10, taskCallback: { (ok, json) in
-            if (ok){
-                //print("Uploaded!")
-                DispatchQueue.main.async {
-                    if let dictionary = json as? [String: Any] {
-                        print(dictionary)
-                        if let filePath:String = dictionary["path"] as? String {
-                            print(filePath)
-                            // Profile photo only needs the uploaded path. Gating on `position as? String`
-                            // silently dropped successful uploads when the API echoed a number.
-                            self.resultingImage = HulaConstants.staticServerURL + filePath
-                            HulaUser.sharedInstance.userPhotoURL = self.resultingImage
+            DispatchQueue.main.async {
+                var applied = false
+                if ok, let imageURL = HLPictureSelectViewController.profileImageURL(fromUploadJSON: json) {
+                    self.resultingImage = imageURL
+                    HulaUser.sharedInstance.userPhotoURL = self.resultingImage
 
-                            HulaUser.sharedInstance.updateServerData()
-                            HLDataManager.sharedInstance.writeUserData()
-                            //print(self.originalSettingsVC)
-                            self.originalSettingsVC?.smallProfileImage.loadImageFromURL(urlString: HulaUser.sharedInstance.userPhotoURL)
-                            self.originalProfileVC?.profileImageView.loadImageFromURL(urlString: HulaUser.sharedInstance.userPhotoURL)
-                            self.dismissToPreviousPage(self.resultingImage)
-                        }
+                    HulaUser.sharedInstance.updateServerData()
+                    HLDataManager.sharedInstance.writeUserData()
+                    self.originalSettingsVC?.smallProfileImage.loadImageFromURL(urlString: HulaUser.sharedInstance.userPhotoURL)
+                    self.originalProfileVC?.profileImageView.loadImageFromURL(urlString: HulaUser.sharedInstance.userPhotoURL)
+                    applied = true
+                    if shouldDismiss {
+                        self.dismissToPreviousPage(self.resultingImage)
                     }
+                } else {
+                    print("Connection error or unexpected upload payload")
                 }
-            } else {
-                // connection error
-                print("Connection error")
+                if HLPictureSelectViewController.shouldDismissAfterProfileUpload(
+                    shouldDismiss: shouldDismiss,
+                    appliedPhoto: applied
+                ) && !applied {
+                    self.dismissToPreviousPage(self)
+                }
             }
         });
     }

@@ -157,7 +157,7 @@ class HLProductPictureEditViewController: BaseViewController, UIImagePickerContr
     }
     func stopSession() {
         captureSession.stopRunning()
-        for i : AVCaptureDeviceInput in (self.captureSession.inputs as! [AVCaptureDeviceInput]){
+        for i in CommonUtils.captureDeviceInputs(from: self.captureSession.inputs) {
             self.captureSession.removeInput(i)
         }
     }
