@@ -584,7 +584,8 @@ extension CommonUtils {
 
     /// Soft-filter capture-session inputs. `inputs as! [AVCaptureDeviceInput]` crashes
     /// when the session contains non-device inputs (or is empty/bridged).
-    static func captureDeviceInputs(from sessionInputs: [Any]) -> [AVCaptureDeviceInput] {
+    static func captureDeviceInputs(from sessionInputs: [Any]?) -> [AVCaptureDeviceInput] {
+        guard let sessionInputs = sessionInputs else { return [] }
         var inputs: [AVCaptureDeviceInput] = []
         for item in sessionInputs {
             if let input = item as? AVCaptureDeviceInput {

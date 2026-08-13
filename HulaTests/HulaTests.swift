@@ -2502,6 +2502,7 @@ class HulaTests: XCTestCase {
 
     func testCaptureDeviceInputsSkipsNonDeviceInputs() {
         XCTAssertEqual(CommonUtils.captureDeviceInputs(from: []).count, 0)
+        XCTAssertEqual(CommonUtils.captureDeviceInputs(from: nil).count, 0)
         XCTAssertEqual(CommonUtils.captureDeviceInputs(from: ["not-input", 1, true]).count, 0)
     }
 }
