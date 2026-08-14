@@ -308,7 +308,17 @@ class HLPostProductViewController: BaseViewController {
         self.presentingViewController?.presentingViewController?.dismiss(animated: true, completion: nil)
     }
     @IBAction func publishNewProduct(_ sender: Any) {
-            dataManager.newProduct.productName = NSLocalizedString("Untitled product", comment: "")
+        guard dataManager.newProduct.arrProductPhotos.firstObject as? UIImage != nil else {
+            let alert = UIAlertController(
+                title: NSLocalizedString("Add a photo", comment: ""),
+                message: NSLocalizedString("Please add at least one photo before publishing.", comment: ""),
+                preferredStyle: .alert
+            )
+            alert.addAction(UIAlertAction(title: NSLocalizedString("Ok", comment: ""), style: .default, handler: nil))
+            self.present(alert, animated: true, completion: nil)
+            return
+        }
+        dataManager.newProduct.productName = NSLocalizedString("Untitled product", comment: "")
         NotificationCenter.default.post(name: NSNotification.Name(rawValue: "uploadModeUpdateDesign"), object: nil)
         self.presentingViewController?.presentingViewController?.dismiss(animated: true, completion: nil)
     }
@@ -334,22 +344,40 @@ extension HLPostProductViewController: UITableViewDelegate, UITableViewDataSourc
         
         let cell = tableView.dequeueReusableCell(withIdentifier: "completeProductProfileCategoryCell") as! HLHomeCategoryTableViewCell
         let category : NSDictionary = dataManager.arrCategories.object(at: indexPath.row) as! NSDictionary
-        
-        cell.categoryName.attributedText = commonUtils.attributedStringWithTextSpacing(category.object(forKey: "name") as! String, CGFloat(2.33))
-        cell.categoryImage.image = UIImage.init(named: category.object(forKey: "icon") as! String)
+        if let presentation = HLHomeViewController.categoryPresentation(from: category) {
+            cell.categoryName.attributedText = commonUtils.attributedStringWithTextSpacing(presentation.name, CGFloat(2.33))
+            if presentation.icon.count > 0 {
+                cell.categoryImage.image = UIImage.init(named: presentation.icon)
+            }
+        }
         
         return cell
     }
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        
+        // Publishing with zero photos creates an orphan listing then crashes when
+        // the complete-profile sheet force-casts arrProductPhotos[0].
+        guard dataManager.newProduct.arrProductPhotos.firstObject as? UIImage != nil else {
+            let alert = UIAlertController(
+                title: NSLocalizedString("Add a photo", comment: ""),
+                message: NSLocalizedString("Please add at least one photo before publishing.", comment: ""),
+                preferredStyle: .alert
+            )
+            alert.addAction(UIAlertAction(title: NSLocalizedString("Ok", comment: ""), style: .default, handler: nil))
+            self.present(alert, animated: true, completion: nil)
+            return
+        }
+
         let category : NSDictionary = dataManager.arrCategories.object(at: indexPath.row) as! NSDictionary
         print(category)
-        dataManager.newProduct.productCategory = category.object(forKey: "name") as! String
-        dataManager.newProduct.productCategoryId = category.object(forKey: "_id") as! String
-        
+        guard let selection = HLHomeViewController.categorySelection(from: category) else {
+            return
+        }
+        dataManager.newProduct.productCategory = selection.name
+        dataManager.newProduct.productCategoryId = selection.id
+
         dataManager.newProduct.productName = NSLocalizedString("Untitled product", comment: "")
         NotificationCenter.default.post(name: NSNotification.Name(rawValue: "uploadModeUpdateDesign"), object: nil)
-        
+
         self.presentingViewController?.presentingViewController?.dismiss(animated: true, completion: nil)
     }
     
