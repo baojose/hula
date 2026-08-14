@@ -76,7 +76,7 @@ class HLCompleteProductProfileViewController: BaseViewController, UIScrollViewDe
         //perkScrollView.contentSize = CGSize(width: mainScrollView.frame.size.width, height: mainScrollView.frame.size.height+130)
         print("Cat: \(dataManager.newProduct.productCategoryId)");
         print("Cat: \(dataManager.newProduct.productCategory)");
-        if dataManager.newProduct.productCategoryId! == "59124d47a0716d0938e9276c" {
+        if CompleteProductProfilePolicy.shouldHideConditionGroup(categoryId: dataManager.newProduct.productCategoryId) {
             // service product. No need to set as used or new
             conditionGroup.isHidden = true;
         } else {

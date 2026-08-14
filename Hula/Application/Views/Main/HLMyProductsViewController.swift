@@ -337,46 +337,39 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
             let queryURL = HulaConstants.apiURL + "products/user/" + HulaUser.sharedInstance.userId
             //print(queryURL)
             HLDataManager.sharedInstance.httpGet(urlstr: queryURL, taskCallback: { (ok, json) in
-                //print(json)
-                if (ok){
-                    DispatchQueue.main.async {
+                let payloadUsable = HLMyProductsViewController.isProductsListPayload(json)
+                let ui = BlockingNetworkLoadUI.outcome(ok: ok, payloadUsable: payloadUsable)
+                DispatchQueue.main.async {
+                    if ui.hideSpinner {
                         self.spinner.hide()
-                        
-                        if HLMyProductsViewController.isProductsListPayload(json),
-                           let dictionary = json as? [Any] {
-                            let products_arr = dictionary
-                            
-                            self.arrayProducts = []
-                            for pr in products_arr {
-                                if let tmp = pr as? NSDictionary{
-                                    let prod = HulaProduct()
-                                    prod.populate(with: tmp)
-                                    self.arrayProducts.append(prod)
-                                }
+                    }
+
+                    if ui.applyPayload, let products_arr = json as? [Any] {
+                        self.arrayProducts = []
+                        for pr in products_arr {
+                            if let tmp = pr as? NSDictionary{
+                                let prod = HulaProduct()
+                                prod.populate(with: tmp)
+                                self.arrayProducts.append(prod)
                             }
-                            HulaUser.sharedInstance.numProducts = self.arrayProducts.count
-                            
-                            
-                            HulaUser.sharedInstance.arrayProducts = dictionary
-                            if (self.arrayProducts.count != 0){
-                                self.noProductsView.isHidden = true
-                            } else {
-                                self.noProductsView.isHidden = false
-                            }
-                        } else {
-                            // Non-array JSON (API error objects, etc.) is not proof the token expired.
-                            // Keep the existing list; do not force re-login (distinct from Profile /me expiry).
                         }
+                        HulaUser.sharedInstance.numProducts = self.arrayProducts.count
+                        HulaUser.sharedInstance.arrayProducts = products_arr
+                        if (self.arrayProducts.count != 0){
+                            self.noProductsView.isHidden = true
+                        } else {
+                            self.noProductsView.isHidden = false
+                        }
+                    }
+                    // Inventory error JSON is not /me expiry — never force re-login here.
+                    if ok {
                         self.productTableView.reloadData()
                         HLDataManager.sharedInstance.writeUserData()
                     }
-                } else {
-                    // connection error — hide spinner on main; do not treat as expired session
-                    DispatchQueue.main.async {
-                        self.spinner.hide()
-                    }
                 }
             })
+        } else {
+            spinner.hide()
         }
     }
     func uploadProduct() {

@@ -812,6 +812,61 @@ extension String {
 }
 
 
+/// Shared gates for blocking-load, start-trade, and video-proof paths so callers
+/// cannot wedge a spinner, cover a listing before POST, or upload a stale proof file.
+struct BlockingNetworkLoadUI {
+    let hideSpinner: Bool
+    let applyPayload: Bool
+    /// True only when the server responded but the body is not the expected object.
+    /// Transport failure is not session expiry.
+    let treatAsExpiredSession: Bool
+
+    static func outcome(ok: Bool, payloadUsable: Bool) -> BlockingNetworkLoadUI {
+        return BlockingNetworkLoadUI(
+            hideSpinner: true,
+            applyPayload: ok && payloadUsable,
+            treatAsExpiredSession: ok && !payloadUsable
+        )
+    }
+}
+
+struct StartTradeUIPolicy {
+    /// Full-screen overlay must not cover the listing until the trades POST returns success.
+    static func shouldExpandOverlay(postCompleted: Bool, postSucceeded: Bool) -> Bool {
+        return postCompleted && postSucceeded
+    }
+
+    static func shouldOpenSwapView(postSucceeded: Bool) -> Bool {
+        return postSucceeded
+    }
+}
+
+struct VideoProofUploadPolicy {
+    static func fileName(productId: String, tradeId: String) -> String {
+        let safeProduct = sanitizedPathComponent(productId)
+        let safeTrade = sanitizedPathComponent(tradeId)
+        return "videoproof_\(safeProduct)_\(safeTrade).mov"
+    }
+
+    static func shouldUpload(dataAvailable: Bool, writeSucceeded: Bool) -> Bool {
+        return dataAvailable && writeSucceeded
+    }
+
+    static func sanitizedPathComponent(_ raw: String) -> String {
+        return raw.replacingOccurrences(of: "/", with: "_")
+            .replacingOccurrences(of: ":", with: "_")
+            .replacingOccurrences(of: "..", with: "_")
+    }
+}
+
+struct CompleteProductProfilePolicy {
+    static let serviceCategoryId = "59124d47a0716d0938e9276c"
+
+    static func shouldHideConditionGroup(categoryId: String?) -> Bool {
+        return categoryId == serviceCategoryId
+    }
+}
+
 struct Device {
     // iDevice detection code
     static let IS_IPAD             = UIDevice.current.userInterfaceIdiom == .pad

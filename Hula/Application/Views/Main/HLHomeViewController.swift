@@ -168,42 +168,28 @@ class HLHomeViewController: BaseViewController, UIScrollViewDelegate, UITextFiel
             
         print(queryURL)
         HLDataManager.sharedInstance.httpGet(urlstr: queryURL, taskCallback: { (ok, json) in
-            if (ok){
-                DispatchQueue.main.async {
-                    if let dictionary = json as? [String: Any] {
-                        self.spinner.hide()
-                        //print(dictionary)
-                        if let products = dictionary["products"] as? [NSDictionary] {
-                            //print(products)
-                            self.productArray = [];
-                            for prod in products{
-                                let p = HulaProduct()
-                                p.populate(with: prod)
-                                if (p.productOwner != HulaUser.sharedInstance.userId){
-                                    self.productArray.append(p);
-                                }
-                            }
-                            
-                            /*
-                            self.productArray = products
-                            if let ful = dictionary["found_users"] as? NSArray {
-                                self.foundUsersList = ful;
-                            } else {
-                                self.foundUsersList = [];
-                            }
-                             */
-                        }
-                        if let users = dictionary["users"] as? NSDictionary {
-                            //print(users)
-                            self.usersList = users
-                        }
-                        
-                    }
-                    self.productTableView.reloadData()
+            let dictionary = json as? [String: Any]
+            let ui = BlockingNetworkLoadUI.outcome(ok: ok, payloadUsable: dictionary != nil)
+            DispatchQueue.main.async {
+                if ui.hideSpinner {
+                    self.spinner.hide()
                 }
-            } else {
-                // connection error
-                print("Connection error")
+                if ui.applyPayload, let dictionary = dictionary {
+                    if let products = dictionary["products"] as? [NSDictionary] {
+                        self.productArray = [];
+                        for prod in products{
+                            let p = HulaProduct()
+                            p.populate(with: prod)
+                            if (p.productOwner != HulaUser.sharedInstance.userId){
+                                self.productArray.append(p);
+                            }
+                        }
+                    }
+                    if let users = dictionary["users"] as? NSDictionary {
+                        self.usersList = users
+                    }
+                }
+                self.productTableView.reloadData()
             }
         })
     }
