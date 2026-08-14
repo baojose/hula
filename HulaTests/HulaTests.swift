@@ -2505,4 +2505,84 @@ class HulaTests: XCTestCase {
         XCTAssertEqual(CommonUtils.captureDeviceInputs(from: nil).count, 0)
         XCTAssertEqual(CommonUtils.captureDeviceInputs(from: ["not-input", 1, true]).count, 0)
     }
+
+    // MARK: - Blocking load spinner / expiry (#125)
+
+    func testBlockingLoadAlwaysHidesSpinnerWhenRequestFinishes() {
+        let transportFailure = BlockingNetworkLoadUI.outcome(ok: false, payloadUsable: false)
+        XCTAssertTrue(transportFailure.hideSpinner)
+        XCTAssertFalse(transportFailure.applyPayload)
+        XCTAssertFalse(transportFailure.treatAsExpiredSession)
+
+        let unexpectedJSON = BlockingNetworkLoadUI.outcome(ok: true, payloadUsable: false)
+        XCTAssertTrue(unexpectedJSON.hideSpinner)
+        XCTAssertFalse(unexpectedJSON.applyPayload)
+        XCTAssertTrue(unexpectedJSON.treatAsExpiredSession)
+
+        let success = BlockingNetworkLoadUI.outcome(ok: true, payloadUsable: true)
+        XCTAssertTrue(success.hideSpinner)
+        XCTAssertTrue(success.applyPayload)
+        XCTAssertFalse(success.treatAsExpiredSession)
+    }
+
+    func testBlockingLoadTransportFailureNeverAppliesOrExpires() {
+        // A parsed body sitting next to ok == false is still a transport/HTTP failure.
+        // Home/Search used to leave the spinner up; Profile used to treat this as logout.
+        let leftoverPayload = BlockingNetworkLoadUI.outcome(ok: false, payloadUsable: true)
+        XCTAssertTrue(leftoverPayload.hideSpinner)
+        XCTAssertFalse(leftoverPayload.applyPayload)
+        XCTAssertFalse(leftoverPayload.treatAsExpiredSession)
+        XCTAssertFalse(HLProfileViewController.shouldPresentExpiredTokenAlert(
+            httpOk: false, hasUserObject: true))
+        XCTAssertEqual(
+            leftoverPayload.treatAsExpiredSession,
+            HLProfileViewController.shouldPresentExpiredTokenAlert(
+                httpOk: false, hasUserObject: true)
+        )
+        XCTAssertEqual(
+            BlockingNetworkLoadUI.outcome(ok: true, payloadUsable: false).treatAsExpiredSession,
+            HLProfileViewController.shouldPresentExpiredTokenAlert(
+                httpOk: true, hasUserObject: false)
+        )
+    }
+
+    // MARK: - Start-trade overlay (#125)
+
+    func testStartTradeOverlayWaitsForSuccessfulPost() {
+        XCTAssertFalse(StartTradeUIPolicy.shouldExpandOverlay(postCompleted: false, postSucceeded: false))
+        XCTAssertFalse(StartTradeUIPolicy.shouldExpandOverlay(postCompleted: false, postSucceeded: true))
+        XCTAssertFalse(StartTradeUIPolicy.shouldExpandOverlay(postCompleted: true, postSucceeded: false))
+        XCTAssertTrue(StartTradeUIPolicy.shouldExpandOverlay(postCompleted: true, postSucceeded: true))
+
+        XCTAssertFalse(StartTradeUIPolicy.shouldOpenSwapView(postSucceeded: false))
+        XCTAssertTrue(StartTradeUIPolicy.shouldOpenSwapView(postSucceeded: true))
+    }
+
+    // MARK: - Video proof uniqueness (#125)
+
+    func testVideoProofUsesUniqueFileAndSkipsFailedWrites() {
+        let name = VideoProofUploadPolicy.fileName(productId: "abc/def", tradeId: "trade:1")
+        XCTAssertEqual(name, "videoproof_abc_def_trade_1.mov")
+        XCTAssertFalse(name.contains("testvideo.mov"))
+        XCTAssertFalse(name.contains("/"))
+        XCTAssertFalse(name.contains(":"))
+
+        let parentEscape = VideoProofUploadPolicy.fileName(productId: "../x", tradeId: "a..b")
+        XCTAssertEqual(parentEscape, "videoproof_.x_a_b.mov")
+        XCTAssertFalse(parentEscape.contains(".."))
+
+        XCTAssertFalse(VideoProofUploadPolicy.shouldUpload(dataAvailable: false, writeSucceeded: false))
+        XCTAssertFalse(VideoProofUploadPolicy.shouldUpload(dataAvailable: true, writeSucceeded: false))
+        XCTAssertFalse(VideoProofUploadPolicy.shouldUpload(dataAvailable: false, writeSucceeded: true))
+        XCTAssertTrue(VideoProofUploadPolicy.shouldUpload(dataAvailable: true, writeSucceeded: true))
+    }
+
+    // MARK: - Complete-profile category unwrap (#125)
+
+    func testCompleteProfileHidesConditionOnlyForServiceCategory() {
+        XCTAssertTrue(CompleteProductProfilePolicy.shouldHideConditionGroup(categoryId: CompleteProductProfilePolicy.serviceCategoryId))
+        XCTAssertFalse(CompleteProductProfilePolicy.shouldHideConditionGroup(categoryId: nil))
+        XCTAssertFalse(CompleteProductProfilePolicy.shouldHideConditionGroup(categoryId: ""))
+        XCTAssertFalse(CompleteProductProfilePolicy.shouldHideConditionGroup(categoryId: "other"))
+    }
 }
