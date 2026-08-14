@@ -292,7 +292,7 @@ class HLProfileViewController: BaseViewController {
                 }
                 if ui.applyPayload, let user = userPayload {
                     HulaUser.sharedInstance.populate(with: user as NSDictionary)
-                    
+
                     if (HulaUser.sharedInstance.fbToken != ""){
                         self.verFacebookIcon.image = UIImage(named: "icon_facebook_on")
                         self.verFacebookIcon.bouncer()
@@ -309,7 +309,7 @@ class HLProfileViewController: BaseViewController {
                         self.verMailIcon.image = UIImage(named: "icon_mail_on")
                         self.verMailIcon.bouncer()
                     }
-                    
+
                     self.userFeedbackLabel.text = HulaUser.sharedInstance.getFeedback()
                     self.userFullNameLabel.text = HulaUser.sharedInstance.userName
                     self.current_image_url = HulaUser.sharedInstance.userPhotoURL
@@ -320,20 +320,20 @@ class HLProfileViewController: BaseViewController {
                     }
                     self.userNickLabel.text = HulaUser.sharedInstance.userNick
                     self.userBioLabel.text = HulaUser.sharedInstance.userBio
-                    
+
                     self.tradesStartedLabel.text = "\(Int(HulaUser.sharedInstance.trades_started))"
                     self.tradesEndedLabel.text = "\(Int(HulaUser.sharedInstance.trades_finished))"
                     self.tradesClosedLabel.text = "\(Int(HulaUser.sharedInstance.trades_closed))"
-                    
+
                     HLDataManager.sharedInstance.writeUserData()
-                    
+
                     if (HulaUser.sharedInstance.isIncompleteProfile()){
                         UIView.animate(withDuration: 0.4, animations: {
                             self.completeProfileTooltip.alpha = 1
                             self.settingsAlertBadge.alpha = 1
                         })
                     }
-                    
+
                     if let feedback = dictionary?["feedback"] as? NSArray {
                         self.arrFeedback = feedback
                     }
