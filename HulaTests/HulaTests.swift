@@ -2585,4 +2585,194 @@ class HulaTests: XCTestCase {
         XCTAssertFalse(CompleteProductProfilePolicy.shouldHideConditionGroup(categoryId: ""))
         XCTAssertFalse(CompleteProductProfilePolicy.shouldHideConditionGroup(categoryId: "other"))
     }
+
+    // MARK: - Calculator cash keypad overflow
+
+    func testCalculatorDigitTagTenIsZero() {
+        XCTAssertEqual(CalculatorAmountPolicy.digit(fromTag: 10), 0)
+        XCTAssertEqual(CalculatorAmountPolicy.digit(fromTag: 0), 0)
+        XCTAssertEqual(CalculatorAmountPolicy.digit(fromTag: 7), 7)
+    }
+
+    func testCalculatorAppendingDigitPreservesLeadingZeroConcatenation() {
+        XCTAssertEqual(CalculatorAmountPolicy.appendingDigit(5, to: 0), 5)
+        XCTAssertEqual(CalculatorAmountPolicy.appendingDigit(0, to: 0), 0)
+        XCTAssertEqual(CalculatorAmountPolicy.appendingDigit(9, to: 12), 129)
+    }
+
+    func testCalculatorAppendingDigitDoesNotCrashOnOverflow() {
+        XCTAssertEqual(CalculatorAmountPolicy.appendingDigit(1, to: Int.max), Int.max)
+        XCTAssertEqual(CalculatorAmountPolicy.appendingDigit(9, to: Int.max), Int.max)
+    }
+
+    func testCalculatorRemovingLastDigit() {
+        XCTAssertEqual(CalculatorAmountPolicy.removingLastDigit(from: 0), 0)
+        XCTAssertEqual(CalculatorAmountPolicy.removingLastDigit(from: 7), 0)
+        XCTAssertEqual(CalculatorAmountPolicy.removingLastDigit(from: 10), 1)
+        XCTAssertEqual(CalculatorAmountPolicy.removingLastDigit(from: 129), 12)
+    }
+
+    // MARK: - Password change validation and transport hang
+
+    func testPasswordChangeRejectsShortNewPasswordBeforeCurrent() {
+        let message = PasswordChangePolicy.validationMessage(
+            current: "ab",
+            newPassword: "abcd",
+            confirmation: "abcd"
+        )
+        XCTAssertEqual(message, NSLocalizedString("Your new password is too short.", comment: ""))
+    }
+
+    func testPasswordChangeRejectsShortCurrentAndMismatch() {
+        XCTAssertEqual(
+            PasswordChangePolicy.validationMessage(current: "abc", newPassword: "abcde", confirmation: "abcde"),
+            NSLocalizedString("Your previous password is too short.", comment: "")
+        )
+        XCTAssertEqual(
+            PasswordChangePolicy.validationMessage(current: "abcd", newPassword: "abcde", confirmation: "abcdf"),
+            NSLocalizedString("Passwords do not match.", comment: "")
+        )
+        XCTAssertNil(PasswordChangePolicy.validationMessage(
+            current: "abcd",
+            newPassword: "abcde",
+            confirmation: "abcde"
+        ))
+        XCTAssertEqual(
+            PasswordChangePolicy.validationMessage(current: nil, newPassword: "abcde", confirmation: "abcde"),
+            NSLocalizedString("Your previous password is too short.", comment: "")
+        )
+    }
+
+    func testPasswordChangePostStringEncodesDelimiters() {
+        let body = PasswordChangePolicy.postString(current: "a&b=c+d", newPassword: "p=q&r")
+        XCTAssertTrue(body.hasPrefix("current_pass="))
+        XCTAssertTrue(body.contains("&new_pass="))
+        XCTAssertFalse(body.contains("a&b"))
+        XCTAssertEqual(body, "current_pass=a%26b%3Dc%2Bd&new_pass=p%3Dq%26r")
+    }
+
+    func testPasswordChangeResetPathRequiresUserId() {
+        XCTAssertNil(PasswordChangePolicy.resetPath(userId: nil))
+        XCTAssertNil(PasswordChangePolicy.resetPath(userId: ""))
+        XCTAssertEqual(
+            PasswordChangePolicy.resetPath(userId: "user-1"),
+            HulaConstants.apiURL + "users/resetpass/user-1"
+        )
+    }
+
+    func testPasswordChangePopsOnlyOnOkMessage() {
+        XCTAssertTrue(PasswordChangePolicy.shouldPop(httpOk: true, json: ["message": "ok"]))
+        XCTAssertFalse(PasswordChangePolicy.shouldPop(httpOk: true, json: ["message": "wrong password"]))
+        XCTAssertFalse(PasswordChangePolicy.shouldPop(httpOk: false, json: ["message": "ok"]))
+        XCTAssertFalse(PasswordChangePolicy.shouldPop(httpOk: true, json: "ok"))
+        XCTAssertFalse(PasswordChangePolicy.shouldPop(httpOk: true, json: nil))
+    }
+
+    func testPasswordChangeSurfacesTransportFailure() {
+        let connectionError = PasswordChangePolicy.serverMessage(httpOk: false, json: ["message": "ok"])
+        XCTAssertEqual(connectionError, NSLocalizedString("Connection error. Please try again.", comment: ""))
+        XCTAssertEqual(
+            PasswordChangePolicy.serverMessage(httpOk: true, json: ["message": "wrong password"]),
+            "wrong password"
+        )
+        XCTAssertNil(PasswordChangePolicy.serverMessage(httpOk: true, json: ["message": "ok"]))
+        XCTAssertNil(PasswordChangePolicy.serverMessage(httpOk: true, json: nil))
+    }
+
+    // MARK: - ZIP geocode races and missing locality
+
+    func testZipGeocodeSkipsBlankQueries() {
+        XCTAssertFalse(ZipGeocodePolicy.shouldGeocode(zipCode: ""))
+        XCTAssertFalse(ZipGeocodePolicy.shouldGeocode(zipCode: "   "))
+        XCTAssertTrue(ZipGeocodePolicy.shouldGeocode(zipCode: "10001"))
+        XCTAssertTrue(ZipGeocodePolicy.shouldGeocode(zipCode: " 10001 "))
+    }
+
+    func testZipForwardUpdateRequiresLocality() {
+        XCTAssertEqual(
+            ZipGeocodePolicy.forwardLocationName(locality: "Austin", country: "USA"),
+            "Austin, USA"
+        )
+        XCTAssertEqual(
+            ZipGeocodePolicy.forwardLocationName(locality: "Austin", country: nil),
+            "Austin"
+        )
+        XCTAssertNil(ZipGeocodePolicy.forwardLocationName(locality: nil, country: "USA"))
+        XCTAssertNil(ZipGeocodePolicy.forwardLocationName(locality: "", country: "USA"))
+    }
+
+    func testZipReverseUpdateAllowsCityOrCountry() {
+        XCTAssertEqual(
+            ZipGeocodePolicy.reverseLocationName(city: "Austin", country: "USA"),
+            "Austin, USA"
+        )
+        XCTAssertEqual(ZipGeocodePolicy.reverseLocationName(city: nil, country: "USA"), "USA")
+        XCTAssertNil(ZipGeocodePolicy.reverseLocationName(city: nil, country: nil))
+        XCTAssertNil(ZipGeocodePolicy.reverseLocationName(city: "", country: ""))
+    }
+
+    // MARK: - Category row dictionary soft-read
+
+    func testCategoryDictionarySoftReadsRows() {
+        let rows: NSArray = [
+            ["name": "Electronics", "_id": "c1"],
+            "not-a-dict",
+            NSNumber(value: 3)
+        ]
+        XCTAssertEqual(HLHomeViewController.categoryDictionary(at: 0, in: rows)?["_id"] as? String, "c1")
+        XCTAssertNil(HLHomeViewController.categoryDictionary(at: 1, in: rows))
+        XCTAssertNil(HLHomeViewController.categoryDictionary(at: 2, in: rows))
+        XCTAssertNil(HLHomeViewController.categoryDictionary(at: -1, in: rows))
+        XCTAssertNil(HLHomeViewController.categoryDictionary(at: 99, in: rows))
+        XCTAssertNil(HLHomeViewController.categoryDictionary(at: 0, in: nil))
+    }
+
+    // MARK: - Seller inventory tap crash
+
+    func testSellerProductDictionarySoftReadsRows() {
+        let rows: NSArray = [
+            ["_id": "p1", "title": "Bike", "status": "available"],
+            "broken",
+            NSNull()
+        ]
+        XCTAssertEqual(
+            HLProductDetailViewController.sellerProductDictionary(at: 0, in: rows)?["_id"] as? String,
+            "p1"
+        )
+        XCTAssertNil(HLProductDetailViewController.sellerProductDictionary(at: 1, in: rows))
+        XCTAssertNil(HLProductDetailViewController.sellerProductDictionary(at: 2, in: rows))
+        XCTAssertNil(HLProductDetailViewController.sellerProductDictionary(at: -1, in: rows))
+        XCTAssertNil(HLProductDetailViewController.sellerProductDictionary(at: 0, in: nil))
+    }
+
+    func testShouldOpenSellerProductSkipsTraded() {
+        let available = HulaProduct()
+        available.productStatus = "available"
+        XCTAssertTrue(HLProductDetailViewController.shouldOpenSellerProduct(available))
+
+        let traded = HulaProduct()
+        traded.productStatus = "traded"
+        XCTAssertFalse(HLProductDetailViewController.shouldOpenSellerProduct(traded))
+    }
+
+    // MARK: - Push token and alert payload
+
+    func testDeviceTokenHexEncodesBytes() {
+        let bytes: [UInt8] = [0x0A, 0xFF, 0x00, 0x10]
+        let token = AppDelegate.deviceTokenHex(NSData(bytes: bytes, length: bytes.count) as Data)
+        XCTAssertEqual(token, "0aff0010")
+        XCTAssertEqual(AppDelegate.deviceTokenHex(Data()), "")
+    }
+
+    func testPushAlertTextRequiresStringAlert() {
+        XCTAssertEqual(
+            AppDelegate.pushAlertText(from: ["aps": ["alert": "New offer"]]),
+            "New offer"
+        )
+        XCTAssertNil(AppDelegate.pushAlertText(from: ["aps": ["alert": ["body": "dict"]]]))
+        XCTAssertNil(AppDelegate.pushAlertText(from: ["aps": ["badge": 1]]))
+        XCTAssertNil(AppDelegate.pushAlertText(from: ["aps": "not-a-dict"]))
+        XCTAssertNil(AppDelegate.pushAlertText(from: [:]))
+        XCTAssertNil(AppDelegate.pushAlertText(from: ["aps": ["alert": ""]]))
+    }
 }
