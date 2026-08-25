@@ -260,50 +260,18 @@ class HLDataManager: NSObject {
     }
     
     func getTradeWith(_ user_id: String) -> String{
-        
-        for tr in arrCurrentTrades{
-            if let trade = tr as? [String:Any] {
-                //print(trade["owner_id"] as! String)
-                if trade["owner_id"] as! String == user_id {
-                    return trade["_id"] as! String
-                }
-                if trade["other_id"] as! String == user_id {
-                    return trade["_id"] as! String
-                }
-            }
-        }
-        for tr in self.arrTrades {
-            if let trade = tr as? [String:Any] {
-                if let agreed = trade["other_agree"] as? Bool {
-                    if !agreed && trade["owner_id"] as! String == user_id && ((trade["status"] as! String == HulaConstants.sent_status) || (trade["status"] as! String == HulaConstants.pending_status)) {
-                        return trade["_id"] as! String
-                    }
-                }
-            }
-        }
-        return ""
+        return PendingOfferPolicy.tradeId(
+            withUser: user_id,
+            currentUserId: HulaUser.sharedInstance.userId,
+            currentTrades: arrCurrentTrades,
+            allTrades: arrTrades)
     }
     func amIOfferedToTradeWith(_ user_id: String) -> Bool{
-        for tr in arrCurrentTrades{
-            if let trade = tr as? [String:Any] {
-                if trade["other_id"] as! String == user_id && (trade["status"] as! String == HulaConstants.pending_status ) {
-                    return true
-                }
-            }
-        }
-        for tr in self.arrTrades {
-            if let trade = tr as? [String:Any] {
-                if let agreed = trade["other_agree"] as? Bool {
-                    print(agreed)
-                    if !agreed && trade["owner_id"] as! String == user_id   {
-                        return true
-                    }
-                }
-                //print(numBids)
-                
-            }
-        }
-        return false
+        return PendingOfferPolicy.isOffered(
+            withUser: user_id,
+            currentUserId: HulaUser.sharedInstance.userId,
+            currentTrades: arrCurrentTrades,
+            allTrades: arrTrades)
     }
     
     func myRoomsFull() -> Bool{
