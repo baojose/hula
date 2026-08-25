@@ -14,14 +14,14 @@ import Kingfisher
 import AVKit
 
 class CommonUtils: NSObject, EasyTipViewDelegate, UIGestureRecognizerDelegate {
-    
+
     var currentTipArr: [HulaTip] = []
     var currentTip:Int = -1
     var lastTip:EasyTipView = EasyTipView(text: "");
     var startingViewController: UIViewController!
     var bgViewToRemove : UIView!
     var tutorialToComplete : String = ""
-    
+
     class var sharedInstance: CommonUtils {
         struct Static {
             static let instance: CommonUtils = CommonUtils()
@@ -62,10 +62,10 @@ class CommonUtils: NSObject, EasyTipViewDelegate, UIGestureRecognizerDelegate {
         let ratio: Double!
         let delta: Double!
         let offset: CGPoint!
-        
+
         let hRatio: Double! = Double(newSize.width / image.size.width)
         let vRatio: Double! = Double(newSize.height / image.size.height)
-        
+
         if hRatio > vRatio {
             ratio = hRatio
             delta = Double(CGFloat(ratio) * image.size.height - newSize.height)
@@ -76,13 +76,13 @@ class CommonUtils: NSObject, EasyTipViewDelegate, UIGestureRecognizerDelegate {
             offset = CGPoint(x: delta / 2, y: 0.0)
         }
         let cropArea: CGRect = CGRect(x: -offset.x, y: -offset.y, width: CGFloat(ratio) * image.size.width, height: CGFloat(ratio) * image.size.height)
-        
+
         UIGraphicsBeginImageContextWithOptions(newSize, true, 1)
         UIRectClip(cropArea)
         image.draw(in: cropArea)
         let croppedImage = UIGraphicsGetImageFromCurrentImageContext()
         UIGraphicsEndImageContext()
-        
+
         return croppedImage!
     }
     func heightString(width: CGFloat, font: UIFont, string: String) -> CGFloat {
@@ -92,15 +92,15 @@ class CommonUtils: NSObject, EasyTipViewDelegate, UIGestureRecognizerDelegate {
     }
 
 
-    
+
     func getDistanceFrom(lat:CGFloat, lon:CGFloat) -> String{
         let coordinate₀ = CLLocation(latitude: CLLocationDegrees(lat), longitude: CLLocationDegrees(lon))
-        
+
         return getDistanceFrom(loc:coordinate₀)
     }
     func getDistanceFrom(loc:CLLocation) -> String{
         let coordinate₀ = loc
-        
+
         if loc.coordinate.latitude == 0 && loc.coordinate.longitude == 0 {
             return "-"
         }
@@ -109,7 +109,7 @@ class CommonUtils: NSObject, EasyTipViewDelegate, UIGestureRecognizerDelegate {
         }
         if let userLocation = HulaUser.sharedInstance.location {
             let distanceInMeters = coordinate₀.distance(from: userLocation) // result is in meters
-            
+
             var distance = round( distanceInMeters / 1609 );
             var dist_unit = NSLocalizedString("miles", comment: "");
             if (!inUSA(HulaUser.sharedInstance.location)){
@@ -144,8 +144,8 @@ class CommonUtils: NSObject, EasyTipViewDelegate, UIGestureRecognizerDelegate {
             return CGFloat(0.0)
         }
     }
-    
-    
+
+
     func timeAgoSinceDate(date:NSDate, numericDates:Bool) -> String {
         let calendar = NSCalendar.current
         let unitFlags: Set<Calendar.Component> = [.minute, .hour, .day, .weekOfYear, .month, .year, .second]
@@ -153,7 +153,7 @@ class CommonUtils: NSObject, EasyTipViewDelegate, UIGestureRecognizerDelegate {
         let earliest = now.earlierDate(date as Date)
         let latest = (earliest == now as Date) ? date : now
         let components = calendar.dateComponents(unitFlags, from: earliest as Date,  to: latest as Date)
-        
+
         if (components.year! >= 2) {
             return "\(components.year!) " + NSLocalizedString("years ago", comment: "")
         } else if (components.year! >= 1){
@@ -207,9 +207,9 @@ class CommonUtils: NSObject, EasyTipViewDelegate, UIGestureRecognizerDelegate {
         } else {
             return NSLocalizedString("Just now", comment: "")
         }
-        
+
     }
-    
+
     func isoDateToNSDate(date:String) -> NSDate{
         //print(date)
         let dateFormatter = DateFormatter()
@@ -228,7 +228,7 @@ class CommonUtils: NSObject, EasyTipViewDelegate, UIGestureRecognizerDelegate {
     func productImageURL(productId: String) -> String{
         return HulaConstants.apiURL + "products/\(productId)/image"
     }
-    
+
     func getThumbFor(url:String) -> String {
         if (url == ""){
             return HulaConstants.noProductThumb
@@ -241,8 +241,8 @@ class CommonUtils: NSObject, EasyTipViewDelegate, UIGestureRecognizerDelegate {
         parts[parts.count - 1] = img_name
         return parts.joined(separator:"/")
     }
-    
-    
+
+
     func showTutorial(arrayTips: [HulaTip], named: String){
         if (currentTip == -1){
             currentTipArr = arrayTips
@@ -255,17 +255,17 @@ class CommonUtils: NSObject, EasyTipViewDelegate, UIGestureRecognizerDelegate {
                 bgViewToRemove.frame.size.width = max(vc.view.frame.width, vc.view.frame.height) + 100
                 bgViewToRemove.frame.size.height = max(vc.view.frame.width, vc.view.frame.height) + 100
                 bgViewToRemove.backgroundColor = UIColor(red: 0, green: 0, blue: 0, alpha: 0.3)
-                
+
                 let tap = UITapGestureRecognizer(target: self, action: #selector(removeEasyTips))
                 tap.delegate = self
                 bgViewToRemove.addGestureRecognizer(tap)
-                
+
                 vc.view.addSubview(bgViewToRemove)
             }
             self.showNextTip(false)
         }
     }
-    
+
     func showNextTip(_ direct:Bool){
         //self.lastTip.dismiss()
         //print("shownext")
@@ -276,18 +276,18 @@ class CommonUtils: NSObject, EasyTipViewDelegate, UIGestureRecognizerDelegate {
                 when = DispatchTime.now()
             }
             DispatchQueue.main.asyncAfter(deadline: when) {
-                
+
                 if (self.currentTip < self.currentTipArr.count){
                     EasyTipView.show(forView: self.currentTipArr[self.currentTip].view, withinSuperview: self.currentTipArr[self.currentTip].view.parentViewController?.view, text: self.currentTipArr[self.currentTip].text, delegate:self )
-                    
+
                     //self.lastTip = EasyTipView(text: self.currentTipArr[self.currentTip].text)
                     //self.lastTip.show(forView: self.currentTipArr[self.currentTip].view)
-                    
+
                     //self.showNextTip(false)
                 } else {
                     self.bgViewToRemove.removeFromSuperview()
                     self.currentTip = -1
-                    
+
                     HLDataManager.sharedInstance.onboardingTutorials.setObject("done", forKey: self.tutorialToComplete as NSCopying)
                     HLDataManager.sharedInstance.writeUserData()
                 }
@@ -299,7 +299,7 @@ class CommonUtils: NSObject, EasyTipViewDelegate, UIGestureRecognizerDelegate {
             }, completion: {(success) in
                 self.bgViewToRemove.removeFromSuperview()
             })
-            
+
             HLDataManager.sharedInstance.onboardingTutorials.setObject("done", forKey: self.tutorialToComplete as NSCopying)
             HLDataManager.sharedInstance.writeUserData()
         }
@@ -308,7 +308,7 @@ class CommonUtils: NSObject, EasyTipViewDelegate, UIGestureRecognizerDelegate {
         //print("dismissed")
         self.showNextTip(false)
     }
-    
+
     func removeEasyTips(){
         //print("removing from...")
         print(self.currentTip)
@@ -322,20 +322,20 @@ class CommonUtils: NSObject, EasyTipViewDelegate, UIGestureRecognizerDelegate {
             }
         }
     }
-    
+
     func getTopViewController() -> UIViewController? {
         if var topController = UIApplication.shared.keyWindow?.rootViewController {
             while let presentedViewController = topController.presentedViewController {
                 topController = presentedViewController
             }
-            
+
             // topController should now be your topmost view controller
             print(topController)
             return topController;
         } else {
             return nil
         }
-        
+
     }
 }
 
@@ -366,15 +366,15 @@ let imageCache = NSCache<AnyObject, AnyObject>()
 
 extension UIImageView {
     func loadImageFromURL(urlString: String) {
-        
-        
+
+
         var _urlString = ""
         if (urlString == ""){
             _urlString = HulaConstants.noProductThumb
         } else {
             _urlString = urlString
         }
-        
+
         let url = URL(string: _urlString)!
         self.kf.indicatorType = .activity
         self.kf.setImage(with: url, options: [.transition(.fade(0.5))]) { (im, er, ty, ur) in
@@ -382,23 +382,23 @@ extension UIImageView {
                 self.kf.setImage(with: URL(string: HulaConstants.noProductThumb), options: [.transition(.fade(0.5))])
             }
         }
-        
-        
+
+
         /*
-         
+
          //old manual way
-         
+
         self.image = nil
-        
+
         // check for cache
         if let cachedImage = imageCache.object(forKey: _urlString as AnyObject) as? UIImage {
             self.image = cachedImage
             return
         }
-        
-        
+
+
         if let url = NSURL(string: _urlString) {
-        
+
             URLSession.shared.dataTask(with: url as URL, completionHandler: { (data, response, error) -> Void in
                 //print("getting: \(_urlString)")
                 if error != nil {
@@ -409,7 +409,7 @@ extension UIImageView {
                     self.transform = CGAffineTransform(scaleX: 0.1, y: 0.1)
                     let image = UIImage(data: data!)
                     self.image = image
-                    
+
                     UIView.animate(withDuration: 0.1, animations: {
                         self.transform = CGAffineTransform(scaleX: 1, y: 1)
                     })
@@ -417,7 +417,7 @@ extension UIImageView {
                         imageCache.setObject(image!, forKey: _urlString as AnyObject)
                     }
                 })
-                
+
             }).resume()
         }
          */
@@ -425,7 +425,7 @@ extension UIImageView {
 }
 
 extension UIView {
-    
+
     func bouncer() {
         UIView.animate(withDuration: 0.1, animations: {
             self.transform = CGAffineTransform(scaleX: 1.5,y: 1.5);
@@ -452,15 +452,15 @@ extension UIView {
 }
 // character at position
 extension String {
-    
+
     subscript (i: Int) -> Character {
         return self[index(startIndex, offsetBy: i)]
     }
-    
+
     subscript (i: Int) -> String {
         return String(self[i] as Character)
     }
-    
+
     subscript (r: Range<Int>) -> String {
         let start = index(startIndex, offsetBy: r.lowerBound)
         let end = index(startIndex, offsetBy: r.upperBound)
@@ -474,12 +474,12 @@ struct Device {
     static let IS_IPAD             = UIDevice.current.userInterfaceIdiom == .pad
     static let IS_IPHONE           = UIDevice.current.userInterfaceIdiom == .phone
     static let IS_RETINA           = UIScreen.main.scale >= 2.0
-    
+
     static let SCREEN_WIDTH        = Int(UIScreen.main.bounds.size.width)
     static let SCREEN_HEIGHT       = Int(UIScreen.main.bounds.size.height)
     static let SCREEN_MAX_LENGTH   = Int( max(SCREEN_WIDTH, SCREEN_HEIGHT) )
     static let SCREEN_MIN_LENGTH   = Int( min(SCREEN_WIDTH, SCREEN_HEIGHT) )
-    
+
     static let IS_IPHONE_4_OR_LESS = IS_IPHONE && SCREEN_MAX_LENGTH  < 568
     static let IS_IPHONE_5         = IS_IPHONE && SCREEN_MAX_LENGTH == 568
     static let IS_IPHONE_6         = IS_IPHONE && SCREEN_MAX_LENGTH == 667
@@ -498,9 +498,85 @@ extension UIImagePickerController{
 }
 
 class LandscapeAVPlayerController: AVPlayerViewController {
-    
+
     override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
         return .landscape
     }
-    
+
+}
+
+/// Lookup for incoming pending offers. Closed/ended trades must not be treated as
+/// live offers, otherwise Accept/Decline is shown and `getTradeWith` returns "".
+struct PendingOfferPolicy {
+    static func isLiveOfferStatus(_ status: String) -> Bool {
+        return status == HulaConstants.pending_status || status == HulaConstants.sent_status
+    }
+
+    static func otherHasNotAgreed(_ trade: [String: Any]) -> Bool {
+        if let agreed = trade["other_agree"] as? Bool {
+            return !agreed
+        }
+        if let agreed = trade["other_agree"] as? Int {
+            return agreed == 0
+        }
+        if let agreed = trade["other_agree"] as? NSNumber {
+            return !agreed.boolValue
+        }
+        return false
+    }
+
+    static func isPendingIncomingOffer(_ trade: [String: Any], fromUser: String, currentUserId: String) -> Bool {
+        if fromUser.count == 0 || currentUserId.count == 0 {
+            return false
+        }
+        guard let ownerId = trade["owner_id"] as? String,
+            let otherId = trade["other_id"] as? String,
+            let status = trade["status"] as? String else {
+                return false
+        }
+        return otherHasNotAgreed(trade)
+            && ownerId == fromUser
+            && otherId == currentUserId
+            && isLiveOfferStatus(status)
+    }
+
+    static func tradeId(withUser userId: String, currentUserId: String, currentTrades: [NSDictionary], allTrades: [NSDictionary]) -> String {
+        for tr in currentTrades {
+            if let trade = tr as? [String: Any] {
+                if (trade["owner_id"] as? String) == userId || (trade["other_id"] as? String) == userId {
+                    if let id = trade["_id"] as? String, id.count > 0 {
+                        return id
+                    }
+                }
+            }
+        }
+        for tr in allTrades {
+            if let trade = tr as? [String: Any], isPendingIncomingOffer(trade, fromUser: userId, currentUserId: currentUserId) {
+                if let id = trade["_id"] as? String, id.count > 0 {
+                    return id
+                }
+            }
+        }
+        return ""
+    }
+
+    static func isOffered(withUser userId: String, currentUserId: String, currentTrades: [NSDictionary], allTrades: [NSDictionary]) -> Bool {
+        for tr in currentTrades {
+            if let trade = tr as? [String: Any] {
+                if (trade["other_id"] as? String) == userId && (trade["status"] as? String) == HulaConstants.pending_status {
+                    return true
+                }
+            }
+        }
+        for tr in allTrades {
+            if let trade = tr as? [String: Any], isPendingIncomingOffer(trade, fromUser: userId, currentUserId: currentUserId) {
+                return true
+            }
+        }
+        return false
+    }
+
+    static func shouldRunOfferAction(tradeId: String) -> Bool {
+        return tradeId.count > 0
+    }
 }
