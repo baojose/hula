@@ -103,7 +103,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         
         
         if #available(iOS 9.0, *) {
-            let isHandled = FBSDKApplicationDelegate.sharedInstance().application(app, open: url, sourceApplication: options[.sourceApplication] as! String!, annotation: options[.annotation])
+            let sourceApplication = AppDelegate.facebookSourceApplication(from: options)
+            let isHandled = FBSDKApplicationDelegate.sharedInstance().application(app, open: url, sourceApplication: sourceApplication, annotation: options[.annotation])
             return isHandled
         }
         
@@ -111,6 +112,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         //if url.pathComponents
         
         return false
+    }
+
+    /// Soft-read Facebook deep-link sourceApplication — missing keys must not force-cast crash.
+    class func facebookSourceApplication(from options: [UIApplicationOpenURLOptionsKey : Any]) -> String? {
+        return options[.sourceApplication] as? String
     }
     func registerForPushNotifications() {
         if #available(iOS 10.0, *) {
@@ -143,12 +149,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     
     func application(_ application: UIApplication,
                      didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
-        let tokenParts = deviceToken.map { data -> String in
-            let dift = String(format: "%02.2hhx", data)
-            return dift
-        }
-        
-        let token = tokenParts.joined()
+        let token = AppDelegate.deviceTokenHex(deviceToken)
         print("Device Token: \(token)")
         HulaUser.sharedInstance.deviceId = token
         HulaUser.sharedInstance.updateServerData()
@@ -164,28 +165,78 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         //print(userInfo)
         
         
-        if let aps = userInfo["aps"] as? NSDictionary{
-            //print("aps")
-            //print(aps)
-            if let text = aps.object(forKey: "alert") as? String{
-                let banner = Banner(title: NSLocalizedString("Notification", comment: ""), subtitle: text, backgroundColor: HulaConstants.appMainColor)
-                banner.dismissesOnTap = true
-                banner.didTapBlock = {
-                    //print("tapped")
-                    let storyboard = UIStoryboard(name: "Main", bundle: nil)
-                    let myModalViewController = storyboard.instantiateViewController(withIdentifier: "swappView")
-                    myModalViewController.modalPresentationStyle = UIModalPresentationStyle.fullScreen
-                    myModalViewController.modalTransitionStyle = UIModalTransitionStyle.coverVertical
-                    self.window?.rootViewController?.present(myModalViewController, animated: true, completion: nil)
-                    
+        if let text = AppDelegate.pushAlertText(from: userInfo) {
+            let banner = Banner(title: NSLocalizedString("Notification", comment: ""), subtitle: text, backgroundColor: HulaConstants.appMainColor)
+            banner.dismissesOnTap = true
+            banner.didTapBlock = {
+                // Presenting swappView directly skipped the login gate in
+                // openSwapView and could surface stale in-memory trades after logout.
+                if let portraitNav = self.portraitNavigationController(from: self.window?.rootViewController) {
+                    portraitNav.openSwapView()
                 }
-                banner.show(duration: 5.0)
-                HLDataManager.sharedInstance.loadUserNotifications()
-                
             }
+            banner.show(duration: 5.0)
+            HLDataManager.sharedInstance.loadUserNotifications()
         } else {
             print("error")
         }
+    }
+
+    /// Hex-encode APNS device tokens. Empty Data must still produce a stable empty string.
+    class func deviceTokenHex(_ deviceToken: Data) -> String {
+        return deviceToken.map { data -> String in
+            return String(format: "%02.2hhx", data)
+        }.joined()
+    }
+
+    /// Soft-read the banner subtitle from a remote-notification payload.
+    /// Missing `aps`, non-string `alert` dictionaries, and empty alerts skip the banner.
+    class func pushAlertText(from userInfo: [AnyHashable : Any]) -> String? {
+        let aps: NSDictionary?
+        if let dict = userInfo["aps"] as? NSDictionary {
+            aps = dict
+        } else if let dict = userInfo["aps"] as? [String: Any] {
+            aps = dict as NSDictionary
+        } else {
+            aps = nil
+        }
+        guard let aps = aps, let text = aps.object(forKey: "alert") as? String, text.count > 0 else {
+            return nil
+        }
+        return text
+    }
+
+    /// Walk the presented/tab/nav hierarchy to find the portrait shell that owns openSwapView.
+    func portraitNavigationController(from root: UIViewController?) -> HulaPortraitNavigationController? {
+        if let portraitNav = root as? HulaPortraitNavigationController {
+            return portraitNav
+        }
+        if let nav = root as? UINavigationController {
+            if let portraitNav = nav as? HulaPortraitNavigationController {
+                return portraitNav
+            }
+            for child in nav.viewControllers {
+                if let found = portraitNavigationController(from: child) {
+                    return found
+                }
+            }
+        }
+        if let tab = root as? UITabBarController {
+            if let found = portraitNavigationController(from: tab.selectedViewController) {
+                return found
+            }
+            for child in tab.viewControllers ?? [] {
+                if let found = portraitNavigationController(from: child) {
+                    return found
+                }
+            }
+        }
+        for child in root?.childViewControllers ?? [] {
+            if let found = portraitNavigationController(from: child) {
+                return found
+            }
+        }
+        return nil
     }
 }
 
