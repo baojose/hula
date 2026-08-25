@@ -154,8 +154,7 @@ class HLEditFieldViewController: BaseViewController, UITextFieldDelegate, UIText
                 self.newValueTextView.text = zip
                 self.userData.zip = zip
             }
-            let locationName = CommonUtils.locationDisplayName(city: city, country: country)
-            if !locationName.isEmpty {
+            if let locationName = ZipGeocodePolicy.reverseLocationName(city: city, country: country) {
                 self.userData.userLocationName = locationName
                 self.grayLocationLabel.text = locationName
             }
@@ -209,12 +208,17 @@ class HLEditFieldViewController: BaseViewController, UITextFieldDelegate, UIText
     }
     
     func getLatLngForZip(zipCode: String) {
+        guard ZipGeocodePolicy.shouldGeocode(zipCode: zipCode) else {
+            return
+        }
         
         let geoCoder = CLGeocoder()
         geoCoder.geocodeAddressString(zipCode) { (places, error) in
             if let placemarks = places, let placemark = placemarks.first {
-                if let loc = placemark.locality {
-                    let locationName = CommonUtils.locationDisplayName(city: loc, country: placemark.country)
+                if let locationName = ZipGeocodePolicy.forwardLocationName(
+                    locality: placemark.locality,
+                    country: placemark.country
+                ) {
                     self.userData.userLocationName = locationName
                     self.grayLocationLabel.text = locationName
                     self.userData.location = placemark.location

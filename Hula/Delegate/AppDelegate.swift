@@ -149,12 +149,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     
     func application(_ application: UIApplication,
                      didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
-        let tokenParts = deviceToken.map { data -> String in
-            let dift = String(format: "%02.2hhx", data)
-            return dift
-        }
-        
-        let token = tokenParts.joined()
+        let token = AppDelegate.deviceTokenHex(deviceToken)
         print("Device Token: \(token)")
         HulaUser.sharedInstance.deviceId = token
         HulaUser.sharedInstance.updateServerData()
@@ -170,26 +165,45 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         //print(userInfo)
         
         
-        if let aps = userInfo["aps"] as? NSDictionary{
-            //print("aps")
-            //print(aps)
-            if let text = aps.object(forKey: "alert") as? String{
-                let banner = Banner(title: NSLocalizedString("Notification", comment: ""), subtitle: text, backgroundColor: HulaConstants.appMainColor)
-                banner.dismissesOnTap = true
-                banner.didTapBlock = {
-                    // Presenting swappView directly skipped the login gate in
-                    // openSwapView and could surface stale in-memory trades after logout.
-                    if let portraitNav = self.portraitNavigationController(from: self.window?.rootViewController) {
-                        portraitNav.openSwapView()
-                    }
+        if let text = AppDelegate.pushAlertText(from: userInfo) {
+            let banner = Banner(title: NSLocalizedString("Notification", comment: ""), subtitle: text, backgroundColor: HulaConstants.appMainColor)
+            banner.dismissesOnTap = true
+            banner.didTapBlock = {
+                // Presenting swappView directly skipped the login gate in
+                // openSwapView and could surface stale in-memory trades after logout.
+                if let portraitNav = self.portraitNavigationController(from: self.window?.rootViewController) {
+                    portraitNav.openSwapView()
                 }
-                banner.show(duration: 5.0)
-                HLDataManager.sharedInstance.loadUserNotifications()
-                
             }
+            banner.show(duration: 5.0)
+            HLDataManager.sharedInstance.loadUserNotifications()
         } else {
             print("error")
         }
+    }
+
+    /// Hex-encode APNS device tokens. Empty Data must still produce a stable empty string.
+    class func deviceTokenHex(_ deviceToken: Data) -> String {
+        return deviceToken.map { data -> String in
+            return String(format: "%02.2hhx", data)
+        }.joined()
+    }
+
+    /// Soft-read the banner subtitle from a remote-notification payload.
+    /// Missing `aps`, non-string `alert` dictionaries, and empty alerts skip the banner.
+    class func pushAlertText(from userInfo: [AnyHashable : Any]) -> String? {
+        let aps: NSDictionary?
+        if let dict = userInfo["aps"] as? NSDictionary {
+            aps = dict
+        } else if let dict = userInfo["aps"] as? [String: Any] {
+            aps = dict as NSDictionary
+        } else {
+            aps = nil
+        }
+        guard let aps = aps, let text = aps.object(forKey: "alert") as? String, text.count > 0 else {
+            return nil
+        }
+        return text
     }
 
     /// Walk the presented/tab/nav hierarchy to find the portrait shell that owns openSwapView.

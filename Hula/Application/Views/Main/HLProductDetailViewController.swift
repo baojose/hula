@@ -154,6 +154,23 @@ class HLProductDetailViewController: BaseViewController, UIScrollViewDelegate, U
             addToTradeViewContainer.isHidden = false
         }
     }
+
+    /// Soft-read seller inventory rows. Tapping used `as! NSDictionary` after cellForRow
+    /// already used `as?`, so a string/number row crashed on select.
+    class func sellerProductDictionary(at index: Int, in products: NSArray?) -> NSDictionary? {
+        guard let products = products, index >= 0, index < products.count else {
+            return nil
+        }
+        let item = products.object(at: index)
+        if let dict = item as? NSDictionary {
+            return dict
+        }
+        return nil
+    }
+
+    class func shouldOpenSellerProduct(_ product: HulaProduct) -> Bool {
+        return product.productStatus != "traded"
+    }
     
     //#MARK: - TableViewDelegate
     
@@ -165,7 +182,7 @@ class HLProductDetailViewController: BaseViewController, UIScrollViewDelegate, U
         
         let cell = tableView.dequeueReusableCell(withIdentifier: "homeProductCell") as! HLProductTableViewCell
         
-        if let pr = sellerProducts[indexPath.row] as? [String:Any] as NSDictionary?{
+        if let pr = HLProductDetailViewController.sellerProductDictionary(at: indexPath.row, in: sellerProducts) {
         
             cell.productName.text = pr.object(forKey: "title") as? String
             
@@ -209,10 +226,12 @@ class HLProductDetailViewController: BaseViewController, UIScrollViewDelegate, U
         //print(indexPath.row)
         let viewController = self.storyboard?.instantiateViewController(withIdentifier: "productDetailPage") as! HLProductDetailViewController
         
-        let product = sellerProducts[indexPath.row] as! NSDictionary
+        guard let product = HLProductDetailViewController.sellerProductDictionary(at: indexPath.row, in: sellerProducts) else {
+            return
+        }
         let hproduct = HulaProduct();
         hproduct.populate(with: product)
-        if hproduct.productStatus != "traded" {
+        if HLProductDetailViewController.shouldOpenSellerProduct(hproduct) {
             viewController.productData = hproduct
         
             self.navigationController?.pushViewController(viewController, animated: true)

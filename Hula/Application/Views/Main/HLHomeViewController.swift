@@ -154,6 +154,15 @@ class HLHomeViewController: BaseViewController, UIScrollViewDelegate, UITextFiel
         return array.object(at: index) as? String
     }
 
+    /// Soft-read category rows. `arrCategories.object(at:) as! NSDictionary` crashes
+    /// when a payload element is a string, number, or missing.
+    class func categoryDictionary(at index: Int, in array: NSArray?) -> NSDictionary? {
+        guard let array = array, index >= 0, index < array.count else {
+            return nil
+        }
+        return array.object(at: index) as? NSDictionary
+    }
+
     // Custom functions for ViewController
     func getNearProducts() {
         
@@ -286,7 +295,9 @@ class HLHomeViewController: BaseViewController, UIScrollViewDelegate, UITextFiel
                 return cell
             } else {
                 let cell = tableView.dequeueReusableCell(withIdentifier: "homeCategoryCell") as! HLHomeCategoryTableViewCell
-                let category : NSDictionary = dataManager.arrCategories.object(at: indexPath.row) as! NSDictionary
+                guard let category = HLHomeViewController.categoryDictionary(at: indexPath.row, in: dataManager.arrCategories) else {
+                    return cell
+                }
                 if let presentation = HLHomeViewController.categoryPresentation(from: category) {
                     print("\"\(presentation.name)\" = \"\(presentation.name)\";");
                     cell.categoryName.attributedText = commonUtils.attributedStringWithTextSpacing(NSLocalizedString(presentation.name, comment: ""), CGFloat(2.33))
@@ -317,7 +328,9 @@ class HLHomeViewController: BaseViewController, UIScrollViewDelegate, UITextFiel
                 self.navigationController?.pushViewController(viewController, animated: true)
             } else {
                 searchResultViewController.searchByCategory = true
-                let category : NSDictionary = dataManager.arrCategories.object(at: indexPath.row) as! NSDictionary
+                guard let category = HLHomeViewController.categoryDictionary(at: indexPath.row, in: dataManager.arrCategories) else {
+                    return
+                }
                 searchResultViewController.categoryToSearch = category
                 searchResultViewController.keywordToSearch = ""
                 self.navigationController?.pushViewController(searchResultViewController, animated: true)

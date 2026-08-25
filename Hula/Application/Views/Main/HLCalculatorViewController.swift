@@ -57,14 +57,8 @@ class HLCalculatorViewController: UIViewController {
         self.dismiss(animated: true, completion: nil)
     }
     @IBAction func numberPressAction(_ sender: Any) {
-        var number:Int = (sender as AnyObject).tag
-        
-        if (number == 10){
-            number = 0;
-        }
-        let new_amount = "\(amount)" + "\(number)"
-        
-        amount = Int(new_amount)!
+        let number = CalculatorAmountPolicy.digit(fromTag: (sender as AnyObject).tag)
+        amount = CalculatorAmountPolicy.appendingDigit(number, to: amount)
         updatePrice()
     }
     @IBAction func add1Action(_ sender: Any) {
@@ -86,14 +80,7 @@ class HLCalculatorViewController: UIViewController {
         updatePrice()
     }
     @IBAction func clearNumberAction(_ sender: Any) {
-        let str_amount = "\(amount)"
-        if(str_amount.count == 1){
-            amount = 0
-        } else {
-            let index = str_amount.index(str_amount.startIndex, offsetBy: str_amount.count - 1)
-            let new_str = str_amount.substring(to: index)
-            amount = Int(new_str)!
-        }
+        amount = CalculatorAmountPolicy.removingLastDigit(from: amount)
         updatePrice()
     }
     

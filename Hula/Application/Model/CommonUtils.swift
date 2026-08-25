@@ -867,6 +867,119 @@ struct CompleteProductProfilePolicy {
     }
 }
 
+/// Cash keypad previously force-unwrapped `Int("\(amount)\(digit)")`, which crashes
+/// once the concatenated value exceeds `Int.max`.
+struct CalculatorAmountPolicy {
+    /// The 0 key is tagged 10 in the storyboard; other tags are the digit itself.
+    static func digit(fromTag tag: Int) -> Int {
+        if tag == 10 {
+            return 0
+        }
+        return tag
+    }
+
+    static func appendingDigit(_ digit: Int, to amount: Int) -> Int {
+        let newAmount = "\(amount)" + "\(digit)"
+        if let parsed = Int(newAmount) {
+            return parsed
+        }
+        return amount
+    }
+
+    static func removingLastDigit(from amount: Int) -> Int {
+        let strAmount = "\(amount)"
+        if strAmount.count <= 1 {
+            return 0
+        }
+        let index = strAmount.index(strAmount.startIndex, offsetBy: strAmount.count - 1)
+        let newStr = strAmount.substring(to: index)
+        if let parsed = Int(newStr) {
+            return parsed
+        }
+        return 0
+    }
+}
+
+/// Settings password change: validate before POST, encode delimiters, and never
+/// force-unwrap empty credentials or a missing user id.
+struct PasswordChangePolicy {
+    static func validationMessage(current: String?, newPassword: String?, confirmation: String?) -> String? {
+        let newPass = newPassword ?? ""
+        let currentPass = current ?? ""
+        let confirm = confirmation ?? ""
+        if newPass.count < 5 {
+            return NSLocalizedString("Your new password is too short.", comment: "")
+        }
+        if currentPass.count < 4 {
+            return NSLocalizedString("Your previous password is too short.", comment: "")
+        }
+        if newPass != confirm {
+            return NSLocalizedString("Passwords do not match.", comment: "")
+        }
+        return nil
+    }
+
+    static func postString(current: String, newPassword: String) -> String {
+        return "current_pass=" + CommonUtils.formEncodedValue(current)
+            + "&new_pass=" + CommonUtils.formEncodedValue(newPassword)
+    }
+
+    static func resetPath(userId: String?) -> String? {
+        guard let userId = userId, userId.count > 0 else {
+            return nil
+        }
+        return HulaConstants.apiURL + "users/resetpass/" + userId
+    }
+
+    static func shouldPop(httpOk: Bool, json: Any?) -> Bool {
+        guard httpOk,
+            let dict = json as? [String: Any],
+            let message = dict["message"] as? String else {
+                return false
+        }
+        return message == "ok"
+    }
+
+    static func serverMessage(httpOk: Bool, json: Any?) -> String? {
+        if !httpOk {
+            return NSLocalizedString("Connection error. Please try again.", comment: "")
+        }
+        guard let dict = json as? [String: Any],
+            let message = dict["message"] as? String,
+            message != "ok" else {
+                return nil
+        }
+        return message
+    }
+}
+
+/// ZIP editor geocode: skip blank queries (every keystroke used to fire CLGeocoder)
+/// and require a locality before overwriting the saved location name.
+struct ZipGeocodePolicy {
+    static func shouldGeocode(zipCode: String) -> Bool {
+        return zipCode.trimmingCharacters(in: .whitespacesAndNewlines).count > 0
+    }
+
+    static func forwardLocationName(locality: String?, country: String?) -> String? {
+        guard let loc = locality, loc.count > 0 else {
+            return nil
+        }
+        let name = CommonUtils.locationDisplayName(city: loc, country: country)
+        if name.isEmpty {
+            return nil
+        }
+        return name
+    }
+
+    static func reverseLocationName(city: String?, country: String?) -> String? {
+        let name = CommonUtils.locationDisplayName(city: city, country: country)
+        if name.isEmpty {
+            return nil
+        }
+        return name
+    }
+}
+
 struct Device {
     // iDevice detection code
     static let IS_IPAD             = UIDevice.current.userInterfaceIdiom == .pad

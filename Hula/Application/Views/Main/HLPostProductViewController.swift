@@ -343,7 +343,9 @@ extension HLPostProductViewController: UITableViewDelegate, UITableViewDataSourc
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         
         let cell = tableView.dequeueReusableCell(withIdentifier: "completeProductProfileCategoryCell") as! HLHomeCategoryTableViewCell
-        let category : NSDictionary = dataManager.arrCategories.object(at: indexPath.row) as! NSDictionary
+        guard let category = HLHomeViewController.categoryDictionary(at: indexPath.row, in: dataManager.arrCategories) else {
+            return cell
+        }
         if let presentation = HLHomeViewController.categoryPresentation(from: category) {
             cell.categoryName.attributedText = commonUtils.attributedStringWithTextSpacing(presentation.name, CGFloat(2.33))
             if presentation.icon.count > 0 {
@@ -367,7 +369,9 @@ extension HLPostProductViewController: UITableViewDelegate, UITableViewDataSourc
             return
         }
 
-        let category : NSDictionary = dataManager.arrCategories.object(at: indexPath.row) as! NSDictionary
+        guard let category = HLHomeViewController.categoryDictionary(at: indexPath.row, in: dataManager.arrCategories) else {
+            return
+        }
         print(category)
         guard let selection = HLHomeViewController.categorySelection(from: category) else {
             return
