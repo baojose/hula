@@ -1233,12 +1233,16 @@ class HulaTests: XCTestCase {
     /// Malformed participant/_id rows must not crash when opening an existing room.
     func testGetTradeWithSoftParsesParticipantIdsAndAgreeFlags() {
         let dm = HLDataManager.sharedInstance
+        let user = HulaUser.sharedInstance
         let previousCurrent = dm.arrCurrentTrades
         let previousAll = dm.arrTrades
+        let previousId = user.userId
         defer {
             dm.arrCurrentTrades = previousCurrent
             dm.arrTrades = previousAll
+            user.userId = previousId
         }
+        user.userId = "me"
 
         dm.arrCurrentTrades = [
             [
@@ -1256,18 +1260,21 @@ class HulaTests: XCTestCase {
             [
                 "_id": "offer-1",
                 "owner_id": "dave",
+                "other_id": "me",
                 "other_agree": 0,
                 "status": HulaConstants.sent_status
             ] as NSDictionary,
             [
                 "_id": "offer-bad",
                 "owner_id": "erin",
+                "other_id": "me",
                 "other_agree": true,
                 "status": HulaConstants.sent_status
             ] as NSDictionary,
             [
                 "_id": NSNull(),
                 "owner_id": "frank",
+                "other_id": "me",
                 "other_agree": 0,
                 "status": HulaConstants.pending_status
             ] as NSDictionary
@@ -1281,15 +1288,19 @@ class HulaTests: XCTestCase {
         XCTAssertEqual(dm.getTradeWith("missing"), "")
     }
 
-    /// Offered-trade detection must tolerate NSNull ids and bridged 0/1 agree flags.
+    /// Offered-trade detection must tolerate NSNull ids and require live status + other_id.
     func testAmIOfferedToTradeWithSoftParsesStatusAndAgreeFlags() {
         let dm = HLDataManager.sharedInstance
+        let user = HulaUser.sharedInstance
         let previousCurrent = dm.arrCurrentTrades
         let previousAll = dm.arrTrades
+        let previousId = user.userId
         defer {
             dm.arrCurrentTrades = previousCurrent
             dm.arrTrades = previousAll
+            user.userId = previousId
         }
+        user.userId = "me"
 
         dm.arrCurrentTrades = [
             [
@@ -1307,18 +1318,28 @@ class HulaTests: XCTestCase {
             [
                 "_id": "offer-open",
                 "owner_id": "peer-b",
-                "other_agree": 0
+                "other_id": "me",
+                "other_agree": 0,
+                "status": HulaConstants.pending_status
             ] as NSDictionary,
             [
                 "_id": "offer-closed",
                 "owner_id": "peer-c",
-                "other_agree": 1
+                "other_id": "me",
+                "other_agree": 1,
+                "status": HulaConstants.pending_status
+            ] as NSDictionary,
+            [
+                "_id": "offer-nostatus",
+                "owner_id": "peer-d",
+                "other_agree": 0
             ] as NSDictionary
         ]
 
         XCTAssertTrue(dm.amIOfferedToTradeWith("peer-a"))
         XCTAssertTrue(dm.amIOfferedToTradeWith("peer-b"))
         XCTAssertFalse(dm.amIOfferedToTradeWith("peer-c"))
+        XCTAssertFalse(dm.amIOfferedToTradeWith("peer-d"))
         XCTAssertFalse(dm.amIOfferedToTradeWith("nobody"))
     }
 
@@ -2612,6 +2633,16 @@ class HulaTests: XCTestCase {
         XCTAssertEqual(CalculatorAmountPolicy.removingLastDigit(from: 129), 12)
     }
 
+    func testCalculatorAddingShortcutsDoNotOverflow() {
+        XCTAssertEqual(CalculatorAmountPolicy.adding(1, to: 12), 13)
+        XCTAssertEqual(CalculatorAmountPolicy.adding(5, to: 10), 15)
+        XCTAssertEqual(CalculatorAmountPolicy.adding(10, to: 0), 10)
+        XCTAssertEqual(CalculatorAmountPolicy.adding(1, to: Int.max), Int.max)
+        XCTAssertEqual(CalculatorAmountPolicy.adding(10, to: Int.max - 3), Int.max - 3)
+        XCTAssertEqual(CalculatorAmountPolicy.adding(0, to: 8), 8)
+        XCTAssertEqual(CalculatorAmountPolicy.adding(-4, to: 8), 8)
+    }
+
     // MARK: - Password change validation and transport hang
 
     func testPasswordChangeRejectsShortNewPasswordBeforeCurrent() {
@@ -2774,5 +2805,220 @@ class HulaTests: XCTestCase {
         XCTAssertNil(AppDelegate.pushAlertText(from: ["aps": "not-a-dict"]))
         XCTAssertNil(AppDelegate.pushAlertText(from: [:]))
         XCTAssertNil(AppDelegate.pushAlertText(from: ["aps": ["alert": ""]]))
+    }
+
+    // MARK: - Beyond #127/#128: pending-offer lookup, filter maps, photo slots, session path
+
+    func pendingOfferTrade(id: String, owner: String, other: String, status: String, agreed: Any) -> [String: Any] {
+        return [
+            "_id": id,
+            "owner_id": owner,
+            "other_id": other,
+            "status": status,
+            "other_agree": agreed
+        ]
+    }
+
+    func testClosedOfferIsNotTreatedAsLiveIncomingOffer() {
+        let me = "user-bob"
+        let alice = "user-alice"
+        let closed = pendingOfferTrade(
+            id: "trade-old",
+            owner: alice,
+            other: me,
+            status: HulaConstants.cancel_status,
+            agreed: false
+        )
+
+        XCTAssertFalse(PendingOfferPolicy.isPendingIncomingOffer(closed, fromUser: alice, currentUserId: me))
+        XCTAssertFalse(PendingOfferPolicy.isOffered(
+            withUser: alice,
+            currentUserId: me,
+            currentTrades: [],
+            allTrades: [closed as NSDictionary]
+        ))
+        XCTAssertEqual(
+            PendingOfferPolicy.tradeId(
+                withUser: alice,
+                currentUserId: me,
+                currentTrades: [],
+                allTrades: [closed as NSDictionary]
+            ),
+            ""
+        )
+        XCTAssertFalse(PendingOfferPolicy.shouldRunOfferAction(tradeId: ""))
+    }
+
+    func testPendingIncomingOfferIsFoundAndActionable() {
+        let me = "user-bob"
+        let alice = "user-alice"
+        let pending = pendingOfferTrade(
+            id: "trade-new",
+            owner: alice,
+            other: me,
+            status: HulaConstants.pending_status,
+            agreed: 0
+        )
+
+        XCTAssertTrue(PendingOfferPolicy.isPendingIncomingOffer(pending, fromUser: alice, currentUserId: me))
+        XCTAssertTrue(PendingOfferPolicy.isOffered(
+            withUser: alice,
+            currentUserId: me,
+            currentTrades: [],
+            allTrades: [pending as NSDictionary]
+        ))
+        XCTAssertEqual(
+            PendingOfferPolicy.tradeId(
+                withUser: alice,
+                currentUserId: me,
+                currentTrades: [],
+                allTrades: [pending as NSDictionary]
+            ),
+            "trade-new"
+        )
+        XCTAssertTrue(PendingOfferPolicy.shouldRunOfferAction(tradeId: "trade-new"))
+    }
+
+    func testEndedAndForeignOffersDoNotBlockTrading() {
+        let me = "user-bob"
+        let alice = "user-alice"
+        let charlie = "user-charlie"
+        let ended = pendingOfferTrade(
+            id: "trade-ended",
+            owner: alice,
+            other: me,
+            status: HulaConstants.end_status,
+            agreed: false
+        )
+        let foreign = pendingOfferTrade(
+            id: "trade-foreign",
+            owner: alice,
+            other: charlie,
+            status: HulaConstants.pending_status,
+            agreed: false
+        )
+        let sent = pendingOfferTrade(
+            id: "trade-sent",
+            owner: alice,
+            other: me,
+            status: HulaConstants.sent_status,
+            agreed: NSNumber(value: 0)
+        )
+
+        XCTAssertFalse(PendingOfferPolicy.isOffered(
+            withUser: alice,
+            currentUserId: me,
+            currentTrades: [],
+            allTrades: [ended as NSDictionary, foreign as NSDictionary]
+        ))
+        XCTAssertEqual(
+            PendingOfferPolicy.tradeId(
+                withUser: alice,
+                currentUserId: me,
+                currentTrades: [],
+                allTrades: [ended as NSDictionary, foreign as NSDictionary]
+            ),
+            ""
+        )
+        XCTAssertTrue(PendingOfferPolicy.isOffered(
+            withUser: alice,
+            currentUserId: me,
+            currentTrades: [],
+            allTrades: [sent as NSDictionary]
+        ))
+        XCTAssertEqual(
+            PendingOfferPolicy.tradeId(
+                withUser: alice,
+                currentUserId: me,
+                currentTrades: [],
+                allTrades: [sent as NSDictionary]
+            ),
+            "trade-sent"
+        )
+        XCTAssertFalse(PendingOfferPolicy.isPendingIncomingOffer(
+            sent,
+            fromUser: alice,
+            currentUserId: ""
+        ))
+    }
+
+    func testCurrentTradeIdIsPreferredOverStaleAllTrades() {
+        let me = "user-bob"
+        let alice = "user-alice"
+        let current = pendingOfferTrade(
+            id: "trade-live",
+            owner: me,
+            other: alice,
+            status: HulaConstants.sent_status,
+            agreed: true
+        )
+        let stale = pendingOfferTrade(
+            id: "trade-stale",
+            owner: alice,
+            other: me,
+            status: HulaConstants.cancel_status,
+            agreed: false
+        )
+
+        XCTAssertEqual(
+            PendingOfferPolicy.tradeId(
+                withUser: alice,
+                currentUserId: me,
+                currentTrades: [current as NSDictionary],
+                allTrades: [stale as NSDictionary, current as NSDictionary]
+            ),
+            "trade-live"
+        )
+    }
+
+    func testDistanceAndConditionFilterTagsRoundTrip() {
+        let filterVC = HLFilterViewController()
+        XCTAssertEqual(filterVC.getTagForDistance(CGFloat(5)), 1)
+        XCTAssertEqual(filterVC.getDistanceForTag(1), 5)
+        XCTAssertEqual(filterVC.getTagForDistance(CGFloat(10)), 2)
+        XCTAssertEqual(filterVC.getDistanceForTag(2), 10)
+        XCTAssertEqual(filterVC.getTagForDistance(CGFloat(20)), 3)
+        XCTAssertEqual(filterVC.getDistanceForTag(3), 20)
+        XCTAssertEqual(filterVC.getTagForDistance(CGFloat(50)), 4)
+        XCTAssertEqual(filterVC.getDistanceForTag(4), 50)
+        XCTAssertEqual(filterVC.getTagForDistance(CGFloat(0)), 5)
+        XCTAssertEqual(filterVC.getDistanceForTag(5), 0)
+        XCTAssertEqual(filterVC.getTagForDistance(CGFloat(999)), 5)
+        XCTAssertEqual(filterVC.getDistanceForTag(99), 0)
+
+        XCTAssertEqual(filterVC.getTagForCond("new"), 12)
+        XCTAssertEqual(filterVC.getCondForTag(12), "new")
+        XCTAssertEqual(filterVC.getTagForCond("used"), 13)
+        XCTAssertEqual(filterVC.getCondForTag(13), "used")
+        XCTAssertEqual(filterVC.getTagForCond("all"), 14)
+        XCTAssertEqual(filterVC.getCondForTag(14), "all")
+        XCTAssertEqual(filterVC.getTagForCond("unknown"), 14)
+        XCTAssertEqual(filterVC.getCondForTag(0), "all")
+    }
+
+    func testProductPhotoSlotSoftReadsNonImages() {
+        let photos: NSMutableArray = [NSNull(), "https://hula.trading/p.jpg"]
+        XCTAssertNil(CommonUtils.uiImage(at: 0, in: photos))
+        XCTAssertNil(CommonUtils.uiImage(at: 1, in: photos))
+        XCTAssertNil(CommonUtils.uiImage(at: -1, in: photos))
+        XCTAssertNil(CommonUtils.uiImage(at: 2, in: photos))
+        XCTAssertNil(CommonUtils.uiImage(at: 0, in: nil))
+        XCTAssertNil(CommonUtils.uiImage(at: 0, in: []))
+    }
+
+    func testDocumentsDirectoryPathRejectsEmptySearchResults() {
+        XCTAssertNil(CommonUtils.documentsDirectoryPath(from: []))
+        XCTAssertNil(CommonUtils.documentsDirectoryPath(from: [""]))
+        XCTAssertEqual(CommonUtils.documentsDirectoryPath(from: ["/tmp/docs"]), "/tmp/docs")
+        XCTAssertNil(CommonUtils.sessionFilePath(fileName: "UserData.plist", documentsDirectory: ""))
+        XCTAssertNil(CommonUtils.sessionFilePath(fileName: "", documentsDirectory: "/tmp/docs"))
+        XCTAssertEqual(
+            CommonUtils.sessionFilePath(fileName: "UserData.plist", documentsDirectory: "/tmp/docs"),
+            "/tmp/docs/UserData.plist"
+        )
+        XCTAssertEqual(
+            CommonUtils.sessionFilePath(fileName: "videoproof_a_b.mov", documentsDirectory: "/tmp/docs"),
+            "/tmp/docs/videoproof_a_b.mov"
+        )
     }
 }
