@@ -92,7 +92,9 @@ class HulaProduct: NSObject {
         if let tmp = with.object(forKey: "owner_id") as? String { productOwner = tmp }
         if let tmp = with.object(forKey: "video_requested") as? [String:Bool] { video_requested = tmp }
         if let tmp = with.object(forKey: "video_url") as? [String:String] { video_url = tmp }
-        if let tmp = with.object(forKey: "trading_count") as? Int { trading_count = tmp }
+        if let count = CommonUtils.intFromJSON(with.object(forKey: "trading_count")) {
+            trading_count = count
+        }
         if let tmp = with.object(forKey: "images") as? [String] {
             arrProductPhotoLink = []
             for im in tmp {
@@ -101,16 +103,8 @@ class HulaProduct: NSObject {
                 }
             }
         }
-        print (with.object(forKey: "location") as? [Any])
-        if let tmp = with.object(forKey: "location") as? [Any] {
-            let lat = tmp[0] as? Double
-            let lon = tmp[1] as? Double
-            print(Float(lat!))
-            
-            if (lat != nil && lon != nil){
-                productLocation = CLLocation(latitude: CLLocationDegrees(Float(lat!)), longitude: CLLocationDegrees(Float(lon!)))
-            }
- 
+        if let locationFromJSON = CommonUtils.location(fromJSON: with.object(forKey: "location")) {
+            productLocation = locationFromJSON
         }
     }
     
@@ -134,22 +128,48 @@ class HulaProduct: NSObject {
         }
     }
     func getPostString() -> String {
-        var str = "title=" + self.productName +
-            "&description=" + self.productDescription +
-            "&condition=" + self.productCondition
-        str = str + "&category_name=" + self.productCategory +
-            "&category_id=" + self.productCategoryId +
-            "&image_url=" + self.productImage
-        str = str + "&owner_id=" + self.productOwner +
-            "&images=" + self.arrProductPhotoLink.joined(separator: ",")
-        /*
+        var str = "title=" + CommonUtils.formEncodedValue(self.productName) +
+            "&description=" + CommonUtils.formEncodedValue(self.productDescription) +
+            "&condition=" + CommonUtils.formEncodedValue(self.productCondition)
+        str = str + "&category_name=" + CommonUtils.formEncodedValue(self.productCategory) +
+            "&category_id=" + CommonUtils.formEncodedValue(self.productCategoryId) +
+            "&image_url=" + CommonUtils.formEncodedValue(self.productImage)
+        str = str + "&owner_id=" + CommonUtils.formEncodedValue(self.productOwner) +
+            "&images=" + CommonUtils.formEncodedValue(self.arrProductPhotoLink.joined(separator: ","))
+        // Persist the product's own coordinates on edit. Using the user's live GPS
+        // silently relocated listings whenever any field was updated.
         if (self.productLocation.coordinate.latitude != 0 && self.productLocation.coordinate.longitude != 0){
             str = str + "&lat=\(self.productLocation.coordinate.latitude)&lng=\(self.productLocation.coordinate.longitude)"
         }
-        */
-        str += "&lat=\(HulaUser.sharedInstance.location.coordinate.latitude)"
-        str += "&lng=\(HulaUser.sharedInstance.location.coordinate.longitude)"
         print(str)
         return str
+    }
+
+    /// Keep featured `image_url` aligned with the first photo; clear when the album is empty
+    /// so a deleted last photo is not re-posted as the featured image.
+    func syncFeaturedImageFromPhotos() {
+        if let first = arrProductPhotoLink.first, first.count > 0 {
+            productImage = first
+        } else {
+            productImage = ""
+        }
+    }
+
+    /// Apply a uploaded image URL into a 1-based camera slot without corrupting earlier empties.
+    func applyUploadedImage(path: String, pos: Int) {
+        guard pos >= 1 else { return }
+        let index = pos - 1
+        while arrProductPhotoLink.count <= index {
+            arrProductPhotoLink.append("")
+        }
+        arrProductPhotoLink[index] = path
+        while let last = arrProductPhotoLink.last, last.isEmpty {
+            arrProductPhotoLink.removeLast()
+        }
+        if pos == 1 {
+            productImage = path
+        } else if productImage.isEmpty, let first = arrProductPhotoLink.first, !first.isEmpty {
+            productImage = first
+        }
     }
 }

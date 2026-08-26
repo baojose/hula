@@ -112,6 +112,57 @@ class HLHomeViewController: BaseViewController, UIScrollViewDelegate, UITextFiel
         }
         searchTxtField.addTarget(self, action: #selector(searchTextDidChange(_:)), for: UIControlEvents.editingChanged)
     }
+
+    /// Soft-parse category `num_products` — missing/null/NSNumber must not crash Categories tab.
+    class func categoryProductCount(from category: NSDictionary) -> Int {
+        if let v = category.object(forKey: "num_products") as? Int {
+            return v
+        }
+        if let v = category.object(forKey: "num_products") as? Double {
+            return Int(v)
+        }
+        if let v = category.object(forKey: "num_products") as? NSNumber {
+            return v.intValue
+        }
+        return 0
+    }
+
+    /// Soft-parse category `name`/`icon` for table cells — missing keys must not force-cast crash.
+    class func categoryPresentation(from category: NSDictionary) -> (name: String, icon: String)? {
+        guard let name = HLDataManager.stringField(category, keys: ["name"]), name.count > 0 else {
+            return nil
+        }
+        let icon = HLDataManager.stringField(category, keys: ["icon"]) ?? ""
+        return (name, icon)
+    }
+
+    /// Soft-parse category selection (`name` + `_id`) for Post/Edit pickers.
+    class func categorySelection(from category: NSDictionary) -> (name: String, id: String)? {
+        guard let name = HLDataManager.stringField(category, keys: ["name"]),
+              let id = HLDataManager.stringField(category, keys: ["_id"]),
+              name.count > 0, id.count > 0 else {
+            return nil
+        }
+        return (name, id)
+    }
+
+    /// Soft-read autocomplete keyword rows — malformed/non-String entries must not force-cast crash.
+    class func keyword(at index: Int, in array: NSArray) -> String? {
+        guard index >= 0, index < array.count else {
+            return nil
+        }
+        return array.object(at: index) as? String
+    }
+
+    /// Soft-read category rows. `arrCategories.object(at:) as! NSDictionary` crashes
+    /// when a payload element is a string, number, or missing.
+    class func categoryDictionary(at index: Int, in array: NSArray?) -> NSDictionary? {
+        guard let array = array, index >= 0, index < array.count else {
+            return nil
+        }
+        return array.object(at: index) as? NSDictionary
+    }
+
     // Custom functions for ViewController
     func getNearProducts() {
         
@@ -126,42 +177,28 @@ class HLHomeViewController: BaseViewController, UIScrollViewDelegate, UITextFiel
             
         print(queryURL)
         HLDataManager.sharedInstance.httpGet(urlstr: queryURL, taskCallback: { (ok, json) in
-            if (ok){
-                DispatchQueue.main.async {
-                    if let dictionary = json as? [String: Any] {
-                        self.spinner.hide()
-                        //print(dictionary)
-                        if let products = dictionary["products"] as? [NSDictionary] {
-                            //print(products)
-                            self.productArray = [];
-                            for prod in products{
-                                let p = HulaProduct()
-                                p.populate(with: prod)
-                                if (p.productOwner != HulaUser.sharedInstance.userId){
-                                    self.productArray.append(p);
-                                }
-                            }
-                            
-                            /*
-                            self.productArray = products
-                            if let ful = dictionary["found_users"] as? NSArray {
-                                self.foundUsersList = ful;
-                            } else {
-                                self.foundUsersList = [];
-                            }
-                             */
-                        }
-                        if let users = dictionary["users"] as? NSDictionary {
-                            //print(users)
-                            self.usersList = users
-                        }
-                        
-                    }
-                    self.productTableView.reloadData()
+            let dictionary = json as? [String: Any]
+            let ui = BlockingNetworkLoadUI.outcome(ok: ok, payloadUsable: dictionary != nil)
+            DispatchQueue.main.async {
+                if ui.hideSpinner {
+                    self.spinner.hide()
                 }
-            } else {
-                // connection error
-                print("Connection error")
+                if ui.applyPayload, let dictionary = dictionary {
+                    if let products = dictionary["products"] as? [NSDictionary] {
+                        self.productArray = [];
+                        for prod in products{
+                            let p = HulaProduct()
+                            p.populate(with: prod)
+                            if (p.productOwner != HulaUser.sharedInstance.userId){
+                                self.productArray.append(p);
+                            }
+                        }
+                    }
+                    if let users = dictionary["users"] as? NSDictionary {
+                        self.usersList = users
+                    }
+                }
+                self.productTableView.reloadData()
             }
         })
     }
@@ -209,7 +246,7 @@ class HLHomeViewController: BaseViewController, UIScrollViewDelegate, UITextFiel
         
         if self.isSearching == true {
             let cell = tableView.dequeueReusableCell(withIdentifier: "homeSearchCell") as! HLHomeSearchTableViewCell
-            let keyword: String = filteredKeywordsArray.object(at: indexPath.row) as! String
+            let keyword = HLHomeViewController.keyword(at: indexPath.row, in: filteredKeywordsArray) ?? ""
             cell.productMainNameLabel.attributedText = commonUtils.attributedStringWithTextSpacing(keyword, CGFloat(1.0))
             return cell
         }else{
@@ -245,14 +282,10 @@ class HLHomeViewController: BaseViewController, UIScrollViewDelegate, UITextFiel
                         let thumb = commonUtils.getThumbFor(url: user_img)
                         cell.productOwnerImage.loadImageFromURL(urlString: thumb)
                     }
-                    let up = user.object(forKey: "feedback_points") as? Float
-                    let uc = user.object(forKey: "feedback_count") as? Float
-                    if (up != nil) && (uc != nil) && (uc != 0) {
-                        let perc_trade = round( up! / uc! * 100)
-                        cell.productTradeRate.text = "\(perc_trade)%"
-                    } else {
-                        cell.productTradeRate.text = "-"
-                    }
+                    cell.productTradeRate.text = CommonUtils.feedbackTradeRateLabel(
+                        points: user.object(forKey: "feedback_points"),
+                        count: user.object(forKey: "feedback_count")
+                    )
                     cell.productDistance.text = "(" + commonUtils.getDistanceFrom(loc: product.productLocation) + ")"
                 }
                 
@@ -262,12 +295,17 @@ class HLHomeViewController: BaseViewController, UIScrollViewDelegate, UITextFiel
                 return cell
             } else {
                 let cell = tableView.dequeueReusableCell(withIdentifier: "homeCategoryCell") as! HLHomeCategoryTableViewCell
-                let category : NSDictionary = dataManager.arrCategories.object(at: indexPath.row) as! NSDictionary
-                let cat_name = category.object(forKey: "name") as! String;
-                print("\"\(cat_name)\" = \"\(cat_name)\";");
-                cell.categoryName.attributedText = commonUtils.attributedStringWithTextSpacing(NSLocalizedString(cat_name, comment: ""), CGFloat(2.33))
-                cell.categoryImage.image = UIImage.init(named: category.object(forKey: "icon") as! String)
-                cell.categoryProductNum.text = String(format:NSLocalizedString("%i products", comment: ""), (category.object(forKey: "num_products") as! Int))
+                guard let category = HLHomeViewController.categoryDictionary(at: indexPath.row, in: dataManager.arrCategories) else {
+                    return cell
+                }
+                if let presentation = HLHomeViewController.categoryPresentation(from: category) {
+                    print("\"\(presentation.name)\" = \"\(presentation.name)\";");
+                    cell.categoryName.attributedText = commonUtils.attributedStringWithTextSpacing(NSLocalizedString(presentation.name, comment: ""), CGFloat(2.33))
+                    if presentation.icon.count > 0 {
+                        cell.categoryImage.image = UIImage.init(named: presentation.icon)
+                    }
+                }
+                cell.categoryProductNum.text = String(format:NSLocalizedString("%i products", comment: ""), HLHomeViewController.categoryProductCount(from: category))
                 return cell
             }
         }
@@ -278,7 +316,10 @@ class HLHomeViewController: BaseViewController, UIScrollViewDelegate, UITextFiel
             searchResultViewController.searchByCategory = false
             let category : NSDictionary = [:]
             searchResultViewController.categoryToSearch = category
-            searchResultViewController.keywordToSearch = self.filteredKeywordsArray.object(at: indexPath.row) as! String
+            guard let keyword = HLHomeViewController.keyword(at: indexPath.row, in: filteredKeywordsArray) else {
+                return
+            }
+            searchResultViewController.keywordToSearch = keyword
             self.navigationController?.pushViewController(searchResultViewController, animated: true)
         } else {
             if (isNearYou){
@@ -287,7 +328,9 @@ class HLHomeViewController: BaseViewController, UIScrollViewDelegate, UITextFiel
                 self.navigationController?.pushViewController(viewController, animated: true)
             } else {
                 searchResultViewController.searchByCategory = true
-                let category : NSDictionary = dataManager.arrCategories.object(at: indexPath.row) as! NSDictionary
+                guard let category = HLHomeViewController.categoryDictionary(at: indexPath.row, in: dataManager.arrCategories) else {
+                    return
+                }
                 searchResultViewController.categoryToSearch = category
                 searchResultViewController.keywordToSearch = ""
                 self.navigationController?.pushViewController(searchResultViewController, animated: true)
@@ -435,21 +478,15 @@ class HLHomeViewController: BaseViewController, UIScrollViewDelegate, UITextFiel
             let queryURL = HulaConstants.apiURL + "search/auto/" + encodedKw!   
             //print(queryURL)
             HLDataManager.sharedInstance.httpGet(urlstr: queryURL, taskCallback: { (ok, json) in
-                self.filteredKeywordsArray.removeAllObjects()
-                self.filteredKeywordsArray.add(kw)
-                if (ok){
-                    DispatchQueue.main.async {
-                        if let dictionary = json as? [String:Any] {
-                            //print(dictionary)
-                            if let keys = dictionary["keywords"] as?  [Any] {
-                                for i in 0 ..< keys.count {
-                                    let nkw = keys[i] as! [String:Any]
-                                    let nkw_str = nkw["keyword"] as! String
-                                    if (nkw_str != kw){
-                                        self.filteredKeywordsArray.add(nkw_str)
-                                    }
-                                }
-                            }
+                // Mutate the shared keyword array only on the main thread. URLSession
+                // callbacks run in the background; overlapping searches race with
+                // searchProduct's main-thread removeAllObjects / table reads.
+                DispatchQueue.main.async {
+                    self.filteredKeywordsArray.removeAllObjects()
+                    if (ok){
+                        let keywords = CommonUtils.autocompleteKeywords(from: json, seed: kw)
+                        for keyword in keywords {
+                            self.filteredKeywordsArray.add(keyword)
                         }
                         if self.filteredKeywordsArray.count == 0 {
                             self.noResultView.isHidden = false
@@ -459,10 +496,10 @@ class HLHomeViewController: BaseViewController, UIScrollViewDelegate, UITextFiel
                             self.tableContainView.isHidden = false
                         }
                         self.productTableView.reloadData()
+                    } else {
+                        // connection error
+                        print("Connection error")
                     }
-                } else {
-                    // connection error
-                    print("Connection error")
                 }
             })
         }
