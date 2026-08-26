@@ -62,17 +62,16 @@ class HLCalculatorViewController: UIViewController {
         updatePrice()
     }
     @IBAction func add1Action(_ sender: Any) {
-        
-        amount += 1
+        amount = CalculatorAmountPolicy.adding(1, to: amount)
         updatePrice()
     }
     
     @IBAction func add5Action(_ sender: Any) {
-        amount += 5
+        amount = CalculatorAmountPolicy.adding(5, to: amount)
         updatePrice()
     }
     @IBAction func add10Action(_ sender: Any) {
-        amount += 10
+        amount = CalculatorAmountPolicy.adding(10, to: amount)
         updatePrice()
     }
     @IBAction func clearAllAction(_ sender: Any) {

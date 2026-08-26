@@ -504,6 +504,37 @@ extension CommonUtils {
         return encoded
     }
 
+    /// Soft-read a create-flow photo slot. Album/URL/NSNull entries must not crash upload.
+    static func uiImage(at index: Int, in photos: NSArray?) -> UIImage? {
+        guard let photos = photos, index >= 0, index < photos.count else {
+            return nil
+        }
+        return photos.object(at: index) as? UIImage
+    }
+
+    /// First documents-directory path, or nil when NSSearchPath returns empty.
+    static func documentsDirectoryPath(
+        from paths: [String] = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true)
+    ) -> String? {
+        guard let first = paths.first, first.characters.count > 0 else {
+            return nil
+        }
+        return first
+    }
+
+    /// Session/video-proof file path under documents. Nil when the directory is missing.
+    static func sessionFilePath(
+        fileName: String,
+        documentsDirectory: String? = nil
+    ) -> String? {
+        guard let dir = documentsDirectory ?? documentsDirectoryPath(),
+            dir.characters.count > 0,
+            fileName.characters.count > 0 else {
+                return nil
+        }
+        return (dir as NSString).appendingPathComponent(fileName)
+    }
+
     /// Soft-parse a search `found_users` hit into a synthetic product row (`xx_user`).
     /// Missing optional fields default to empty strings; missing `_id` skips the row.
     static func searchUserProduct(from user: NSDictionary) -> HulaProduct? {
@@ -886,6 +917,17 @@ struct CalculatorAmountPolicy {
         return amount
     }
 
+    /// Shortcut keys (+1/+5/+10) used `+=`, which traps on overflow past Int.max.
+    static func adding(_ delta: Int, to amount: Int) -> Int {
+        if delta <= 0 {
+            return amount
+        }
+        if amount > Int.max - delta {
+            return amount
+        }
+        return amount + delta
+    }
+
     static func removingLastDigit(from amount: Int) -> Int {
         let strAmount = "\(amount)"
         if strAmount.count <= 1 {
@@ -1014,4 +1056,71 @@ class LandscapeAVPlayerController: AVPlayerViewController {
         return .landscape
     }
     
+}
+
+/// Lookup for incoming pending offers. Closed/ended trades must not be treated as
+/// live offers, otherwise Accept/Decline is shown and `getTradeWith` returns "".
+struct PendingOfferPolicy {
+    static func isLiveOfferStatus(_ status: String) -> Bool {
+        return status == HulaConstants.pending_status || status == HulaConstants.sent_status
+    }
+
+    static func otherHasNotAgreed(_ trade: [String: Any]) -> Bool {
+        return CommonUtils.boolFromJSON(trade["other_agree"]) == false
+    }
+
+    static func isPendingIncomingOffer(_ trade: [String: Any], fromUser: String, currentUserId: String) -> Bool {
+        if fromUser.characters.count == 0 || currentUserId.characters.count == 0 {
+            return false
+        }
+        guard let ownerId = trade["owner_id"] as? String,
+            let otherId = trade["other_id"] as? String,
+            let status = trade["status"] as? String else {
+                return false
+        }
+        return otherHasNotAgreed(trade)
+            && ownerId == fromUser
+            && otherId == currentUserId
+            && isLiveOfferStatus(status)
+    }
+
+    static func tradeId(withUser userId: String, currentUserId: String, currentTrades: [NSDictionary], allTrades: [NSDictionary]) -> String {
+        for tr in currentTrades {
+            if let trade = tr as? [String: Any] {
+                if (trade["owner_id"] as? String) == userId || (trade["other_id"] as? String) == userId {
+                    if let id = trade["_id"] as? String, id.characters.count > 0 {
+                        return id
+                    }
+                }
+            }
+        }
+        for tr in allTrades {
+            if let trade = tr as? [String: Any], isPendingIncomingOffer(trade, fromUser: userId, currentUserId: currentUserId) {
+                if let id = trade["_id"] as? String, id.characters.count > 0 {
+                    return id
+                }
+            }
+        }
+        return ""
+    }
+
+    static func isOffered(withUser userId: String, currentUserId: String, currentTrades: [NSDictionary], allTrades: [NSDictionary]) -> Bool {
+        for tr in currentTrades {
+            if let trade = tr as? [String: Any] {
+                if (trade["other_id"] as? String) == userId && (trade["status"] as? String) == HulaConstants.pending_status {
+                    return true
+                }
+            }
+        }
+        for tr in allTrades {
+            if let trade = tr as? [String: Any], isPendingIncomingOffer(trade, fromUser: userId, currentUserId: currentUserId) {
+                return true
+            }
+        }
+        return false
+    }
+
+    static func shouldRunOfferAction(tradeId: String) -> Bool {
+        return tradeId.characters.count > 0
+    }
 }

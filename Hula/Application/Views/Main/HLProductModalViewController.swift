@@ -350,10 +350,14 @@ class HLProductModalViewController: UIViewController, UIImagePickerControllerDel
              */
             // Save the video to the app directory so we can play it later
             let videoData = NSData(contentsOf: pickedVideo as URL)
-            let paths = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true) as NSArray
-            let documentsDirectory = paths[0] as! NSString
+            guard let documentsDirectory = CommonUtils.documentsDirectoryPath() else {
+                notify(NSLocalizedString("Could not save video. Please try again.", comment: ""))
+                HLDataManager.sharedInstance.onlyLandscapeView = false
+                imagePicker.dismiss(animated: true, completion: nil)
+                return
+            }
             let fileName = VideoProofUploadPolicy.fileName(productId: product.productId ?? "", tradeId: currentTradeId)
-            let path = documentsDirectory.appendingPathComponent(fileName)
+            let path = (documentsDirectory as NSString).appendingPathComponent(fileName)
             videoPath = NSURL(fileURLWithPath: path)
             var writeSucceeded = false
             if let videoData = videoData {

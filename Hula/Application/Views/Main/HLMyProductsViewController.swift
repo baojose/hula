@@ -465,10 +465,9 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
         if (HulaUser.sharedInstance.userId.count>0){
             // user is logged in
             for i in 0 ..< 4{
-                if ( dataManager.newProduct.arrProductPhotos.count>i ){
-                    if (dataManager.newProduct.arrProductPhotos[i] as? UIImage != nil){
+                if let image = CommonUtils.uiImage(at: i, in: dataManager.newProduct.arrProductPhotos) {
                         images_to_upload += 1
-                        dataManager.uploadImage(dataManager.newProduct.arrProductPhotos[i] as! UIImage, itemPosition:i, taskCallback: { (ok, json) in
+                        dataManager.uploadImage(image, itemPosition:i, taskCallback: { (ok, json) in
                             if (ok){
                                 DispatchQueue.main.async {
                                     if let dictionary = json as? [String: Any] {
@@ -503,7 +502,6 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
                                 print("Connection error")
                             }
                         });
-                    }
                 }
             }
             self.notify("Uploading \(images_to_upload) images...")

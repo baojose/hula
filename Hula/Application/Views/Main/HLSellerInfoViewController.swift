@@ -221,7 +221,7 @@ class HLSellerInfoViewController: BaseViewController, UITableViewDelegate, UITab
     
     @IBAction func declineTradeAction(_ sender: Any) {
         let tradeId = HLDataManager.sharedInstance.getTradeWith(user.userId)
-        if tradeId != "" {
+        if PendingOfferPolicy.shouldRunOfferAction(tradeId: tradeId) {
             // close trade
             let queryURL = HulaConstants.apiURL + "trades/\(tradeId)"
             let status = HulaConstants.cancel_status
@@ -246,7 +246,7 @@ class HLSellerInfoViewController: BaseViewController, UITableViewDelegate, UITab
     }
     @IBAction func acceptTradeAction(_ sender: Any) {
         let tradeId = HLDataManager.sharedInstance.getTradeWith(user.userId)
-        if tradeId != "" {
+        if PendingOfferPolicy.shouldRunOfferAction(tradeId: tradeId) {
             // close trade
             let queryURL = HulaConstants.apiURL + "trades/\(tradeId)/agree"
             HLDataManager.sharedInstance.httpGet(urlstr: queryURL, taskCallback: { (ok, json) in

@@ -150,15 +150,11 @@ class HLNotificationsViewController: BaseViewController, UITableViewDelegate, UI
     func rejectBtnTapped(_ sender:UIButton){
         let tag = sender.tag
         guard let notification = HLDataManager.sharedInstance.notification(at: tag) else { return }
-        
-        if let notification_id = notification.object(forKey: "_id") as? String{
-            markAsReadNotification(notification_id)
-            
-        }
+        let notification_id = notification.object(forKey: "_id") as? String
         
         if let user_id = notification.object(forKey: "from_id") as? String{
             let tradeId = HLDataManager.sharedInstance.getTradeWith(user_id)
-            if tradeId != "" {
+            if PendingOfferPolicy.shouldRunOfferAction(tradeId: tradeId) {
                 // close trade
                 let queryURL = HulaConstants.apiURL + "trades/\(tradeId)"
                 let status = HulaConstants.cancel_status
@@ -166,7 +162,9 @@ class HLNotificationsViewController: BaseViewController, UITableViewDelegate, UI
                 print(queryURL)
                 HLDataManager.sharedInstance.httpPost(urlstr: queryURL, postString: dataString, isPut: true, taskCallback: { (ok, json) in
                     if (ok){
-                        //print(json!)
+                        if let nid = notification_id {
+                            self.markAsReadNotification(nid)
+                        }
                         HLDataManager.sharedInstance.getTrades(taskCallback: { (success) in
                             // update trade counts
                             print("Trades loaded from sellerinfo")
@@ -183,33 +181,28 @@ class HLNotificationsViewController: BaseViewController, UITableViewDelegate, UI
         
         let tag = sender.tag
         guard let notification = HLDataManager.sharedInstance.notification(at: tag) else { return }
-        
-        if let notification_id = notification.object(forKey: "_id") as? String{
-            markAsReadNotification(notification_id)
-        }
+        let notification_id = notification.object(forKey: "_id") as? String
         print("Accept pressed")
         if let user_id = notification.object(forKey: "from_id") as? String{
             let tradeId = HLDataManager.sharedInstance.getTradeWith(user_id)
             print("Trade id \(tradeId)")
             print("User id \(user_id)")
-            if tradeId != "" {
+            if PendingOfferPolicy.shouldRunOfferAction(tradeId: tradeId) {
                 // Agree first; only open the trade room after the server accepts.
                 let queryURL = HulaConstants.apiURL + "trades/\(tradeId)/agree";
                 print("queryURL \(queryURL)");
                 HLDataManager.sharedInstance.httpGet(urlstr: queryURL, taskCallback: { (ok, json) in
                     guard CommonUtils.agreeResponseSucceeded(ok: ok, json: json) else { return }
+                    if let nid = notification_id {
+                        self.markAsReadNotification(nid)
+                    }
                     DispatchQueue.main.async {
                         if let portraitNC = self.tabBarController?.navigationController as? HulaPortraitNavigationController {
                             portraitNC.openSwapView()
                         }
                     }
                 })
-                return
             }
-        }
-        
-        if let portraitNC = self.tabBarController?.navigationController as? HulaPortraitNavigationController {
-            portraitNC.openSwapView()
         }
         
     }

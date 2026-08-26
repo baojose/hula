@@ -432,48 +432,18 @@ class HLDataManager: NSObject {
     }
     
     func getTradeWith(_ user_id: String) -> String{
-        for tr in arrCurrentTrades{
-            if let trade = tr as? [String:Any] {
-                if let owner = trade["owner_id"] as? String, owner == user_id {
-                    return trade["_id"] as? String ?? ""
-                }
-                if let other = trade["other_id"] as? String, other == user_id {
-                    return trade["_id"] as? String ?? ""
-                }
-            }
-        }
-        for tr in self.arrTrades {
-            if let trade = tr as? [String:Any] {
-                // Soft-parse bridged 0/1 agree flags and skip malformed ids/status.
-                if CommonUtils.boolFromJSON(trade["other_agree"]) == false,
-                   let owner = trade["owner_id"] as? String, owner == user_id,
-                   let status = trade["status"] as? String,
-                   (status == HulaConstants.sent_status || status == HulaConstants.pending_status) {
-                    return trade["_id"] as? String ?? ""
-                }
-            }
-        }
-        return ""
+        return PendingOfferPolicy.tradeId(
+            withUser: user_id,
+            currentUserId: HulaUser.sharedInstance.userId ?? "",
+            currentTrades: arrCurrentTrades ?? [],
+            allTrades: arrTrades ?? [])
     }
     func amIOfferedToTradeWith(_ user_id: String) -> Bool{
-        for tr in arrCurrentTrades{
-            if let trade = tr as? [String:Any] {
-                if let other = trade["other_id"] as? String, other == user_id,
-                   let status = trade["status"] as? String,
-                   status == HulaConstants.pending_status {
-                    return true
-                }
-            }
-        }
-        for tr in self.arrTrades {
-            if let trade = tr as? [String:Any] {
-                if CommonUtils.boolFromJSON(trade["other_agree"]) == false,
-                   let owner = trade["owner_id"] as? String, owner == user_id {
-                    return true
-                }
-            }
-        }
-        return false
+        return PendingOfferPolicy.isOffered(
+            withUser: user_id,
+            currentUserId: HulaUser.sharedInstance.userId ?? "",
+            currentTrades: arrCurrentTrades ?? [],
+            allTrades: arrTrades ?? [])
     }
     
     /// Seller Options → "Trade with this user" must not appear (or POST) while already
@@ -805,9 +775,11 @@ class HLDataManager: NSObject {
     
     
     func writeUserData(){
-        let paths = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true) as NSArray
-        let documentsDirectory = paths.object(at: 0) as! NSString
-        let path = documentsDirectory.appendingPathComponent(HulaConstants.userFile + ".plist")
+        guard let path = CommonUtils.sessionFilePath(
+            fileName: HulaConstants.userFile + ".plist"
+        ) else {
+            return
+        }
         let dict: NSMutableDictionary = ["XInitializerItem": "DoNotEverChangeMe"]
         
         //saving values
@@ -844,10 +816,11 @@ class HLDataManager: NSObject {
     
     public func loadUserData() {
         // getting path to GameData.plist
-        
-        let paths = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true) as NSArray
-        let documentsDirectory = paths[0] as! NSString
-        let path = documentsDirectory.appendingPathComponent(HulaConstants.userFile + ".plist")
+        guard let path = CommonUtils.sessionFilePath(
+            fileName: HulaConstants.userFile + ".plist"
+        ) else {
+            return
+        }
         
         //        let path = documentsDirectory.stringByAppendingPathComponent("GameData.plist")
         let fileManager = FileManager.default
