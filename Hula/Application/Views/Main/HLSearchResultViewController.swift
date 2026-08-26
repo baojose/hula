@@ -303,15 +303,21 @@ class HLSearchResultViewController: BaseViewController, UITableViewDataSource, U
         filteredList.sort { $0.distance < $1.distance  }
         print(filteredList)
         
-        for us in (foundUsersList as? [NSDictionary])!{
-            let hprod = HulaProduct()
-            hprod.productName = String(NSLocalizedString("User", comment: "")) + ": " + (us["name"] as! String)
-                + "\n(" + (us["nick"] as! String) + ")";
-            hprod.productDescription = us["nick"] as! String;
-            hprod.productImage = us["image"] as! String;
-            hprod.productId = us["_id"] as! String;
-            hprod.productCategoryId = "xx_user";
-            filteredList.append(hprod)
+        if let users = foundUsersList as? [NSDictionary] {
+            for us in users {
+                guard let userId = us["_id"] as? String else { continue }
+                let name = (us["name"] as? String) ?? ""
+                let nick = (us["nick"] as? String) ?? ""
+                let image = (us["image"] as? String) ?? ""
+                let hprod = HulaProduct()
+                hprod.productName = String(NSLocalizedString("User", comment: "")) + ": " + name
+                    + "\n(" + nick + ")";
+                hprod.productDescription = nick
+                hprod.productImage = image
+                hprod.productId = userId
+                hprod.productCategoryId = "xx_user"
+                filteredList.append(hprod)
+            }
         }
         
         
