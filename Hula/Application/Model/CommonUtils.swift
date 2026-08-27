@@ -1022,6 +1022,81 @@ struct ZipGeocodePolicy {
     }
 }
 
+/// Shared 1–5 star taps used by AlertViewController and post-deal feedback.
+/// Storyboard buttons are tagged 11...15; missing senders must not force-cast crash.
+struct StarRatingPolicy {
+    static let starTagRange = 1...5
+    static let buttonTagOffset = 10
+
+    static func rating(fromSenderTag tag: Int) -> Int? {
+        let index = tag - buttonTagOffset
+        if starTagRange.contains(index) {
+            return index
+        }
+        return nil
+    }
+
+    static func rating(from sender: Any?) -> Int? {
+        guard let button = sender as? UIButton else {
+            return nil
+        }
+        return rating(fromSenderTag: button.tag)
+    }
+
+    static func shouldFillStar(tag: Int, rating: Int) -> Bool {
+        return starTagRange.contains(tag) && tag <= rating
+    }
+
+    static func shouldAdvancePastRatingStep(points: Int) -> Bool {
+        return points > 0
+    }
+
+    static func alertResponse(points: Int) -> String {
+        if points > 0 {
+            return "\(points)"
+        }
+        return "ok"
+    }
+}
+
+/// Post-deal reason chips. Missing buttons previously crashed via `(st?.isSelected)!`.
+struct FeedbackReasonPolicy {
+    static func appended(existing: String, isSelected: Bool?, title: String?) -> String {
+        if isSelected != true {
+            return existing
+        }
+        let label = title ?? ""
+        return "\(existing) \(label)"
+    }
+}
+
+/// Tab bar login gate. Tokens shorter than 10 chars are treated as logged out,
+/// and only the Home tab (tag 0) is reachable without a session.
+struct TabLoginPolicy {
+    static let minimumTokenLength = 10
+
+    static func isLoggedIn(token: String?) -> Bool {
+        guard let token = token else {
+            return false
+        }
+        return token.characters.count >= minimumTokenLength
+    }
+
+    static func shouldAllowTab(itemTag: Int, loggedIn: Bool) -> Bool {
+        if itemTag > 0 {
+            return loggedIn
+        }
+        return true
+    }
+
+    static func tabItem(at index: Int, in items: [UITabBarItem]?) -> UITabBarItem? {
+        guard let items = items, index >= 0, index < items.count else {
+            return nil
+        }
+        return items[index]
+    }
+}
+
 struct Device {
     // iDevice detection code
     static let IS_IPAD             = UIDevice.current.userInterfaceIdiom == .pad

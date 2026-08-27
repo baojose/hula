@@ -75,13 +75,17 @@ class HLFinalFeedbackViewController: UIViewController {
     */
 
     @IBAction func starsButtonAction(_ sender: Any) {
-        let index = (sender as! UIButton).tag - 10
+        guard let index = StarRatingPolicy.rating(from: sender) else {
+            return
+        }
         print(index)
-        
+
         self.points = index
         for i in 1 ... 5 {
-            let star = self.view.viewWithTag(i) as! UIImageView
-            if i <= index {
+            guard let star = self.view.viewWithTag(i) as? UIImageView else {
+                continue
+            }
+            if StarRatingPolicy.shouldFillStar(tag: i, rating: index) {
                 star.image = UIImage(named: "star-fill")
                 star.bouncer()
             } else {
@@ -114,10 +118,11 @@ class HLFinalFeedbackViewController: UIViewController {
     }
     
     @IBAction func okButtonAction(_ sender: Any) {
-        if points == 0 {
+        if !StarRatingPolicy.shouldAdvancePastRatingStep(points: points) {
             for i in 1 ... 5 {
-                let star = self.view.viewWithTag(i) as! UIImageView
-                star.bouncer()
+                if let star = self.view.viewWithTag(i) as? UIImageView {
+                    star.bouncer()
+                }
             }
             return
         }
@@ -185,9 +190,11 @@ class HLFinalFeedbackViewController: UIViewController {
         good_str = ""
         for i in 101 ..< 107{
             let st = self.view.viewWithTag(i) as? UIButton
-            if (st?.isSelected)! {
-                good_str = "\(good_str) \(st?.titleLabel?.text ?? "")"
-            }
+            good_str = FeedbackReasonPolicy.appended(
+                existing: good_str,
+                isSelected: st?.isSelected,
+                title: st?.titleLabel?.text
+            )
             UIView.animate(withDuration: Double(i-100)/10, animations: {
                 st?.alpha = 0
             }, completion: { (success) in
@@ -205,9 +212,11 @@ class HLFinalFeedbackViewController: UIViewController {
         bad_str = ""
         for i in 101 ..< 107{
             let st = self.view.viewWithTag(i) as? UIButton
-            if (st?.isSelected)! {
-                bad_str = "\(bad_str) \(st?.titleLabel?.text ?? "")"
-            }
+            bad_str = FeedbackReasonPolicy.appended(
+                existing: bad_str,
+                isSelected: st?.isSelected,
+                title: st?.titleLabel?.text
+            )
         }
         // send data
         sendFeedback()

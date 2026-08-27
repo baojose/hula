@@ -190,7 +190,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     }
 
     /// Soft-read the banner subtitle from a remote-notification payload.
-    /// Missing `aps`, non-string `alert` dictionaries, and empty alerts skip the banner.
+    /// String alerts and APNS dictionary alerts (`body` / `title` / `subtitle`) are accepted.
+    /// Missing `aps`, empty text, and loc-key-only dictionaries skip the banner.
     class func pushAlertText(from userInfo: [AnyHashable : Any]) -> String? {
         let aps: NSDictionary?
         if let dict = userInfo["aps"] as? NSDictionary {
@@ -200,10 +201,34 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         } else {
             aps = nil
         }
-        guard let aps = aps, let text = aps.object(forKey: "alert") as? String, text.count > 0 else {
+        guard let aps = aps else {
             return nil
         }
-        return text
+        return nonEmptyAlertText(aps.object(forKey: "alert"))
+    }
+
+    /// APNS `alert` is either a string or `{title, body, subtitle}`. Prefer body for the banner.
+    class func nonEmptyAlertText(_ alert: Any?) -> String? {
+        if let text = alert as? String, text.characters.count > 0 {
+            return text
+        }
+        let dict: NSDictionary?
+        if let ns = alert as? NSDictionary {
+            dict = ns
+        } else if let swift = alert as? [String: Any] {
+            dict = swift as NSDictionary
+        } else {
+            dict = nil
+        }
+        guard let dict = dict else {
+            return nil
+        }
+        for key in ["body", "title", "subtitle"] {
+            if let text = dict.object(forKey: key) as? String, text.characters.count > 0 {
+                return text
+            }
+        }
+        return nil
     }
 
     /// Walk the presented/tab/nav hierarchy to find the portrait shell that owns openSwapView.

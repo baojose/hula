@@ -40,6 +40,37 @@ class HLPostProductViewController: BaseViewController {
     var arrImageFrameViews: NSMutableArray!
     var image_dismissing = false
     var currentEditingIndex:Int = 0
+
+    /// Soft-read create-flow photo slot chrome. Extra photos or mismatched arrays
+    /// previously crashed via `as! UIImageView` / `as! UIButton`.
+    class func photoSlotViews(
+        at index: Int,
+        images: NSArray?,
+        cameras: NSArray?,
+        deletes: NSArray?,
+        frames: NSArray?
+    ) -> (image: UIImageView, camera: UIButton, delete: UIButton, frame: UIView)? {
+        guard let images = images, let cameras = cameras, let deletes = deletes, let frames = frames,
+            index >= 0,
+            index < images.count,
+            index < cameras.count,
+            index < deletes.count,
+            index < frames.count,
+            let image = images.object(at: index) as? UIImageView,
+            let camera = cameras.object(at: index) as? UIButton,
+            let delete = deletes.object(at: index) as? UIButton,
+            let frame = frames.object(at: index) as? UIView else {
+                return nil
+        }
+        return (image, camera, delete, frame)
+    }
+
+    class func controlTag(from sender: Any?) -> Int? {
+        if let control = sender as? UIControl {
+            return control.tag
+        }
+        return nil
+    }
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -108,10 +139,19 @@ class HLPostProductViewController: BaseViewController {
         
         if dataManager.newProduct.arrProductPhotos.count > 0 {
             for i in 0 ..< dataManager.newProduct.arrProductPhotos.count{
-                let imgView: UIImageView! = arrImageViews.object(at: i) as! UIImageView
-                let buttonView: UIButton! = arrCameraButtons.object(at: i) as! UIButton
-                let deleteButtonView: UIButton! = arrDeleteButtons.object(at: i) as! UIButton
-                let frameView: UIView! = arrImageFrameViews.object(at: i) as! UIView
+                guard let slot = HLPostProductViewController.photoSlotViews(
+                    at: i,
+                    images: arrImageViews,
+                    cameras: arrCameraButtons,
+                    deletes: arrDeleteButtons,
+                    frames: arrImageFrameViews
+                ) else {
+                    continue
+                }
+                let imgView = slot.image
+                let buttonView = slot.camera
+                let deleteButtonView = slot.delete
+                let frameView = slot.frame
                 frameView.isUserInteractionEnabled = true
                 let recognizer = UITapGestureRecognizer()
                 //recognizer.cancelsTouchesInView = false
@@ -154,7 +194,9 @@ class HLPostProductViewController: BaseViewController {
     
     func selectedImageTapped(_ sender: UITapGestureRecognizer){
         //print("Touches began")
-        let tappedIndex: Int = (sender.view?.tag)!
+        guard let tappedIndex = sender.view?.tag else {
+            return
+        }
         
         if (dataManager.newProduct.arrProductPhotos.count > tappedIndex ){
             print(dataManager.newProduct.arrProductPhotos[tappedIndex])
@@ -266,7 +308,9 @@ class HLPostProductViewController: BaseViewController {
     }
     
     @IBAction func deleteImageAction(_ sender: Any) {
-        let tag:Int = (sender as? UIButton)!.tag
+        guard let tag = HLPostProductViewController.controlTag(from: sender) else {
+            return
+        }
         if (self.dataManager.newProduct.arrProductPhotos.count > tag){
             self.dataManager.newProduct.arrProductPhotos.removeObject(at: tag);
             self.setupImagesBoxes()
