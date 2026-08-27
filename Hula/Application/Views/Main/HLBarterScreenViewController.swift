@@ -536,14 +536,76 @@ class HLBarterScreenViewController: BaseViewController {
         })
     }
     
+    /// Merge a live_barter GET/POST body into the in-memory trade.
+    /// Sparse payloads (POST `{ok:1}`, GET docs with their own `_id`, omitted ready flags)
+    /// must not replace `tradeId`/`owner_id`/`other_id` or zero fields the JSON did not send.
+    /// Missing those identity fields made `getCurrentTradeStatus()` take the "I am the other"
+    /// branch and Accept/Close Deal PUT swapped or empty product lists to `trades/`.
+    class func mergingLiveBarterPayload(_ dict: NSDictionary, into current: HulaTrade) -> HulaTrade {
+        let incoming = HulaTrade()
+        incoming.loadFrom(dict: dict)
+
+        let result = HulaTrade()
+        result.tradeId = current.tradeId
+        result.product_id = current.product_id
+        result.owner_id = current.owner_id
+        result.other_id = current.other_id
+        result.turn_user_id = current.turn_user_id
+        result.status = current.status
+        result.next_bid = current.next_bid
+        result.date = current.date
+        result.last_update = current.last_update
+        result.last_bid_diff = current.last_bid_diff
+        result.num_bids = current.num_bids
+        result.owner_unread = current.owner_unread
+        result.other_unread = current.other_unread
+        result.owner_accepted = current.owner_accepted
+        result.other_accepted = current.other_accepted
+        result.other_agree = current.other_agree
+
+        if dict.object(forKey: "owner_products") as? [String] != nil {
+            result.owner_products = incoming.owner_products
+        } else {
+            result.owner_products = current.owner_products
+        }
+        if dict.object(forKey: "other_products") as? [String] != nil {
+            result.other_products = incoming.other_products
+        } else {
+            result.other_products = current.other_products
+        }
+        if dict.object(forKey: "owner_money") as? Float != nil {
+            result.owner_money = incoming.owner_money
+        } else {
+            result.owner_money = current.owner_money
+        }
+        if dict.object(forKey: "other_money") as? Float != nil {
+            result.other_money = incoming.other_money
+        } else {
+            result.other_money = current.other_money
+        }
+        if dict.object(forKey: "owner_ready") as? Bool != nil {
+            result.owner_ready = incoming.owner_ready
+        } else {
+            result.owner_ready = current.owner_ready
+        }
+        if dict.object(forKey: "other_ready") as? Bool != nil {
+            result.other_ready = incoming.other_ready
+        } else {
+            result.other_ready = current.other_ready
+        }
+        if dict.object(forKey: "other_agree") as? Bool != nil {
+            result.other_agree = incoming.other_agree
+        }
+        return result
+    }
+
     func updateTradeInterface(dict: NSDictionary){
-        let newTrade: HulaTrade = HulaTrade();
-        newTrade.loadFrom(dict: dict);
-        
+        let newTrade = HLBarterScreenViewController.mergingLiveBarterPayload(dict, into: self.thisTrade)
+
         if (newTrade.other_products != self.thisTrade.other_products) || (newTrade.owner_products != self.thisTrade.owner_products) || (newTrade.owner_money - newTrade.other_money != self.thisTrade.owner_money - self.thisTrade.other_money){
             print ("trades are different. Updating interface");
-            
-            
+
+
             self.thisTrade = newTrade;
             var mtp:[String] = []
             var otp:[String] = []
@@ -567,20 +629,20 @@ class HLBarterScreenViewController: BaseViewController {
             self.otherSelectedProductsCollection.reloadData()
             self.animateAddedProducts("other")
             self.animateDisolveProducts("other")
-            
+
             self.populateTradedProducts(list:mtp, type:"owner")
             self.myProductsCollection.reloadData()
             self.mySelectedProductsCollection.reloadData()
             self.animateAddedProducts("owner")
             self.animateDisolveProducts("owner")
-            
-            
+
+
         }
         self.thisTrade.other_ready = newTrade.other_ready;
         self.thisTrade.owner_ready = newTrade.owner_ready;
         // update bottom bar!
         self.mainSwapViewHolder?.controlSetupBottomBar(index: myTradeIndex + 1)
-        
+
     }
     
     func updateMyRemovedProducts(){
