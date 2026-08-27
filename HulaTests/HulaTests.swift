@@ -122,4 +122,19 @@ class HulaTests: XCTestCase {
         user.populate(with: ["location": [] as [Any]] as NSDictionary)
         XCTAssertEqual(user.location.coordinate.latitude, 40.0, accuracy: 0.0001)
     }
+
+    func testTradeRoomOptionsSnapshotIgnoresLaterCellReuse() {
+        let presented = HLTradesCollectionViewCell.actionSnapshot(tradeId: "trade-B", userId: "user-B", status: "current")
+        XCTAssertEqual(presented?.tradeId, "trade-B")
+        XCTAssertEqual(presented?.userId, "user-B")
+
+        // Cell reused onto another room while the action sheet is still visible.
+        let reused = HLTradesCollectionViewCell.actionSnapshot(tradeId: "trade-C", userId: "user-C", status: "current")
+        XCTAssertEqual(reused?.tradeId, "trade-C")
+        XCTAssertEqual(presented?.tradeId, "trade-B")
+        XCTAssertEqual(presented?.userId, "user-B")
+
+        XCTAssertNil(HLTradesCollectionViewCell.actionSnapshot(tradeId: "", userId: "user-B", status: "current"))
+        XCTAssertNil(HLTradesCollectionViewCell.actionSnapshot(tradeId: "trade-B", userId: "user-B", status: "past"))
+    }
 }
