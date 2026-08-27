@@ -12,6 +12,36 @@ class HLFeedbackHistoryViewController: BaseViewController, UITableViewDelegate, 
     
     var feedbackList: NSArray = []
 
+    /// Star scores are POSTed as integers (`val=1…5`) and often arrive as Int/NSNumber.
+    /// `as? CGFloat` fails for those bridges and left the % label blank.
+    class func feedbackScorePercent(from val: Any?) -> String? {
+        let score: Double?
+        if let v = val as? Double {
+            score = v
+        } else if let v = val as? Float {
+            score = Double(v)
+        } else if let v = val as? CGFloat {
+            score = Double(v)
+        } else if let v = val as? Int {
+            score = Double(v)
+        } else if let v = val as? NSNumber {
+            // Reject Bool-bridged NSNumber (true/false → 1/0).
+            let objCType = String(cString: v.objCType)
+            if objCType == "c" || objCType == "B" {
+                score = nil
+            } else {
+                score = v.doubleValue
+            }
+        } else {
+            score = nil
+        }
+        guard let points = score else {
+            return nil
+        }
+        let perc = Int(round(points * 20))
+        return "\(perc)%"
+    }
+
     override func viewDidLoad() {
         super.viewDidLoad()
     }
@@ -35,9 +65,8 @@ class HLFeedbackHistoryViewController: BaseViewController, UITableViewDelegate, 
         let cell = tableView.dequeueReusableCell(withIdentifier: "feedbackHistoryCell") as! HLFeedbackHistoryTableViewCell
         if let this_fb = feedbackList[indexPath.row] as? NSDictionary{
             print(this_fb)
-            if let tmp = this_fb["val"] as? CGFloat {
-                let perc = round(tmp*20)
-                cell.feedbackPercentage.text = "\( Int(perc) )%"
+            if let label = HLFeedbackHistoryViewController.feedbackScorePercent(from: this_fb["val"]) {
+                cell.feedbackPercentage.text = label
             }
             if let tmp = this_fb["comments"] as? String {
                 cell.feedbackCommentLabel.text = "\(tmp)"

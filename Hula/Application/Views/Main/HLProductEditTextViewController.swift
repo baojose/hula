@@ -158,17 +158,27 @@ extension HLProductEditTextViewController: UITableViewDelegate, UITableViewDataS
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         
         let cell = tableView.dequeueReusableCell(withIdentifier: "completeProductProfileCategoryCell") as! HLHomeCategoryTableViewCell
-        let category : NSDictionary = dataManager.arrCategories.object(at: indexPath.row) as! NSDictionary
-        
-        cell.categoryName.attributedText = commonUtils.attributedStringWithTextSpacing(category.object(forKey: "name") as! String, CGFloat(2.33))
-        cell.categoryImage.image = UIImage.init(named: category.object(forKey: "icon") as! String)
+        guard let category = HLHomeViewController.categoryDictionary(at: indexPath.row, in: dataManager.arrCategories) else {
+            return cell
+        }
+        if let presentation = HLHomeViewController.categoryPresentation(from: category) {
+            cell.categoryName.attributedText = commonUtils.attributedStringWithTextSpacing(presentation.name, CGFloat(2.33))
+            if presentation.icon.count > 0 {
+                cell.categoryImage.image = UIImage.init(named: presentation.icon)
+            }
+        }
         
         return cell
     }
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath){
-        let category : NSDictionary = dataManager.arrCategories.object(at: indexPath.row) as! NSDictionary
-        product.productCategory = category.object(forKey: "name") as! String
-        product.productCategoryId = category.object(forKey: "_id") as! String
+        guard let category = HLHomeViewController.categoryDictionary(at: indexPath.row, in: dataManager.arrCategories) else {
+            return
+        }
+        guard let selection = HLHomeViewController.categorySelection(from: category) else {
+            return
+        }
+        product.productCategory = selection.name
+        product.productCategoryId = selection.id
         product.updateServerData()
         let _ = self.navigationController?.popViewController(animated: true)
     }
