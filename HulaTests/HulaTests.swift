@@ -2800,7 +2800,6 @@ class HulaTests: XCTestCase {
             AppDelegate.pushAlertText(from: ["aps": ["alert": "New offer"]]),
             "New offer"
         )
-        XCTAssertNil(AppDelegate.pushAlertText(from: ["aps": ["alert": ["body": "dict"]]]))
         XCTAssertNil(AppDelegate.pushAlertText(from: ["aps": ["badge": 1]]))
         XCTAssertNil(AppDelegate.pushAlertText(from: ["aps": "not-a-dict"]))
         XCTAssertNil(AppDelegate.pushAlertText(from: [:]))
@@ -3020,5 +3019,159 @@ class HulaTests: XCTestCase {
             CommonUtils.sessionFilePath(fileName: "videoproof_a_b.mov", documentsDirectory: "/tmp/docs"),
             "/tmp/docs/videoproof_a_b.mov"
         )
+    }
+
+    // MARK: - Beyond #129: APNS dict alerts, star rating, tab login, create photo slots
+
+    func testPushAlertTextReadsDictionaryBodyTitleAndSubtitle() {
+        XCTAssertEqual(
+            AppDelegate.pushAlertText(from: ["aps": ["alert": ["body": "Offer received"]]]),
+            "Offer received"
+        )
+        XCTAssertEqual(
+            AppDelegate.pushAlertText(from: ["aps": ["alert": ["title": "Hula", "body": "Your turn"]]]),
+            "Your turn"
+        )
+        XCTAssertEqual(
+            AppDelegate.pushAlertText(from: ["aps": ["alert": ["title": "Title only"]]]),
+            "Title only"
+        )
+        XCTAssertEqual(
+            AppDelegate.pushAlertText(from: ["aps": ["alert": ["subtitle": "Subtitle only"]]]),
+            "Subtitle only"
+        )
+        XCTAssertNil(AppDelegate.pushAlertText(from: ["aps": ["alert": ["body": ""]]]))
+        XCTAssertNil(AppDelegate.pushAlertText(from: ["aps": ["alert": ["loc-key": "OFFER"]]]))
+        XCTAssertEqual(AppDelegate.nonEmptyAlertText("plain"), "plain")
+        XCTAssertNil(AppDelegate.nonEmptyAlertText(""))
+        XCTAssertNil(AppDelegate.nonEmptyAlertText(1))
+    }
+
+    func testStarRatingIgnoresNonButtonsAndOutOfRangeTags() {
+        XCTAssertNil(StarRatingPolicy.rating(from: nil))
+        XCTAssertNil(StarRatingPolicy.rating(from: UIView()))
+        XCTAssertNil(StarRatingPolicy.rating(fromSenderTag: 10))
+        XCTAssertNil(StarRatingPolicy.rating(fromSenderTag: 16))
+        XCTAssertNil(StarRatingPolicy.rating(fromSenderTag: 0))
+
+        let oneStar = UIButton(type: .custom)
+        oneStar.tag = 11
+        XCTAssertEqual(StarRatingPolicy.rating(from: oneStar), 1)
+
+        let fiveStar = UIButton(type: .custom)
+        fiveStar.tag = 15
+        XCTAssertEqual(StarRatingPolicy.rating(from: fiveStar), 5)
+
+        XCTAssertTrue(StarRatingPolicy.shouldFillStar(tag: 1, rating: 3))
+        XCTAssertTrue(StarRatingPolicy.shouldFillStar(tag: 3, rating: 3))
+        XCTAssertFalse(StarRatingPolicy.shouldFillStar(tag: 4, rating: 3))
+        XCTAssertFalse(StarRatingPolicy.shouldFillStar(tag: 0, rating: 5))
+        XCTAssertFalse(StarRatingPolicy.shouldAdvancePastRatingStep(points: 0))
+        XCTAssertTrue(StarRatingPolicy.shouldAdvancePastRatingStep(points: 1))
+        XCTAssertEqual(StarRatingPolicy.alertResponse(points: 0), "ok")
+        XCTAssertEqual(StarRatingPolicy.alertResponse(points: 4), "4")
+    }
+
+    func testFeedbackReasonAppendSkipsMissingAndUnselectedChips() {
+        XCTAssertEqual(
+            FeedbackReasonPolicy.appended(existing: "", isSelected: nil, title: "Fair deal"),
+            ""
+        )
+        XCTAssertEqual(
+            FeedbackReasonPolicy.appended(existing: "", isSelected: false, title: "Fair deal"),
+            ""
+        )
+        XCTAssertEqual(
+            FeedbackReasonPolicy.appended(existing: "", isSelected: true, title: "Fair deal"),
+            " Fair deal"
+        )
+        XCTAssertEqual(
+            FeedbackReasonPolicy.appended(existing: " Fair deal", isSelected: true, title: "Fast delivery"),
+            " Fair deal Fast delivery"
+        )
+        XCTAssertEqual(
+            FeedbackReasonPolicy.appended(existing: " Fair deal", isSelected: true, title: nil),
+            " Fair deal "
+        )
+    }
+
+    func testTabLoginRequiresTenCharacterTokenAndGatesProtectedTabs() {
+        XCTAssertFalse(TabLoginPolicy.isLoggedIn(token: nil))
+        XCTAssertFalse(TabLoginPolicy.isLoggedIn(token: ""))
+        XCTAssertFalse(TabLoginPolicy.isLoggedIn(token: String(repeating: Character("a"), count: 9)))
+        XCTAssertTrue(TabLoginPolicy.isLoggedIn(token: String(repeating: Character("a"), count: 10)))
+        XCTAssertTrue(TabLoginPolicy.isLoggedIn(token: String(repeating: Character("a"), count: 11)))
+
+        XCTAssertTrue(TabLoginPolicy.shouldAllowTab(itemTag: 0, loggedIn: false))
+        XCTAssertFalse(TabLoginPolicy.shouldAllowTab(itemTag: 1, loggedIn: false))
+        XCTAssertFalse(TabLoginPolicy.shouldAllowTab(itemTag: 2, loggedIn: false))
+        XCTAssertFalse(TabLoginPolicy.shouldAllowTab(itemTag: 3, loggedIn: false))
+        XCTAssertTrue(TabLoginPolicy.shouldAllowTab(itemTag: 1, loggedIn: true))
+        XCTAssertTrue(TabLoginPolicy.shouldAllowTab(itemTag: 0, loggedIn: true))
+
+        XCTAssertNil(TabLoginPolicy.tabItem(at: 0, in: nil))
+        XCTAssertNil(TabLoginPolicy.tabItem(at: 0, in: []))
+        let home = UITabBarItem()
+        let alerts = UITabBarItem()
+        XCTAssertTrue(TabLoginPolicy.tabItem(at: 0, in: [home, alerts]) === home)
+        XCTAssertTrue(TabLoginPolicy.tabItem(at: 1, in: [home, alerts]) === alerts)
+        XCTAssertNil(TabLoginPolicy.tabItem(at: 2, in: [home, alerts]))
+        XCTAssertNil(TabLoginPolicy.tabItem(at: -1, in: [home, alerts]))
+    }
+
+    func testCreatePhotoSlotViewsSkipMismatchedAndNonViewEntries() {
+        let image = UIImageView()
+        let camera = UIButton(type: .custom)
+        let delete = UIButton(type: .custom)
+        let frame = UIView()
+        let images: NSArray = [image]
+        let cameras: NSArray = [camera]
+        let deletes: NSArray = [delete]
+        let frames: NSArray = [frame]
+
+        let slot = HLPostProductViewController.photoSlotViews(
+            at: 0,
+            images: images,
+            cameras: cameras,
+            deletes: deletes,
+            frames: frames
+        )
+        XCTAssertTrue(slot?.image === image)
+        XCTAssertTrue(slot?.camera === camera)
+        XCTAssertTrue(slot?.delete === delete)
+        XCTAssertTrue(slot?.frame === frame)
+
+        XCTAssertNil(HLPostProductViewController.photoSlotViews(
+            at: 1,
+            images: images,
+            cameras: cameras,
+            deletes: deletes,
+            frames: frames
+        ))
+        XCTAssertNil(HLPostProductViewController.photoSlotViews(
+            at: 0,
+            images: [NSNull()],
+            cameras: cameras,
+            deletes: deletes,
+            frames: frames
+        ))
+        XCTAssertNil(HLPostProductViewController.photoSlotViews(
+            at: 0,
+            images: images,
+            cameras: ["not-a-button"],
+            deletes: deletes,
+            frames: frames
+        ))
+        XCTAssertNil(HLPostProductViewController.photoSlotViews(
+            at: 0,
+            images: images,
+            cameras: cameras,
+            deletes: deletes,
+            frames: nil
+        ))
+        XCTAssertNil(HLPostProductViewController.controlTag(from: nil))
+        XCTAssertNil(HLPostProductViewController.controlTag(from: UIView()))
+        camera.tag = 2
+        XCTAssertEqual(HLPostProductViewController.controlTag(from: camera), 2)
     }
 }
