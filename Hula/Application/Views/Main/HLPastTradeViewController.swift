@@ -188,17 +188,14 @@ class HLPastTradeViewController: UIViewController, UICollectionViewDelegate, UIC
         }
         
         
-        switch type {
-        case "other":
-            if thisTrade.other_money > 0 {
-                let moneyProd = HulaProduct(id: "xmoney", name: "+$\(Int(round(thisTrade.other_money)))", image: HulaConstants.transparentImg)
+        let currentUserIsOwner = (thisTrade.owner_id == HulaUser.sharedInstance.userId)
+        let amount = HLPastTradeViewController.cashAmount(forDisplayedType: type, trade: thisTrade, currentUserIsOwner: currentUserIsOwner)
+        if amount > 0 {
+            let moneyProd = HulaProduct(id: "xmoney", name: "+$\(Int(round(amount)))", image: HulaConstants.transparentImg)
+            if type == "other" {
                 self.otherTradedProducts.append(moneyProd)
                 self.otherSelectedProductsCollection.reloadData()
-            }
-        default:
-            
-            if thisTrade.owner_money > 0 {
-                let moneyProd = HulaProduct(id: "xmoney", name: "+$\( Int(round(thisTrade.owner_money)) )", image: HulaConstants.transparentImg)
+            } else {
                 self.myTradedProducts.append(moneyProd)
                 self.mySelectedProductsCollection.reloadData()
             }
@@ -208,6 +205,17 @@ class HLPastTradeViewController: UIViewController, UICollectionViewDelegate, UIC
     
     
     
+    /// Past-trade trays remap products to my/their side, so cash must remap too.
+    /// Using `other_money` for type "other" (and `owner_money` for "owner") puts the
+    /// non-owner's cash on the wrong tray.
+    class func cashAmount(forDisplayedType type: String, trade: HulaTrade, currentUserIsOwner: Bool) -> Float {
+        let showingOthersSide = (type == "other")
+        if currentUserIsOwner {
+            return showingOthersSide ? trade.other_money : trade.owner_money
+        }
+        return showingOthersSide ? trade.owner_money : trade.other_money
+    }
+
     func getProduct(productId: String, taskCallback: @escaping (HulaProduct) -> ()) {
         //print("Getting user info...")
         if (HulaUser.sharedInstance.userId.count>0){

@@ -184,6 +184,30 @@ class HulaUser: NSObject {
     
     
     
+    /// `/me` and profile JSON store `location` as a 2-number array. Empty or 1-element
+    /// arrays used to crash on `tmp[0]`/`tmp[1]`. NSJSONSerialization yields NSNumber,
+    /// which does not reliably cast to `[CGFloat]`.
+    class func location(fromJSON value: Any?) -> CLLocation? {
+        guard let arr = value as? [Any], arr.count >= 2 else {
+            return nil
+        }
+        let lat: Double
+        let lon: Double
+        if let a = arr[0] as? Double, let b = arr[1] as? Double {
+            lat = a
+            lon = b
+        } else if let a = arr[0] as? NSNumber, let b = arr[1] as? NSNumber {
+            lat = a.doubleValue
+            lon = b.doubleValue
+        } else if let a = arr[0] as? CGFloat, let b = arr[1] as? CGFloat {
+            lat = Double(a)
+            lon = Double(b)
+        } else {
+            return nil
+        }
+        return CLLocation(latitude: lat, longitude: lon)
+    }
+
     func populate(with: NSDictionary){
         if let tmp = with.object(forKey: "_id") as? String { userId = tmp }
         if let tmp = with.object(forKey: "name") as? String { userName = tmp }
@@ -191,10 +215,8 @@ class HulaUser: NSObject {
         if let tmp = with.object(forKey: "bio") as? String { userBio = tmp }
         if let tmp = with.object(forKey: "email") as? String { userEmail = tmp }
         if let tmp = with.object(forKey: "image") as? String { userPhotoURL = tmp }
-        if let tmp = with.object(forKey: "location") as? [CGFloat]  {
-            let lat = tmp[0]
-            let lon = tmp[1]
-            location = CLLocation(latitude:CLLocationDegrees(lat), longitude:CLLocationDegrees(lon));
+        if let parsed = HulaUser.location(fromJSON: with.object(forKey: "location")) {
+            location = parsed
         }
         if let tmp = with.object(forKey: "location_name") as? String  {
             userLocationName = tmp;
