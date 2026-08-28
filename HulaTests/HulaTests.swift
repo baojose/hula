@@ -3117,6 +3117,14 @@ class HulaTests: XCTestCase {
         XCTAssertTrue(TabLoginPolicy.tabItem(at: 1, in: [home, alerts]) === alerts)
         XCTAssertNil(TabLoginPolicy.tabItem(at: 2, in: [home, alerts]))
         XCTAssertNil(TabLoginPolicy.tabItem(at: -1, in: [home, alerts]))
+
+        let homeVC = UIViewController()
+        let alertsVC = UIViewController()
+        XCTAssertEqual(TabLoginPolicy.itemTag(for: homeVC, in: [homeVC, alertsVC]), 0)
+        XCTAssertEqual(TabLoginPolicy.itemTag(for: alertsVC, in: [homeVC, alertsVC]), 1)
+        XCTAssertNil(TabLoginPolicy.itemTag(for: UIViewController(), in: [homeVC, alertsVC]))
+        XCTAssertNil(TabLoginPolicy.itemTag(for: homeVC, in: nil))
+        XCTAssertNil(TabLoginPolicy.itemTag(for: homeVC, in: []))
     }
 
     func testCreatePhotoSlotViewsSkipMismatchedAndNonViewEntries() {
@@ -3173,5 +3181,133 @@ class HulaTests: XCTestCase {
         XCTAssertNil(HLPostProductViewController.controlTag(from: UIView()))
         camera.tag = 2
         XCTAssertEqual(HLPostProductViewController.controlTag(from: camera), 2)
+        XCTAssertEqual(ControlSenderPolicy.tag(from: camera), 2)
+    }
+
+    private func seededLiveBarterTrade() -> HulaTrade {
+        let trade = HulaTrade()
+        trade.tradeId = "trade-abc"
+        trade.owner_id = "owner-1"
+        trade.other_id = "other-2"
+        trade.owner_products = ["prod-owner"]
+        trade.other_products = ["prod-other"]
+        trade.owner_money = 25
+        trade.other_money = 10
+        trade.owner_ready = true
+        trade.other_ready = true
+        trade.other_agree = true
+        trade.num_bids = 3
+        trade.last_bid_diff = ["prod-owner"]
+        trade.owner_unread = 2
+        return trade
+    }
+
+    func testLiveBarterSparsePayloadKeepsIdentityAndProducts() {
+        let current = seededLiveBarterTrade()
+        let payload: NSDictionary = [
+            "ok": 1,
+            "_id": "livebarter-oid-not-the-trade"
+        ]
+        let merged = HLBarterScreenViewController.mergingLiveBarterPayload(payload, into: current)
+        XCTAssertEqual(merged.tradeId, "trade-abc")
+        XCTAssertEqual(merged.owner_id, "owner-1")
+        XCTAssertEqual(merged.other_id, "other-2")
+        XCTAssertEqual(merged.owner_products, ["prod-owner"])
+        XCTAssertEqual(merged.other_products, ["prod-other"])
+        XCTAssertEqual(merged.owner_money, 25)
+        XCTAssertEqual(merged.other_money, 10)
+        XCTAssertTrue(merged.owner_ready)
+        XCTAssertTrue(merged.other_ready)
+        XCTAssertEqual(merged.num_bids, 3)
+        XCTAssertEqual(merged.last_bid_diff, ["prod-owner"])
+        XCTAssertEqual(merged.owner_unread, 2)
+    }
+
+    func testLiveBarterExplicitProductsApplyWithoutBlankingOwner() {
+        let current = seededLiveBarterTrade()
+        let payload: NSDictionary = [
+            "owner_products": ["new-owner"],
+            "other_products": ["new-other"],
+            "owner_money": Float(5),
+            "other_money": Float(0)
+        ]
+        let merged = HLBarterScreenViewController.mergingLiveBarterPayload(payload, into: current)
+        XCTAssertEqual(merged.tradeId, "trade-abc")
+        XCTAssertEqual(merged.owner_id, "owner-1")
+        XCTAssertEqual(merged.owner_products, ["new-owner"])
+        XCTAssertEqual(merged.other_products, ["new-other"])
+        XCTAssertEqual(merged.owner_money, 5)
+        XCTAssertEqual(merged.other_money, 0)
+        XCTAssertTrue(merged.owner_ready)
+        XCTAssertTrue(merged.other_ready)
+    }
+
+    func testLiveBarterEmptyProductArrayIsApplied() {
+        let current = seededLiveBarterTrade()
+        let payload: NSDictionary = [
+            "owner_products": [] as [String],
+            "other_products": ["kept-other"]
+        ]
+        let merged = HLBarterScreenViewController.mergingLiveBarterPayload(payload, into: current)
+        XCTAssertEqual(merged.owner_products, [])
+        XCTAssertEqual(merged.other_products, ["kept-other"])
+        XCTAssertEqual(merged.tradeId, "trade-abc")
+        XCTAssertEqual(merged.owner_id, "owner-1")
+    }
+
+    func testLiveBarterIntegerCashAndZeroOneReadyApply() {
+        let current = seededLiveBarterTrade()
+        let payload: NSDictionary = [
+            "owner_money": 12,
+            "other_money": 0,
+            "owner_ready": 0,
+            "other_ready": 1
+        ]
+        let merged = HLBarterScreenViewController.mergingLiveBarterPayload(payload, into: current)
+        XCTAssertEqual(merged.owner_money, 12)
+        XCTAssertEqual(merged.other_money, 0)
+        XCTAssertFalse(merged.owner_ready)
+        XCTAssertTrue(merged.other_ready)
+        XCTAssertEqual(merged.tradeId, "trade-abc")
+        XCTAssertEqual(merged.owner_products, ["prod-owner"])
+    }
+
+    func testLiveBarterBooleanCashDoesNotWipeAmounts() {
+        let current = seededLiveBarterTrade()
+        let payload: NSDictionary = [
+            "owner_money": true,
+            "other_money": false
+        ]
+        let merged = HLBarterScreenViewController.mergingLiveBarterPayload(payload, into: current)
+        XCTAssertEqual(merged.owner_money, 25)
+        XCTAssertEqual(merged.other_money, 10)
+    }
+
+    func testTradeRoomOptionsSnapshotIgnoresLaterCellReuse() {
+        let presented = HLTradesCollectionViewCell.actionSnapshot(tradeId: "trade-B", userId: "user-B", status: "current")
+        XCTAssertEqual(presented?.tradeId, "trade-B")
+        XCTAssertEqual(presented?.userId, "user-B")
+
+        let reused = HLTradesCollectionViewCell.actionSnapshot(tradeId: "trade-C", userId: "user-C", status: "current")
+        XCTAssertEqual(reused?.tradeId, "trade-C")
+        XCTAssertEqual(presented?.tradeId, "trade-B")
+        XCTAssertEqual(presented?.userId, "user-B")
+
+        XCTAssertNil(HLTradesCollectionViewCell.actionSnapshot(tradeId: "", userId: "user-B", status: "current"))
+        XCTAssertNil(HLTradesCollectionViewCell.actionSnapshot(tradeId: "trade-B", userId: "user-B", status: "past"))
+    }
+
+    func testControlSenderTagSoftReadsButtons() {
+        XCTAssertNil(ControlSenderPolicy.tag(from: nil))
+        XCTAssertNil(ControlSenderPolicy.tag(from: UIView()))
+        XCTAssertNil(ControlSenderPolicy.tag(from: "not-a-control"))
+
+        let button = UIButton(type: .custom)
+        button.tag = 25
+        XCTAssertEqual(ControlSenderPolicy.tag(from: button), 25)
+
+        let control = UIControl()
+        control.tag = 4
+        XCTAssertEqual(ControlSenderPolicy.tag(from: control), 4)
     }
 }
