@@ -10,7 +10,7 @@ import UIKit
 import MapKit
 
 class HulaProduct: NSObject {
-    
+
     var productId: String!
     var productName: String!
     var productCategory: String!
@@ -32,7 +32,7 @@ class HulaProduct: NSObject {
             return productLocation.distance(from: HulaUser.sharedInstance.location)
         }
     }
-    
+
     class var sharedInstance: HulaProduct {
         struct Static {
             static let instance: HulaProduct = HulaProduct()
@@ -79,7 +79,7 @@ class HulaProduct: NSObject {
     override var description : String {
         return "(Product id: \(self.productId!); name:   \(self.productName!); dist:   \(self.distance))\n"
     }
-    
+
     func populate(with: NSDictionary){
         if let tmp = with.object(forKey: "_id") as? String { productId = tmp }
         if let tmp = with.object(forKey: "title") as? String { productName = tmp }
@@ -106,20 +106,20 @@ class HulaProduct: NSObject {
             let lat = tmp[0] as? Double
             let lon = tmp[1] as? Double
             print(Float(lat!))
-            
+
             if (lat != nil && lon != nil){
                 productLocation = CLLocation(latitude: CLLocationDegrees(Float(lat!)), longitude: CLLocationDegrees(Float(lon!)))
             }
- 
+
         }
     }
-    
+
     func updateServerData(){
         //print("Updating user...")
         if(HulaUser.sharedInstance.isUserLoggedIn()){
             let queryURL = HulaConstants.apiURL + "products/" + self.productId
             HLDataManager.sharedInstance.httpPost(urlstr: queryURL, postString: getPostString(), isPut: true, taskCallback: { (ok, json) in
-                
+
                 //print("done")
                 //print(ok)
                 if (ok){
@@ -127,7 +127,7 @@ class HulaProduct: NSObject {
                     if (json as? [String: Any]) != nil {
                         //print(dictionary)
                     }
-                    
+
                     //NotificationCenter.default.post(name: self.signupRecieved, object: signupSuccess)
                 }
             })
@@ -152,4 +152,53 @@ class HulaProduct: NSObject {
         print(str)
         return str
     }
+}
+
+/// Pins in-flight create POST/upload callbacks to the listing that started them.
+/// `HLDataManager.newProduct` is a singleton; replacing it while create is in flight
+/// must not retarget `product_id` or photo URLs onto a different object.
+struct ProductCreateSession {
+    static func firstLocalPhoto(on product: HulaProduct) -> UIImage? {
+        if product.arrProductPhotos.count > 0 {
+            return product.arrProductPhotos.object(at: 0) as? UIImage
+        }
+        return nil
+    }
+
+    static func shouldPresentCompleteProfile(captured: HulaProduct, current: HulaProduct) -> Bool {
+        return captured === current
+    }
+
+    static func applyCreatedProductId(_ productId: String, to product: HulaProduct) {
+        if productId.count > 0 {
+            product.productId = productId
+        }
+    }
+
+    static func preparedPhotoSlots() -> [String] {
+        return ["", "", "", ""]
+    }
+
+    /// Writes a photo URL onto `product` (not whatever `newProduct` currently is).
+    /// Returns false if `position` is out of range for the 4-slot create array.
+    static func applyPhotoLink(_ url: String, at position: Int, to product: HulaProduct) -> Bool {
+        var links = product.arrProductPhotoLink
+        while links.count < 4 {
+            links.append("")
+        }
+        if position < 0 || position >= links.count {
+            return false
+        }
+        links[position] = url
+        product.arrProductPhotoLink = links
+        if position == 0 {
+            product.productImage = url
+        }
+        return true
+    }
+}
+
+class ProductCreateUploadProgress {
+    var toUpload: Int = 0
+    var uploaded: Int = 0
 }
