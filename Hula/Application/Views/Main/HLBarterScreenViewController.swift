@@ -631,6 +631,73 @@ class HLBarterScreenViewController: BaseViewController {
         })
     }
     
+    /// Merge a live_barter GET/POST body into the in-memory trade.
+    /// Sparse payloads (POST `{ok:1}`, GET docs with their own `_id`, omitted ready flags)
+    /// must not replace `tradeId`/`owner_id`/`other_id` or zero fields the JSON did not send.
+    /// Missing those identity fields made `getCurrentTradeStatus()` take the "I am the other"
+    /// branch and Accept/Close Deal PUT swapped or empty product lists to `trades/`.
+    class func mergingLiveBarterPayload(_ dict: NSDictionary, into current: HulaTrade) -> HulaTrade {
+        let incoming = HulaTrade()
+        incoming.loadFrom(dict: dict)
+
+        let result = HulaTrade()
+        result.tradeId = current.tradeId
+        result.product_id = current.product_id
+        result.owner_id = current.owner_id
+        result.other_id = current.other_id
+        result.turn_user_id = current.turn_user_id
+        result.status = current.status
+        result.next_bid = current.next_bid
+        result.date = current.date
+        result.last_update = current.last_update
+        result.last_bid_diff = current.last_bid_diff
+        result.num_bids = current.num_bids
+        result.owner_unread = current.owner_unread
+        result.other_unread = current.other_unread
+        result.owner_accepted = current.owner_accepted
+        result.other_accepted = current.other_accepted
+        result.other_agree = current.other_agree
+
+        if dict.object(forKey: "owner_products") as? [String] != nil {
+            result.owner_products = incoming.owner_products
+        } else {
+            result.owner_products = current.owner_products
+        }
+        if dict.object(forKey: "other_products") as? [String] != nil {
+            result.other_products = incoming.other_products
+        } else {
+            result.other_products = current.other_products
+        }
+        if CommonUtils.floatFromJSON(dict.object(forKey: "owner_money")) != nil {
+            result.owner_money = incoming.owner_money
+        } else {
+            result.owner_money = current.owner_money
+        }
+        if CommonUtils.floatFromJSON(dict.object(forKey: "other_money")) != nil {
+            result.other_money = incoming.other_money
+        } else {
+            result.other_money = current.other_money
+        }
+        if CommonUtils.boolFromJSON(dict.object(forKey: "owner_ready")) != nil {
+            result.owner_ready = incoming.owner_ready
+        } else {
+            result.owner_ready = current.owner_ready
+        }
+        if CommonUtils.boolFromJSON(dict.object(forKey: "other_ready")) != nil {
+            result.other_ready = incoming.other_ready
+        } else {
+            result.other_ready = current.other_ready
+        }
+        if CommonUtils.boolFromJSON(dict.object(forKey: "other_agree")) != nil {
+            result.other_agree = incoming.other_agree
+        }
+        if dict.object(forKey: "bids") as? [Any] != nil {
+            result.last_bid_diff = incoming.last_bid_diff
+            result.num_bids = incoming.num_bids
+        }
+        return result
+    }
+
     /// Detects offer changes that must refresh the barter UI / local trade snapshot.
     /// Compares each cash side independently — a net-difference check misses equal
     /// offsets (e.g. both sides 0→10) and leaves Accept/Send with stale money.
@@ -642,8 +709,7 @@ class HLBarterScreenViewController: BaseViewController {
     }
 
     func updateTradeInterface(dict: NSDictionary){
-        let newTrade: HulaTrade = HulaTrade();
-        newTrade.loadFrom(dict: dict);
+        let newTrade = HLBarterScreenViewController.mergingLiveBarterPayload(dict, into: self.thisTrade)
         
         if HLBarterScreenViewController.tradeOfferChanged(from: self.thisTrade, to: newTrade) {
             print ("trades are different. Updating interface");

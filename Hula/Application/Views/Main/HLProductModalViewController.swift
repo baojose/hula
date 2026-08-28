@@ -225,7 +225,9 @@ class HLProductModalViewController: UIViewController, UIImagePickerControllerDel
     }
     
     @IBAction func videoAction(_ sender: Any) {
-        let tag = (sender as! UIButton).tag
+        guard let tag = ControlSenderPolicy.tag(from: sender) else {
+            return
+        }
             if (tag == 43904){
                 if product.productOwner == HulaUser.sharedInstance.userId {
                     recordVideo()

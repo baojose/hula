@@ -66,10 +66,7 @@ class HLPostProductViewController: BaseViewController {
     }
 
     class func controlTag(from sender: Any?) -> Int? {
-        if let control = sender as? UIControl {
-            return control.tag
-        }
-        return nil
+        return ControlSenderPolicy.tag(from: sender)
     }
     
     override func viewDidLoad() {

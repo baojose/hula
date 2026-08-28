@@ -56,18 +56,24 @@ class HLFilterViewController: BaseViewController {
     
     // IB Actions
     @IBAction func distanceFilterOptionBtnClicked(_ sender: Any) {
-        let button: UIButton = sender as! UIButton
-        self.changeDistanceFilterButtonSelctedState(button.tag)
+        guard let tag = ControlSenderPolicy.tag(from: sender) else {
+            return
+        }
+        self.changeDistanceFilterButtonSelctedState(tag)
         
     }
     @IBAction func tradeFilterOptionBtnClicked(_ sender: Any) {
-        let button: UIButton = sender as! UIButton
-        self.changeTradeFilterButtonSelctedState(button.tag)
+        guard let tag = ControlSenderPolicy.tag(from: sender) else {
+            return
+        }
+        self.changeTradeFilterButtonSelctedState(tag)
         
     }
     @IBAction func conditionOptionBtnClicked(_ sender: Any) {
-        let button: UIButton = sender as! UIButton
-        self.changeConditionFilterButtonSelctedState(button.tag)
+        guard let tag = ControlSenderPolicy.tag(from: sender) else {
+            return
+        }
+        self.changeConditionFilterButtonSelctedState(tag)
         
     }
     

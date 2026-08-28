@@ -1095,6 +1095,24 @@ struct TabLoginPolicy {
         }
         return items[index]
     }
+
+    /// Map a child VC to its tab index (this app uses index == item.tag).
+    static func itemTag(for viewController: UIViewController, in viewControllers: [UIViewController]?) -> Int? {
+        guard let viewControllers = viewControllers else {
+            return nil
+        }
+        return viewControllers.index(of: viewController)
+    }
+}
+
+/// Soft-read IBAction senders. Settings/filter/edit/modal used `sender as! UIButton`.
+struct ControlSenderPolicy {
+    static func tag(from sender: Any?) -> Int? {
+        if let control = sender as? UIControl {
+            return control.tag
+        }
+        return nil
+    }
 }
 
 struct Device {

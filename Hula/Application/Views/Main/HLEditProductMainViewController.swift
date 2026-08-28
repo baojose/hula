@@ -87,8 +87,10 @@ class HLEditProductMainViewController: BaseViewController, ProductPictureDelegat
     }
     
     @IBAction func changeImageAction(_ sender: Any) {
-        
-        currentEditingIndex = (sender as! UIButton).tag - 1
+        guard let tag = ControlSenderPolicy.tag(from: sender) else {
+            return
+        }
+        currentEditingIndex = tag - 1
         var im : UIImage?
         switch currentEditingIndex {
         case 0:
@@ -110,7 +112,7 @@ class HLEditProductMainViewController: BaseViewController, ProductPictureDelegat
             fullScreenImage(image: im!, index: currentEditingIndex)
         } else {
             let cameraViewController = self.storyboard?.instantiateViewController(withIdentifier: "productPictureEdit") as! HLProductPictureEditViewController
-            cameraViewController.positionToReplace = (sender as! UIButton).tag
+            cameraViewController.positionToReplace = tag
             cameraViewController.prodDelegate = self
             self.present(cameraViewController, animated: true)
         }
@@ -118,13 +120,14 @@ class HLEditProductMainViewController: BaseViewController, ProductPictureDelegat
     }
     
     @IBAction func editItemAction(_ sender: Any) {
-        //let userData = HulaUser.sharedInstance
-        print((sender as! UIButton).tag)
+        guard let tag = ControlSenderPolicy.tag(from: sender) else {
+            return
+        }
         var title = "";
         var previous = "";
         var label = ""
         var item_toUpdate = "";
-        switch (sender as! UIButton).tag {
+        switch tag {
         case 0:
             // image update
             break
@@ -157,7 +160,7 @@ class HLEditProductMainViewController: BaseViewController, ProductPictureDelegat
             // nada
             break
         }
-        if ((sender as! UIButton).tag != 0 ){
+        if (tag != 0 ){
             let editViewController = self.storyboard?.instantiateViewController(withIdentifier: "productTextEditor") as! HLProductEditTextViewController
             editViewController.originalText = previous
             editViewController.label = label

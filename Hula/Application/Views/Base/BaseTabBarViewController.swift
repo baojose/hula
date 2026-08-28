@@ -89,13 +89,15 @@ class BaseTabBarViewController: UITabBarController, UITabBarControllerDelegate{
         notificationsRecieved(nil)
     }
     func tabBarController(_ tabBarController: UITabBarController, shouldSelect viewController: UIViewController) -> Bool {
-        //print("Tapp")
-        //print(tabBarController.selectedIndex)
-        if (!checkUserLogin()){
-            return false
-        } else {
+        let loggedIn = checkUserLogin()
+        let tag = TabLoginPolicy.itemTag(for: viewController, in: tabBarController.viewControllers) ?? 0
+        if TabLoginPolicy.shouldAllowTab(itemTag: tag, loggedIn: loggedIn) {
             return true
         }
+        // Protected tab while logged out: do not switch, but still present login.
+        // Returning false here used to swallow identification entirely.
+        openUserIdentification()
+        return false
     }
 
     func notificationsRecieved(_ notification: NSNotification?){
