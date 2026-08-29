@@ -17,11 +17,8 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
     @IBOutlet weak var noProductsView: UIView!
     var locationManager = CLLocationManager()
     var arrayProducts: [HulaProduct] = []
-    var arrayImagesURL = ["","","",""] as Array
     var spinner: HLSpinnerUIView!
     var last_logged_user:String = ""
-    var images_to_upload : Int = 0
-    var images_already_uploaded : Int = 0
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -285,35 +282,48 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
                 // Complete-profile "Done" re-enters here while productId may still be empty.
                 self.arrayProducts[idx] = newProduct
                 if newProduct.productId.count > 0 {
-                    updateProduct()
+                    updateProduct(for: newProduct)
                 }
                 productTableView.reloadData()
                 productTableView.setContentOffset(CGPoint(x: 0.0, y: 0.0), animated: false)
             } else if newProduct.productId.count > 0 {
                 // Known product id with no matching row: do not clobber the last inventory slot.
                 // Keep local list intact and persist via updateProduct only.
-                updateProduct()
+                updateProduct(for: newProduct)
                 productTableView.reloadData()
                 productTableView.setContentOffset(CGPoint(x: 0.0, y: 0.0), animated: false)
             } else {
-                self.arrayProducts.append(newProduct)
-                //start of uploading and saving product
-                uploadImages()
-                uploadProduct()
+                let creatingProduct = newProduct
+                let heroPhoto = ProductCreateSession.firstLocalPhoto(on: creatingProduct)
+                let progress = ProductCreateUploadProgress()
+                self.arrayProducts.append(creatingProduct)
+                // Pin POST/upload callbacks to this object; a later Add Product must not retarget IDs.
+                uploadImages(for: creatingProduct, progress: progress)
+                uploadProduct(for: creatingProduct, progress: progress)
 
                 // wait 2 seconds and open the details view
                 let when = DispatchTime.now() + 2
                 DispatchQueue.main.asyncAfter(deadline: when) {
-                    guard let firstPhoto = self.dataManager.newProduct.arrProductPhotos.firstObject as? UIImage else {
+                    let current = HLDataManager.sharedInstance.newProduct
+                    guard ProductCreateSession.shouldPresentCompleteProfile(
+                        captured: creatingProduct,
+                        current: current,
+                        alreadyPresenting: self.presentedViewController != nil
+                    ) else {
+                        return
+                    }
+                    guard let heroPhoto = heroPhoto else {
                         // No local photo to preview; keep uploadMode so a later update can still persist.
                         return
                     }
                     let viewController = self.storyboard?.instantiateViewController(withIdentifier: "completeProductProfilePage") as! HLCompleteProductProfileViewController
-                    viewController.productImage = firstPhoto
+                    viewController.productImage = heroPhoto
                     self.present(viewController, animated: true)
 
                     // next time coming to this VC, go straight to the update process
-                    HLDataManager.sharedInstance.uploadMode = false
+                    if HLDataManager.sharedInstance.newProduct === creatingProduct {
+                        HLDataManager.sharedInstance.uploadMode = false
+                    }
                 }
                 // refresh table
                 productTableView.reloadData()
@@ -372,11 +382,11 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
             spinner.hide()
         }
     }
-    func uploadProduct() {
+    func uploadProduct(for product: HulaProduct, progress: ProductCreateUploadProgress) {
         //print("Saving product...")
         if (HulaUser.sharedInstance.userId.count>0){
             let queryURL = HulaConstants.apiURL + "products/"
-            let dataString:String = updateProductDataString()
+            let dataString:String = updateProductDataString(for: product)
             //print(dataString)
             HLDataManager.sharedInstance.httpPost(urlstr: queryURL, postString: dataString, isPut: false, taskCallback: { (ok, json) in
                 if (ok){
@@ -385,20 +395,19 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
                         if let dictionary = json as? [String:Any] {
                             //print(dictionary)
                             if let product_id = dictionary["product_id"] as? String {
-                                HLDataManager.sharedInstance.newProduct.productId = product_id
+                                ProductCreateSession.applyCreatedProductId(product_id, to: product)
                                 // Images may have finished before create returned; attach them only when both sides are ready.
                                 // Also persists title/description set while create was in flight (complete-profile Done).
                                 if HLMyProductsViewController.shouldAttachUploadedImages(
-                                    productId: product_id,
-                                    imagesToUpload: self.images_to_upload,
-                                    imagesAlreadyUploaded: self.images_already_uploaded
+                                    productId: product.productId,
+                                    imagesToUpload: progress.toUpload,
+                                    imagesAlreadyUploaded: progress.uploaded
                                 ) {
-                                    self.updateProduct()
+                                    self.updateProduct(for: product)
                                 }
                             }
                         }
-                        
-                        
+
                         if (self.arrayProducts.count > 0){
                             self.noProductsView.isHidden = true
                             self.productTableView.reloadData()
@@ -411,11 +420,11 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
             })
         }
     }
-    func updateProduct() {
+    func updateProduct(for product: HulaProduct) {
         //print("Updating product...")
-        if (HLDataManager.sharedInstance.newProduct.productId.count>0){
-            let queryURL = HulaConstants.apiURL + "products/" + HLDataManager.sharedInstance.newProduct.productId
-            let dataString:String = updateProductDataString()
+        if (product.productId.count>0){
+            let queryURL = HulaConstants.apiURL + "products/" + product.productId
+            let dataString:String = updateProductDataString(for: product)
             //print(dataString)
             HLDataManager.sharedInstance.httpPost(urlstr: queryURL, postString: dataString, isPut: true, taskCallback: { (ok, json) in
                 if (ok){
@@ -423,8 +432,10 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
                         if json as? [String:Any] != nil {
                             //print(dictionary)
                         }
-                        HLDataManager.sharedInstance.uploadMode = false
-                        
+                        if HLDataManager.sharedInstance.newProduct === product {
+                            HLDataManager.sharedInstance.uploadMode = false
+                        }
+
                         if (self.arrayProducts.count > 0){
                             self.noProductsView.isHidden = true
                         }
@@ -439,34 +450,37 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
             })
         }
     }
-    
-    func updateProductDataString() -> String{
-        //print(HLDataManager.sharedInstance.newProduct.arrProductPhotoLink)
-        //print(dataManager.newProduct.arrProductPhotoLink)
-        let product_images_array = dataManager.newProduct.arrProductPhotoLink.joined(separator: ",")
+
+    class func productFormPostString(for product: HulaProduct, latitude: Double, longitude: Double) -> String {
+        let product_images_array = (product.arrProductPhotoLink ?? []).joined(separator: ",")
         // urlHostAllowed leaves &=+ unescaped and corrupts adjacent form fields.
         return CommonUtils.productFormPostString(
-            title: dataManager.newProduct.productName ?? "",
-            description: dataManager.newProduct.productDescription ?? "",
-            condition: dataManager.newProduct.productCondition ?? "",
-            categoryId: dataManager.newProduct.productCategoryId ?? "",
+            title: product.productName ?? "",
+            description: product.productDescription ?? "",
+            condition: product.productCondition ?? "",
+            categoryId: product.productCategoryId ?? "",
             imagesCSV: product_images_array,
+            latitude: latitude,
+            longitude: longitude
+        )
+    }
+
+    func updateProductDataString(for product: HulaProduct) -> String {
+        return HLMyProductsViewController.productFormPostString(
+            for: product,
             latitude: HulaUser.sharedInstance.location.coordinate.latitude,
             longitude: HulaUser.sharedInstance.location.coordinate.longitude
         )
     }
-    
-    func uploadImages() {
-        images_to_upload = 0
-        images_already_uploaded = 0
-        dataManager.newProduct.arrProductPhotoLink = ["","","",""]
-        self.arrayImagesURL = ["","","",""]
-        //print(dataManager.newProduct.arrProductPhotos)
+
+    func uploadImages(for product: HulaProduct, progress: ProductCreateUploadProgress) {
+        product.arrProductPhotoLink = ProductCreateSession.preparedPhotoSlots()
+        //print(product.arrProductPhotos)
         if (HulaUser.sharedInstance.userId.count>0){
             // user is logged in
             for i in 0 ..< 4{
-                if let image = CommonUtils.uiImage(at: i, in: dataManager.newProduct.arrProductPhotos) {
-                        images_to_upload += 1
+                if let image = CommonUtils.uiImage(at: i, in: product.arrProductPhotos) {
+                        progress.toUpload += 1
                         dataManager.uploadImage(image, itemPosition:i, taskCallback: { (ok, json) in
                             if (ok){
                                 DispatchQueue.main.async {
@@ -475,24 +489,18 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
                                             if let slot = HLMyProductsViewController.uploadSlotIndex(
                                                 from: dictionary["position"]
                                             ) {
-                                                //print(slot)
-                                                //print(filePath)
-                                                self.images_already_uploaded += 1
-                                                self.arrayImagesURL[slot] = HulaConstants.staticServerURL + filePath
-                                                HLDataManager.sharedInstance.newProduct.arrProductPhotoLink = self.arrayImagesURL
-                                                if slot == 0 {
-                                                    HLDataManager.sharedInstance.newProduct.productImage = HulaConstants.staticServerURL + filePath
-                                                }
-                                                //print(self.arrayImagesURL[slot])
+                                                progress.uploaded += 1
+                                                let url = HulaConstants.staticServerURL + filePath
+                                                _ = ProductCreateSession.applyPhotoLink(url, at: slot, to: product)
                                                 // Only PUT when create has assigned productId; otherwise uploadProduct will attach.
                                                 if HLMyProductsViewController.shouldAttachUploadedImages(
-                                                    productId: HLDataManager.sharedInstance.newProduct.productId,
-                                                    imagesToUpload: self.images_to_upload,
-                                                    imagesAlreadyUploaded: self.images_already_uploaded
+                                                    productId: product.productId,
+                                                    imagesToUpload: progress.toUpload,
+                                                    imagesAlreadyUploaded: progress.uploaded
                                                 ) {
-                                                    self.updateProduct()
+                                                    self.updateProduct(for: product)
                                                 }
-                                                self.notify("Uploaded image \(self.images_already_uploaded) of \(self.images_to_upload).")
+                                                self.notify("Uploaded image \(progress.uploaded) of \(progress.toUpload).")
                                             }
                                         }
                                     }
@@ -504,7 +512,7 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
                         });
                 }
             }
-            self.notify("Uploading \(images_to_upload) images...")
+            self.notify("Uploading \(progress.toUpload) images...")
         }
     }
     func notify(_ txt: String){

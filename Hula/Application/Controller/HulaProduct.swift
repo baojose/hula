@@ -173,3 +173,54 @@ class HulaProduct: NSObject {
         }
     }
 }
+
+/// Pins in-flight create POST/upload callbacks to the listing that started them.
+/// `HLDataManager.newProduct` is a singleton; replacing it while create is in flight
+/// must not retarget `product_id` or photo URLs onto a different object.
+struct ProductCreateSession {
+    static func firstLocalPhoto(on product: HulaProduct) -> UIImage? {
+        return CommonUtils.uiImage(at: 0, in: product.arrProductPhotos)
+    }
+
+    /// Present Complete Profile only for the captured listing, and only if nothing else is already presented.
+    static func shouldPresentCompleteProfile(captured: HulaProduct, current: HulaProduct, alreadyPresenting: Bool) -> Bool {
+        if alreadyPresenting {
+            return false
+        }
+        return captured === current
+    }
+
+    static func applyCreatedProductId(_ productId: String, to product: HulaProduct) {
+        if productId.count > 0 {
+            product.productId = productId
+        }
+    }
+
+    static func preparedPhotoSlots() -> [String] {
+        return ["", "", "", ""]
+    }
+
+    /// Writes a photo URL onto `product` (not whatever `newProduct` currently is).
+    /// Returns false if `position` is out of range for the 4-slot create array.
+    static func applyPhotoLink(_ url: String, at position: Int, to product: HulaProduct) -> Bool {
+        var links = product.arrProductPhotoLink ?? []
+        while links.count < 4 {
+            links.append("")
+        }
+        if position < 0 || position >= links.count {
+            return false
+        }
+        links[position] = url
+        product.arrProductPhotoLink = links
+        if position == 0 {
+            product.productImage = url
+        }
+        return true
+    }
+}
+
+/// Per-create upload counters so two in-flight listings cannot mix slot URLs or PUT timing.
+class ProductCreateUploadProgress {
+    var toUpload: Int = 0
+    var uploaded: Int = 0
+}
