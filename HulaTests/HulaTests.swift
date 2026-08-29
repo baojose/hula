@@ -3310,4 +3310,152 @@ class HulaTests: XCTestCase {
         control.tag = 4
         XCTAssertEqual(ControlSenderPolicy.tag(from: control), 4)
     }
+
+    // MARK: - In-flight create callbacks pin to captured listing (#133)
+
+    func testCreateCallbackDoesNotRetargetReplacementProduct() {
+        let original = HulaProduct()
+        let replacement = HulaProduct()
+        original.productName = "Camera"
+        replacement.productName = "Bike"
+
+        ProductCreateSession.applyCreatedProductId("id-original", to: original)
+
+        XCTAssertEqual(original.productId, "id-original")
+        XCTAssertEqual(replacement.productId, "")
+        XCTAssertEqual(replacement.productName, "Bike")
+    }
+
+    func testCreatePhotoCallbackWritesCapturedProductOnly() {
+        let original = HulaProduct()
+        let replacement = HulaProduct()
+        original.arrProductPhotoLink = ProductCreateSession.preparedPhotoSlots()
+        replacement.arrProductPhotoLink = ProductCreateSession.preparedPhotoSlots()
+
+        let applied = ProductCreateSession.applyPhotoLink("https://hula.trading/a.jpg", at: 0, to: original)
+
+        XCTAssertTrue(applied)
+        XCTAssertTrue(ProductCreateSession.applyPhotoLink("https://hula.trading/d.jpg", at: 3, to: original))
+        XCTAssertEqual(original.arrProductPhotoLink[0], "https://hula.trading/a.jpg")
+        XCTAssertEqual(original.arrProductPhotoLink[3], "https://hula.trading/d.jpg")
+        XCTAssertEqual(original.productImage, "https://hula.trading/a.jpg")
+        XCTAssertEqual(replacement.arrProductPhotoLink[0], "")
+        XCTAssertEqual(replacement.arrProductPhotoLink[3], "")
+        XCTAssertEqual(replacement.productImage, "")
+    }
+
+    func testCreatePhotoCallbackRejectsOutOfRangeSlot() {
+        let product = HulaProduct()
+        product.arrProductPhotoLink = ProductCreateSession.preparedPhotoSlots()
+
+        XCTAssertFalse(ProductCreateSession.applyPhotoLink("https://hula.trading/x.jpg", at: -1, to: product))
+        XCTAssertFalse(ProductCreateSession.applyPhotoLink("https://hula.trading/x.jpg", at: 4, to: product))
+        XCTAssertEqual(product.arrProductPhotoLink[0], "")
+        XCTAssertEqual(product.productImage, "")
+    }
+
+    func testCompleteProfilePresentationRequiresSameTargetAndIdleModal() {
+        let creating = HulaProduct()
+        let other = HulaProduct()
+
+        XCTAssertTrue(ProductCreateSession.shouldPresentCompleteProfile(
+            captured: creating, current: creating, alreadyPresenting: false
+        ))
+        XCTAssertFalse(ProductCreateSession.shouldPresentCompleteProfile(
+            captured: creating, current: other, alreadyPresenting: false
+        ))
+        XCTAssertFalse(ProductCreateSession.shouldPresentCompleteProfile(
+            captured: creating, current: creating, alreadyPresenting: true
+        ))
+    }
+
+    func testFirstLocalPhotoMissingDoesNotForceUnwrap() {
+        let empty = HulaProduct()
+        XCTAssertNil(ProductCreateSession.firstLocalPhoto(on: empty))
+
+        let withNull = HulaProduct()
+        withNull.arrProductPhotos.add(NSNull())
+        XCTAssertNil(ProductCreateSession.firstLocalPhoto(on: withNull))
+
+        let withPhoto = HulaProduct()
+        withPhoto.arrProductPhotos.add(UIImage())
+        XCTAssertNotNil(ProductCreateSession.firstLocalPhoto(on: withPhoto))
+    }
+
+    func testEmptyProductIdIsNotApplied() {
+        let product = HulaProduct()
+        product.productId = "keep-me"
+        ProductCreateSession.applyCreatedProductId("", to: product)
+        XCTAssertEqual(product.productId, "keep-me")
+    }
+
+    func testAttachGateUsesCapturedProductIdNotReplacement() {
+        let captured = HulaProduct()
+        captured.productId = ""
+        let replacement = HulaProduct()
+        replacement.productId = "id-replacement"
+
+        XCTAssertFalse(HLMyProductsViewController.shouldAttachUploadedImages(
+            productId: captured.productId,
+            imagesToUpload: 1,
+            imagesAlreadyUploaded: 1
+        ))
+        ProductCreateSession.applyCreatedProductId("id-captured", to: captured)
+        XCTAssertTrue(HLMyProductsViewController.shouldAttachUploadedImages(
+            productId: captured.productId,
+            imagesToUpload: 1,
+            imagesAlreadyUploaded: 1
+        ))
+        XCTAssertEqual(captured.productId, "id-captured")
+        XCTAssertEqual(replacement.productId, "id-replacement")
+    }
+
+    func testCreateUploadProgressIsIsolatedPerSession() {
+        let listingA = ProductCreateUploadProgress()
+        let listingB = ProductCreateUploadProgress()
+        listingA.toUpload = 2
+        listingA.uploaded = 2
+        listingB.toUpload = 3
+        listingB.uploaded = 1
+
+        XCTAssertTrue(HLMyProductsViewController.shouldAttachUploadedImages(
+            productId: "id-a",
+            imagesToUpload: listingA.toUpload,
+            imagesAlreadyUploaded: listingA.uploaded
+        ))
+        XCTAssertFalse(HLMyProductsViewController.shouldAttachUploadedImages(
+            productId: "id-b",
+            imagesToUpload: listingB.toUpload,
+            imagesAlreadyUploaded: listingB.uploaded
+        ))
+
+        listingB.uploaded = 3
+        XCTAssertTrue(HLMyProductsViewController.shouldAttachUploadedImages(
+            productId: "id-b",
+            imagesToUpload: listingB.toUpload,
+            imagesAlreadyUploaded: listingB.uploaded
+        ))
+        XCTAssertEqual(listingA.uploaded, 2)
+    }
+
+    func testCreateFormBodyUsesCapturedProductNotReplacement() {
+        let original = HulaProduct()
+        original.productName = "Camera & Lens"
+        original.productDescription = "mint"
+        original.arrProductPhotoLink = ["https://hula.trading/a.jpg", "", "", ""]
+        let replacement = HulaProduct()
+        replacement.productName = "Bike"
+        replacement.productDescription = "other"
+
+        let body = HLMyProductsViewController.productFormPostString(
+            for: original,
+            latitude: 1.5,
+            longitude: -2.25
+        )
+        XCTAssertTrue(body.contains("Camera"))
+        XCTAssertFalse(body.contains("Bike"))
+        XCTAssertFalse(body.contains("other"))
+        XCTAssertTrue(body.contains("lat=1.5"))
+        XCTAssertTrue(body.contains("lng=-2.25"))
+    }
 }
