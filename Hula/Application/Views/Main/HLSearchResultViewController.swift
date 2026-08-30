@@ -140,14 +140,10 @@ class HLSearchResultViewController: BaseViewController, UITableViewDataSource, U
                     let thumb = commonUtils.getThumbFor(url: user_img)
                     cell.productOwnerImage.loadImageFromURL(urlString: thumb)
                 }
-                let up = user.object(forKey: "feedback_points") as? Float
-                let uc = user.object(forKey: "feedback_count") as? Float
-                if (up != nil) && (uc != nil) && (uc != 0) {
-                    let perc_trade = round( up! / uc! * 100)
-                    cell.productTradeRate.text = "\(perc_trade)%"
-                } else {
-                    cell.productTradeRate.text = "-"
-                }
+                cell.productTradeRate.text = CommonUtils.feedbackTradeRateLabel(
+                    points: user.object(forKey: "feedback_points"),
+                    count: user.object(forKey: "feedback_count")
+                )
                 cell.productDistance.text = "(" + commonUtils.getDistanceFrom(loc: product.productLocation) + ")"
                 /*
                 if let loc = user.object(forKey: "location") as? [Float]{
@@ -229,44 +225,63 @@ class HLSearchResultViewController: BaseViewController, UITableViewDataSource, U
         }
         print(queryURL)
         HLDataManager.sharedInstance.httpGet(urlstr: queryURL, taskCallback: { (ok, json) in
-            if (ok){
-                DispatchQueue.main.async {
-                    if let dictionary = json as? [String: Any] {
-                        self.spinner.hide()
-                        print(dictionary)
-                        if let products = dictionary["products"] as? NSArray {
-                            //print(products)
-                            self.productsList = products
-                            if let ful = dictionary["found_users"] as? NSArray {
-                                self.foundUsersList = ful;
-                            } else {
-                                self.foundUsersList = [];
-                            }
+            let dictionary = json as? [String: Any]
+            let ui = BlockingNetworkLoadUI.outcome(ok: ok, payloadUsable: dictionary != nil)
+            DispatchQueue.main.async {
+                if ui.hideSpinner {
+                    self.spinner.hide()
+                }
+                if ui.applyPayload, let dictionary = dictionary {
+                    print(dictionary)
+                    if let products = dictionary["products"] as? NSArray {
+                        self.productsList = products
+                        if let ful = dictionary["found_users"] as? NSArray {
+                            self.foundUsersList = ful;
+                        } else {
+                            self.foundUsersList = [];
                         }
-                        if let users = dictionary["users"] as? NSDictionary {
-                            //print(products)
-                            self.usersList = users 
-                        }
-                        
                     }
-                    self.getFilteredList()
-                    self.productsTableView.reloadData()
-                    if (self.filteredList.count == 0){
-                        self.productsTableView.isHidden = true
-                    } else {
-                        self.productsTableView.isHidden = false
+                    if let users = dictionary["users"] as? NSDictionary {
+                        self.usersList = users
                     }
                 }
-            } else {
-                // connection error
-                print("Connection error")
+                self.getFilteredList()
+                self.productsTableView.reloadData()
+                if (self.filteredList.count == 0){
+                    self.productsTableView.isHidden = true
+                } else {
+                    self.productsTableView.isHidden = false
+                }
             }
         })
     }
     
+    /// Reputation filter: `minimumPercent == 0` means "All". Otherwise require
+    /// seller `feedback_points / feedback_count * 100 >= minimumPercent`.
+    /// Uses floatFromJSON so whole-number JSON (Int/NSNumber) still counts.
+    class func sellerMeetsReputation(_ user: NSDictionary?, minimumPercent: Int) -> Bool {
+        if minimumPercent <= 0 {
+            return true
+        }
+        guard let user = user else {
+            return false
+        }
+        guard let up = CommonUtils.floatFromJSON(user.object(forKey: "feedback_points")),
+              let uc = CommonUtils.floatFromJSON(user.object(forKey: "feedback_count")),
+              uc != 0 else {
+            return false
+        }
+        let perc = Int(round(up / uc * 100))
+        return perc >= minimumPercent
+    }
+
     func getFilteredList(){
         filteredList = []
-        for prod in (productsList as? [NSDictionary])!{
+        guard let products = productsList as? [NSDictionary] else {
+            productsTableView.reloadData()
+            return
+        }
+        for prod in products {
             let hprod = HulaProduct()
             var isValidCond = false
             var isValidDist = false
@@ -278,10 +293,8 @@ class HLSearchResultViewController: BaseViewController, UITableViewDataSource, U
                 isValidCond = true
             }
             
-            
-            if filterReputation == 0 {
-                isValidRep = true
-            }
+            let seller = usersList.object(forKey: hprod.productOwner) as? NSDictionary
+            isValidRep = HLSearchResultViewController.sellerMeetsReputation(seller, minimumPercent: filterReputation)
             
             
             if filterDistance == 0.0 || commonUtils.getCGDistanceFrom(loc: hprod.productLocation) < filterDistance {
@@ -303,15 +316,12 @@ class HLSearchResultViewController: BaseViewController, UITableViewDataSource, U
         filteredList.sort { $0.distance < $1.distance  }
         print(filteredList)
         
-        for us in (foundUsersList as? [NSDictionary])!{
-            let hprod = HulaProduct()
-            hprod.productName = String(NSLocalizedString("User", comment: "")) + ": " + (us["name"] as! String)
-                + "\n(" + (us["nick"] as! String) + ")";
-            hprod.productDescription = us["nick"] as! String;
-            hprod.productImage = us["image"] as! String;
-            hprod.productId = us["_id"] as! String;
-            hprod.productCategoryId = "xx_user";
-            filteredList.append(hprod)
+        if let users = foundUsersList as? [NSDictionary] {
+            for us in users {
+                if let hprod = CommonUtils.searchUserProduct(from: us) {
+                    filteredList.append(hprod)
+                }
+            }
         }
         
         
