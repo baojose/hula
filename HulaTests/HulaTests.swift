@@ -3458,4 +3458,192 @@ class HulaTests: XCTestCase {
         XCTAssertTrue(body.contains("lat=1.5"))
         XCTAssertTrue(body.contains("lng=-2.25"))
     }
+
+    // MARK: - Offer / live_barter / start-trade safety
+
+    func testStringArrayFromJSONKeepsValidIdsWhenMixedWithNull() {
+        XCTAssertEqual(CommonUtils.stringArrayFromJSON(["a", "b"]), ["a", "b"])
+        XCTAssertEqual(CommonUtils.stringArrayFromJSON([] as [Any]), [] as [String])
+
+        let mixed: NSArray = ["keep-me", NSNull(), "also"]
+        XCTAssertEqual(CommonUtils.stringArrayFromJSON(mixed), ["keep-me", "also"])
+
+        XCTAssertNil(CommonUtils.stringArrayFromJSON(nil))
+        XCTAssertNil(CommonUtils.stringArrayFromJSON("not-an-array"))
+        XCTAssertNil(CommonUtils.stringArrayFromJSON(true))
+        XCTAssertNil(CommonUtils.stringArrayFromJSON([1, 2]))
+    }
+
+    func testNonEmptyTrimmedRejectsBlankIdentifiers() {
+        XCTAssertNil(CommonUtils.nonEmptyTrimmed(nil))
+        XCTAssertNil(CommonUtils.nonEmptyTrimmed(""))
+        XCTAssertNil(CommonUtils.nonEmptyTrimmed("   "))
+        XCTAssertEqual(CommonUtils.nonEmptyTrimmed(" trade-1 "), "trade-1")
+    }
+
+    func testTradeLoadFromAppliesMixedProductIdArrays() {
+        let trade = HulaTrade()
+        trade.owner_products = ["stale-owner"]
+        trade.other_products = ["stale-other"]
+
+        let ownerMixed: NSArray = ["prod-a", NSNull(), "prod-b"]
+        trade.loadFrom(dict: [
+            "owner_products": ownerMixed,
+            "other_products": [1, 2]
+        ] as NSDictionary)
+
+        XCTAssertEqual(trade.owner_products, ["prod-a", "prod-b"])
+        XCTAssertEqual(trade.other_products, ["stale-other"])
+    }
+
+    func testTradeLoadFromAppliesMixedBidDiffs() {
+        let trade = HulaTrade()
+        let ownerDiff: NSArray = ["keep", NSNull(), "me"]
+        trade.loadFrom(dict: [
+            "bids": [
+                [
+                    "owner_diff": ownerDiff,
+                    "other_diff": [9, 8]
+                ]
+            ]
+        ] as NSDictionary)
+
+        XCTAssertEqual(trade.num_bids, 1)
+        XCTAssertEqual(trade.last_bid_diff, ["keep", "me"])
+    }
+
+    func testLiveBarterMixedProductArrayAppliesWithoutWipingIdentity() {
+        let current = seededLiveBarterTrade()
+        let mixed: NSArray = ["new-a", NSNull(), "new-b"]
+        let payload: NSDictionary = [
+            "_id": "livebarter-oid-not-the-trade",
+            "owner_products": mixed
+        ]
+        let merged = HLBarterScreenViewController.mergingLiveBarterPayload(payload, into: current)
+        XCTAssertEqual(merged.tradeId, "trade-abc")
+        XCTAssertEqual(merged.owner_id, "owner-1")
+        XCTAssertEqual(merged.other_id, "other-2")
+        XCTAssertEqual(merged.owner_products, ["new-a", "new-b"])
+        XCTAssertEqual(merged.other_products, ["prod-other"])
+    }
+
+    func testLiveBarterUnparsableProductArrayKeepsCurrentIds() {
+        let current = seededLiveBarterTrade()
+        let payload: NSDictionary = [
+            "owner_products": [1, 2]
+        ]
+        let merged = HLBarterScreenViewController.mergingLiveBarterPayload(payload, into: current)
+        XCTAssertEqual(merged.owner_products, ["prod-owner"])
+        XCTAssertEqual(merged.other_products, ["prod-other"])
+    }
+
+    func testOfferPathsRejectBlankTradeIdAndEncodeProductIds() {
+        XCTAssertNil(HLSwappViewController.sanitizedTradeId(nil))
+        XCTAssertNil(HLSwappViewController.sanitizedTradeId(""))
+        XCTAssertNil(HLSwappViewController.sanitizedTradeId("   "))
+        XCTAssertEqual(HLSwappViewController.sanitizedTradeId(" trade-1 "), "trade-1")
+        XCTAssertEqual(
+            HLSwappViewController.offerReadyURL(apiBase: "https://hula.trading/api/", tradeId: "t1"),
+            "https://hula.trading/api/trades/t1/ready"
+        )
+        XCTAssertEqual(
+            HLSwappViewController.offerUpdateURL(apiBase: "https://hula.trading/api/", tradeId: "t1"),
+            "https://hula.trading/api/trades/t1"
+        )
+
+        let body = HLSwappViewController.offerPostString(
+            status: HulaConstants.sent_status,
+            ownerProducts: ["id&1", "id=2"],
+            otherProducts: ["id+3"],
+            ownerMoney: 10.9,
+            otherMoney: 0,
+            accepted: false
+        )
+        XCTAssertEqual(body.components(separatedBy: "&").count, 6)
+        XCTAssertTrue(body.contains("owner_products=id%261,id%3D2"))
+        XCTAssertTrue(body.contains("other_products=id%2B3"))
+        XCTAssertTrue(body.contains("owner_money=10"))
+        XCTAssertTrue(body.contains("other_money=0"))
+        XCTAssertTrue(body.contains("accepted=false"))
+        XCTAssertFalse(body.contains("id&1"))
+    }
+
+    func testLiveBarterPublishRejectsBlankTradeIdAndEncodesProductIds() {
+        XCTAssertNil(HLBarterScreenViewController.liveBarterRequestURL(
+            apiBase: "https://hula.trading/api/",
+            tradeId: nil
+        ))
+        XCTAssertNil(HLBarterScreenViewController.liveBarterRequestURL(
+            apiBase: "https://hula.trading/api/",
+            tradeId: ""
+        ))
+        XCTAssertNil(HLBarterScreenViewController.liveBarterRequestURL(
+            apiBase: "https://hula.trading/api/",
+            tradeId: "   "
+        ))
+        XCTAssertEqual(
+            HLBarterScreenViewController.liveBarterRequestURL(
+                apiBase: "https://hula.trading/api/",
+                tradeId: " t1 "
+            ),
+            "https://hula.trading/api/live_barter/t1"
+        )
+
+        let body = HLBarterScreenViewController.liveBarterPostString(
+            ownerIds: ["id&1"],
+            otherIds: ["id=2"],
+            ownerMoney: 5.5,
+            otherMoney: 1.0
+        )
+        XCTAssertEqual(body.components(separatedBy: "&").count, 4)
+        XCTAssertTrue(body.contains("owner_products=id%261"))
+        XCTAssertTrue(body.contains("other_products=id%3D2"))
+        XCTAssertTrue(body.contains("owner_money=5.5"))
+        XCTAssertTrue(body.contains("other_money=1.0"))
+    }
+
+    func testStartTradePostStringRequiresOtherIdAndEncodesDelimiters() {
+        XCTAssertNil(StartTradeUIPolicy.postString(productId: "p", otherId: nil))
+        XCTAssertNil(StartTradeUIPolicy.postString(productId: "p", otherId: ""))
+        XCTAssertNil(StartTradeUIPolicy.postString(productId: "p", otherId: "   "))
+
+        let body = StartTradeUIPolicy.postString(productId: "p&1", otherId: "u=2")
+        XCTAssertEqual(body, "product_id=p%261&other_id=u%3D2")
+
+        let seller = StartTradeUIPolicy.postString(productId: "", otherId: "seller-9")
+        XCTAssertEqual(seller, "product_id=&other_id=seller-9")
+    }
+
+    func testNestedChildViewControllersSkipMissingHierarchy() {
+        XCTAssertEqual(HLSwappViewController.nestedChildViewControllers(from: nil).count, 0)
+        XCTAssertEqual(HLSwappViewController.nestedChildViewControllers(from: UIViewController()).count, 0)
+    }
+
+    func testGestureViewTagSoftReadsMissingView() {
+        XCTAssertNil(ControlSenderPolicy.viewTag(from: nil))
+
+        let tap = UITapGestureRecognizer()
+        XCTAssertNil(ControlSenderPolicy.viewTag(from: tap))
+
+        let view = UIView()
+        view.tag = 3
+        view.addGestureRecognizer(tap)
+        XCTAssertEqual(ControlSenderPolicy.viewTag(from: tap), 3)
+    }
+
+    func testTabImagesSkipMissingCatalogAssets() {
+        XCTAssertNil(TabLoginPolicy.tabImages(from: nil))
+
+        let image = UIImage()
+        let images = TabLoginPolicy.tabImages(from: image)
+        XCTAssertNotNil(images)
+        XCTAssertEqual(images?.normal.renderingMode, .alwaysOriginal)
+    }
+
+    func testShouldTrimNavigationRootRequiresStack() {
+        XCTAssertFalse(TabLoginPolicy.shouldTrimNavigationRoot(stackCount: nil))
+        XCTAssertFalse(TabLoginPolicy.shouldTrimNavigationRoot(stackCount: 0))
+        XCTAssertFalse(TabLoginPolicy.shouldTrimNavigationRoot(stackCount: 1))
+        XCTAssertTrue(TabLoginPolicy.shouldTrimNavigationRoot(stackCount: 2))
+    }
 }
