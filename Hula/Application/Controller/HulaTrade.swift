@@ -149,11 +149,11 @@ class HulaTrade: NSObject {
         if let str_date = dict["date"] as? String, let parsed = str_date.dateFromISO8601 {
             self.date = parsed
         }
-        if (dict["owner_products"] as? [String]) != nil {
-            self.owner_products = (dict["owner_products"] as? [String])!
+        if let products = CommonUtils.stringArrayFromJSON(dict["owner_products"]) {
+            self.owner_products = products
         }
-        if (dict["other_products"] as? [String]) != nil {
-            self.other_products = (dict["other_products"] as? [String])!
+        if let products = CommonUtils.stringArrayFromJSON(dict["other_products"]) {
+            self.other_products = products
         }
         if let money = CommonUtils.floatFromJSON(dict["owner_money"]) {
             self.owner_money = money
@@ -201,12 +201,12 @@ class HulaTrade: NSObject {
             self.num_bids = bids.count
             if let last_bid = bids.last as? [String:Any]{
                 //print(last_bid)
-                if let lb_owner = last_bid["owner_diff"] as? [String]{
+                if let lb_owner = CommonUtils.stringArrayFromJSON(last_bid["owner_diff"]) {
                     for item in lb_owner {
                         self.last_bid_diff.append(item)
                     }
                 }
-                if let lb_other = last_bid["other_diff"] as? [String]{
+                if let lb_other = CommonUtils.stringArrayFromJSON(last_bid["other_diff"]) {
                     for item in lb_other {
                         self.last_bid_diff.append(item)
                     }

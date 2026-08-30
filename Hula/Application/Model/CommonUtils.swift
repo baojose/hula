@@ -460,6 +460,43 @@ extension CommonUtils {
         return nil
     }
 
+    /// Soft-parse product-id / bid-diff arrays. JSON `NSArray` with an `NSNull`
+    /// (or mixed) element fails `as? [String]` and previously dropped the whole list.
+    /// Missing or wholly non-string values return nil so callers keep stale data.
+    static func stringArrayFromJSON(_ value: Any?) -> [String]? {
+        if let strings = value as? [String] {
+            return strings
+        }
+        guard let items = value as? [Any] else {
+            return nil
+        }
+        if items.count == 0 {
+            return []
+        }
+        var result: [String] = []
+        for item in items {
+            if let s = item as? String {
+                result.append(s)
+            }
+        }
+        if result.count == 0 {
+            return nil
+        }
+        return result
+    }
+
+    /// Reject nil/blank identifiers so callers do not hit `trades//ready` or unwrap IUOs.
+    static func nonEmptyTrimmed(_ value: String?) -> String? {
+        guard let value = value else {
+            return nil
+        }
+        let trimmed = value.trimmingCharacters(in: .whitespacesAndNewlines)
+        if trimmed.characters.count == 0 {
+            return nil
+        }
+        return trimmed
+    }
+
     /// Percent-encode a single application/x-www-form-urlencoded field value.
     /// Keeps `&`/`=` as delimiters and encodes `+` so it is not decoded as a space.
     /// Note: `CharacterSet.urlHostAllowed` is NOT safe here — it leaves `&=+` unescaped.
@@ -870,6 +907,15 @@ struct StartTradeUIPolicy {
     static func shouldOpenSwapView(postSucceeded: Bool) -> Bool {
         return postSucceeded
     }
+
+    /// Seller/detail start-trade body. Missing `other_id` previously crashed via `otherId!`.
+    static func postString(productId: String, otherId: String?) -> String? {
+        guard let otherId = CommonUtils.nonEmptyTrimmed(otherId) else {
+            return nil
+        }
+        return "product_id=" + CommonUtils.formEncodedValue(productId)
+            + "&other_id=" + CommonUtils.formEncodedValue(otherId)
+    }
 }
 
 struct VideoProofUploadPolicy {
@@ -1103,6 +1149,22 @@ struct TabLoginPolicy {
         }
         return viewControllers.index(of: viewController)
     }
+
+    /// Tab-bar assets. `UIImage(named:)!` crashed launch if a catalog image was missing.
+    static func tabImages(from image: UIImage?) -> (selected: UIImage, normal: UIImage)? {
+        guard let image = image else {
+            return nil
+        }
+        return (image, image.withRenderingMode(.alwaysOriginal))
+    }
+
+    /// `viewDidAppear` used `(navigationController?.viewControllers.count)!`.
+    static func shouldTrimNavigationRoot(stackCount: Int?) -> Bool {
+        guard let stackCount = stackCount else {
+            return false
+        }
+        return stackCount > 1
+    }
 }
 
 /// Soft-read IBAction senders. Settings/filter/edit/modal used `sender as! UIButton`.
@@ -1112,6 +1174,14 @@ struct ControlSenderPolicy {
             return control.tag
         }
         return nil
+    }
+
+    /// Camera/create photo taps used `(sender.view?.tag)!`.
+    static func viewTag(from gesture: UIGestureRecognizer?) -> Int? {
+        guard let view = gesture?.view else {
+            return nil
+        }
+        return view.tag
     }
 }
 

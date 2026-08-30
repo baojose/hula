@@ -92,6 +92,47 @@ class HLSwappViewController: UIViewController {
         }
         return str_hours
     }
+
+    /// Empty/nil tradeId must not PUT `trades/` or GET `trades//ready`.
+    class func sanitizedTradeId(_ tradeId: String?) -> String? {
+        return CommonUtils.nonEmptyTrimmed(tradeId)
+    }
+
+    class func offerReadyURL(apiBase: String, tradeId: String) -> String {
+        return apiBase + "trades/\(tradeId)/ready"
+    }
+
+    class func offerUpdateURL(apiBase: String, tradeId: String) -> String {
+        return apiBase + "trades/\(tradeId)"
+    }
+
+    /// Encode product-id lists so Close Deal / Send Offer cannot split the form body.
+    class func offerPostString(
+        status: String,
+        ownerProducts: [String],
+        otherProducts: [String],
+        ownerMoney: Float,
+        otherMoney: Float,
+        accepted: Bool
+    ) -> String {
+        let ownerEncoded = CommonUtils.formEncodedValue(ownerProducts.joined(separator: ","))
+        let otherEncoded = CommonUtils.formEncodedValue(otherProducts.joined(separator: ","))
+        let acceptedTrade = accepted ? "true" : "false"
+        return "status=" + CommonUtils.formEncodedValue(status)
+            + "&owner_products=" + ownerEncoded
+            + "&other_products=" + otherEncoded
+            + "&owner_money=\(Int(ownerMoney))"
+            + "&other_money=\(Int(otherMoney))"
+            + "&accepted=" + acceptedTrade
+    }
+
+    /// Current/past toggle used `(childViewControllers.first?.childViewControllers)!`.
+    class func nestedChildViewControllers(from parent: UIViewController?) -> [UIViewController] {
+        guard let children = parent?.childViewControllers.first?.childViewControllers else {
+            return []
+        }
+        return children
+    }
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -407,8 +448,10 @@ class HLSwappViewController: UIViewController {
     }
     @IBAction func sendOfferAction(_ sender: Any) {
         if let tradeStatus = barterDelegate?.getCurrentTradeStatus() {
-            
-            self.tempTag = (sender as? UIButton)!.tag
+            guard let tag = ControlSenderPolicy.tag(from: sender) else {
+                return
+            }
+            self.tempTag = tag
             
             if (tradeStatus.owner_products.count == 0 || tradeStatus.other_products.count == 0)   {
                 manageDonationMessages(tradeStatus: tradeStatus, okStatus:"donation")
@@ -478,9 +521,11 @@ class HLSwappViewController: UIViewController {
     func executeOfferOptions(_ tradeStatus: HulaTrade, buttonTag: Int){
         
         //print("tradeStatus: \(tradeStatus)")
-        let trade_id = tradeStatus.tradeId
+        guard let tradeId = HLSwappViewController.sanitizedTradeId(tradeStatus.tradeId) else {
+            return
+        }
         let turn_id = tradeStatus.turn_user_id
-        self.trade_id_closed = trade_id!
+        self.trade_id_closed = tradeId
         if (tradeStatus.owner_id != HulaUser.sharedInstance.userId){
             self.user_id_closed = tradeStatus.owner_id
         } else {
@@ -493,25 +538,28 @@ class HLSwappViewController: UIViewController {
             print("This is not your turn!!!")
         } else {
             
-            let queryURL = HulaConstants.apiURL + "trades/\(trade_id!)/ready";
+            let queryURL = HLSwappViewController.offerReadyURL(apiBase: HulaConstants.apiURL, tradeId: tradeId)
             HLDataManager.sharedInstance.httpGet(urlstr: queryURL, taskCallback: { (ok, json) in
                 if (ok){
                     
-                    let queryURL2 = HulaConstants.apiURL + "trades/\(trade_id!)";
-                    let owner_products = tradeStatus.owner_products.joined(separator: ",")
-                    let other_products = tradeStatus.other_products.joined(separator: ",")
-                    let owner_money:Int = Int(tradeStatus.owner_money)
-                    let other_money:Int = Int(tradeStatus.other_money)
+                    let queryURL2 = HLSwappViewController.offerUpdateURL(apiBase: HulaConstants.apiURL, tradeId: tradeId)
                     var status = HulaConstants.sent_status
-                    var acceptedTrade: String = "false"
+                    var acceptedTrade = false
                     if buttonTag == self.kTagCloseDeal || buttonTag == self.kTagProductsReceived {
                         // offer sent or product received
                         status = HulaConstants.review_status
                     }
                     if buttonTag == self.kTagProductsReceived {
-                        acceptedTrade = "true"
+                        acceptedTrade = true
                     }
-                    let dataString:String = "status=\(status)&owner_products=\(owner_products)&other_products=\(other_products)&owner_money=\(owner_money)&other_money=\(other_money)&accepted=\(acceptedTrade)"
+                    let dataString = HLSwappViewController.offerPostString(
+                        status: status,
+                        ownerProducts: tradeStatus.owner_products,
+                        otherProducts: tradeStatus.other_products,
+                        ownerMoney: tradeStatus.owner_money,
+                        otherMoney: tradeStatus.other_money,
+                        accepted: acceptedTrade
+                    )
                     //print(dataString)
                     
                     
@@ -904,7 +952,7 @@ class HLSwappViewController: UIViewController {
     
     func updateTradesList(){
         HLDataManager.sharedInstance.tradeMode = self.tradeMode
-        for vc in (self.childViewControllers.first?.childViewControllers)! {
+        for vc in HLSwappViewController.nestedChildViewControllers(from: self) {
             if let db = vc as? HLDashboardViewController{
                 db.refreshCollectionViewData()
             }

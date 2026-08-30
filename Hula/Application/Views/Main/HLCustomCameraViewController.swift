@@ -143,7 +143,9 @@ class HLCustomCameraViewController: BaseViewController, UIImagePickerControllerD
     
     func selectedImageTapped(_ sender: UITapGestureRecognizer){
         //print("Touches began")
-        let tappedIndex: Int = (sender.view?.tag)!
+        guard let tappedIndex = ControlSenderPolicy.viewTag(from: sender) else {
+            return
+        }
         //print(dataManager.newProduct.arrProductPhotos)
         if (dataManager.newProduct.arrProductPhotos.count > tappedIndex){
             print(dataManager.newProduct.arrProductPhotos[tappedIndex])

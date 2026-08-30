@@ -191,7 +191,7 @@ class HLPostProductViewController: BaseViewController {
     
     func selectedImageTapped(_ sender: UITapGestureRecognizer){
         //print("Touches began")
-        guard let tappedIndex = sender.view?.tag else {
+        guard let tappedIndex = ControlSenderPolicy.viewTag(from: sender) else {
             return
         }
         

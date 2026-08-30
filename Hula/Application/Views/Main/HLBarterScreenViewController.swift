@@ -84,6 +84,21 @@ class HLBarterScreenViewController: BaseViewController {
         return fallbackTradeIds.filter { !$0.isEmpty }
     }
 
+    /// Empty tradeId must not GET/POST `live_barter/` (wipes or 404s the collection).
+    class func liveBarterRequestURL(apiBase: String, tradeId: String?) -> String? {
+        guard let tradeId = CommonUtils.nonEmptyTrimmed(tradeId) else {
+            return nil
+        }
+        return apiBase + "live_barter/" + tradeId
+    }
+
+    /// Encode product-id lists so an `&` in an id cannot split the live_barter body.
+    class func liveBarterPostString(ownerIds: [String], otherIds: [String], ownerMoney: Float, otherMoney: Float) -> String {
+        let ownerp = CommonUtils.formEncodedValue(ownerIds.joined(separator: ","))
+        let otherp = CommonUtils.formEncodedValue(otherIds.joined(separator: ","))
+        return "other_products=\(otherp)&owner_products=\(ownerp)&other_money=\(otherMoney)&owner_money=\(ownerMoney)"
+    }
+
     /// Keep known trade product IDs after a failed inventory fetch without marking them deleted
     /// (deleted stubs are stripped by generateProductArray and would empty Accept/live_barter POSTs).
     class func placeholderTradedProducts(from ids: [String]) -> [HulaProduct] {
@@ -581,7 +596,12 @@ class HLBarterScreenViewController: BaseViewController {
             return
         }
 
-        let queryURL = HulaConstants.apiURL + "live_barter/" + self.thisTrade.tradeId;
+        guard let queryURL = HLBarterScreenViewController.liveBarterRequestURL(
+            apiBase: HulaConstants.apiURL,
+            tradeId: self.thisTrade.tradeId
+        ) else {
+            return
+        }
 
         let localOwnerIds = generateProductArray(from: (thisTrade.owner_id == HulaUser.sharedInstance.userId) ? self.myTradedProducts : self.otherTradedProducts)
         let localOtherIds = generateProductArray(from: (thisTrade.owner_id == HulaUser.sharedInstance.userId) ? self.otherTradedProducts : self.myTradedProducts)
@@ -598,9 +618,12 @@ class HLBarterScreenViewController: BaseViewController {
             localProductIds: localOtherIds,
             fallbackTradeIds: thisTrade.other_products
         )
-        let ownerp = ownerIds.joined(separator:",")
-        let otherp = otherIds.joined(separator:",")
-        let postStr = "other_products=\(otherp)&owner_products=\(ownerp)&other_money=\(thisTrade.other_money)&owner_money=\(thisTrade.owner_money)";
+        let postStr = HLBarterScreenViewController.liveBarterPostString(
+            ownerIds: ownerIds,
+            otherIds: otherIds,
+            ownerMoney: thisTrade.owner_money,
+            otherMoney: thisTrade.other_money
+        )
         print(postStr)
         HLDataManager.sharedInstance.httpPost(urlstr: queryURL, postString: postStr, isPut: false, taskCallback:  { (ok, json) in
             if (ok){
@@ -616,8 +639,13 @@ class HLBarterScreenViewController: BaseViewController {
         })
     }
     func getLiveBarter(){
-        let queryURL = HulaConstants.apiURL + "live_barter/" + self.thisTrade.tradeId
-        HLDataManager.sharedInstance.httpGet(urlstr: queryURL, taskCallback: { (ok, json) in
+        guard let queryURL = HLBarterScreenViewController.liveBarterRequestURL(
+            apiBase: HulaConstants.apiURL,
+            tradeId: self.thisTrade.tradeId
+        ) else {
+            return
+        }
+        HLDataManager.sharedInstance.httpGet(urlstr: queryURL, taskCallback: { (ok, json) in}
             if (ok){
                 DispatchQueue.main.async {
                     if let dictionary = json as? NSDictionary {
@@ -658,13 +686,13 @@ class HLBarterScreenViewController: BaseViewController {
         result.other_accepted = current.other_accepted
         result.other_agree = current.other_agree
 
-        if dict.object(forKey: "owner_products") as? [String] != nil {
-            result.owner_products = incoming.owner_products
+        if let products = CommonUtils.stringArrayFromJSON(dict.object(forKey: "owner_products")) {
+            result.owner_products = products
         } else {
             result.owner_products = current.owner_products
         }
-        if dict.object(forKey: "other_products") as? [String] != nil {
-            result.other_products = incoming.other_products
+        if let products = CommonUtils.stringArrayFromJSON(dict.object(forKey: "other_products")) {
+            result.other_products = products
         } else {
             result.other_products = current.other_products
         }

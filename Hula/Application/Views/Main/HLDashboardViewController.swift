@@ -321,10 +321,10 @@ extension HLDashboardViewController: UICollectionViewDelegate, UICollectionViewD
             
             if (HulaUser.sharedInstance.userId == thisTrade.object(forKey: "other_id") as? String ){
                 // i am the other of the trade
-                if let other_products_arr = thisTrade.object(forKey: "other_products") as? [String]{
+                if let other_products_arr = CommonUtils.stringArrayFromJSON(thisTrade.object(forKey: "other_products")) {
                     drawProducts(inCell: cell, fromArr: other_products_arr, money: other_money, side: "left")
                 }
-                if let owner_products_arr = thisTrade.object(forKey: "owner_products") as? [String]{
+                if let owner_products_arr = CommonUtils.stringArrayFromJSON(thisTrade.object(forKey: "owner_products")) {
                     drawProducts(inCell: cell, fromArr: owner_products_arr, money: owner_money, side: "right")
                 }
                 
@@ -334,10 +334,10 @@ extension HLDashboardViewController: UICollectionViewDelegate, UICollectionViewD
                     cell.chatCountLabel.isHidden = false
                 }
             } else {
-                if let other_products_arr = thisTrade.object(forKey: "other_products") as? [String]{
+                if let other_products_arr = CommonUtils.stringArrayFromJSON(thisTrade.object(forKey: "other_products")) {
                     drawProducts(inCell: cell, fromArr: other_products_arr, money: other_money, side: "right")
                 }
-                if let owner_products_arr = thisTrade.object(forKey: "owner_products") as? [String]{
+                if let owner_products_arr = CommonUtils.stringArrayFromJSON(thisTrade.object(forKey: "owner_products")) {
                     drawProducts(inCell: cell, fromArr: owner_products_arr, money: owner_money, side: "left")
                 }
                 if let chat_count = CommonUtils.intFromJSON(thisTrade.object(forKey: "owner_unread")),

@@ -33,8 +33,7 @@ class BaseTabBarViewController: UITabBarController, UITabBarControllerDelegate{
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        let items : Int = (self.navigationController?.viewControllers.count)!
-        if items > 1{
+        if TabLoginPolicy.shouldTrimNavigationRoot(stackCount: self.navigationController?.viewControllers.count) {
             //print("Appear. Clearing previous vc...")
             self.navigationController?.viewControllers.remove(at: 0)
         }
@@ -43,32 +42,32 @@ class BaseTabBarViewController: UITabBarController, UITabBarControllerDelegate{
     func initTabbar(){
         
         let items = self.tabbar.items
-        if let tabItem0 = TabLoginPolicy.tabItem(at: 0, in: items) {
-            let myImage:UIImage = UIImage(named: "icon_tabbar_home_off")!
-            tabItem0.selectedImage = myImage
+        if let tabItem0 = TabLoginPolicy.tabItem(at: 0, in: items),
+           let images = TabLoginPolicy.tabImages(from: UIImage(named: "icon_tabbar_home_off")) {
+            tabItem0.selectedImage = images.selected
             tabItem0.tag = 0
-            tabItem0.image = UIImage(named:"icon_tabbar_home_off")?.withRenderingMode(.alwaysOriginal)
+            tabItem0.image = images.normal
         }
 
-        if let tabItem1 = TabLoginPolicy.tabItem(at: 1, in: items) {
-            let myImage1:UIImage = UIImage(named: "icon_tabbar_notification")!
-            tabItem1.selectedImage = myImage1
+        if let tabItem1 = TabLoginPolicy.tabItem(at: 1, in: items),
+           let images = TabLoginPolicy.tabImages(from: UIImage(named: "icon_tabbar_notification")) {
+            tabItem1.selectedImage = images.selected
             tabItem1.tag = 1
-            tabItem1.image = UIImage(named:"icon_tabbar_notification")?.withRenderingMode(.alwaysOriginal)
+            tabItem1.image = images.normal
         }
 
-        if let tabItem2 = TabLoginPolicy.tabItem(at: 2, in: items) {
-            let myImage2:UIImage = UIImage(named: "icon_tabbar_stock_off")!
-            tabItem2.selectedImage = myImage2
+        if let tabItem2 = TabLoginPolicy.tabItem(at: 2, in: items),
+           let images = TabLoginPolicy.tabImages(from: UIImage(named: "icon_tabbar_stock_off")) {
+            tabItem2.selectedImage = images.selected
             tabItem2.tag = 2
-            tabItem2.image = UIImage(named:"icon_tabbar_stock_off")?.withRenderingMode(.alwaysOriginal)
+            tabItem2.image = images.normal
         }
 
-        if let tabItem3 = TabLoginPolicy.tabItem(at: 3, in: items) {
-            let myImage3:UIImage = UIImage(named: "icon_tabbar_profile_off")!
-            tabItem3.selectedImage = myImage3
+        if let tabItem3 = TabLoginPolicy.tabItem(at: 3, in: items),
+           let images = TabLoginPolicy.tabImages(from: UIImage(named: "icon_tabbar_profile_off")) {
+            tabItem3.selectedImage = images.selected
             tabItem3.tag = 3
-            tabItem3.image = UIImage(named:"icon_tabbar_profile_off")?.withRenderingMode(.alwaysOriginal)
+            tabItem3.image = images.normal
         }
         
         self.tabbar.tintColor = HulaConstants.appMainColor

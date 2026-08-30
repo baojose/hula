@@ -344,8 +344,10 @@ extension HLSellerInfoViewController: AlertDelegate{
             if(HulaUser.sharedInstance.userId != otherId){
                 if (HulaUser.sharedInstance.userId.count>0){
                     // user is loggedin
+                    guard let dataString = StartTradeUIPolicy.postString(productId: "", otherId: otherId) else {
+                        return
+                    }
                     let queryURL = HulaConstants.apiURL + "trades/"
-                    let dataString:String = "product_id=&other_id=\(otherId!)"
                     HLDataManager.sharedInstance.httpPost(urlstr: queryURL, postString: dataString, isPut: false, taskCallback: { (ok, json) in
                         let expandOverlay = StartTradeUIPolicy.shouldExpandOverlay(postCompleted: true, postSucceeded: ok)
                         let openSwap = StartTradeUIPolicy.shouldOpenSwapView(postSucceeded: ok)
