@@ -10,39 +10,67 @@ import UIKit
 
 class HLPageControl: UIPageControl {
 
-    /*
-    // Only override draw() if you perform custom drawing.
-    // An empty implementation adversely affects performance during animation.
-    override func draw(_ rect: CGRect) {
-        // Drawing code
+    var homeIcon: UIImage?
+    var homeSelIcon: UIImage?
+    var pageCircle: UIImage?
+    var pageSelCircle: UIImage?
+
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+        applyCatalogImages()
     }
-    */
-    
-    let homeIcon: UIImage = UIImage(named: "house-sel-icon")!
-    let homeSelIcon: UIImage = UIImage(named: "home-icon")!
-    let pageCircle: UIImage = UIImage(named: "page-icon")!
-    let pageSelCircle: UIImage = UIImage(named: "page-sel-icon")!
-    
+
+    required init?(coder aDecoder: NSCoder) {
+        super.init(coder: aDecoder)
+        applyCatalogImages()
+    }
+
     override var numberOfPages: Int {
         didSet {
             updateDots()
         }
     }
-    
+
     override var currentPage: Int {
         didSet {
             updateDots()
         }
     }
-    
+
     override func awakeFromNib() {
         super.awakeFromNib()
         self.pageIndicatorTintColor = UIColor.clear
         self.currentPageIndicatorTintColor = UIColor.clear
         self.clipsToBounds = false
+        applyCatalogImages()
     }
-    
+
+    func applyCatalogImages() {
+        guard let images = PageControlPolicy.catalogImages(
+            home: UIImage(named: "house-sel-icon"),
+            homeSelected: UIImage(named: "home-icon"),
+            page: UIImage(named: "page-icon"),
+            pageSelected: UIImage(named: "page-sel-icon")
+        ) else {
+            homeIcon = nil
+            homeSelIcon = nil
+            pageCircle = nil
+            pageSelCircle = nil
+            return
+        }
+        homeIcon = images.home
+        homeSelIcon = images.homeSelected
+        pageCircle = images.page
+        pageSelCircle = images.pageSelected
+    }
+
     func updateDots() {
+        guard let homeIcon = homeIcon,
+            let homeSelIcon = homeSelIcon,
+            let pageCircle = pageCircle,
+            let pageSelCircle = pageSelCircle else {
+            return
+        }
         var i = 0
         for view in self.subviews {
             var imageView = self.imageView(forSubview: view)
@@ -72,7 +100,7 @@ class HLPageControl: UIPageControl {
             i += 1
         }
     }
-    
+
     fileprivate func imageView(forSubview view: UIView) -> UIImageView? {
         var dot: UIImageView?
         if let dotImageView = view as? UIImageView {
@@ -89,4 +117,3 @@ class HLPageControl: UIPageControl {
     }
 
 }
-import UIKit

@@ -136,11 +136,13 @@ class HLEditFieldViewController: BaseViewController, UITextFieldDelegate, UIText
         geoCoder.reverseGeocodeLocation(location) {
             (placemarks, error) -> Void in
             
-            let placeArray: [CLPlacemark] = placemarks as [CLPlacemark]!
+            guard let placeArray = placemarks, placeArray.count > 0 else {
+                self.spinner.hide()
+                return
+            }
             
             // Place details
-            var placeMark: CLPlacemark!
-            placeMark = placeArray[0]
+            let placeMark = placeArray[0]
             
             // Address dictionary
             //print(placeMark.addressDictionary)
@@ -148,14 +150,15 @@ class HLEditFieldViewController: BaseViewController, UITextFieldDelegate, UIText
             let city = placeMark.addressDictionary?["City"] as? String
             let zip = placeMark.addressDictionary?["ZIP"] as? String
             
-            self.newValueTextView.text = zip!
-            self.userData.zip = zip!
-            self.userData.userLocationName = city! + ", " + country!
-            self.grayLocationLabel.text = city! + ", " + country!
+            if let zip = zip {
+                self.newValueTextView.text = zip
+                self.userData.zip = zip
+            }
+            if let locationName = ZipGeocodePolicy.reverseLocationName(city: city, country: country) {
+                self.userData.userLocationName = locationName
+                self.grayLocationLabel.text = locationName
+            }
             self.spinner.hide()
-            
-            
-            
         }
     }
     
@@ -205,13 +208,19 @@ class HLEditFieldViewController: BaseViewController, UITextFieldDelegate, UIText
     }
     
     func getLatLngForZip(zipCode: String) {
+        guard ZipGeocodePolicy.shouldGeocode(zipCode: zipCode) else {
+            return
+        }
         
         let geoCoder = CLGeocoder()
         geoCoder.geocodeAddressString(zipCode) { (places, error) in
             if let placemarks = places, let placemark = placemarks.first {
-                if let loc = placemark.locality {
-                    self.userData.userLocationName = loc + ", " + placemark.country!
-                    self.grayLocationLabel.text = loc + ", " + placemark.country!
+                if let locationName = ZipGeocodePolicy.forwardLocationName(
+                    locality: placemark.locality,
+                    country: placemark.country
+                ) {
+                    self.userData.userLocationName = locationName
+                    self.grayLocationLabel.text = locationName
                     self.userData.location = placemark.location
                 }
             }

@@ -107,8 +107,12 @@ class HLSignUpViewController: UserBaseViewController, UITextFieldDelegate  {
     }
     
     func checkUsernick(nick:String){
-        let escaped = nick.addingPercentEncoding(withAllowedCharacters: .alphanumerics)
-        let queryURL = HulaConstants.apiURL + "users/validatenick/\( escaped! )"
+        guard let queryURL = HLSignUpViewController.validateNickURL(
+            apiBase: HulaConstants.apiURL,
+            nick: nick
+        ) else {
+            return
+        }
         //print(queryURL)
         
         HLDataManager.sharedInstance.httpGet(urlstr: queryURL, taskCallback: { (ok, json) in
@@ -183,21 +187,28 @@ class HLSignUpViewController: UserBaseViewController, UITextFieldDelegate  {
     func signupDataRecieved(notification: NSNotification) {
         //print("Signup received. Closing VC")
         DispatchQueue.main.async {
-            let signupOk = notification.object as! Bool
-            //print("signupOk")
-            //print(signupOk)
-            if (signupOk){
-                let storyBoard : UIStoryboard = UIStoryboard(name: "Main", bundle:nil)
-                let nextViewController = storyBoard.instantiateViewController(withIdentifier: "welcome") as! HLWelcomeViewController
-                //self.present(nextViewController, animated:true, completion:nil)
-                //print("navigationController?.pushViewController")
-                self.navigationController?.pushViewController(nextViewController, animated: true)
-               
-            } else {
+            guard HLSignUpViewController.authNotificationSucceeded(notification.object) else {
                 self.showError(HLDataManager.sharedInstance.lastServerMessage)
+                self.view.setNeedsDisplay()
+                return
             }
+            let storyBoard : UIStoryboard = UIStoryboard(name: "Main", bundle:nil)
+            let nextViewController = storyBoard.instantiateViewController(withIdentifier: "welcome") as! HLWelcomeViewController
+            //self.present(nextViewController, animated:true, completion:nil)
+            //print("navigationController?.pushViewController")
+            self.navigationController?.pushViewController(nextViewController, animated: true)
             self.view.setNeedsDisplay()
         }
+    }
+
+    /// Signup posts a Bool success flag. Missing/wrong-type payloads must not force-cast crash.
+    class func authNotificationSucceeded(_ object: Any?) -> Bool {
+        return CommonUtils.boolFromJSON(object) ?? false
+    }
+
+    /// Empty/unencodable nick must not force-unwrap encoding or hit `users/validatenick/`.
+    class func validateNickURL(apiBase: String, nick: String?) -> String? {
+        return CommonUtils.apiResourceURL(apiBase: apiBase, path: ["users", "validatenick", nick])
     }
     @IBAction func beginEditText(_ sender: Any) {
         moveUpView()
