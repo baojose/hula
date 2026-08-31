@@ -107,8 +107,12 @@ class HLSignUpViewController: UserBaseViewController, UITextFieldDelegate  {
     }
     
     func checkUsernick(nick:String){
-        let escaped = nick.addingPercentEncoding(withAllowedCharacters: .alphanumerics)
-        let queryURL = HulaConstants.apiURL + "users/validatenick/\( escaped! )"
+        guard let queryURL = HLSignUpViewController.validateNickURL(
+            apiBase: HulaConstants.apiURL,
+            nick: nick
+        ) else {
+            return
+        }
         //print(queryURL)
         
         HLDataManager.sharedInstance.httpGet(urlstr: queryURL, taskCallback: { (ok, json) in
@@ -200,6 +204,11 @@ class HLSignUpViewController: UserBaseViewController, UITextFieldDelegate  {
     /// Signup posts a Bool success flag. Missing/wrong-type payloads must not force-cast crash.
     class func authNotificationSucceeded(_ object: Any?) -> Bool {
         return CommonUtils.boolFromJSON(object) ?? false
+    }
+
+    /// Empty/unencodable nick must not force-unwrap encoding or hit `users/validatenick/`.
+    class func validateNickURL(apiBase: String, nick: String?) -> String? {
+        return CommonUtils.apiResourceURL(apiBase: apiBase, path: ["users", "validatenick", nick])
     }
     @IBAction func beginEditText(_ sender: Any) {
         moveUpView()

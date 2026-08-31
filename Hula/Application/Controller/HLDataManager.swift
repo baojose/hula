@@ -560,6 +560,14 @@ class HLDataManager: NSObject {
         return try? JSONSerialization.jsonObject(with: data, options: [])
     }
 
+    /// Upload endpoints used `URL(string:)!`. Blank/malformed bases must skip the request.
+    class func uploadRequestURL(apiBase: String, resource: String?) -> URL? {
+        guard let urlstr = CommonUtils.apiResourceURL(apiBase: apiBase, path: ["upload", resource]) else {
+            return nil
+        }
+        return URL(string: urlstr)
+    }
+
     func httpGet(urlstr:String, taskCallback: @escaping (Bool, Any?) -> ()) {
         guard let url = URL(string: urlstr) else {
             taskCallback(false, nil)
@@ -644,8 +652,11 @@ class HLDataManager: NSObject {
         let imageData = UIImageJPEGRepresentation(image,0.7)
         
         if imageData != nil{
-            let queryURL = HulaConstants.apiURL + "upload/image"
-            var request = URLRequest(url: URL(string:queryURL)!)
+            guard let url = HLDataManager.uploadRequestURL(apiBase: HulaConstants.apiURL, resource: "image") else {
+                taskCallback(false, nil)
+                return
+            }
+            var request = URLRequest(url: url)
             let session:URLSession = URLSession.shared
             
             request.httpMethod = "POST"
@@ -698,8 +709,11 @@ class HLDataManager: NSObject {
         let videoData = NSData(contentsOfFile: videoPath)
         
         if videoData != nil{
-            let queryURL = HulaConstants.apiURL + "upload/video"
-            var request = URLRequest(url: URL(string:queryURL)!)
+            guard let url = HLDataManager.uploadRequestURL(apiBase: HulaConstants.apiURL, resource: "video") else {
+                taskCallback(false, nil)
+                return
+            }
+            var request = URLRequest(url: url)
             let session:URLSession = URLSession.shared
             
             request.httpMethod = "POST"

@@ -44,6 +44,11 @@ class HLSellerInfoViewController: BaseViewController, UITableViewDelegate, UITab
     var userFeedback: NSArray = []
     var initialTradeFrame: CGRect!
 
+    /// Empty userId must not force-unwrap or GET `users/report/`.
+    class func reportUserURL(apiBase: String, userId: String?) -> String? {
+        return CommonUtils.apiResourceURL(apiBase: apiBase, path: ["users", "report", userId])
+    }
+
     override func viewDidLoad() {
         super.viewDidLoad()
         self.initData()
@@ -297,7 +302,12 @@ class HLSellerInfoViewController: BaseViewController, UITableViewDelegate, UITab
     }
     
     func reportUser(){
-        let queryURL = HulaConstants.apiURL + "users/report/\(user.userId!)"
+        guard let queryURL = HLSellerInfoViewController.reportUserURL(
+            apiBase: HulaConstants.apiURL,
+            userId: user.userId
+        ) else {
+            return
+        }
         print(queryURL)
         HLDataManager.sharedInstance.httpGet(urlstr: queryURL, taskCallback: { (ok, json) in
             if (ok){

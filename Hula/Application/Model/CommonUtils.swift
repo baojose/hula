@@ -541,6 +541,43 @@ extension CommonUtils {
         return encoded
     }
 
+    /// Single API path segment. Rejects blank IDs and encodes `/`, `&`, `=`, `?`,
+    /// `#`, and spaces so one identifier cannot invent extra path or query parts.
+    /// `urlHostAllowed` leaves `&`/`=` unencoded; `urlPathAllowed` leaves `/`.
+    static func encodedPathSegment(_ raw: String?) -> String? {
+        guard let trimmed = nonEmptyTrimmed(raw) else {
+            return nil
+        }
+        var allowed = CharacterSet.alphanumerics
+        allowed.insert(charactersIn: "-._~")
+        guard let encoded = trimmed.addingPercentEncoding(withAllowedCharacters: allowed),
+            encoded.characters.count > 0 else {
+            return nil
+        }
+        return encoded
+    }
+
+    /// Join encoded path segments onto `apiBase`. Any blank/unencodable segment
+    /// returns nil so callers skip the request instead of hitting `trades/` or
+    /// `products/search/` (and instead of force-unwrapping `addingPercentEncoding`).
+    static func apiResourceURL(apiBase: String, path: [String?]) -> String? {
+        if path.count == 0 {
+            return nil
+        }
+        var encoded: [String] = []
+        for segment in path {
+            guard let part = encodedPathSegment(segment) else {
+                return nil
+            }
+            encoded.append(part)
+        }
+        var base = apiBase
+        if !base.hasSuffix("/") {
+            base += "/"
+        }
+        return base + encoded.joined(separator: "/")
+    }
+
     /// Soft-read a create-flow photo slot. Album/URL/NSNull entries must not crash upload.
     static func uiImage(at index: Int, in photos: NSArray?) -> UIImage? {
         guard let photos = photos, index >= 0, index < photos.count else {
@@ -593,10 +630,15 @@ extension CommonUtils {
 
     /// Form-urlencoded body for `POST /feedback`.
     static func feedbackPostString(tradeId: String, userId: String, comments: String, points: Int) -> String {
+        return feedbackPostString(tradeId: tradeId, userId: userId, comments: comments, val: "\(points)")
+    }
+
+    /// Same as the Int `val` helper, encoding the score/token so `&`/`=` cannot split the body.
+    static func feedbackPostString(tradeId: String, userId: String, comments: String, val: String) -> String {
         return "trade_id=" + formEncodedValue(tradeId)
             + "&user_id=" + formEncodedValue(userId)
             + "&comments=" + formEncodedValue(comments)
-            + "&val=\(points)"
+            + "&val=" + formEncodedValue(val)
     }
 
     /// True only when agree HTTP succeeds and the body is a JSON object (not nil/array/string).
@@ -1164,6 +1206,25 @@ struct TabLoginPolicy {
             return false
         }
         return stackCount > 1
+    }
+}
+
+/// Page-control catalog icons. Stored `UIImage(named:)!` crashed HLPageControl init
+/// if house/page assets were missing from the catalog.
+struct PageControlPolicy {
+    static func catalogImages(
+        home: UIImage?,
+        homeSelected: UIImage?,
+        page: UIImage?,
+        pageSelected: UIImage?
+    ) -> (home: UIImage, homeSelected: UIImage, page: UIImage, pageSelected: UIImage)? {
+        guard let home = home,
+            let homeSelected = homeSelected,
+            let page = page,
+            let pageSelected = pageSelected else {
+            return nil
+        }
+        return (home, homeSelected, page, pageSelected)
     }
 }
 

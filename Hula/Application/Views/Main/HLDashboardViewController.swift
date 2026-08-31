@@ -28,8 +28,16 @@ class HLDashboardViewController: BaseViewController {
     let sectionInsets = UIEdgeInsets(top: 4, left: 0, bottom: 30, right: 0)
     var lastTradeInteracted:String = ""
     var last_trade_request : Double = 0
-    
-    
+
+    /// Empty userId must not GET `users/report/`.
+    class func reportUserURL(apiBase: String, userId: String?) -> String? {
+        return CommonUtils.apiResourceURL(apiBase: apiBase, path: ["users", "report", userId])
+    }
+
+    class func tradeUpdateURL(apiBase: String, tradeId: String?) -> String? {
+        return CommonUtils.apiResourceURL(apiBase: apiBase, path: ["trades", tradeId])
+    }
+
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -179,7 +187,12 @@ class HLDashboardViewController: BaseViewController {
     }
     
     func reportUser(_ userId:String){
-        let queryURL = HulaConstants.apiURL + "users/report/\(userId)"
+        guard let queryURL = HLDashboardViewController.reportUserURL(
+            apiBase: HulaConstants.apiURL,
+            userId: userId
+        ) else {
+            return
+        }
         //print(dataString)
         HLDataManager.sharedInstance.httpGet(urlstr: queryURL, taskCallback: { (ok, json) in
             if (ok){
@@ -216,7 +229,12 @@ extension HLDashboardViewController: AlertDelegate{
         if (trigger == "cancelconfirm" && response == "ok"){
             let tradeId = lastTradeInteracted
             if (tradeId != ""){
-                let queryURL = HulaConstants.apiURL + "trades/\(tradeId)"
+                guard let queryURL = HLDashboardViewController.tradeUpdateURL(
+                    apiBase: HulaConstants.apiURL,
+                    tradeId: tradeId
+                ) else {
+                    return
+                }
                 let status = HulaConstants.cancel_status
                 let dataString:String = "status=\(status)"
                 //print(dataString)

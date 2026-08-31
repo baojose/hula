@@ -16,6 +16,24 @@ class HLNotificationsViewController: BaseViewController, UITableViewDelegate, UI
     @IBOutlet weak var notificationsTable: UITableView!
     var last_logged_user:String = ""
     var timer:Timer!
+
+    /// Empty tradeId must not PUT `trades/` or GET `trades//agree`.
+    class func tradeUpdateURL(apiBase: String, tradeId: String?) -> String? {
+        return CommonUtils.apiResourceURL(apiBase: apiBase, path: ["trades", tradeId])
+    }
+
+    class func tradeAgreeURL(apiBase: String, tradeId: String?) -> String? {
+        return CommonUtils.apiResourceURL(apiBase: apiBase, path: ["trades", tradeId, "agree"])
+    }
+
+    class func notificationDeleteURL(apiBase: String, notificationId: String?) -> String? {
+        return CommonUtils.apiResourceURL(apiBase: apiBase, path: ["notifications", "delete", notificationId])
+    }
+
+    class func notificationReadURL(apiBase: String, notificationId: String?) -> String? {
+        return CommonUtils.apiResourceURL(apiBase: apiBase, path: ["notifications", notificationId])
+    }
+
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -156,7 +174,12 @@ class HLNotificationsViewController: BaseViewController, UITableViewDelegate, UI
             let tradeId = HLDataManager.sharedInstance.getTradeWith(user_id)
             if PendingOfferPolicy.shouldRunOfferAction(tradeId: tradeId) {
                 // close trade
-                let queryURL = HulaConstants.apiURL + "trades/\(tradeId)"
+                guard let queryURL = HLNotificationsViewController.tradeUpdateURL(
+                    apiBase: HulaConstants.apiURL,
+                    tradeId: tradeId
+                ) else {
+                    return
+                }
                 let status = HulaConstants.cancel_status
                 let dataString:String = "status=\(status)"
                 print(queryURL)
@@ -189,7 +212,12 @@ class HLNotificationsViewController: BaseViewController, UITableViewDelegate, UI
             print("User id \(user_id)")
             if PendingOfferPolicy.shouldRunOfferAction(tradeId: tradeId) {
                 // Agree first; only open the trade room after the server accepts.
-                let queryURL = HulaConstants.apiURL + "trades/\(tradeId)/agree";
+                guard let queryURL = HLNotificationsViewController.tradeAgreeURL(
+                    apiBase: HulaConstants.apiURL,
+                    tradeId: tradeId
+                ) else {
+                    return
+                }
                 print("queryURL \(queryURL)");
                 HLDataManager.sharedInstance.httpGet(urlstr: queryURL, taskCallback: { (ok, json) in
                     guard CommonUtils.agreeResponseSucceeded(ok: ok, json: json) else { return }
@@ -263,7 +291,12 @@ class HLNotificationsViewController: BaseViewController, UITableViewDelegate, UI
                 tableView.deleteRows(at: [indexPath], with: .fade)
              */
             if let notification_id = notification.object(forKey: "_id") as? String{
-                let queryURL = HulaConstants.apiURL + "notifications/delete/" + notification_id
+                guard let queryURL = HLNotificationsViewController.notificationDeleteURL(
+                    apiBase: HulaConstants.apiURL,
+                    notificationId: notification_id
+                ) else {
+                    return
+                }
                 HLDataManager.sharedInstance.httpGet(urlstr: queryURL, taskCallback: { (ok, json) in
                     //print(ok)
                     if (ok){
@@ -282,7 +315,12 @@ class HLNotificationsViewController: BaseViewController, UITableViewDelegate, UI
     }
     
     func markAsReadNotification(_ notification_id:String){
-        let queryURL = HulaConstants.apiURL + "notifications/" + notification_id
+        guard let queryURL = HLNotificationsViewController.notificationReadURL(
+            apiBase: HulaConstants.apiURL,
+            notificationId: notification_id
+        ) else {
+            return
+        }
         HLDataManager.sharedInstance.httpGet(urlstr: queryURL, taskCallback: { (ok, json) in
             //print(ok)
             if (ok){

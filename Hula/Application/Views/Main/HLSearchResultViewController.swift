@@ -29,6 +29,16 @@ class HLSearchResultViewController: BaseViewController, UITableViewDataSource, U
     var filterReputation = 0
     var filterCondition = "all"
 
+    /// Keyword search. Blank/`addingPercentEncoding` nil must not force-unwrap or hit `products/search/`.
+    class func productsSearchURL(apiBase: String, keyword: String?) -> String? {
+        return CommonUtils.apiResourceURL(apiBase: apiBase, path: ["products", "search", keyword])
+    }
+
+    /// Category listing. Missing `_id` must not hit `products/category/`.
+    class func productsCategoryURL(apiBase: String, categoryId: String?) -> String? {
+        return CommonUtils.apiResourceURL(apiBase: apiBase, path: ["products", "category", categoryId])
+    }
+
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -208,20 +218,21 @@ class HLSearchResultViewController: BaseViewController, UITableViewDataSource, U
     
     // Custom functions for ViewController
     func getSearchResults() {
-        var queryURL: String = ""
+        var queryURL: String?
         if self.searchByCategory {
-            var category_id = categoryToSearch.object(forKey: "_id") as? String
-            if (category_id == nil){
-                category_id = ""
-            }
-            queryURL = HulaConstants.apiURL + "products/category/" + category_id!
+            queryURL = HLSearchResultViewController.productsCategoryURL(
+                apiBase: HulaConstants.apiURL,
+                categoryId: categoryToSearch.object(forKey: "_id") as? String
+            )
         } else {
-            
-            let encodedKw = keywordToSearch.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)
-            //let lat = HulaUser.sharedInstance.location.coordinate.latitude;
-            //let lng = HulaUser.sharedInstance.location.coordinate.longitude;
-            queryURL = HulaConstants.apiURL + "products/search/" + encodedKw!;
-            
+            queryURL = HLSearchResultViewController.productsSearchURL(
+                apiBase: HulaConstants.apiURL,
+                keyword: keywordToSearch
+            )
+        }
+        guard let queryURL = queryURL else {
+            spinner.hide()
+            return
         }
         print(queryURL)
         HLDataManager.sharedInstance.httpGet(urlstr: queryURL, taskCallback: { (ok, json) in

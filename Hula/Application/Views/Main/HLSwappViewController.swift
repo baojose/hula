@@ -98,12 +98,12 @@ class HLSwappViewController: UIViewController {
         return CommonUtils.nonEmptyTrimmed(tradeId)
     }
 
-    class func offerReadyURL(apiBase: String, tradeId: String) -> String {
-        return apiBase + "trades/\(tradeId)/ready"
+    class func offerReadyURL(apiBase: String, tradeId: String) -> String? {
+        return CommonUtils.apiResourceURL(apiBase: apiBase, path: ["trades", tradeId, "ready"])
     }
 
-    class func offerUpdateURL(apiBase: String, tradeId: String) -> String {
-        return apiBase + "trades/\(tradeId)"
+    class func offerUpdateURL(apiBase: String, tradeId: String) -> String? {
+        return CommonUtils.apiResourceURL(apiBase: apiBase, path: ["trades", tradeId])
     }
 
     /// Encode product-id lists so Close Deal / Send Offer cannot split the form body.
@@ -538,11 +538,15 @@ class HLSwappViewController: UIViewController {
             print("This is not your turn!!!")
         } else {
             
-            let queryURL = HLSwappViewController.offerReadyURL(apiBase: HulaConstants.apiURL, tradeId: tradeId)
+            guard let queryURL = HLSwappViewController.offerReadyURL(apiBase: HulaConstants.apiURL, tradeId: tradeId) else {
+                return
+            }
             HLDataManager.sharedInstance.httpGet(urlstr: queryURL, taskCallback: { (ok, json) in
                 if (ok){
                     
-                    let queryURL2 = HLSwappViewController.offerUpdateURL(apiBase: HulaConstants.apiURL, tradeId: tradeId)
+                    guard let queryURL2 = HLSwappViewController.offerUpdateURL(apiBase: HulaConstants.apiURL, tradeId: tradeId) else {
+                        return
+                    }
                     var status = HulaConstants.sent_status
                     var acceptedTrade = false
                     if buttonTag == self.kTagCloseDeal || buttonTag == self.kTagProductsReceived {
@@ -1121,9 +1125,17 @@ extension HLSwappViewController: AlertDelegate{
         print("Feedback received. \(response)")
         
         if response != "ok" && response != "cancel"{
+            guard CommonUtils.nonEmptyTrimmed(self.trade_id_closed) != nil else {
+                return
+            }
             let queryURL = HulaConstants.apiURL + "feedback"
             let comments = NSLocalizedString("Deal closed. Thank you", comment: "")
-            let dataString:String = "trade_id=\(self.trade_id_closed)&user_id=\(self.user_id_closed)&comments=\(comments)&val=\(response)"
+            let dataString = CommonUtils.feedbackPostString(
+                tradeId: self.trade_id_closed,
+                userId: self.user_id_closed,
+                comments: comments,
+                val: response
+            )
             //print(dataString)
             HLDataManager.sharedInstance.httpPost(urlstr: queryURL, postString: dataString, isPut: false, taskCallback: { (ok, json) in
                 if (ok){

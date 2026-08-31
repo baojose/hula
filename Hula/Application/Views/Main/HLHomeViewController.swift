@@ -113,6 +113,11 @@ class HLHomeViewController: BaseViewController, UIScrollViewDelegate, UITextFiel
         searchTxtField.addTarget(self, action: #selector(searchTextDidChange(_:)), for: UIControlEvents.editingChanged)
     }
 
+    /// Autocomplete path. Blank keywords and failed encoding must not force-unwrap `encodedKw!`.
+    class func autocompleteRequestURL(apiBase: String, keyword: String?) -> String? {
+        return CommonUtils.apiResourceURL(apiBase: apiBase, path: ["search", "auto", keyword])
+    }
+
     /// Soft-parse category `num_products` — missing/null/NSNumber must not crash Categories tab.
     class func categoryProductCount(from category: NSDictionary) -> Int {
         if let v = category.object(forKey: "num_products") as? Int {
@@ -474,8 +479,12 @@ class HLHomeViewController: BaseViewController, UIScrollViewDelegate, UITextFiel
     func getKeywords(_ kw:String) {
         //print("Getting keywords...")
         if (kw.count > 1){
-            let encodedKw = kw.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)
-            let queryURL = HulaConstants.apiURL + "search/auto/" + encodedKw!   
+            guard let queryURL = HLHomeViewController.autocompleteRequestURL(
+                apiBase: HulaConstants.apiURL,
+                keyword: kw
+            ) else {
+                return
+            }
             //print(queryURL)
             HLDataManager.sharedInstance.httpGet(urlstr: queryURL, taskCallback: { (ok, json) in
                 // Mutate the shared keyword array only on the main thread. URLSession

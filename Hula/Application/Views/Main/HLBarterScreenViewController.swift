@@ -86,10 +86,7 @@ class HLBarterScreenViewController: BaseViewController {
 
     /// Empty tradeId must not GET/POST `live_barter/` (wipes or 404s the collection).
     class func liveBarterRequestURL(apiBase: String, tradeId: String?) -> String? {
-        guard let tradeId = CommonUtils.nonEmptyTrimmed(tradeId) else {
-            return nil
-        }
-        return apiBase + "live_barter/" + tradeId
+        return CommonUtils.apiResourceURL(apiBase: apiBase, path: ["live_barter", tradeId])
     }
 
     /// Encode product-id lists so an `&` in an id cannot split the live_barter body.

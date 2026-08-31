@@ -43,8 +43,12 @@ class HLProductModalViewController: UIViewController, UIImagePickerControllerDel
     var currentTradeId : String = ""
     var calledFrom : Int = 0
     var isTradeAgreed : Bool = false
-    
-    
+
+    /// Empty product/trade IDs must not force-unwrap or GET `products//requestvideo/`.
+    class func requestVideoURL(apiBase: String, productId: String?, tradeId: String?) -> String? {
+        return CommonUtils.apiResourceURL(apiBase: apiBase, path: ["products", productId, "requestvideo", tradeId])
+    }
+
     override func viewDidLoad() {
         super.viewDidLoad()
 
@@ -242,7 +246,13 @@ class HLProductModalViewController: UIViewController, UIImagePickerControllerDel
                     }
                     
                     if !vreq {
-                        let queryURL = HulaConstants.apiURL + "products/\(product.productId!)/requestvideo/\(currentTradeId)"
+                        guard let queryURL = HLProductModalViewController.requestVideoURL(
+                            apiBase: HulaConstants.apiURL,
+                            productId: product.productId,
+                            tradeId: currentTradeId
+                        ) else {
+                            return
+                        }
                         HLDataManager.sharedInstance.httpGet(urlstr: queryURL, taskCallback: { (ok, json) in
                             if (ok){
                                 if let _ = json as? NSDictionary {

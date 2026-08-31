@@ -171,6 +171,11 @@ class HLProductDetailViewController: BaseViewController, UIScrollViewDelegate, U
     class func shouldOpenSellerProduct(_ product: HulaProduct) -> Bool {
         return product.productStatus != "traded"
     }
+
+    /// Empty productId must not force-unwrap or GET `products/report/`.
+    class func reportProductURL(apiBase: String, productId: String?) -> String? {
+        return CommonUtils.apiResourceURL(apiBase: apiBase, path: ["products", "report", productId])
+    }
     
     //#MARK: - TableViewDelegate
     
@@ -424,7 +429,12 @@ class HLProductDetailViewController: BaseViewController, UIScrollViewDelegate, U
     }
     
     func reportProduct(){
-        let queryURL = HulaConstants.apiURL + "products/report/\(currentProduct.productId!)"
+        guard let queryURL = HLProductDetailViewController.reportProductURL(
+            apiBase: HulaConstants.apiURL,
+            productId: currentProduct.productId
+        ) else {
+            return
+        }
         print(queryURL)
         HLDataManager.sharedInstance.httpGet(urlstr: queryURL, taskCallback: { (ok, json) in
             if (ok){
