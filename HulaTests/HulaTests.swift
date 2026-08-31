@@ -3550,6 +3550,16 @@ class HulaTests: XCTestCase {
             HLSwappViewController.offerUpdateURL(apiBase: "https://hula.trading/api/", tradeId: "t1"),
             "https://hula.trading/api/trades/t1"
         )
+        XCTAssertNil(HLSwappViewController.offerReadyURL(apiBase: "https://hula.trading/api/", tradeId: ""))
+        XCTAssertNil(HLSwappViewController.offerUpdateURL(apiBase: "https://hula.trading/api/", tradeId: "   "))
+        XCTAssertEqual(
+            HLSwappViewController.offerReadyURL(apiBase: "https://hula.trading/api/", tradeId: "t&1"),
+            "https://hula.trading/api/trades/t%261/ready"
+        )
+        XCTAssertEqual(
+            HLSwappViewController.offerUpdateURL(apiBase: "https://hula.trading/api/", tradeId: "t=1"),
+            "https://hula.trading/api/trades/t%3D1"
+        )
 
         let body = HLSwappViewController.offerPostString(
             status: HulaConstants.sent_status,
@@ -3587,6 +3597,13 @@ class HulaTests: XCTestCase {
                 tradeId: " t1 "
             ),
             "https://hula.trading/api/live_barter/t1"
+        )
+        XCTAssertEqual(
+            HLBarterScreenViewController.liveBarterRequestURL(
+                apiBase: "https://hula.trading/api/",
+                tradeId: "t&1"
+            ),
+            "https://hula.trading/api/live_barter/t%261"
         )
 
         let body = HLBarterScreenViewController.liveBarterPostString(
@@ -3645,5 +3662,252 @@ class HulaTests: XCTestCase {
         XCTAssertFalse(TabLoginPolicy.shouldTrimNavigationRoot(stackCount: 0))
         XCTAssertFalse(TabLoginPolicy.shouldTrimNavigationRoot(stackCount: 1))
         XCTAssertTrue(TabLoginPolicy.shouldTrimNavigationRoot(stackCount: 2))
+    }
+
+    // MARK: - Path-safe API URLs / page-control catalog
+
+    func testEncodedPathSegmentRejectsBlankAndEncodesReservedCharacters() {
+        XCTAssertNil(CommonUtils.encodedPathSegment(nil))
+        XCTAssertNil(CommonUtils.encodedPathSegment(""))
+        XCTAssertNil(CommonUtils.encodedPathSegment("   "))
+        XCTAssertEqual(CommonUtils.encodedPathSegment(" trade-1 "), "trade-1")
+        XCTAssertEqual(CommonUtils.encodedPathSegment("user_name.1"), "user_name.1")
+        XCTAssertEqual(CommonUtils.encodedPathSegment("a/b"), "a%2Fb")
+        XCTAssertEqual(CommonUtils.encodedPathSegment("a&b=c"), "a%26b%3Dc")
+        XCTAssertEqual(CommonUtils.encodedPathSegment("a+b"), "a%2Bb")
+        XCTAssertEqual(CommonUtils.encodedPathSegment("camera lens"), "camera%20lens")
+        XCTAssertEqual(CommonUtils.encodedPathSegment("q?x#y"), "q%3Fx%23y")
+        XCTAssertNil(CommonUtils.apiResourceURL(apiBase: "https://hula.trading/api/", path: []))
+        XCTAssertNil(CommonUtils.apiResourceURL(apiBase: "https://hula.trading/api/", path: ["trades", nil]))
+        XCTAssertEqual(
+            CommonUtils.apiResourceURL(apiBase: "https://hula.trading/api", path: ["trades", "t1", "ready"]),
+            "https://hula.trading/api/trades/t1/ready"
+        )
+    }
+
+    func testSearchAndAutocompleteURLsRejectBlankAndEncodeKeywords() {
+        XCTAssertNil(HLSearchResultViewController.productsSearchURL(
+            apiBase: "https://hula.trading/api/",
+            keyword: nil
+        ))
+        XCTAssertNil(HLSearchResultViewController.productsSearchURL(
+            apiBase: "https://hula.trading/api/",
+            keyword: "   "
+        ))
+        XCTAssertEqual(
+            HLSearchResultViewController.productsSearchURL(
+                apiBase: "https://hula.trading/api/",
+                keyword: "camera & lens"
+            ),
+            "https://hula.trading/api/products/search/camera%20%26%20lens"
+        )
+        XCTAssertNil(HLSearchResultViewController.productsCategoryURL(
+            apiBase: "https://hula.trading/api/",
+            categoryId: nil
+        ))
+        XCTAssertNil(HLSearchResultViewController.productsCategoryURL(
+            apiBase: "https://hula.trading/api/",
+            categoryId: ""
+        ))
+        XCTAssertEqual(
+            HLSearchResultViewController.productsCategoryURL(
+                apiBase: "https://hula.trading/api/",
+                categoryId: "cat-9"
+            ),
+            "https://hula.trading/api/products/category/cat-9"
+        )
+        XCTAssertNil(HLHomeViewController.autocompleteRequestURL(
+            apiBase: "https://hula.trading/api/",
+            keyword: ""
+        ))
+        XCTAssertEqual(
+            HLHomeViewController.autocompleteRequestURL(
+                apiBase: "https://hula.trading/api/",
+                keyword: "bike/part"
+            ),
+            "https://hula.trading/api/search/auto/bike%2Fpart"
+        )
+    }
+
+    func testValidateNickURLRejectsBlankAndKeepsHyphens() {
+        XCTAssertNil(HLSignUpViewController.validateNickURL(
+            apiBase: "https://hula.trading/api/",
+            nick: nil
+        ))
+        XCTAssertNil(HLSignUpViewController.validateNickURL(
+            apiBase: "https://hula.trading/api/",
+            nick: "  "
+        ))
+        XCTAssertEqual(
+            HLSignUpViewController.validateNickURL(
+                apiBase: "https://hula.trading/api/",
+                nick: "user-name"
+            ),
+            "https://hula.trading/api/users/validatenick/user-name"
+        )
+        XCTAssertEqual(
+            HLSignUpViewController.validateNickURL(
+                apiBase: "https://hula.trading/api/",
+                nick: "user name"
+            ),
+            "https://hula.trading/api/users/validatenick/user%20name"
+        )
+    }
+
+    func testReportAndRequestVideoURLsRejectBlankIdsAndEncodeDelimiters() {
+        XCTAssertNil(HLSellerInfoViewController.reportUserURL(
+            apiBase: "https://hula.trading/api/",
+            userId: nil
+        ))
+        XCTAssertNil(HLDashboardViewController.reportUserURL(
+            apiBase: "https://hula.trading/api/",
+            userId: ""
+        ))
+        XCTAssertEqual(
+            HLSellerInfoViewController.reportUserURL(
+                apiBase: "https://hula.trading/api/",
+                userId: "u&1"
+            ),
+            "https://hula.trading/api/users/report/u%261"
+        )
+        XCTAssertEqual(
+            HLDashboardViewController.reportUserURL(
+                apiBase: "https://hula.trading/api/",
+                userId: "u1"
+            ),
+            "https://hula.trading/api/users/report/u1"
+        )
+        XCTAssertNil(HLProductDetailViewController.reportProductURL(
+            apiBase: "https://hula.trading/api/",
+            productId: "   "
+        ))
+        XCTAssertEqual(
+            HLProductDetailViewController.reportProductURL(
+                apiBase: "https://hula.trading/api/",
+                productId: "p=2"
+            ),
+            "https://hula.trading/api/products/report/p%3D2"
+        )
+        XCTAssertNil(HLProductModalViewController.requestVideoURL(
+            apiBase: "https://hula.trading/api/",
+            productId: nil,
+            tradeId: "t1"
+        ))
+        XCTAssertNil(HLProductModalViewController.requestVideoURL(
+            apiBase: "https://hula.trading/api/",
+            productId: "p1",
+            tradeId: ""
+        ))
+        XCTAssertEqual(
+            HLProductModalViewController.requestVideoURL(
+                apiBase: "https://hula.trading/api/",
+                productId: "p/1",
+                tradeId: "t&2"
+            ),
+            "https://hula.trading/api/products/p%2F1/requestvideo/t%262"
+        )
+    }
+
+    func testTradeAndNotificationURLsRejectBlankIds() {
+        XCTAssertNil(HLNotificationsViewController.tradeUpdateURL(
+            apiBase: "https://hula.trading/api/",
+            tradeId: nil
+        ))
+        XCTAssertNil(HLNotificationsViewController.tradeAgreeURL(
+            apiBase: "https://hula.trading/api/",
+            tradeId: "  "
+        ))
+        XCTAssertEqual(
+            HLNotificationsViewController.tradeAgreeURL(
+                apiBase: "https://hula.trading/api/",
+                tradeId: "t&9"
+            ),
+            "https://hula.trading/api/trades/t%269/agree"
+        )
+        XCTAssertEqual(
+            HLDashboardViewController.tradeUpdateURL(
+                apiBase: "https://hula.trading/api/",
+                tradeId: "t1"
+            ),
+            "https://hula.trading/api/trades/t1"
+        )
+        XCTAssertNil(HLNotificationsViewController.notificationDeleteURL(
+            apiBase: "https://hula.trading/api/",
+            notificationId: ""
+        ))
+        XCTAssertEqual(
+            HLNotificationsViewController.notificationReadURL(
+                apiBase: "https://hula.trading/api/",
+                notificationId: "n/1"
+            ),
+            "https://hula.trading/api/notifications/n%2F1"
+        )
+        XCTAssertEqual(
+            HLNotificationsViewController.notificationDeleteURL(
+                apiBase: "https://hula.trading/api/",
+                notificationId: "n1"
+            ),
+            "https://hula.trading/api/notifications/delete/n1"
+        )
+    }
+
+    func testUploadRequestURLRejectsBlankResource() {
+        XCTAssertNil(HLDataManager.uploadRequestURL(apiBase: "https://hula.trading/api/", resource: nil))
+        XCTAssertNil(HLDataManager.uploadRequestURL(apiBase: "https://hula.trading/api/", resource: ""))
+        XCTAssertEqual(
+            HLDataManager.uploadRequestURL(apiBase: "https://hula.trading/api/", resource: "image")?.absoluteString,
+            "https://hula.trading/api/upload/image"
+        )
+        XCTAssertEqual(
+            HLDataManager.uploadRequestURL(apiBase: "https://hula.trading/api/", resource: "video")?.absoluteString,
+            "https://hula.trading/api/upload/video"
+        )
+    }
+
+    func testFeedbackPostStringEncodesStringValDelimiters() {
+        let body = CommonUtils.feedbackPostString(
+            tradeId: "t1",
+            userId: "u1",
+            comments: "thanks&more",
+            val: "3=stars"
+        )
+        XCTAssertEqual(body.components(separatedBy: "&").count, 4)
+        XCTAssertTrue(body.contains("comments=thanks%26more"))
+        XCTAssertTrue(body.contains("val=3%3Dstars"))
+        XCTAssertFalse(body.contains("val=3=stars"))
+    }
+
+    func testPageControlCatalogImagesRequireAllFourAssets() {
+        XCTAssertNil(PageControlPolicy.catalogImages(
+            home: nil,
+            homeSelected: UIImage(),
+            page: UIImage(),
+            pageSelected: UIImage()
+        ))
+        XCTAssertNil(PageControlPolicy.catalogImages(
+            home: UIImage(),
+            homeSelected: nil,
+            page: UIImage(),
+            pageSelected: UIImage()
+        ))
+        XCTAssertNil(PageControlPolicy.catalogImages(
+            home: UIImage(),
+            homeSelected: UIImage(),
+            page: nil,
+            pageSelected: UIImage()
+        ))
+        XCTAssertNil(PageControlPolicy.catalogImages(
+            home: UIImage(),
+            homeSelected: UIImage(),
+            page: UIImage(),
+            pageSelected: nil
+        ))
+        let images = PageControlPolicy.catalogImages(
+            home: UIImage(),
+            homeSelected: UIImage(),
+            page: UIImage(),
+            pageSelected: UIImage()
+        )
+        XCTAssertNotNil(images)
     }
 }
