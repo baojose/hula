@@ -1707,6 +1707,10 @@ class HulaTests: XCTestCase {
             ChatViewController.chatRequestURL(apiBase: "https://hula.trading/api/", tradeId: " trade-1 "),
             "https://hula.trading/api/trades/trade-1/chat"
         )
+        XCTAssertEqual(
+            ChatViewController.chatRequestURL(apiBase: "https://hula.trading/api/", tradeId: "t&1/2"),
+            "https://hula.trading/api/trades/t%261%2F2/chat"
+        )
     }
 
     func testFeedbackTradeRateLabelAcceptsBridgedIntegerScores() {
@@ -2688,6 +2692,11 @@ class HulaTests: XCTestCase {
         XCTAssertEqual(
             PasswordChangePolicy.resetPath(userId: "user-1"),
             HulaConstants.apiURL + "users/resetpass/user-1"
+        )
+        XCTAssertNil(PasswordChangePolicy.resetPath(userId: "  ", apiBase: "https://hula.trading/api/"))
+        XCTAssertEqual(
+            PasswordChangePolicy.resetPath(userId: "u&1", apiBase: "https://hula.trading/api/"),
+            "https://hula.trading/api/users/resetpass/u%261"
         )
     }
 
@@ -3909,5 +3918,151 @@ class HulaTests: XCTestCase {
             pageSelected: UIImage()
         )
         XCTAssertNotNil(images)
+    }
+
+    // MARK: - Remaining ID path encoding / nick display
+
+    func testUserAndProductImageURLsRejectBlankAndEncodeIds() {
+        XCTAssertNil(CommonUtils.userImageURL(apiBase: "https://hula.trading/api/", userId: nil))
+        XCTAssertNil(CommonUtils.userImageURL(apiBase: "https://hula.trading/api/", userId: ""))
+        XCTAssertNil(CommonUtils.userImageURL(apiBase: "https://hula.trading/api/", userId: "   "))
+        XCTAssertEqual(
+            CommonUtils.userImageURL(apiBase: "https://hula.trading/api/", userId: "u&1"),
+            "https://hula.trading/api/users/u%261/image"
+        )
+        XCTAssertEqual(
+            HLProductDetailViewController.sellerImageURL(
+                apiBase: "https://hula.trading/api/",
+                ownerId: "owner/1"
+            ),
+            "https://hula.trading/api/users/owner%2F1/image"
+        )
+        XCTAssertNil(CommonUtils.productImageURL(apiBase: "https://hula.trading/api/", productId: nil))
+        XCTAssertEqual(
+            CommonUtils.productImageURL(apiBase: "https://hula.trading/api/", productId: "p=2"),
+            "https://hula.trading/api/products/p%3D2/image"
+        )
+        XCTAssertEqual(
+            HLNotificationsViewController.userImageURL(
+                apiBase: "https://hula.trading/api/",
+                userId: "from+id"
+            ),
+            "https://hula.trading/api/users/from%2Bid/image"
+        )
+        XCTAssertEqual(
+            CommonUtils.sharedInstance.userImageURL(userId: ""),
+            ""
+        )
+        XCTAssertEqual(
+            CommonUtils.sharedInstance.productImageURL(productId: "p1"),
+            HulaConstants.apiURL + "products/p1/image"
+        )
+    }
+
+    func testProductAndUserResourceURLsRejectBlankAndEncodeIds() {
+        XCTAssertNil(HLDataManager.productURL(apiBase: "https://hula.trading/api/", productId: nil))
+        XCTAssertNil(HLDataManager.productURL(apiBase: "https://hula.trading/api/", productId: "  "))
+        XCTAssertEqual(
+            HLDataManager.productURL(apiBase: "https://hula.trading/api/", productId: "p/1"),
+            "https://hula.trading/api/products/p%2F1"
+        )
+        XCTAssertEqual(
+            HulaProduct.updateURL(apiBase: "https://hula.trading/api/", productId: "p&1"),
+            "https://hula.trading/api/products/p%261"
+        )
+        XCTAssertEqual(
+            HLPastTradeViewController.productURL(apiBase: "https://hula.trading/api/", productId: "p1"),
+            "https://hula.trading/api/products/p1"
+        )
+        XCTAssertNil(HLDataManager.userProfileURL(apiBase: "https://hula.trading/api/", userId: ""))
+        XCTAssertEqual(
+            HLDataManager.userProfileURL(apiBase: "https://hula.trading/api/", userId: "u=9"),
+            "https://hula.trading/api/users/u%3D9"
+        )
+        XCTAssertEqual(
+            HulaUser.updateURL(apiBase: "https://hula.trading/api/", userId: "u1"),
+            "https://hula.trading/api/users/u1"
+        )
+        XCTAssertNil(HulaUser.resendValidationURL(apiBase: "https://hula.trading/api/", userId: nil))
+        XCTAssertEqual(
+            HulaUser.resendValidationURL(apiBase: "https://hula.trading/api/", userId: "u/2"),
+            "https://hula.trading/api/users/resend/u%2F2"
+        )
+        XCTAssertNil(HulaTrade.resourceURL(apiBase: "https://hula.trading/api/", tradeId: ""))
+        XCTAssertEqual(
+            HulaTrade.resourceURL(apiBase: "https://hula.trading/api/", tradeId: "t&9"),
+            "https://hula.trading/api/trades/t%269"
+        )
+        XCTAssertEqual(
+            HLSellerInfoViewController.tradeUpdateURL(apiBase: "https://hula.trading/api/", tradeId: "t1"),
+            "https://hula.trading/api/trades/t1"
+        )
+        XCTAssertEqual(
+            HLSellerInfoViewController.tradeAgreeURL(apiBase: "https://hula.trading/api/", tradeId: "t=2"),
+            "https://hula.trading/api/trades/t%3D2/agree"
+        )
+    }
+
+    func testInventoryNearDeleteAndNickURLsRejectBlankAndEncodeIds() {
+        XCTAssertNil(HLMyProductsViewController.userProductsURL(
+            apiBase: "https://hula.trading/api/",
+            userId: nil
+        ))
+        XCTAssertNil(HLBarterScreenViewController.userProductsURL(
+            apiBase: "https://hula.trading/api/",
+            userId: "   "
+        ))
+        XCTAssertEqual(
+            HLMyProductsViewController.userProductsURL(
+                apiBase: "https://hula.trading/api/",
+                userId: "u&1"
+            ),
+            "https://hula.trading/api/products/user/u%261"
+        )
+        XCTAssertEqual(
+            HLHomeViewController.productsNearURL(
+                apiBase: "https://hula.trading/api/",
+                latitude: 37.5,
+                longitude: -122.25
+            ),
+            "https://hula.trading/api/products/near/37.5/-122.25"
+        )
+        XCTAssertNil(HLEditProductMainViewController.productDeleteURL(
+            apiBase: "https://hula.trading/api/",
+            productId: ""
+        ))
+        XCTAssertEqual(
+            HLEditProductMainViewController.productDeleteURL(
+                apiBase: "https://hula.trading/api/",
+                productId: "p/del"
+            ),
+            "https://hula.trading/api/products/p%2Fdel/delete"
+        )
+        XCTAssertNil(HLSwappViewController.userNickURL(
+            apiBase: "https://hula.trading/api/",
+            userId: nil
+        ))
+        XCTAssertEqual(
+            HLSwappViewController.userNickURL(
+                apiBase: "https://hula.trading/api/",
+                userId: "peer&id"
+            ),
+            "https://hula.trading/api/users/peer%26id/nick"
+        )
+    }
+
+    func testTradeWithButtonTitleSkipsMissingNickWithoutCrashing() {
+        XCTAssertEqual(CommonUtils.displayNick(nil), "")
+        XCTAssertEqual(CommonUtils.displayNick("   "), "")
+        XCTAssertEqual(CommonUtils.displayNick(" Alice "), "Alice")
+
+        let trading = CommonUtils.tradeWithButtonTitle(currentlyTrading: true, nick: "Ada")
+        XCTAssertEqual(trading, NSLocalizedString("Currently trading with", comment: "") + " Ada")
+        let idleMissing = CommonUtils.tradeWithButtonTitle(currentlyTrading: false, nick: nil)
+        XCTAssertEqual(idleMissing, NSLocalizedString("Trade with", comment: ""))
+        let idleBlank = CommonUtils.tradeWithButtonTitle(currentlyTrading: false, nick: "  ")
+        XCTAssertEqual(idleBlank, NSLocalizedString("Trade with", comment: ""))
+        let tradingBlank = CommonUtils.tradeWithButtonTitle(currentlyTrading: true, nick: "")
+        XCTAssertEqual(tradingBlank, NSLocalizedString("Currently trading with", comment: ""))
     }
 }
