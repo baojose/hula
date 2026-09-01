@@ -34,6 +34,11 @@ class HLNotificationsViewController: BaseViewController, UITableViewDelegate, UI
         return CommonUtils.apiResourceURL(apiBase: apiBase, path: ["notifications", notificationId])
     }
 
+    /// Avatar GET. Blank from_id must not hit `users//image`.
+    class func userImageURL(apiBase: String, userId: String?) -> String? {
+        return CommonUtils.userImageURL(apiBase: apiBase, userId: userId)
+    }
+
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -158,8 +163,9 @@ class HLNotificationsViewController: BaseViewController, UITableViewDelegate, UI
             fromISO: notification.object(forKey: "date") as? String,
             numericDates: false
         )
-        if let usr = notification.object(forKey: "from_id") as? String{
-            cell.NotificationImageView.loadImageFromURL(urlString: HulaConstants.apiURL + "users/\(usr)/image")
+        if let usr = notification.object(forKey: "from_id") as? String,
+           let avatarURL = HLNotificationsViewController.userImageURL(apiBase: HulaConstants.apiURL, userId: usr) {
+            cell.NotificationImageView.loadImageFromURL(urlString: avatarURL)
         }
         return cell
     }

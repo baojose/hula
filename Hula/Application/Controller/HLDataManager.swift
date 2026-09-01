@@ -506,7 +506,9 @@ class HLDataManager: NSObject {
     
     func getUserProfile(userId:String, taskCallback: @escaping (HulaUser, NSArray, NSArray) -> ()) {
         //print("Getting user info...")
-        let queryURL = HulaConstants.apiURL + "users/" + userId
+        guard let queryURL = HLDataManager.userProfileURL(apiBase: HulaConstants.apiURL, userId: userId) else {
+            return
+        }
         //print(queryURL)
         HLDataManager.sharedInstance.httpGet(urlstr: queryURL, taskCallback: { (ok, json) in
             if (ok){
@@ -537,7 +539,9 @@ class HLDataManager: NSObject {
     
     func getProduct(productId:String, taskCallback: @escaping (HulaProduct) -> ()) {
         //print("Getting user info...")
-        let queryURL = HulaConstants.apiURL + "products/" + productId
+        guard let queryURL = HLDataManager.productURL(apiBase: HulaConstants.apiURL, productId: productId) else {
+            return
+        }
         //print(queryURL)
         HLDataManager.sharedInstance.httpGet(urlstr: queryURL, taskCallback: { (ok, json) in
             if (ok){
@@ -555,6 +559,16 @@ class HLDataManager: NSObject {
     }
     
     
+    /// Product GET. Blank/unencodable productId must not hit `products/`.
+    class func productURL(apiBase: String, productId: String?) -> String? {
+        return CommonUtils.productResourceURL(apiBase: apiBase, productId: productId)
+    }
+
+    /// User profile GET. Blank/unencodable userId must not hit `users/`.
+    class func userProfileURL(apiBase: String, userId: String?) -> String? {
+        return CommonUtils.userResourceURL(apiBase: apiBase, userId: userId)
+    }
+
     /// Soft-parse a network body. HTML/empty/invalid payloads must not crash via `try!`.
     class func jsonObject(from data: Data) -> Any? {
         return try? JSONSerialization.jsonObject(with: data, options: [])

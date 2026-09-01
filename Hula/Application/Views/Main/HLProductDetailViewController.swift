@@ -114,7 +114,12 @@ class HLProductDetailViewController: BaseViewController, UIScrollViewDelegate, U
         // product owner image
         sellerLabel.attributedText = commonUtils.attributedStringWithTextSpacing(NSLocalizedString("SELLER", comment: ""), 2.33)
         commonUtils.circleImageView(sellerImageView)
-        sellerImageView.loadImageFromURL(urlString: HulaConstants.apiURL + "users/" + currentProduct.productOwner + "/image")
+        if let sellerURL = HLProductDetailViewController.sellerImageURL(
+            apiBase: HulaConstants.apiURL,
+            ownerId: currentProduct.productOwner
+        ) {
+            sellerImageView.loadImageFromURL(urlString: sellerURL)
+        }
         
         
         // user inventory
@@ -127,11 +132,17 @@ class HLProductDetailViewController: BaseViewController, UIScrollViewDelegate, U
         HLDataManager.sharedInstance.getUserProfile(userId: currentProduct.productOwner, taskCallback: {(user, prods, userfeedback) in
             self.sellerUser = user
             self.sellerFeedback = userfeedback
-            self.sellerNameLabel.text = user.userNick;
+            self.sellerNameLabel.text = CommonUtils.displayNick(user.userNick)
             if HLDataManager.sharedInstance.amITradingWith(user.userId){
-                self.tradeWithUserButton.setTitle(NSLocalizedString("Currently trading with", comment: "") + " \(user.userNick!)", for: .normal)
+                self.tradeWithUserButton.setTitle(
+                    CommonUtils.tradeWithButtonTitle(currentlyTrading: true, nick: user.userNick),
+                    for: .normal
+                )
             } else {
-                self.tradeWithUserButton.setTitle(NSLocalizedString("Trade with", comment: "") + " \(user.userNick!)", for: .normal)
+                self.tradeWithUserButton.setTitle(
+                    CommonUtils.tradeWithButtonTitle(currentlyTrading: false, nick: user.userNick),
+                    for: .normal
+                )
             }
             self.sellerFeedbackLabel.text = user.getFeedback();
             self.sellerProducts = prods
@@ -175,6 +186,11 @@ class HLProductDetailViewController: BaseViewController, UIScrollViewDelegate, U
     /// Empty productId must not force-unwrap or GET `products/report/`.
     class func reportProductURL(apiBase: String, productId: String?) -> String? {
         return CommonUtils.apiResourceURL(apiBase: apiBase, path: ["products", "report", productId])
+    }
+
+    /// Seller avatar. Blank owner id must not hit `users//image`.
+    class func sellerImageURL(apiBase: String, ownerId: String?) -> String? {
+        return CommonUtils.userImageURL(apiBase: apiBase, userId: ownerId)
     }
     
     //#MARK: - TableViewDelegate

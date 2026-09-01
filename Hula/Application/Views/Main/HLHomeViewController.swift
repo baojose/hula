@@ -118,6 +118,11 @@ class HLHomeViewController: BaseViewController, UIScrollViewDelegate, UITextFiel
         return CommonUtils.apiResourceURL(apiBase: apiBase, path: ["search", "auto", keyword])
     }
 
+    /// Home Near You. Coordinates are encoded path segments.
+    class func productsNearURL(apiBase: String, latitude: Double, longitude: Double) -> String? {
+        return CommonUtils.productsNearURL(apiBase: apiBase, latitude: latitude, longitude: longitude)
+    }
+
     /// Soft-parse category `num_products` — missing/null/NSNumber must not crash Categories tab.
     class func categoryProductCount(from category: NSDictionary) -> Int {
         if let v = category.object(forKey: "num_products") as? Int {
@@ -178,7 +183,15 @@ class HLHomeViewController: BaseViewController, UIScrollViewDelegate, UITextFiel
         var queryURL: String = ""
         let lat = HulaUser.sharedInstance.location.coordinate.latitude;
         let lng = HulaUser.sharedInstance.location.coordinate.longitude;
-        queryURL = HulaConstants.apiURL + "products/near/\(lat)/\(lng)";
+        guard let nearURL = HLHomeViewController.productsNearURL(
+            apiBase: HulaConstants.apiURL,
+            latitude: lat,
+            longitude: lng
+        ) else {
+            spinner.hide()
+            return
+        }
+        queryURL = nearURL
             
         print(queryURL)
         HLDataManager.sharedInstance.httpGet(urlstr: queryURL, taskCallback: { (ok, json) in

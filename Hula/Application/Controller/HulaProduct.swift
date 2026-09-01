@@ -107,11 +107,18 @@ class HulaProduct: NSObject {
             productLocation = locationFromJSON
         }
     }
+
+    /// Product PUT. Blank productId must not hit `products/`.
+    class func updateURL(apiBase: String, productId: String?) -> String? {
+        return CommonUtils.productResourceURL(apiBase: apiBase, productId: productId)
+    }
     
     func updateServerData(){
         //print("Updating user...")
         if(HulaUser.sharedInstance.isUserLoggedIn()){
-            let queryURL = HulaConstants.apiURL + "products/" + self.productId
+            guard let queryURL = HulaProduct.updateURL(apiBase: HulaConstants.apiURL, productId: self.productId) else {
+                return
+            }
             HLDataManager.sharedInstance.httpPost(urlstr: queryURL, postString: getPostString(), isPut: true, taskCallback: { (ok, json) in
                 
                 //print("done")

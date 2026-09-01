@@ -123,11 +123,23 @@ class HulaUser: NSObject {
         }
         return isLoggedIn
     }
+
+    /// Profile PUT. Blank userId must not hit `users/`.
+    class func updateURL(apiBase: String, userId: String?) -> String? {
+        return CommonUtils.userResourceURL(apiBase: apiBase, userId: userId)
+    }
+
+    /// Resend-validation PUT. Blank userId must not hit `users/resend/`.
+    class func resendValidationURL(apiBase: String, userId: String?) -> String? {
+        return CommonUtils.apiResourceURL(apiBase: apiBase, path: ["users", "resend", userId])
+    }
     
     func updateServerData(){
         //print("Updating user...")
         if(isUserLoggedIn()){
-            let queryURL = HulaConstants.apiURL + "users/" + self.userId
+            guard let queryURL = HulaUser.updateURL(apiBase: HulaConstants.apiURL, userId: self.userId) else {
+                return
+            }
             HLDataManager.sharedInstance.httpPost(urlstr: queryURL, postString: getPostString(), isPut: true, taskCallback: { (ok, json) in
                 
                 //print("done")
@@ -147,7 +159,9 @@ class HulaUser: NSObject {
     func resendValidationMail(){
         //print("Sending validation mail...")
         if(isUserLoggedIn()){
-            let queryURL = HulaConstants.apiURL + "users/resend/" + self.userId
+            guard let queryURL = HulaUser.resendValidationURL(apiBase: HulaConstants.apiURL, userId: self.userId) else {
+                return
+            }
             HLDataManager.sharedInstance.httpPost(urlstr: queryURL, postString: getPostString(), isPut: true, taskCallback: { (ok, json) in
                 //print("Message sent!")
                 if (ok){

@@ -220,6 +220,11 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
         return nil
     }
 
+    /// Inventory listing. Blank userId must not hit `products/user/`.
+    class func userProductsURL(apiBase: String, userId: String?) -> String? {
+        return CommonUtils.productsForUserURL(apiBase: apiBase, userId: userId)
+    }
+
     /// `products/user/{id}` must return an array. Object/error JSON must not force re-login.
     class func isProductsListPayload(_ json: Any?) -> Bool {
         return json is [Any]
@@ -344,7 +349,13 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
     func getUserProducts() {
         //print("Getting product info...")
         if (HulaUser.sharedInstance.userId.count>0){
-            let queryURL = HulaConstants.apiURL + "products/user/" + HulaUser.sharedInstance.userId
+            guard let queryURL = HLMyProductsViewController.userProductsURL(
+                apiBase: HulaConstants.apiURL,
+                userId: HulaUser.sharedInstance.userId
+            ) else {
+                spinner.hide()
+                return
+            }
             //print(queryURL)
             HLDataManager.sharedInstance.httpGet(urlstr: queryURL, taskCallback: { (ok, json) in
                 let payloadUsable = HLMyProductsViewController.isProductsListPayload(json)
@@ -423,7 +434,9 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
     func updateProduct(for product: HulaProduct) {
         //print("Updating product...")
         if (product.productId.count>0){
-            let queryURL = HulaConstants.apiURL + "products/" + product.productId
+            guard let queryURL = HulaProduct.updateURL(apiBase: HulaConstants.apiURL, productId: product.productId) else {
+                return
+            }
             let dataString:String = updateProductDataString(for: product)
             //print(dataString)
             HLDataManager.sharedInstance.httpPost(urlstr: queryURL, postString: dataString, isPut: true, taskCallback: { (ok, json) in

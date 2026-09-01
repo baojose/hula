@@ -30,6 +30,11 @@ class HLEditProductMainViewController: BaseViewController, ProductPictureDelegat
     var currentEditingIndex: Int = 0
     var image_dismissing : Bool = false
 
+    /// Product delete. Blank productId must not GET `products//delete`.
+    class func productDeleteURL(apiBase: String, productId: String?) -> String? {
+        return CommonUtils.productDeleteURL(apiBase: apiBase, productId: productId)
+    }
+
     override func viewDidLoad() {
         super.viewDidLoad()
         self.initData()
@@ -65,7 +70,13 @@ class HLEditProductMainViewController: BaseViewController, ProductPictureDelegat
             self.spinner.show(inView: self.view)
             
             
-            let queryURL = HulaConstants.apiURL + "products/" + self.product.productId + "/delete"
+            guard let queryURL = HLEditProductMainViewController.productDeleteURL(
+                apiBase: HulaConstants.apiURL,
+                productId: self.product.productId
+            ) else {
+                self.spinner.hide()
+                return
+            }
             //print(queryURL)
             HLDataManager.sharedInstance.httpGet(urlstr: queryURL, taskCallback: { (ok, json) in
                 //print(json)

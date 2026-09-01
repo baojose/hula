@@ -84,6 +84,11 @@ class HLBarterScreenViewController: BaseViewController {
         return fallbackTradeIds.filter { !$0.isEmpty }
     }
 
+    /// Inventory listing. Blank userId must not hit `products/user/`.
+    class func userProductsURL(apiBase: String, userId: String?) -> String? {
+        return CommonUtils.productsForUserURL(apiBase: apiBase, userId: userId)
+    }
+
     /// Empty tradeId must not GET/POST `live_barter/` (wipes or 404s the collection).
     class func liveBarterRequestURL(apiBase: String, tradeId: String?) -> String? {
         return CommonUtils.apiResourceURL(apiBase: apiBase, path: ["live_barter", tradeId])
@@ -907,7 +912,13 @@ class HLBarterScreenViewController: BaseViewController {
     func getUserProducts(user: String, taskCallback: @escaping (Bool, [HulaProduct]) -> ()) {
         //print("Getting user info...")
         if (HulaUser.sharedInstance.userId.count>0){
-            let queryURL = HulaConstants.apiURL + "products/user/" + user
+            guard let queryURL = HLBarterScreenViewController.userProductsURL(
+                apiBase: HulaConstants.apiURL,
+                userId: user
+            ) else {
+                taskCallback(false, [])
+                return
+            }
             //print(queryURL)
             HLDataManager.sharedInstance.httpGet(urlstr: queryURL, taskCallback: { (ok, json) in
                 // httpGet callbacks run on a URLSession queue; callers reload UICollectionViews.

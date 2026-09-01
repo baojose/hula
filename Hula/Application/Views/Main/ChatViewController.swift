@@ -98,12 +98,9 @@ class ChatViewController: UIViewController {
     */
 
     /// Chat load/send path. Empty trade_id must not hit `trades//chat`.
+    /// Reserved characters in the id must not invent extra path or query parts.
     static func chatRequestURL(apiBase: String, tradeId: String) -> String? {
-        let trimmed = tradeId.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard trimmed.count > 0 else {
-            return nil
-        }
-        return apiBase + "trades/\(trimmed)/chat"
+        return CommonUtils.tradeResourceURL(apiBase: apiBase, tradeId: tradeId, extra: ["chat"])
     }
 
     func refreshChat(forze: Bool){

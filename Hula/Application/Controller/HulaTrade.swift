@@ -107,9 +107,17 @@ class HulaTrade: NSObject {
             return viewerIsOwner ? owner_money : other_money
         }
     }
+
+    /// Trade GET/PUT. Blank tradeId must not hit `trades/`.
+    class func resourceURL(apiBase: String, tradeId: String?) -> String? {
+        return CommonUtils.tradeResourceURL(apiBase: apiBase, tradeId: tradeId)
+    }
     
     func loadTrade(tradeId:String, callback: @escaping (Bool) -> ()){
-        let queryURL = HulaConstants.apiURL + "trades/" + tradeId
+        guard let queryURL = HulaTrade.resourceURL(apiBase: HulaConstants.apiURL, tradeId: tradeId) else {
+            callback(false)
+            return
+        }
         HLDataManager.sharedInstance.httpGet(urlstr: queryURL, taskCallback: { (ok, json) in
             if (ok){
                 if let loaded_trade = json as? NSDictionary {
@@ -219,7 +227,9 @@ class HulaTrade: NSObject {
     func updateServerData(){
         //print("Updating trade...")
         if(tradeId.count > 0){
-            let queryURL = HulaConstants.apiURL + "trades/" + self.tradeId
+            guard let queryURL = HulaTrade.resourceURL(apiBase: HulaConstants.apiURL, tradeId: self.tradeId) else {
+                return
+            }
             let post_string = get_post_string();
             HLDataManager.sharedInstance.httpPost(urlstr: queryURL, postString: post_string, isPut: true, taskCallback: { (ok, json) in
                 if (ok){

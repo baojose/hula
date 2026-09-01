@@ -26,6 +26,11 @@ class HLPastTradeViewController: UIViewController, UICollectionViewDelegate, UIC
     var myTradedProducts: [HulaProduct] = []
     var otherTradedProducts: [HulaProduct] = []
     var otherUserId: String = ""
+
+    /// Product GET. Blank productId must not hit `products/`.
+    class func productURL(apiBase: String, productId: String?) -> String? {
+        return CommonUtils.productResourceURL(apiBase: apiBase, productId: productId)
+    }
     
     
     override func viewDidLoad() {
@@ -212,7 +217,13 @@ class HLPastTradeViewController: UIViewController, UICollectionViewDelegate, UIC
         //print("Getting user info...")
         if (HulaUser.sharedInstance.userId.count>0){
             let product: HulaProduct = HulaProduct()
-            let queryURL = HulaConstants.apiURL + "products/" + productId
+            guard let queryURL = HLPastTradeViewController.productURL(
+                apiBase: HulaConstants.apiURL,
+                productId: productId
+            ) else {
+                taskCallback(product)
+                return
+            }
             //print(queryURL)
             HLDataManager.sharedInstance.httpGet(urlstr: queryURL, taskCallback: { (ok, json) in
                 if (ok){

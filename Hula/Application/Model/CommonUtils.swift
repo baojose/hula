@@ -249,10 +249,10 @@ class CommonUtils: NSObject, EasyTipViewDelegate, UIGestureRecognizerDelegate {
     }
 
     func userImageURL(userId: String) -> String{
-        return HulaConstants.apiURL + "users/\(userId)/image"
+        return CommonUtils.userImageURL(apiBase: HulaConstants.apiURL, userId: userId) ?? ""
     }
     func productImageURL(productId: String) -> String{
-        return HulaConstants.apiURL + "products/\(productId)/image"
+        return CommonUtils.productImageURL(apiBase: HulaConstants.apiURL, productId: productId) ?? ""
     }
     
     func getThumbFor(url:String) -> String {
@@ -576,6 +576,72 @@ extension CommonUtils {
             base += "/"
         }
         return base + encoded.joined(separator: "/")
+    }
+
+    /// Avatar GET. Blank userId must not hit `users//image`.
+    static func userImageURL(apiBase: String, userId: String?) -> String? {
+        return apiResourceURL(apiBase: apiBase, path: ["users", userId, "image"])
+    }
+
+    /// Product image GET. Blank productId must not hit `products//image`.
+    static func productImageURL(apiBase: String, productId: String?) -> String? {
+        return apiResourceURL(apiBase: apiBase, path: ["products", productId, "image"])
+    }
+
+    /// Inventory listing. Blank userId must not hit `products/user/`.
+    static func productsForUserURL(apiBase: String, userId: String?) -> String? {
+        return apiResourceURL(apiBase: apiBase, path: ["products", "user", userId])
+    }
+
+    /// Home Near You. Coordinates are encoded as path segments so a malformed
+    /// stringified Double cannot invent extra path parts.
+    static func productsNearURL(apiBase: String, latitude: Double, longitude: Double) -> String? {
+        return apiResourceURL(apiBase: apiBase, path: ["products", "near", "\(latitude)", "\(longitude)"])
+    }
+
+    /// Product delete. Blank productId must not GET `products//delete`.
+    static func productDeleteURL(apiBase: String, productId: String?) -> String? {
+        return apiResourceURL(apiBase: apiBase, path: ["products", productId, "delete"])
+    }
+
+    /// User GET/PUT. Blank userId must not hit `users/` with a trailing slash only.
+    static func userResourceURL(apiBase: String, userId: String?, extra: [String] = []) -> String? {
+        var path: [String?] = ["users", userId]
+        for e in extra {
+            path.append(e)
+        }
+        return apiResourceURL(apiBase: apiBase, path: path)
+    }
+
+    /// Product GET/PUT. Blank productId must not hit `products/`.
+    static func productResourceURL(apiBase: String, productId: String?) -> String? {
+        return apiResourceURL(apiBase: apiBase, path: ["products", productId])
+    }
+
+    /// Trade GET/PUT. Blank tradeId must not hit `trades/`.
+    static func tradeResourceURL(apiBase: String, tradeId: String?, extra: [String] = []) -> String? {
+        var path: [String?] = ["trades", tradeId]
+        for e in extra {
+            path.append(e)
+        }
+        return apiResourceURL(apiBase: apiBase, path: path)
+    }
+
+    /// Soft-read a `String!` nick. Nil/blank IUOs must not crash `\(nick!)`.
+    static func displayNick(_ nick: String?) -> String {
+        return nonEmptyTrimmed(nick) ?? ""
+    }
+
+    /// Seller/detail start-trade button. Missing nick still yields a title.
+    static func tradeWithButtonTitle(currentlyTrading: Bool, nick: String?) -> String {
+        let prefix = currentlyTrading
+            ? NSLocalizedString("Currently trading with", comment: "")
+            : NSLocalizedString("Trade with", comment: "")
+        let name = displayNick(nick)
+        if name.characters.count == 0 {
+            return prefix
+        }
+        return prefix + " " + name
     }
 
     /// Soft-read a create-flow photo slot. Album/URL/NSNull entries must not crash upload.
@@ -1054,11 +1120,8 @@ struct PasswordChangePolicy {
             + "&new_pass=" + CommonUtils.formEncodedValue(newPassword)
     }
 
-    static func resetPath(userId: String?) -> String? {
-        guard let userId = userId, userId.count > 0 else {
-            return nil
-        }
-        return HulaConstants.apiURL + "users/resetpass/" + userId
+    static func resetPath(userId: String?, apiBase: String = HulaConstants.apiURL) -> String? {
+        return CommonUtils.apiResourceURL(apiBase: apiBase, path: ["users", "resetpass", userId])
     }
 
     static func shouldPop(httpOk: Bool, json: Any?) -> Bool {

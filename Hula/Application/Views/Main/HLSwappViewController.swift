@@ -106,6 +106,11 @@ class HLSwappViewController: UIViewController {
         return CommonUtils.apiResourceURL(apiBase: apiBase, path: ["trades", tradeId])
     }
 
+    /// Trade-room nick lookup. Blank peer id must not hit `users//nick`.
+    class func userNickURL(apiBase: String, userId: String?) -> String? {
+        return CommonUtils.userResourceURL(apiBase: apiBase, userId: userId, extra: ["nick"])
+    }
+
     /// Encode product-id lists so Close Deal / Send Offer cannot split the form body.
     class func offerPostString(
         status: String,
@@ -817,23 +822,24 @@ class HLSwappViewController: UIViewController {
                         prevUser = other_user_id
                         otherUserImage.loadImageFromURL(urlString: CommonUtils.sharedInstance.userImageURL(userId: other_user_id))
                         
-                        let queryURL = HulaConstants.apiURL + "users/\(other_user_id)/nick"
-                        HLDataManager.sharedInstance.httpGet(urlstr: queryURL, taskCallback: { (result, json) in
-                            
-                            if let dict = json as? [String:String]{
-                                //print(dict)
-                                if let nick = dict["nick"] {
-                                    //print(nick)
-                                    DispatchQueue.main.async {
-                                        if nick.count < 17 {
-                                            self.otherUserNick.text = nick
-                                        } else {
-                                            self.otherUserNick.text = String( nick.prefix(15) ) + "...";
+                        if let queryURL = HLSwappViewController.userNickURL(
+                            apiBase: HulaConstants.apiURL,
+                            userId: other_user_id
+                        ) {
+                            HLDataManager.sharedInstance.httpGet(urlstr: queryURL, taskCallback: { (result, json) in
+                                if let dict = json as? [String:String]{
+                                    if let nick = dict["nick"] {
+                                        DispatchQueue.main.async {
+                                            if nick.count < 17 {
+                                                self.otherUserNick.text = nick
+                                            } else {
+                                                self.otherUserNick.text = String( nick.prefix(15) ) + "...";
+                                            }
                                         }
                                     }
                                 }
-                            }
-                        })
+                            })
+                        }
                     }
                     
                     

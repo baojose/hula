@@ -502,38 +502,35 @@ extension HLDashboardViewController: UICollectionViewDelegate, UICollectionViewD
         }
         let verticalCenter:CGFloat = (59.0/2) - productImagesWidth/2;
         for img in fromArr {
-            if (img != ""){
-                let newImg = UIImageView()
-                if (side=="right"){
-                    newImg.frame = CGRect(x: ( CGFloat(counter) * (productImagesWidth + productImagesMargin)) + productImagesMargin*2,
-                                          y: verticalCenter,
-                                          width: productImagesWidth,
-                                          height: productImagesWidth)
-                    inCell.right_side.addSubview(newImg)
-                } else {
-                    newImg.frame = CGRect(x: inCell.left_side.frame.width - ( CGFloat(counter) * (productImagesWidth + productImagesMargin)) - (productImagesMargin) - productImagesWidth,
-                                          y: verticalCenter,
-                                          width: productImagesWidth,
-                                          height: productImagesWidth)
-                    inCell.left_side.addSubview(newImg)
-                    
-                    
-                    /*
-                    
-                    let horizontalConstraint = NSLayoutConstraint(item: newImg, attribute: NSLayoutAttribute.centerX, relatedBy: NSLayoutRelation.equal, toItem: inCell.left_side, attribute: NSLayoutAttribute.right, multiplier: 1, constant:  -( ( CGFloat(counter) * (productImagesWidth + productImagesMargin)) - (productImagesMargin) - productImagesWidth))
-                    
-                    NSLayoutConstraint.activate([horizontalConstraint])
-                    */
-                }
-                
-                let thumb = commonUtils.getThumbFor(url: HulaConstants.apiURL + "products/\(img)/image")
-                newImg.loadImageFromURL(urlString: thumb)
-                
-
-                
-                
-                counter += 1
+            guard let imageURL = CommonUtils.productImageURL(apiBase: HulaConstants.apiURL, productId: img) else {
+                continue
             }
+            let newImg = UIImageView()
+            if (side=="right"){
+                newImg.frame = CGRect(x: ( CGFloat(counter) * (productImagesWidth + productImagesMargin)) + productImagesMargin*2,
+                                      y: verticalCenter,
+                                      width: productImagesWidth,
+                                      height: productImagesWidth)
+                inCell.right_side.addSubview(newImg)
+            } else {
+                newImg.frame = CGRect(x: inCell.left_side.frame.width - ( CGFloat(counter) * (productImagesWidth + productImagesMargin)) - (productImagesMargin) - productImagesWidth,
+                                      y: verticalCenter,
+                                      width: productImagesWidth,
+                                      height: productImagesWidth)
+                inCell.left_side.addSubview(newImg)
+                
+                
+                /*
+                
+                let horizontalConstraint = NSLayoutConstraint(item: newImg, attribute: NSLayoutAttribute.centerX, relatedBy: NSLayoutRelation.equal, toItem: inCell.left_side, attribute: NSLayoutAttribute.right, multiplier: 1, constant:  -( ( CGFloat(counter) * (productImagesWidth + productImagesMargin)) - (productImagesMargin) - productImagesWidth))
+                
+                NSLayoutConstraint.activate([horizontalConstraint])
+                */
+            }
+
+            let thumb = commonUtils.getThumbFor(url: imageURL)
+            newImg.loadImageFromURL(urlString: thumb)
+            counter += 1
         }
         if money > 0 {
             let mn = UILabel()
