@@ -4065,4 +4065,162 @@ class HulaTests: XCTestCase {
         let tradingBlank = CommonUtils.tradeWithButtonTitle(currentlyTrading: true, nick: "")
         XCTAssertEqual(tradingBlank, NSLocalizedString("Currently trading with", comment: ""))
     }
+
+    // MARK: - Collection endpoints, auth form bodies, legal URLs, debug description
+
+    func testApiCollectionURLRejectsBlankAndEncodesResource() {
+        XCTAssertNil(CommonUtils.apiCollectionURL(apiBase: "https://hula.trading/api/", resource: nil))
+        XCTAssertNil(CommonUtils.apiCollectionURL(apiBase: "https://hula.trading/api/", resource: ""))
+        XCTAssertNil(CommonUtils.apiCollectionURL(apiBase: "https://hula.trading/api/", resource: "   "))
+        XCTAssertEqual(
+            CommonUtils.apiCollectionURL(apiBase: "https://hula.trading/api/", resource: "categories"),
+            "https://hula.trading/api/categories"
+        )
+        XCTAssertEqual(
+            CommonUtils.apiCollectionURL(apiBase: "https://hula.trading/api/", resource: "foo/bar"),
+            "https://hula.trading/api/foo%2Fbar"
+        )
+        XCTAssertEqual(
+            CommonUtils.apiCollectionURL(
+                apiBase: "https://hula.trading/api/",
+                resource: "products",
+                trailingSlash: true
+            ),
+            "https://hula.trading/api/products/"
+        )
+        XCTAssertEqual(
+            CommonUtils.apiCollectionURL(
+                apiBase: "https://hula.trading/api/",
+                resource: "trades",
+                trailingSlash: false
+            ),
+            "https://hula.trading/api/trades"
+        )
+    }
+
+    func testAuthAndListCollectionURLsRejectBlankBaseResource() {
+        XCTAssertEqual(
+            HLDataManager.categoriesURL(apiBase: "https://hula.trading/api/"),
+            "https://hula.trading/api/categories"
+        )
+        XCTAssertEqual(
+            HLDataManager.tradesCollectionURL(apiBase: "https://hula.trading/api/"),
+            "https://hula.trading/api/trades"
+        )
+        XCTAssertEqual(
+            HulaTrade.createURL(apiBase: "https://hula.trading/api/"),
+            "https://hula.trading/api/trades"
+        )
+        XCTAssertEqual(
+            HLDataManager.authenticateURL(apiBase: "https://hula.trading/api/"),
+            "https://hula.trading/api/authenticate"
+        )
+        XCTAssertEqual(
+            HLDataManager.facebookAuthURL(apiBase: "https://hula.trading/api/"),
+            "https://hula.trading/api/fbauth"
+        )
+        XCTAssertEqual(
+            HLDataManager.signupURL(apiBase: "https://hula.trading/api/"),
+            "https://hula.trading/api/signup"
+        )
+        XCTAssertEqual(
+            HLDataManager.notificationsURL(apiBase: "https://hula.trading/api/"),
+            "https://hula.trading/api/notifications"
+        )
+        XCTAssertEqual(
+            HLProfileViewController.meURL(apiBase: "https://hula.trading/api/"),
+            "https://hula.trading/api/me"
+        )
+        XCTAssertEqual(
+            HLSwappViewController.feedbackURL(apiBase: "https://hula.trading/api/"),
+            "https://hula.trading/api/feedback"
+        )
+        XCTAssertEqual(
+            HLFinalFeedbackViewController.feedbackURL(apiBase: "https://hula.trading/api/"),
+            "https://hula.trading/api/feedback"
+        )
+    }
+
+    func testCreateCollectionURLsKeepHistoricalTrailingSlash() {
+        XCTAssertEqual(
+            HLMyProductsViewController.productsCreateURL(apiBase: "https://hula.trading/api/"),
+            "https://hula.trading/api/products/"
+        )
+        XCTAssertEqual(
+            HLSellerInfoViewController.tradesCreateURL(apiBase: "https://hula.trading/api/"),
+            "https://hula.trading/api/trades/"
+        )
+        XCTAssertEqual(
+            HLProductDetailViewController.tradesCreateURL(apiBase: "https://hula.trading/api/"),
+            "https://hula.trading/api/trades/"
+        )
+        XCTAssertNotEqual(
+            HLSellerInfoViewController.tradesCreateURL(apiBase: "https://hula.trading/api/"),
+            HulaTrade.createURL(apiBase: "https://hula.trading/api/")
+        )
+    }
+
+    func testLoginSignupAndFacebookPostStringsEncodeDelimiters() {
+        let login = HLDataManager.loginPostString(email: "a+b@c.com", pass: "p&q=r")
+        XCTAssertEqual(login, "email=a%2Bb@c.com&pass=p%26q%3Dr")
+        XCTAssertFalse(login.contains("email=a+b"))
+        XCTAssertEqual(login.components(separatedBy: "&").count, 2)
+
+        let signup = HLDataManager.signupPostString(email: "e=mail@x.com", nick: "n&ick", pass: "p+w")
+        XCTAssertTrue(signup.contains("email=e%3Dmail@x.com"))
+        XCTAssertTrue(signup.contains("pass=p%2Bw"))
+        XCTAssertTrue(signup.contains("name=n%26ick"))
+        XCTAssertTrue(signup.contains("nick=n%26ick"))
+        XCTAssertEqual(signup.components(separatedBy: "&").count, 4)
+
+        let fb = HLDataManager.facebookAuthPostString(token: "tok&en=1+2")
+        XCTAssertEqual(fb, "fbtoken=tok%26en%3D1%2B2")
+    }
+
+    func testUserDebugDescriptionSkipsNilIdentityWithoutCrashing() {
+        let empty = HulaUser.debugDescriptionText(userId: nil, nick: nil, location: nil)
+        XCTAssertTrue(empty.contains("User id: "))
+        XCTAssertTrue(empty.contains("nick:"))
+        XCTAssertFalse(empty.contains("nil"))
+
+        let filled = HulaUser.debugDescriptionText(
+            userId: "u1",
+            nick: "Ada",
+            location: CLLocation(latitude: 1.5, longitude: -2.25)
+        )
+        XCTAssertTrue(filled.contains("User id: u1"))
+        XCTAssertTrue(filled.contains("Ada"))
+        XCTAssertTrue(filled.contains("1.5"))
+        XCTAssertTrue(filled.contains("-2.25"))
+
+        let user = HulaUser()
+        user.userId = nil
+        user.userNick = nil
+        user.location = nil
+        let rendered = user.description
+        XCTAssertTrue(rendered.contains("User id: "))
+    }
+
+    func testOpenableURLRejectsBlankAndBuildsLegalHelpLinks() {
+        XCTAssertNil(CommonUtils.openableURL(nil))
+        XCTAssertNil(CommonUtils.openableURL(""))
+        XCTAssertNil(CommonUtils.openableURL("   "))
+        XCTAssertNil(CommonUtils.openableURL("not a url"))
+        XCTAssertEqual(
+            CommonUtils.openableURL("https://hula.trading/legal.html"),
+            URL(string: "https://hula.trading/legal.html")
+        )
+        XCTAssertEqual(
+            HLSignUpViewController.legalURL(),
+            URL(string: "https://hula.trading/legal.html")
+        )
+        XCTAssertEqual(
+            HLIdentificationViewController.legalURL(),
+            URL(string: "https://hula.trading/legal.html")
+        )
+        XCTAssertEqual(
+            HLSettingViewController.helpURL(),
+            URL(string: "https://hula.trading/")
+        )
+    }
 }
