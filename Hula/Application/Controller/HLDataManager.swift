@@ -85,8 +85,59 @@ class HLDataManager: NSObject {
     }
     
     
+    /// Categories list. Blank resource must not hit the API root.
+    class func categoriesURL(apiBase: String) -> String? {
+        return CommonUtils.apiCollectionURL(apiBase: apiBase, resource: "categories")
+    }
+
+    /// Trades list GET / create POST without a trailing slash (`HulaTrade.saveNewTrade`).
+    class func tradesCollectionURL(apiBase: String) -> String? {
+        return CommonUtils.apiCollectionURL(apiBase: apiBase, resource: "trades")
+    }
+
+    /// Email/password login. Blank resource must not POST to the API root.
+    class func authenticateURL(apiBase: String) -> String? {
+        return CommonUtils.apiCollectionURL(apiBase: apiBase, resource: "authenticate")
+    }
+
+    /// Facebook login. Blank resource must not POST to the API root.
+    class func facebookAuthURL(apiBase: String) -> String? {
+        return CommonUtils.apiCollectionURL(apiBase: apiBase, resource: "fbauth")
+    }
+
+    /// Signup. Blank resource must not POST to the API root.
+    class func signupURL(apiBase: String) -> String? {
+        return CommonUtils.apiCollectionURL(apiBase: apiBase, resource: "signup")
+    }
+
+    /// Notifications list. Blank resource must not hit the API root.
+    class func notificationsURL(apiBase: String) -> String? {
+        return CommonUtils.apiCollectionURL(apiBase: apiBase, resource: "notifications")
+    }
+
+    /// Login form body. `+`/`&`/`=` in email or password must not split fields.
+    class func loginPostString(email: String, pass: String) -> String {
+        return "email=" + CommonUtils.formEncodedValue(email)
+            + "&pass=" + CommonUtils.formEncodedValue(pass)
+    }
+
+    /// Signup form body. Delimiters in email/nick/password must not split fields.
+    class func signupPostString(email: String, nick: String, pass: String) -> String {
+        return "email=" + CommonUtils.formEncodedValue(email)
+            + "&pass=" + CommonUtils.formEncodedValue(pass)
+            + "&name=" + CommonUtils.formEncodedValue(nick)
+            + "&nick=" + CommonUtils.formEncodedValue(nick)
+    }
+
+    /// Facebook login form body.
+    class func facebookAuthPostString(token: String) -> String {
+        return "fbtoken=" + CommonUtils.formEncodedValue(token)
+    }
+
     func getCategories() {
-        let queryURL = HulaConstants.apiURL + "categories"
+        guard let queryURL = HLDataManager.categoriesURL(apiBase: HulaConstants.apiURL) else {
+            return
+        }
         httpGet(urlstr: queryURL, taskCallback: { (ok, json) in
             //print(ok)
             if (ok){
@@ -253,7 +304,12 @@ class HLDataManager: NSObject {
     }
 
     func getTrades(taskCallback: @escaping (Bool) -> ()) {
-        let queryURL = HulaConstants.apiURL + "trades"
+        guard let queryURL = HLDataManager.tradesCollectionURL(apiBase: HulaConstants.apiURL) else {
+            DispatchQueue.main.async {
+                taskCallback(false)
+            }
+            return
+        }
         httpGet(urlstr: queryURL, taskCallback: { (ok, json) in
             //print(ok)
             if (ok){
@@ -303,9 +359,13 @@ class HLDataManager: NSObject {
     func loginUser(email:String, pass:String) {
         
         //print("Login in progress...")
-        let queryURL = HulaConstants.apiURL + "authenticate"
+        guard let queryURL = HLDataManager.authenticateURL(apiBase: HulaConstants.apiURL) else {
+            self.lastServerMessage = HLDataManager.publishedEmailLoginResult(httpOk: false, parsed: "")
+            NotificationCenter.default.post(name: self.loginRecieved, object: self.lastServerMessage)
+            return
+        }
         var loginSuccess = "";
-        let postString = "email=" + CommonUtils.formEncodedValue(email) + "&pass=" + CommonUtils.formEncodedValue(pass)
+        let postString = HLDataManager.loginPostString(email: email, pass: pass)
         httpPost(urlstr: queryURL, postString: postString, isPut: false, taskCallback: { (ok, json) in
             
             //print("done")
@@ -343,10 +403,16 @@ class HLDataManager: NSObject {
     }
     
     func loginUserWithFacebook(token:String){
-        let queryURL = HulaConstants.apiURL + "fbauth"
+        guard let queryURL = HLDataManager.facebookAuthURL(apiBase: HulaConstants.apiURL) else {
+            NotificationCenter.default.post(
+                name: self.fbLoginRecieved,
+                object: HLDataManager.publishedBoolAuthResult(httpOk: false, parsed: false)
+            )
+            return
+        }
         var loginSuccess = false;
         
-        httpPost(urlstr: queryURL, postString: "fbtoken=" + CommonUtils.formEncodedValue(token), isPut: false, taskCallback: { (ok, json) in
+        httpPost(urlstr: queryURL, postString: HLDataManager.facebookAuthPostString(token: token), isPut: false, taskCallback: { (ok, json) in
             
             //print("done")
             //print(ok)
@@ -462,12 +528,15 @@ class HLDataManager: NSObject {
     func signupUser(email:String, nick: String, pass:String) {
         
         //print("Login in progress...")
-        let queryURL = HulaConstants.apiURL + "signup"
+        guard let queryURL = HLDataManager.signupURL(apiBase: HulaConstants.apiURL) else {
+            NotificationCenter.default.post(
+                name: self.signupRecieved,
+                object: HLDataManager.publishedBoolAuthResult(httpOk: false, parsed: false)
+            )
+            return
+        }
         var signupSuccess = false;
-        let postString = "email=" + CommonUtils.formEncodedValue(email)
-            + "&pass=" + CommonUtils.formEncodedValue(pass)
-            + "&name=" + CommonUtils.formEncodedValue(nick)
-            + "&nick=" + CommonUtils.formEncodedValue(nick)
+        let postString = HLDataManager.signupPostString(email: email, nick: nick, pass: pass)
         httpPost(urlstr: queryURL, postString: postString, isPut: false, taskCallback: { (ok, json) in
             
             //print("done")
@@ -1002,7 +1071,11 @@ class HLDataManager: NSObject {
         //print("loading notifications...")
         if HulaUser.sharedInstance.isUserLoggedIn() {
             isLoadingNotifications = true
-            let queryURL = HulaConstants.apiURL + "notifications"
+            guard let queryURL = HLDataManager.notificationsURL(apiBase: HulaConstants.apiURL) else {
+                isLoadingNotifications = HLDataManager.isLoadingNotifications(afterResponseReceived: false)
+                NotificationCenter.default.post(name: self.notificationsRecieved, object: nil)
+                return
+            }
             httpGet(urlstr: queryURL, taskCallback: { (ok, json) in
                 //print(ok)
                 if (ok){

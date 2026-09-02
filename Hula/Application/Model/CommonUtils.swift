@@ -578,6 +578,28 @@ extension CommonUtils {
         return base + encoded.joined(separator: "/")
     }
 
+    /// Collection endpoint with no ID segment (`categories`, `authenticate`, `me`).
+    /// Rejects blank resource names. `trailingSlash` preserves create POSTs that
+    /// historically hit `products/` / `trades/` rather than the slash-less list GET.
+    static func apiCollectionURL(apiBase: String, resource: String?, trailingSlash: Bool = false) -> String? {
+        guard let url = apiResourceURL(apiBase: apiBase, path: [resource]) else {
+            return nil
+        }
+        if trailingSlash && !url.hasSuffix("/") {
+            return url + "/"
+        }
+        return url
+    }
+
+    /// Soft-build an http(s) URL for legal/help/share. Blank or unparsable
+    /// strings must not crash via `URL(string:)!`.
+    static func openableURL(_ raw: String?) -> URL? {
+        guard let trimmed = nonEmptyTrimmed(raw) else {
+            return nil
+        }
+        return URL(string: trimmed)
+    }
+
     /// Avatar GET. Blank userId must not hit `users//image`.
     static func userImageURL(apiBase: String, userId: String?) -> String? {
         return apiResourceURL(apiBase: apiBase, path: ["users", userId, "image"])

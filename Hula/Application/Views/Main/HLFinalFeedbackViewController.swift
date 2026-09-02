@@ -26,6 +26,11 @@ class HLFinalFeedbackViewController: UIViewController {
     let wrong_copies : [String] = [NSLocalizedString("Late arrival", comment: ""), NSLocalizedString("Bad estate of product", comment: ""), NSLocalizedString("Annoying negotiation", comment: ""), NSLocalizedString("Difficult communication", comment: ""), NSLocalizedString("Complicated process", comment: ""), NSLocalizedString("Other", comment: "")]
     var step : Int = 0
     
+    /// Post-deal feedback. Blank resource must not POST to the API root.
+    class func feedbackURL(apiBase: String) -> String? {
+        return CommonUtils.apiCollectionURL(apiBase: apiBase, resource: "feedback")
+    }
+
     @IBOutlet weak var backBtn: UIButton!
     
     override func viewDidLoad() {
@@ -223,7 +228,9 @@ class HLFinalFeedbackViewController: UIViewController {
     }
     
     func sendFeedback(){
-        let queryURL = HulaConstants.apiURL + "feedback"
+        guard let queryURL = HLFinalFeedbackViewController.feedbackURL(apiBase: HulaConstants.apiURL) else {
+            return
+        }
         let comments = "\(good_str). \(bad_str)"
         let dataString = CommonUtils.feedbackPostString(
             tradeId: self.trade_id_closed,

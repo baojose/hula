@@ -67,8 +67,15 @@ class HulaTrade: NSObject {
         self.num_bids = 0
     }
     
+    /// Create POST. Matches the slash-less `trades` list GET.
+    class func createURL(apiBase: String) -> String? {
+        return CommonUtils.apiCollectionURL(apiBase: apiBase, resource: "trades")
+    }
+
     func saveNewTrade(){
-        let queryURL = HulaConstants.apiURL + "trades"
+        guard let queryURL = HulaTrade.createURL(apiBase: HulaConstants.apiURL) else {
+            return
+        }
         let post_string = get_post_string();
         HLDataManager.sharedInstance.httpPost(urlstr: queryURL, postString: post_string, isPut: false, taskCallback: { (ok, json) in
             if (ok){

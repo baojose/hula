@@ -111,6 +111,11 @@ class HLSwappViewController: UIViewController {
         return CommonUtils.userResourceURL(apiBase: apiBase, userId: userId, extra: ["nick"])
     }
 
+    /// Post-deal feedback. Blank resource must not POST to the API root.
+    class func feedbackURL(apiBase: String) -> String? {
+        return CommonUtils.apiCollectionURL(apiBase: apiBase, resource: "feedback")
+    }
+
     /// Encode product-id lists so Close Deal / Send Offer cannot split the form body.
     class func offerPostString(
         status: String,
@@ -1134,7 +1139,9 @@ extension HLSwappViewController: AlertDelegate{
             guard CommonUtils.nonEmptyTrimmed(self.trade_id_closed) != nil else {
                 return
             }
-            let queryURL = HulaConstants.apiURL + "feedback"
+            guard let queryURL = HLSwappViewController.feedbackURL(apiBase: HulaConstants.apiURL) else {
+                return
+            }
             let comments = NSLocalizedString("Deal closed. Thank you", comment: "")
             let dataString = CommonUtils.feedbackPostString(
                 tradeId: self.trade_id_closed,

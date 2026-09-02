@@ -225,6 +225,11 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
         return CommonUtils.productsForUserURL(apiBase: apiBase, userId: userId)
     }
 
+    /// Product create POST historically hits `products/` (trailing slash).
+    class func productsCreateURL(apiBase: String) -> String? {
+        return CommonUtils.apiCollectionURL(apiBase: apiBase, resource: "products", trailingSlash: true)
+    }
+
     /// `products/user/{id}` must return an array. Object/error JSON must not force re-login.
     class func isProductsListPayload(_ json: Any?) -> Bool {
         return json is [Any]
@@ -396,7 +401,9 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
     func uploadProduct(for product: HulaProduct, progress: ProductCreateUploadProgress) {
         //print("Saving product...")
         if (HulaUser.sharedInstance.userId.count>0){
-            let queryURL = HulaConstants.apiURL + "products/"
+            guard let queryURL = HLMyProductsViewController.productsCreateURL(apiBase: HulaConstants.apiURL) else {
+                return
+            }
             let dataString:String = updateProductDataString(for: product)
             //print(dataString)
             HLDataManager.sharedInstance.httpPost(urlstr: queryURL, postString: dataString, isPut: false, taskCallback: { (ok, json) in

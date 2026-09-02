@@ -71,6 +71,11 @@ class HLIdentificationViewController: UserBaseViewController {
     class func authNotificationSucceeded(_ object: Any?) -> Bool {
         return CommonUtils.boolFromJSON(object) ?? false
     }
+
+    /// Terms link. Blank/malformed URLs must not crash via `URL(string:)!`.
+    class func legalURL() -> URL? {
+        return CommonUtils.openableURL("https://hula.trading/legal.html")
+    }
     
     @IBAction func closeIdentificationVC(_ sender: Any) {
         self.closeIdentification()
@@ -80,7 +85,9 @@ class HLIdentificationViewController: UserBaseViewController {
     }
     
     @IBAction func gotoTermsConditionsAction(_ sender: Any) {
-        UIApplication.shared.openURL(URL(string: "https://hula.trading/legal.html")!)
+        if let url = HLIdentificationViewController.legalURL() {
+            UIApplication.shared.openURL(url)
+        }
     }
     
 }

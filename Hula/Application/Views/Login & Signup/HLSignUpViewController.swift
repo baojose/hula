@@ -143,7 +143,9 @@ class HLSignUpViewController: UserBaseViewController, UITextFieldDelegate  {
     }
 
     @IBAction func gotoTermsConditionsAction(_ sender: Any) {
-        UIApplication.shared.openURL(URL(string: "https://hula.trading/legal.html")!)
+        if let url = HLSignUpViewController.legalURL() {
+            UIApplication.shared.openURL(url)
+        }
     }
     @IBAction func signupFieldChanged(_ sender: Any) {
         if (self.signupField.text!.count>4){
@@ -209,6 +211,11 @@ class HLSignUpViewController: UserBaseViewController, UITextFieldDelegate  {
     /// Empty/unencodable nick must not force-unwrap encoding or hit `users/validatenick/`.
     class func validateNickURL(apiBase: String, nick: String?) -> String? {
         return CommonUtils.apiResourceURL(apiBase: apiBase, path: ["users", "validatenick", nick])
+    }
+
+    /// Terms link. Blank/malformed URLs must not crash via `URL(string:)!`.
+    class func legalURL() -> URL? {
+        return CommonUtils.openableURL("https://hula.trading/legal.html")
     }
     @IBAction func beginEditText(_ sender: Any) {
         moveUpView()

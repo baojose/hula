@@ -277,10 +277,18 @@ class HLProfileViewController: BaseViewController {
         return BlockingNetworkLoadUI.outcome(ok: httpOk, payloadUsable: hasUserObject).treatAsExpiredSession
     }
 
+    /// Session profile GET. Blank resource must not hit the API root.
+    class func meURL(apiBase: String) -> String? {
+        return CommonUtils.apiCollectionURL(apiBase: apiBase, resource: "me")
+    }
+
     func getUserProfile() {
         
         //print("Getting user info...")
-        let queryURL = HulaConstants.apiURL + "me"
+        guard let queryURL = HLProfileViewController.meURL(apiBase: HulaConstants.apiURL) else {
+            spinner.hide()
+            return
+        }
         print(queryURL)
         HLDataManager.sharedInstance.httpGet(urlstr: queryURL, taskCallback: { (ok, json) in
             let dictionary = json as? [String: Any]

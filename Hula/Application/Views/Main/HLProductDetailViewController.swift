@@ -192,6 +192,11 @@ class HLProductDetailViewController: BaseViewController, UIScrollViewDelegate, U
     class func sellerImageURL(apiBase: String, ownerId: String?) -> String? {
         return CommonUtils.userImageURL(apiBase: apiBase, userId: ownerId)
     }
+
+    /// Start-trade POST historically hits `trades/` (trailing slash).
+    class func tradesCreateURL(apiBase: String) -> String? {
+        return CommonUtils.apiCollectionURL(apiBase: apiBase, resource: "trades", trailingSlash: true)
+    }
     
     //#MARK: - TableViewDelegate
     
@@ -504,7 +509,9 @@ extension HLProductDetailViewController: AlertDelegate{
                         guard let dataString = StartTradeUIPolicy.postString(productId: productId, otherId: otherId) else {
                             return
                         }
-                        let queryURL = HulaConstants.apiURL + "trades/"
+                        guard let queryURL = HLProductDetailViewController.tradesCreateURL(apiBase: HulaConstants.apiURL) else {
+                            return
+                        }
                         HLDataManager.sharedInstance.httpPost(urlstr: queryURL, postString: dataString, isPut: false, taskCallback: { (ok, json) in
                             let expandOverlay = StartTradeUIPolicy.shouldExpandOverlay(postCompleted: true, postSucceeded: ok)
                             let openSwap = StartTradeUIPolicy.shouldOpenSwapView(postSucceeded: ok)

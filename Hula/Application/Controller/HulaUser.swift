@@ -255,7 +255,15 @@ class HulaUser: NSObject {
     
     
     
+    /// Debug print used IUO unwraps of `userId!` / `userNick!` / `location`.
+    class func debugDescriptionText(userId: String?, nick: String?, location: CLLocation?) -> String {
+        let id = userId ?? ""
+        let nickText = nick ?? ""
+        let loc = location ?? CLLocation(latitude: 0, longitude: 0)
+        return "User id: \(id); nick:   \(nickText)  location: \(loc.coordinate.latitude) ,  \(loc.coordinate.longitude)\n"
+    }
+
     override var description : String {
-        return "User id: \(self.userId!); nick:   \(self.userNick!)  location: \(self.location.coordinate.latitude) ,  \(self.location.coordinate.longitude)\n"
+        return HulaUser.debugDescriptionText(userId: self.userId, nick: self.userNick, location: self.location)
     }
 }

@@ -32,6 +32,11 @@ class HLSettingViewController: BaseViewController {
     @IBOutlet weak var fullNameView: UIView!
     
     var image_dismissing:Bool = false
+
+    /// Help link. Blank/malformed URLs must not crash via `URL(string:)!`.
+    class func helpURL() -> URL? {
+        return CommonUtils.openableURL("https://hula.trading/")
+    }
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -197,7 +202,9 @@ class HLSettingViewController: BaseViewController {
     }
     
     @IBAction func helpOptionAction(_ sender: Any) {
-        UIApplication.shared.openURL(URL(string: "https://hula.trading/")!)
+        if let url = HLSettingViewController.helpURL() {
+            UIApplication.shared.openURL(url)
+        }
     }
     // Custom functions for ViewController
     func addAlertIcon(toView: UIView){

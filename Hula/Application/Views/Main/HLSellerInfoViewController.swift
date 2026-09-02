@@ -57,6 +57,11 @@ class HLSellerInfoViewController: BaseViewController, UITableViewDelegate, UITab
         return CommonUtils.tradeResourceURL(apiBase: apiBase, tradeId: tradeId, extra: ["agree"])
     }
 
+    /// Start-trade POST historically hits `trades/` (trailing slash).
+    class func tradesCreateURL(apiBase: String) -> String? {
+        return CommonUtils.apiCollectionURL(apiBase: apiBase, resource: "trades", trailingSlash: true)
+    }
+
     override func viewDidLoad() {
         super.viewDidLoad()
         self.initData()
@@ -381,7 +386,9 @@ extension HLSellerInfoViewController: AlertDelegate{
                     guard let dataString = StartTradeUIPolicy.postString(productId: "", otherId: otherId) else {
                         return
                     }
-                    let queryURL = HulaConstants.apiURL + "trades/"
+                    guard let queryURL = HLSellerInfoViewController.tradesCreateURL(apiBase: HulaConstants.apiURL) else {
+                        return
+                    }
                     HLDataManager.sharedInstance.httpPost(urlstr: queryURL, postString: dataString, isPut: false, taskCallback: { (ok, json) in
                         let expandOverlay = StartTradeUIPolicy.shouldExpandOverlay(postCompleted: true, postSucceeded: ok)
                         let openSwap = StartTradeUIPolicy.shouldOpenSwapView(postSucceeded: ok)
