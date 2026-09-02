@@ -114,7 +114,12 @@ class HLProductDetailViewController: BaseViewController, UIScrollViewDelegate, U
         // product owner image
         sellerLabel.attributedText = commonUtils.attributedStringWithTextSpacing(NSLocalizedString("SELLER", comment: ""), 2.33)
         commonUtils.circleImageView(sellerImageView)
-        sellerImageView.loadImageFromURL(urlString: HulaConstants.apiURL + "users/" + currentProduct.productOwner + "/image")
+        if let sellerURL = HLProductDetailViewController.sellerImageURL(
+            apiBase: HulaConstants.apiURL,
+            ownerId: currentProduct.productOwner
+        ) {
+            sellerImageView.loadImageFromURL(urlString: sellerURL)
+        }
         
         
         // user inventory
@@ -127,11 +132,17 @@ class HLProductDetailViewController: BaseViewController, UIScrollViewDelegate, U
         HLDataManager.sharedInstance.getUserProfile(userId: currentProduct.productOwner, taskCallback: {(user, prods, userfeedback) in
             self.sellerUser = user
             self.sellerFeedback = userfeedback
-            self.sellerNameLabel.text = user.userNick;
+            self.sellerNameLabel.text = CommonUtils.displayNick(user.userNick)
             if HLDataManager.sharedInstance.amITradingWith(user.userId){
-                self.tradeWithUserButton.setTitle(NSLocalizedString("Currently trading with", comment: "") + " \(user.userNick!)", for: .normal)
+                self.tradeWithUserButton.setTitle(
+                    CommonUtils.tradeWithButtonTitle(currentlyTrading: true, nick: user.userNick),
+                    for: .normal
+                )
             } else {
-                self.tradeWithUserButton.setTitle(NSLocalizedString("Trade with", comment: "") + " \(user.userNick!)", for: .normal)
+                self.tradeWithUserButton.setTitle(
+                    CommonUtils.tradeWithButtonTitle(currentlyTrading: false, nick: user.userNick),
+                    for: .normal
+                )
             }
             self.sellerFeedbackLabel.text = user.getFeedback();
             self.sellerProducts = prods
@@ -154,6 +165,38 @@ class HLProductDetailViewController: BaseViewController, UIScrollViewDelegate, U
             addToTradeViewContainer.isHidden = false
         }
     }
+
+    /// Soft-read seller inventory rows. Tapping used `as! NSDictionary` after cellForRow
+    /// already used `as?`, so a string/number row crashed on select.
+    class func sellerProductDictionary(at index: Int, in products: NSArray?) -> NSDictionary? {
+        guard let products = products, index >= 0, index < products.count else {
+            return nil
+        }
+        let item = products.object(at: index)
+        if let dict = item as? NSDictionary {
+            return dict
+        }
+        return nil
+    }
+
+    class func shouldOpenSellerProduct(_ product: HulaProduct) -> Bool {
+        return product.productStatus != "traded"
+    }
+
+    /// Empty productId must not force-unwrap or GET `products/report/`.
+    class func reportProductURL(apiBase: String, productId: String?) -> String? {
+        return CommonUtils.apiResourceURL(apiBase: apiBase, path: ["products", "report", productId])
+    }
+
+    /// Seller avatar. Blank owner id must not hit `users//image`.
+    class func sellerImageURL(apiBase: String, ownerId: String?) -> String? {
+        return CommonUtils.userImageURL(apiBase: apiBase, userId: ownerId)
+    }
+
+    /// Start-trade POST historically hits `trades/` (trailing slash).
+    class func tradesCreateURL(apiBase: String) -> String? {
+        return CommonUtils.apiCollectionURL(apiBase: apiBase, resource: "trades", trailingSlash: true)
+    }
     
     //#MARK: - TableViewDelegate
     
@@ -165,7 +208,7 @@ class HLProductDetailViewController: BaseViewController, UIScrollViewDelegate, U
         
         let cell = tableView.dequeueReusableCell(withIdentifier: "homeProductCell") as! HLProductTableViewCell
         
-        if let pr = sellerProducts[indexPath.row] as? [String:Any] as NSDictionary?{
+        if let pr = HLProductDetailViewController.sellerProductDictionary(at: indexPath.row, in: sellerProducts) {
         
             cell.productName.text = pr.object(forKey: "title") as? String
             
@@ -209,10 +252,12 @@ class HLProductDetailViewController: BaseViewController, UIScrollViewDelegate, U
         //print(indexPath.row)
         let viewController = self.storyboard?.instantiateViewController(withIdentifier: "productDetailPage") as! HLProductDetailViewController
         
-        let product = sellerProducts[indexPath.row] as! NSDictionary
+        guard let product = HLProductDetailViewController.sellerProductDictionary(at: indexPath.row, in: sellerProducts) else {
+            return
+        }
         let hproduct = HulaProduct();
         hproduct.populate(with: product)
-        if hproduct.productStatus != "traded" {
+        if HLProductDetailViewController.shouldOpenSellerProduct(hproduct) {
             viewController.productData = hproduct
         
             self.navigationController?.pushViewController(viewController, animated: true)
@@ -275,50 +320,91 @@ class HLProductDetailViewController: BaseViewController, UIScrollViewDelegate, U
         self.navigationController?.pushViewController(viewController, animated: true)
     }
     
+    /// Options-sheet callers pass a blank UIButton(), so button-title checks miss
+    /// "Currently trading" and would POST a duplicate trade. Prefer peer trading state.
+    enum AddToTradeNextStep {
+        case requireLogin
+        case openExistingTrade
+        case ignorePendingInboundOffer
+        case alertNoProducts
+        case alertRoomsFull
+        case alertConfirmNewTrade
+    }
+
+    class func addToTradeNextStep(
+        isLoggedIn: Bool,
+        alreadyTradingWithOwner: Bool,
+        pendingInboundOffer: Bool,
+        numProducts: Int,
+        roomsFull: Bool
+    ) -> AddToTradeNextStep {
+        if !isLoggedIn {
+            return .requireLogin
+        }
+        if alreadyTradingWithOwner {
+            return .openExistingTrade
+        }
+        // Pending inbound offers live in arrTrades (Accept/Decline on seller profile).
+        // Starting a second outbound room burns a slot and makes getTradeWith prefer it.
+        if pendingInboundOffer {
+            return .ignorePendingInboundOffer
+        }
+        if numProducts == 0 {
+            return .alertNoProducts
+        }
+        if roomsFull {
+            return .alertRoomsFull
+        }
+        return .alertConfirmNewTrade
+    }
+
     @IBAction func addToTradeAction(_ sender: UIButton) {
-        
-        if !HulaUser.sharedInstance.isUserLoggedIn() {
-            //print( self.tabBarController )
-            
+        let ownerId = currentProduct.productOwner ?? ""
+        let step = HLProductDetailViewController.addToTradeNextStep(
+            isLoggedIn: HulaUser.sharedInstance.isUserLoggedIn(),
+            alreadyTradingWithOwner: HLDataManager.sharedInstance.amITradingWith(ownerId),
+            pendingInboundOffer: HLDataManager.sharedInstance.amIOfferedToTradeWith(ownerId),
+            numProducts: HulaUser.sharedInstance.numProducts,
+            roomsFull: HLDataManager.sharedInstance.myRoomsFull()
+        )
+
+        switch step {
+        case .requireLogin:
             if let tb = self.tabBarController as? BaseTabBarViewController {
                 tb.openUserIdentification()
             }
             print("User is not logged in!")
-                
             return
-                
+        case .openExistingTrade:
+            if let pnc = self.navigationController?.navigationController as? HulaPortraitNavigationController {
+                pnc.openSwapView()
+            }
+            return
+        case .ignorePendingInboundOffer:
+            return
+        case .alertNoProducts, .alertRoomsFull, .alertConfirmNewTrade:
+            break
         }
-        
-        
+
         let viewController = self.storyboard?.instantiateViewController(withIdentifier: "alertView") as! AlertViewController
         viewController.delegate = self
-        if (HulaUser.sharedInstance.numProducts == 0){
+        switch step {
+        case .alertNoProducts:
             viewController.isCancelVisible = true
             viewController.cancelButtonText = NSLocalizedString("Add stuff", comment: "")
             viewController.trigger = "noproduct"
             viewController.message = NSLocalizedString("Sorry! If you want to trade, you have to upload your stuff.", comment: "")
-        } else {
-            if HLDataManager.sharedInstance.myRoomsFull() {
-                viewController.isCancelVisible = false
-                viewController.trigger = "fullrooms"
-                viewController.message = NSLocalizedString("Sorry! your Trade Rooms are busy. Turn your phone, get in the Trade Room and request a new one.", comment: "")
-            } else {
-                viewController.isCancelVisible = true
-                viewController.okButtonText = NSLocalizedString("Accept", comment: "")
-                viewController.trigger = ""
-                viewController.message = NSLocalizedString("You're about to start a trade. One room will be reserved for this negotiation until it's finished.", comment: "")
-            }
+        case .alertRoomsFull:
+            viewController.isCancelVisible = false
+            viewController.trigger = "fullrooms"
+            viewController.message = NSLocalizedString("Sorry! your Trade Rooms are busy. Turn your phone, get in the Trade Room and request a new one.", comment: "")
+        default:
+            viewController.isCancelVisible = true
+            viewController.okButtonText = NSLocalizedString("Accept", comment: "")
+            viewController.trigger = ""
+            viewController.message = NSLocalizedString("You're about to start a trade. One room will be reserved for this negotiation until it's finished.", comment: "")
         }
-        
-        if let btTitle = sender.titleLabel?.text {
-            if btTitle.range(of: NSLocalizedString("Currently trading", comment: "")) != nil {
-                if let pnc = self.navigationController?.navigationController as? HulaPortraitNavigationController {
-                    pnc.openSwapView()
-                    return
-                }
-            }
-        }
-        
+
         self.present(viewController, animated: true)
     }
     
@@ -336,13 +422,19 @@ class HLProductDetailViewController: BaseViewController, UIScrollViewDelegate, U
                 let alert = UIAlertController(title: NSLocalizedString("Product options", comment: ""),
                                               message: nil,
                                               preferredStyle: .actionSheet)
-        
-                
-                
-                let removeAction = UIAlertAction(title: NSLocalizedString("Add product to barter screen", comment: ""), style: .default, handler: { action -> Void in
-                    self.addToTradeAction( UIButton() )
-                })
-                alert.addAction(removeAction)
+
+                let ownerId = currentProduct.productOwner ?? ""
+                // Same duplicate-room risk as seller Options: hide start-trade while already
+                // trading or while a pending inbound offer still needs Accept/Decline.
+                if HLDataManager.shouldOfferStartTradeAction(
+                    tradingWith: HLDataManager.sharedInstance.amITradingWith(ownerId),
+                    pendingInboundOffer: HLDataManager.sharedInstance.amIOfferedToTradeWith(ownerId)
+                ) {
+                    let removeAction = UIAlertAction(title: NSLocalizedString("Add product to barter screen", comment: ""), style: .default, handler: { action -> Void in
+                        self.addToTradeAction( UIButton() )
+                    })
+                    alert.addAction(removeAction)
+                }
         
                 let reportAction = UIAlertAction(title: NSLocalizedString("Report this product as abusive", comment: ""), style: .destructive, handler: { action -> Void in
                     
@@ -358,7 +450,12 @@ class HLProductDetailViewController: BaseViewController, UIScrollViewDelegate, U
     }
     
     func reportProduct(){
-        let queryURL = HulaConstants.apiURL + "products/report/\(currentProduct.productId!)"
+        guard let queryURL = HLProductDetailViewController.reportProductURL(
+            apiBase: HulaConstants.apiURL,
+            productId: currentProduct.productId
+        ) else {
+            return
+        }
         print(queryURL)
         HLDataManager.sharedInstance.httpGet(urlstr: queryURL, taskCallback: { (ok, json) in
             if (ok){
@@ -402,30 +499,34 @@ extension HLProductDetailViewController: AlertDelegate{
                 if let productId = currentProduct.productId {
                     //print(productId)
                     let otherId = currentProduct.productOwner
+                    // Re-check pending inbound offer before POSTing — stale confirm alerts
+                    // must not create a second room while Accept/Decline is still active.
+                    if HLDataManager.sharedInstance.amIOfferedToTradeWith(otherId ?? "") {
+                        return
+                    }
                     if (HulaUser.sharedInstance.userId.count>0){
                         // user is loggedin
-                        DispatchQueue.main.async {
-                            UIView.animate(withDuration: 0.5, animations: {
-                                self.addToTradeViewContainer.frame.size.height = self.view.frame.height
-                                self.addToTradeViewContainer.frame.origin.y = 0
-                                //print(self.addToTradeViewContainer.frame)
-                                //self.addToTradeViewContainer.layoutIfNeeded()
-                            })
+                        guard let dataString = StartTradeUIPolicy.postString(productId: productId, otherId: otherId) else {
+                            return
                         }
-                        let queryURL = HulaConstants.apiURL + "trades/"
-                        let dataString:String = "product_id=\(productId)&other_id=\(otherId!)"
+                        guard let queryURL = HLProductDetailViewController.tradesCreateURL(apiBase: HulaConstants.apiURL) else {
+                            return
+                        }
                         HLDataManager.sharedInstance.httpPost(urlstr: queryURL, postString: dataString, isPut: false, taskCallback: { (ok, json) in
-                            if (ok){
-                                // show barter screen
-                                DispatchQueue.main.async {
-                                    
+                            let expandOverlay = StartTradeUIPolicy.shouldExpandOverlay(postCompleted: true, postSucceeded: ok)
+                            let openSwap = StartTradeUIPolicy.shouldOpenSwapView(postSucceeded: ok)
+                            DispatchQueue.main.async {
+                                if expandOverlay {
+                                    UIView.animate(withDuration: 0.5, animations: {
+                                        self.addToTradeViewContainer.frame.size.height = self.view.frame.height
+                                        self.addToTradeViewContainer.frame.origin.y = 0
+                                    })
+                                }
+                                if openSwap {
                                     if let pnc = self.navigationController?.navigationController as? HulaPortraitNavigationController {
                                         pnc.openSwapView()
                                     }
                                 }
-                            } else {
-                                // connection error
-                                print("Connection error")
                             }
                         })
                     }

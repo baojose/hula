@@ -26,6 +26,11 @@ class HLPastTradeViewController: UIViewController, UICollectionViewDelegate, UIC
     var myTradedProducts: [HulaProduct] = []
     var otherTradedProducts: [HulaProduct] = []
     var otherUserId: String = ""
+
+    /// Product GET. Blank productId must not hit `products/`.
+    class func productURL(apiBase: String, productId: String?) -> String? {
+        return CommonUtils.productResourceURL(apiBase: apiBase, productId: productId)
+    }
     
     
     override func viewDidLoad() {
@@ -188,17 +193,17 @@ class HLPastTradeViewController: UIViewController, UICollectionViewDelegate, UIC
         }
         
         
-        switch type {
-        case "other":
-            if thisTrade.other_money > 0 {
-                let moneyProd = HulaProduct(id: "xmoney", name: "+$\(Int(round(thisTrade.other_money)))", image: HulaConstants.transparentImg)
+        // Mirror barter-room mapping: UI "owner"/my side vs "other" side depends on
+        // whether the current user is the trade owner.
+        let iAmOwner = (thisTrade.owner_id == HulaUser.sharedInstance.userId)
+        let money = thisTrade.money(forSide: type, viewerIsOwner: iAmOwner)
+        if money > 0 {
+            let moneyProd = HulaProduct(id: "xmoney", name: "+$\(Int(round(money)))", image: HulaConstants.transparentImg)
+            switch type {
+            case "other":
                 self.otherTradedProducts.append(moneyProd)
                 self.otherSelectedProductsCollection.reloadData()
-            }
-        default:
-            
-            if thisTrade.owner_money > 0 {
-                let moneyProd = HulaProduct(id: "xmoney", name: "+$\( Int(round(thisTrade.owner_money)) )", image: HulaConstants.transparentImg)
+            default:
                 self.myTradedProducts.append(moneyProd)
                 self.mySelectedProductsCollection.reloadData()
             }
@@ -212,7 +217,13 @@ class HLPastTradeViewController: UIViewController, UICollectionViewDelegate, UIC
         //print("Getting user info...")
         if (HulaUser.sharedInstance.userId.count>0){
             let product: HulaProduct = HulaProduct()
-            let queryURL = HulaConstants.apiURL + "products/" + productId
+            guard let queryURL = HLPastTradeViewController.productURL(
+                apiBase: HulaConstants.apiURL,
+                productId: productId
+            ) else {
+                taskCallback(product)
+                return
+            }
             //print(queryURL)
             HLDataManager.sharedInstance.httpGet(urlstr: queryURL, taskCallback: { (ok, json) in
                 if (ok){

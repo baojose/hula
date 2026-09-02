@@ -32,6 +32,11 @@ class HLSettingViewController: BaseViewController {
     @IBOutlet weak var fullNameView: UIView!
     
     var image_dismissing:Bool = false
+
+    /// Help link. Blank/malformed URLs must not crash via `URL(string:)!`.
+    class func helpURL() -> URL? {
+        return CommonUtils.openableURL("https://hula.trading/")
+    }
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -115,13 +120,15 @@ class HLSettingViewController: BaseViewController {
         
     }
     @IBAction func editItemAction(_ sender: Any) {
-        print((sender as! UIButton).tag)
+        guard let tag = ControlSenderPolicy.tag(from: sender) else {
+            return
+        }
         var title = "";
         var previous = "";
         var label = ""
         var item_toUpdate = "";
         var remChar:Int = 200
-        switch (sender as! UIButton).tag {
+        switch tag {
         case 0:
             // image update
             selectedImageTapped()
@@ -172,13 +179,13 @@ class HLSettingViewController: BaseViewController {
             break
         }
         
-        if ((sender as! UIButton).tag == 5 ){
+        if (tag == 5 ){
             let editViewController = self.storyboard?.instantiateViewController(withIdentifier: "newPassword") as! NewPaswordViewController
             self.navigationController?.pushViewController(editViewController, animated: true)
 
         } else {
         
-            if ((sender as! UIButton).tag != 0 ){
+            if (tag != 0 ){
                 let editViewController = self.storyboard?.instantiateViewController(withIdentifier: "fieldEditor") as! HLEditFieldViewController
                 editViewController.field_label = label
                 editViewController.field_title = title
@@ -195,7 +202,9 @@ class HLSettingViewController: BaseViewController {
     }
     
     @IBAction func helpOptionAction(_ sender: Any) {
-        UIApplication.shared.openURL(URL(string: "https://hula.trading/")!)
+        if let url = HLSettingViewController.helpURL() {
+            UIApplication.shared.openURL(url)
+        }
     }
     // Custom functions for ViewController
     func addAlertIcon(toView: UIView){

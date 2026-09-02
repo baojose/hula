@@ -102,7 +102,9 @@ class HLLogInViewController: UserBaseViewController, UITextFieldDelegate {
     
     func loginDataRecieved(notification: NSNotification) {
         //print("Login received. Going to welcome vc")
-        let loginOk = notification.object as! String
+        guard let loginOk = HLLogInViewController.loginResultMessage(from: notification.object) else {
+            return
+        }
         //print(loginOk)
         if (loginOk == "ok"){
             DispatchQueue.main.async {
@@ -126,6 +128,11 @@ class HLLogInViewController: UserBaseViewController, UITextFieldDelegate {
                 self.view.setNeedsDisplay()
             }
         }
+    }
+
+    /// Email login posts a String message (`"ok"` or error text). Reject wrong types instead of crashing.
+    class func loginResultMessage(from object: Any?) -> String? {
+        return object as? String
     }
     
     func dismissKeyboard(){
