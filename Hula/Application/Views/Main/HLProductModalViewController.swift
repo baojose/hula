@@ -43,8 +43,20 @@ class HLProductModalViewController: UIViewController, UIImagePickerControllerDel
     var currentTradeId : String = ""
     var calledFrom : Int = 0
     var isTradeAgreed : Bool = false
-    
-    
+
+    /// Empty product/trade IDs must not force-unwrap or GET `products//requestvideo/`.
+    class func requestVideoURL(apiBase: String, productId: String?, tradeId: String?) -> String? {
+        return CommonUtils.apiResourceURL(apiBase: apiBase, path: ["products", productId, "requestvideo", tradeId])
+    }
+
+    /// Nil `trading_count` IUO must not crash the multiple-deals label.
+    class func multipleDealsLabelText(tradingCount: Int?) -> String? {
+        guard let count = tradingCount, count > 1 else {
+            return nil
+        }
+        return "\(count) " + NSLocalizedString("trades", comment: "")
+    }
+
     override func viewDidLoad() {
         super.viewDidLoad()
 
@@ -71,10 +83,10 @@ class HLProductModalViewController: UIViewController, UIImagePickerControllerDel
         self.multipleDealsImg.isHidden = true
         self.multipleDealLbl.isHidden = true
         //print(product.trading_count)
-        if product.trading_count > 1 {
+        if let dealsText = HLProductModalViewController.multipleDealsLabelText(tradingCount: product.trading_count) {
             self.multipleDealsImg.isHidden = false
             self.multipleDealLbl.isHidden = false
-            self.multipleDealLbl.text = "\(product.trading_count!) " + NSLocalizedString("trades", comment: "")
+            self.multipleDealLbl.text = dealsText
         }
         
         // item height and position reset
@@ -225,7 +237,9 @@ class HLProductModalViewController: UIViewController, UIImagePickerControllerDel
     }
     
     @IBAction func videoAction(_ sender: Any) {
-        let tag = (sender as! UIButton).tag
+        guard let tag = ControlSenderPolicy.tag(from: sender) else {
+            return
+        }
             if (tag == 43904){
                 if product.productOwner == HulaUser.sharedInstance.userId {
                     recordVideo()
@@ -240,7 +254,13 @@ class HLProductModalViewController: UIViewController, UIImagePickerControllerDel
                     }
                     
                     if !vreq {
-                        let queryURL = HulaConstants.apiURL + "products/\(product.productId!)/requestvideo/\(currentTradeId)"
+                        guard let queryURL = HLProductModalViewController.requestVideoURL(
+                            apiBase: HulaConstants.apiURL,
+                            productId: product.productId,
+                            tradeId: currentTradeId
+                        ) else {
+                            return
+                        }
                         HLDataManager.sharedInstance.httpGet(urlstr: queryURL, taskCallback: { (ok, json) in
                             if (ok){
                                 if let _ = json as? NSDictionary {
@@ -279,13 +299,15 @@ class HLProductModalViewController: UIViewController, UIImagePickerControllerDel
         
         print("do not allow rotation")
         
-        var vurl : String = ""
         print(product.video_url)
-        if let t = product.video_url[currentTradeId] {
-            vurl = t
+        guard let videoURL = CommonUtils.playableVideoURL(
+            videoURLs: product.video_url,
+            tradeId: currentTradeId
+        ) else {
+            notify(NSLocalizedString("Video is not available yet.", comment: ""))
+            return
         }
-        let videoURL = URL(string: vurl)
-        let player = AVPlayer(url: videoURL!)
+        let player = AVPlayer(url: videoURL)
         let playerViewController = LandscapeAVPlayerController()
         if #available(iOS 9.0, *) {
             HLDataManager.sharedInstance.onlyLandscapeView = true
@@ -295,7 +317,7 @@ class HLProductModalViewController: UIViewController, UIImagePickerControllerDel
         }
         playerViewController.player = player
         self.present(playerViewController, animated: true) {
-            playerViewController.player!.play()
+            playerViewController.player?.play()
         }
     }
     
@@ -348,22 +370,30 @@ class HLProductModalViewController: UIViewController, UIImagePickerControllerDel
              */
             // Save the video to the app directory so we can play it later
             let videoData = NSData(contentsOf: pickedVideo as URL)
-            
-            
-            
-            let paths = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true) as NSArray
-            let documentsDirectory = paths[0] as! NSString
-            let path = documentsDirectory.appendingPathComponent("testvideo.mov")
-            videoPath = NSURL(string: path )
-            videoData?.write(toFile: path, atomically: false)
-            //self.dismiss(animated: true, completion: nil)
+            guard let documentsDirectory = CommonUtils.documentsDirectoryPath() else {
+                notify(NSLocalizedString("Could not save video. Please try again.", comment: ""))
+                HLDataManager.sharedInstance.onlyLandscapeView = false
+                imagePicker.dismiss(animated: true, completion: nil)
+                return
+            }
+            let fileName = VideoProofUploadPolicy.fileName(productId: product.productId ?? "", tradeId: currentTradeId)
+            let path = (documentsDirectory as NSString).appendingPathComponent(fileName)
+            videoPath = NSURL(fileURLWithPath: path)
+            var writeSucceeded = false
+            if let videoData = videoData {
+                writeSucceeded = videoData.write(toFile: path, atomically: true)
+            }
+            guard VideoProofUploadPolicy.shouldUpload(dataAvailable: videoData != nil, writeSucceeded: writeSucceeded) else {
+                notify(NSLocalizedString("Could not save video. Please try again.", comment: ""))
+                HLDataManager.sharedInstance.onlyLandscapeView = false
+                imagePicker.dismiss(animated: true, completion: nil)
+                return
+            }
             notify(NSLocalizedString("Uploading video...", comment: ""))
             videoBtn.setTitle(NSLocalizedString(" Uploading", comment: ""), for: .normal)
-            // three-dots animation
             
             HLDataManager.sharedInstance.uploadVideo(path, productId: product.productId, tradeId: self.currentTradeId, taskCallback: { (success, json) in
                 print("Uploaded")
-                //print(json)
                 DispatchQueue.main.async {
                     if let dict = json as? [String: Any] {
                         if let vp = dict["path"] as? String{
@@ -375,7 +405,6 @@ class HLProductModalViewController: UIViewController, UIImagePickerControllerDel
                     self.videoBtn.setImage(UIImage(named: "video-player-icon-red"), for: .normal)
                     self.videoBtn.tag = 43909
                     self.notify(NSLocalizedString("Video uploaded!", comment: ""))
-                    //self.setupVideoButtons()
                     self.refreshProduct()
                 }
                 
@@ -402,8 +431,9 @@ class HLProductModalViewController: UIViewController, UIImagePickerControllerDel
     }
     @IBAction func fsImageAction(_ sender: Any) {
         print("Fullingscreening")
-        if let im = productsScrollView.viewWithTag(pageControl.currentPage + 1000) as? UIImageView{
-            fullScreenImage(im.image!)
+        if let im = productsScrollView.viewWithTag(pageControl.currentPage + 1000) as? UIImageView,
+           let image = im.image {
+            fullScreenImage(image)
         }
     }
     

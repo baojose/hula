@@ -40,6 +40,34 @@ class HLPostProductViewController: BaseViewController {
     var arrImageFrameViews: NSMutableArray!
     var image_dismissing = false
     var currentEditingIndex:Int = 0
+
+    /// Soft-read create-flow photo slot chrome. Extra photos or mismatched arrays
+    /// previously crashed via `as! UIImageView` / `as! UIButton`.
+    class func photoSlotViews(
+        at index: Int,
+        images: NSArray?,
+        cameras: NSArray?,
+        deletes: NSArray?,
+        frames: NSArray?
+    ) -> (image: UIImageView, camera: UIButton, delete: UIButton, frame: UIView)? {
+        guard let images = images, let cameras = cameras, let deletes = deletes, let frames = frames,
+            index >= 0,
+            index < images.count,
+            index < cameras.count,
+            index < deletes.count,
+            index < frames.count,
+            let image = images.object(at: index) as? UIImageView,
+            let camera = cameras.object(at: index) as? UIButton,
+            let delete = deletes.object(at: index) as? UIButton,
+            let frame = frames.object(at: index) as? UIView else {
+                return nil
+        }
+        return (image, camera, delete, frame)
+    }
+
+    class func controlTag(from sender: Any?) -> Int? {
+        return ControlSenderPolicy.tag(from: sender)
+    }
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -108,10 +136,19 @@ class HLPostProductViewController: BaseViewController {
         
         if dataManager.newProduct.arrProductPhotos.count > 0 {
             for i in 0 ..< dataManager.newProduct.arrProductPhotos.count{
-                let imgView: UIImageView! = arrImageViews.object(at: i) as! UIImageView
-                let buttonView: UIButton! = arrCameraButtons.object(at: i) as! UIButton
-                let deleteButtonView: UIButton! = arrDeleteButtons.object(at: i) as! UIButton
-                let frameView: UIView! = arrImageFrameViews.object(at: i) as! UIView
+                guard let slot = HLPostProductViewController.photoSlotViews(
+                    at: i,
+                    images: arrImageViews,
+                    cameras: arrCameraButtons,
+                    deletes: arrDeleteButtons,
+                    frames: arrImageFrameViews
+                ) else {
+                    continue
+                }
+                let imgView = slot.image
+                let buttonView = slot.camera
+                let deleteButtonView = slot.delete
+                let frameView = slot.frame
                 frameView.isUserInteractionEnabled = true
                 let recognizer = UITapGestureRecognizer()
                 //recognizer.cancelsTouchesInView = false
@@ -154,7 +191,9 @@ class HLPostProductViewController: BaseViewController {
     
     func selectedImageTapped(_ sender: UITapGestureRecognizer){
         //print("Touches began")
-        let tappedIndex: Int = (sender.view?.tag)!
+        guard let tappedIndex = ControlSenderPolicy.viewTag(from: sender) else {
+            return
+        }
         
         if (dataManager.newProduct.arrProductPhotos.count > tappedIndex ){
             print(dataManager.newProduct.arrProductPhotos[tappedIndex])
@@ -266,7 +305,9 @@ class HLPostProductViewController: BaseViewController {
     }
     
     @IBAction func deleteImageAction(_ sender: Any) {
-        let tag:Int = (sender as? UIButton)!.tag
+        guard let tag = HLPostProductViewController.controlTag(from: sender) else {
+            return
+        }
         if (self.dataManager.newProduct.arrProductPhotos.count > tag){
             self.dataManager.newProduct.arrProductPhotos.removeObject(at: tag);
             self.setupImagesBoxes()
@@ -308,7 +349,17 @@ class HLPostProductViewController: BaseViewController {
         self.presentingViewController?.presentingViewController?.dismiss(animated: true, completion: nil)
     }
     @IBAction func publishNewProduct(_ sender: Any) {
-            dataManager.newProduct.productName = NSLocalizedString("Untitled product", comment: "")
+        guard dataManager.newProduct.arrProductPhotos.firstObject as? UIImage != nil else {
+            let alert = UIAlertController(
+                title: NSLocalizedString("Add a photo", comment: ""),
+                message: NSLocalizedString("Please add at least one photo before publishing.", comment: ""),
+                preferredStyle: .alert
+            )
+            alert.addAction(UIAlertAction(title: NSLocalizedString("Ok", comment: ""), style: .default, handler: nil))
+            self.present(alert, animated: true, completion: nil)
+            return
+        }
+        dataManager.newProduct.productName = NSLocalizedString("Untitled product", comment: "")
         NotificationCenter.default.post(name: NSNotification.Name(rawValue: "uploadModeUpdateDesign"), object: nil)
         self.presentingViewController?.presentingViewController?.dismiss(animated: true, completion: nil)
     }
@@ -333,23 +384,45 @@ extension HLPostProductViewController: UITableViewDelegate, UITableViewDataSourc
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         
         let cell = tableView.dequeueReusableCell(withIdentifier: "completeProductProfileCategoryCell") as! HLHomeCategoryTableViewCell
-        let category : NSDictionary = dataManager.arrCategories.object(at: indexPath.row) as! NSDictionary
-        
-        cell.categoryName.attributedText = commonUtils.attributedStringWithTextSpacing(category.object(forKey: "name") as! String, CGFloat(2.33))
-        cell.categoryImage.image = UIImage.init(named: category.object(forKey: "icon") as! String)
+        guard let category = HLHomeViewController.categoryDictionary(at: indexPath.row, in: dataManager.arrCategories) else {
+            return cell
+        }
+        if let presentation = HLHomeViewController.categoryPresentation(from: category) {
+            cell.categoryName.attributedText = commonUtils.attributedStringWithTextSpacing(presentation.name, CGFloat(2.33))
+            if presentation.icon.count > 0 {
+                cell.categoryImage.image = UIImage.init(named: presentation.icon)
+            }
+        }
         
         return cell
     }
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        
-        let category : NSDictionary = dataManager.arrCategories.object(at: indexPath.row) as! NSDictionary
+        // Publishing with zero photos creates an orphan listing then crashes when
+        // the complete-profile sheet force-casts arrProductPhotos[0].
+        guard dataManager.newProduct.arrProductPhotos.firstObject as? UIImage != nil else {
+            let alert = UIAlertController(
+                title: NSLocalizedString("Add a photo", comment: ""),
+                message: NSLocalizedString("Please add at least one photo before publishing.", comment: ""),
+                preferredStyle: .alert
+            )
+            alert.addAction(UIAlertAction(title: NSLocalizedString("Ok", comment: ""), style: .default, handler: nil))
+            self.present(alert, animated: true, completion: nil)
+            return
+        }
+
+        guard let category = HLHomeViewController.categoryDictionary(at: indexPath.row, in: dataManager.arrCategories) else {
+            return
+        }
         print(category)
-        dataManager.newProduct.productCategory = category.object(forKey: "name") as! String
-        dataManager.newProduct.productCategoryId = category.object(forKey: "_id") as! String
-        
+        guard let selection = HLHomeViewController.categorySelection(from: category) else {
+            return
+        }
+        dataManager.newProduct.productCategory = selection.name
+        dataManager.newProduct.productCategoryId = selection.id
+
         dataManager.newProduct.productName = NSLocalizedString("Untitled product", comment: "")
         NotificationCenter.default.post(name: NSNotification.Name(rawValue: "uploadModeUpdateDesign"), object: nil)
-        
+
         self.presentingViewController?.presentingViewController?.dismiss(animated: true, completion: nil)
     }
     

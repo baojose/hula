@@ -86,44 +86,40 @@ class HLTradesCollectionViewCell: UICollectionViewCell {
     
 
     
+    /// Capture room identity when the ⋯ sheet is presented. `reloadData` / cell reuse
+    /// can overwrite `tradeId` before the user taps Cancel or Report.
+    class func actionSnapshot(tradeId: String, userId: String, status: String) -> (tradeId: String, userId: String)? {
+        if tradeId == "" || status != "current" {
+            return nil
+        }
+        return (tradeId, userId)
+    }
+
     @IBAction func tradeOptionsAction(_ sender: Any) {
-        if (self.tradeId != "" && self.tradeStatus == "current"){
-            if dbDelegate != nil {
-                let alert = UIAlertController(title: NSLocalizedString("Trading options", comment: ""),
-                                              message: nil,
-                                              preferredStyle: .actionSheet)
-                
-                let reportAction = UIAlertAction(title: NSLocalizedString("Report this user", comment: ""), style: .default, handler: { action -> Void in
-                    
-                    self.reportUser()
-                    
-                })
-                alert.addAction(reportAction)
-                
-                
-                let removeAction = UIAlertAction(title: NSLocalizedString("Cancel this trade", comment: ""), style: .destructive, handler: { action -> Void in
-                    self.closeTrade()
-                })
-                alert.addAction(removeAction)
-                
-                let cancelAction = UIAlertAction(title: NSLocalizedString("Cancel", comment: ""), style: .cancel, handler: nil)
-                
-                alert.addAction(cancelAction)
-                dbDelegate?.present(alert, animated: true)
-            }
+        guard let target = HLTradesCollectionViewCell.actionSnapshot(tradeId: self.tradeId, userId: self.userId, status: self.tradeStatus) else {
+            return
         }
-    }
-    
-    func closeTrade(){
-        if (self.tradeId != ""){
-            // call parent closeTrade(id)
-            dbDelegate?.closeTrade(self.tradeId)
-            self.tradeId = ""
-        }
-    }
-    func reportUser(){
-        if (self.userId != ""){
-            dbDelegate?.reportUser(self.userId)
+        if dbDelegate != nil {
+            let alert = UIAlertController(title: NSLocalizedString("Trading options", comment: ""),
+                                          message: nil,
+                                          preferredStyle: .actionSheet)
+
+            let reportAction = UIAlertAction(title: NSLocalizedString("Report this user", comment: ""), style: .default, handler: { action -> Void in
+                if target.userId != "" {
+                    self.dbDelegate?.reportUser(target.userId)
+                }
+            })
+            alert.addAction(reportAction)
+
+            let removeAction = UIAlertAction(title: NSLocalizedString("Cancel this trade", comment: ""), style: .destructive, handler: { action -> Void in
+                self.dbDelegate?.closeTrade(target.tradeId)
+            })
+            alert.addAction(removeAction)
+
+            let cancelAction = UIAlertAction(title: NSLocalizedString("Cancel", comment: ""), style: .cancel, handler: nil)
+
+            alert.addAction(cancelAction)
+            dbDelegate?.present(alert, animated: true)
         }
     }
 }
