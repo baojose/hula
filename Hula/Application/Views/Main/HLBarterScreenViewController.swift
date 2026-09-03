@@ -89,6 +89,15 @@ class HLBarterScreenViewController: BaseViewController {
         return CommonUtils.productsForUserURL(apiBase: apiBase, userId: userId)
     }
 
+    /// Missing `image_url` falls back to the product image endpoint. Do not force-unwrap
+    /// the optional after the fallback; empty strings are kept as in the original path.
+    class func resolvedProductImage(from productData: [String: Any], productId: String) -> String {
+        if let image = productData["image_url"] as? String {
+            return image
+        }
+        return CommonUtils.sharedInstance.productImageURL(productId: productId)
+    }
+
     /// Empty tradeId must not GET/POST `live_barter/` (wipes or 404s the collection).
     class func liveBarterRequestURL(apiBase: String, tradeId: String?) -> String? {
         return CommonUtils.apiResourceURL(apiBase: apiBase, path: ["live_barter", tradeId])
@@ -939,19 +948,19 @@ class HLBarterScreenViewController: BaseViewController {
                                     }
                                     let id = identity.id
                                     let name = identity.title
-                                    var image = product_data["image_url"] as? String
-                                    if (image == nil){
-                                        image = CommonUtils.sharedInstance.productImageURL(productId: id)
-                                    }
-                                    let newProd = HulaProduct(id : id, name : name, image: image!)
+                                    let image = HLBarterScreenViewController.resolvedProductImage(
+                                        from: product_data,
+                                        productId: id
+                                    )
+                                    let newProd = HulaProduct(id : id, name : name, image: image)
                                     newProd.populate(with: product_data as NSDictionary)
                                     
                                     for difprod in self.thisTrade.last_bid_diff {
-                                        if (difprod == newProd.productId!) || (self.thisTrade.num_bids < 3) {
+                                        if (difprod == id) || (self.thisTrade.num_bids < 3) {
                                             // recently added
                                             newProd.tradeStatus = 1
                                         }
-                                        if (difprod == "-\(newProd.productId!)"){
+                                        if (difprod == "-\(id)"){
                                             // recently removed
                                             newProd.tradeStatus = 2
                                         }

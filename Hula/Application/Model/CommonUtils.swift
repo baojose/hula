@@ -506,6 +506,12 @@ extension CommonUtils {
         return value.addingPercentEncoding(withAllowedCharacters: allowed) ?? ""
     }
 
+    /// Seller/notifications/dashboard cancel PUTs used `status=\(status)` so an
+    /// `&`/`=` in the status token would split the form body.
+    static func tradeStatusPostString(status: String) -> String {
+        return "status=" + formEncodedValue(status)
+    }
+
     /// Chat section key: prefix through hour for full ISO8601, safe for short dates.
     static func chatDateSectionKey(_ date: String) -> String? {
         guard date.count > 0 else { return nil }
@@ -539,6 +545,20 @@ extension CommonUtils {
                 return nil
         }
         return encoded
+    }
+
+    /// Full reset-mail URL. Keeps `resetMailPathComponent` encoding (`@`/`+`)
+    /// rather than `encodedPathSegment`, and skips blank/short emails so callers
+    /// do not concatenate `users/resetmail/`.
+    static func resetMailURL(apiBase: String, email: String?) -> String? {
+        guard let email = email, let encoded = resetMailPathComponent(email) else {
+            return nil
+        }
+        var base = apiBase
+        if !base.hasSuffix("/") {
+            base += "/"
+        }
+        return base + "users/resetmail/" + encoded
     }
 
     /// Single API path segment. Rejects blank IDs and encodes `/`, `&`, `=`, `?`,
@@ -1431,5 +1451,52 @@ struct PendingOfferPolicy {
 
     static func shouldRunOfferAction(tradeId: String) -> Bool {
         return tradeId.characters.count > 0
+    }
+}
+
+/// Login/signup/reset field reads. `UITextField.text!` crashes when the outlet
+/// text is nil, and login/reset next-buttons were tappable with short credentials.
+struct AuthFormPolicy {
+    static let minimumFieldLength = 5
+
+    static func fieldText(_ raw: String?) -> String {
+        return raw ?? ""
+    }
+
+    static func shouldEnableNext(text: String?) -> Bool {
+        return fieldText(text).characters.count >= minimumFieldLength
+    }
+
+    static func shouldEnableLogin(email: String?, password: String?) -> Bool {
+        return shouldEnableNext(text: email) && shouldEnableNext(text: password)
+    }
+
+    static func loginCredentials(email: String?, password: String?) -> (email: String, password: String)? {
+        guard shouldEnableLogin(email: email, password: password) else {
+            return nil
+        }
+        return (fieldText(email), fieldText(password))
+    }
+
+    /// Signup next historically allowed any non-empty value (animation still uses >4).
+    static func shouldAdvanceSignup(fieldText raw: String?) -> Bool {
+        return fieldText(raw).characters.count > 0
+    }
+}
+
+/// Facebook app-invite placeholders used `URL(string:)!`. Blank or malformed
+/// app-link strings must skip the dialog instead of crashing.
+struct FacebookInvitePolicy {
+    static let defaultAppLink = "https://fb.me/YOUR_FACEBOOK_APP_ID"
+    static let defaultPreviewImage = "https://hula.trading/img/logo-big.png"
+
+    static func inviteURLs(
+        appLink: String? = defaultAppLink,
+        previewImage: String? = defaultPreviewImage
+    ) -> (appLink: URL, previewImageURL: URL?)? {
+        guard let link = CommonUtils.openableURL(appLink) else {
+            return nil
+        }
+        return (link, CommonUtils.openableURL(previewImage))
     }
 }

@@ -37,6 +37,16 @@ class HLSettingViewController: BaseViewController {
     class func helpURL() -> URL? {
         return CommonUtils.openableURL("https://hula.trading/")
     }
+
+    /// Facebook app-invite placeholders used `URL(string:)!`.
+    class func facebookAppInviteURLs() -> (appLink: URL, previewImageURL: URL?)? {
+        return FacebookInvitePolicy.inviteURLs()
+    }
+
+    /// Missing catalog asset must skip the incomplete-profile badge instead of crashing.
+    class func shouldShowAlertThumbnail(_ image: UIImage?) -> Bool {
+        return image != nil
+    }
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -209,8 +219,11 @@ class HLSettingViewController: BaseViewController {
     // Custom functions for ViewController
     func addAlertIcon(toView: UIView){
         let imageName = "icon_alert_thumbnails"
-        let image = UIImage(named: imageName)
-        let imageView = UIImageView(image: image!)
+        guard let image = UIImage(named: imageName),
+            HLSettingViewController.shouldShowAlertThumbnail(image) else {
+            return
+        }
+        let imageView = UIImageView(image: image)
         imageView.tag = 220;
         imageView.frame = CGRect(x: toView.frame.width/2 + 20, y: toView.frame.height/2 - 8, width: 16, height: 16)
         toView.addSubview(imageView)
@@ -362,9 +375,12 @@ extension HLSettingViewController{
     }
     
     func shareHulaFB(){
-        let appInvite = AppInvite(appLink: URL(string: "https://fb.me/YOUR_FACEBOOK_APP_ID")!,
+        guard let urls = HLSettingViewController.facebookAppInviteURLs() else {
+            return
+        }
+        let appInvite = AppInvite(appLink: urls.appLink,
                                   deliveryMethod: .facebook,
-                                  previewImageURL: URL(string: "https://hula.trading/img/logo-big.png"))
+                                  previewImageURL: urls.previewImageURL)
         do {
             try AppInvite.Dialog.show(from: self, invite: appInvite) { result in
                 switch result {

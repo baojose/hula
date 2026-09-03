@@ -49,6 +49,14 @@ class HLProductModalViewController: UIViewController, UIImagePickerControllerDel
         return CommonUtils.apiResourceURL(apiBase: apiBase, path: ["products", productId, "requestvideo", tradeId])
     }
 
+    /// Nil `trading_count` IUO must not crash the multiple-deals label.
+    class func multipleDealsLabelText(tradingCount: Int?) -> String? {
+        guard let count = tradingCount, count > 1 else {
+            return nil
+        }
+        return "\(count) " + NSLocalizedString("trades", comment: "")
+    }
+
     override func viewDidLoad() {
         super.viewDidLoad()
 
@@ -75,10 +83,10 @@ class HLProductModalViewController: UIViewController, UIImagePickerControllerDel
         self.multipleDealsImg.isHidden = true
         self.multipleDealLbl.isHidden = true
         //print(product.trading_count)
-        if product.trading_count > 1 {
+        if let dealsText = HLProductModalViewController.multipleDealsLabelText(tradingCount: product.trading_count) {
             self.multipleDealsImg.isHidden = false
             self.multipleDealLbl.isHidden = false
-            self.multipleDealLbl.text = "\(product.trading_count!) " + NSLocalizedString("trades", comment: "")
+            self.multipleDealLbl.text = dealsText
         }
         
         // item height and position reset

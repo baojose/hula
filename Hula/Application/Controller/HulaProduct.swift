@@ -77,7 +77,29 @@ class HulaProduct: NSObject {
         self.trading_count = 0
     }
     override var description : String {
-        return "(Product id: \(self.productId!); name:   \(self.productName!); dist:   \(self.distance))\n"
+        return HulaProduct.debugDescriptionText(
+            productId: self.productId,
+            name: self.productName,
+            distance: HulaProduct.debugDistance(
+                productLocation: self.productLocation,
+                userLocation: HulaUser.sharedInstance.location
+            )
+        )
+    }
+
+    /// Debug print used IUO unwraps of `productId!` / `productName!` / `distance`.
+    class func debugDescriptionText(productId: String?, name: String?, distance: Double?) -> String {
+        let id = productId ?? ""
+        let nameText = name ?? ""
+        let dist = distance ?? 0
+        return "(Product id: \(id); name:   \(nameText); dist:   \(dist))\n"
+    }
+
+    class func debugDistance(productLocation: CLLocation?, userLocation: CLLocation?) -> Double? {
+        guard let productLocation = productLocation, let userLocation = userLocation else {
+            return nil
+        }
+        return productLocation.distance(from: userLocation)
     }
     
     func populate(with: NSDictionary){

@@ -69,6 +69,16 @@ class HLSwappViewController: UIViewController {
     
     var firstLoad : Bool = true
 
+    /// Share-reward extra room. Cap at 50 so a share loop cannot inflate maxTrades unboundedly.
+    class func shouldGrantExtraTradeRoom(maxTrades: Int) -> Bool {
+        return maxTrades < 50
+    }
+
+    /// Facebook app-invite placeholders used `URL(string:)!`.
+    class func facebookAppInviteURLs() -> (appLink: URL, previewImageURL: URL?)? {
+        return FacebookInvitePolicy.inviteURLs()
+    }
+
     /// Soft-parse trade `last_update` into remaining courtesy hours for the waiting-turn label.
     /// Missing/malformed dates return nil so callers can hide the label instead of crashing.
     class func remainingResponseHoursLabel(
@@ -1070,9 +1080,12 @@ extension HLSwappViewController: AlertDelegate{
     }
     
     func shareHulaFB(){
-        let appInvite = AppInvite(appLink: URL(string: "https://fb.me/YOUR_FACEBOOK_APP_ID")!,
+        guard let urls = HLSwappViewController.facebookAppInviteURLs() else {
+            return
+        }
+        let appInvite = AppInvite(appLink: urls.appLink,
                                   deliveryMethod: .facebook,
-                                  previewImageURL: URL(string: "https://hula.trading/img/logo-big.png"))
+                                  previewImageURL: urls.previewImageURL)
         do {
             try AppInvite.Dialog.show(from: self, invite: appInvite) { result in
                 switch result {
@@ -1109,7 +1122,7 @@ extension HLSwappViewController: AlertDelegate{
     }
     
     func addExtraRoom(){
-        if (HulaUser.sharedInstance.maxTrades<50){
+        if HLSwappViewController.shouldGrantExtraTradeRoom(maxTrades: HulaUser.sharedInstance.maxTrades) {
             HulaUser.sharedInstance.maxTrades += 1
             HulaUser.sharedInstance.updateServerData()
             HLDataManager.sharedInstance.writeUserData()

@@ -97,6 +97,11 @@ class ChatViewController: UIViewController {
     }
     */
 
+    /// Chat POST body. `&`/`=`/`+` in the message must not split the form.
+    class func chatPostString(message: String) -> String {
+        return "message=" + CommonUtils.formEncodedValue(message)
+    }
+
     /// Chat load/send path. Empty trade_id must not hit `trades//chat`.
     /// Reserved characters in the id must not invent extra path or query parts.
     static func chatRequestURL(apiBase: String, tradeId: String) -> String? {
@@ -191,7 +196,7 @@ class ChatViewController: UIViewController {
         }
         //print("Sending...")
         //print("trade id: \(self.trade_id)")
-        HLDataManager.sharedInstance.httpPost(urlstr: queryURL, postString: "message=" + CommonUtils.formEncodedValue(tx), isPut: false, taskCallback: { (ok, json) in
+        HLDataManager.sharedInstance.httpPost(urlstr: queryURL, postString: ChatViewController.chatPostString(message: tx), isPut: false, taskCallback: { (ok, json) in
             //print("done")
             //print(ok)
             if (ok){

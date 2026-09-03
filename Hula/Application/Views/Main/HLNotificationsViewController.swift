@@ -187,7 +187,7 @@ class HLNotificationsViewController: BaseViewController, UITableViewDelegate, UI
                     return
                 }
                 let status = HulaConstants.cancel_status
-                let dataString:String = "status=\(status)"
+                let dataString = CommonUtils.tradeStatusPostString(status: status)
                 print(queryURL)
                 HLDataManager.sharedInstance.httpPost(urlstr: queryURL, postString: dataString, isPut: true, taskCallback: { (ok, json) in
                     if (ok){

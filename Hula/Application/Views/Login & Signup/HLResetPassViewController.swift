@@ -45,7 +45,7 @@ class HLResetPassViewController: UIViewController, UITextFieldDelegate {
     }
     
     @IBAction func emailFieldChanged(_ sender: Any) {
-        if (self.emailField.text!.count>4){
+        if AuthFormPolicy.shouldEnableNext(text: emailField.text) {
             nextButton.startAnimation()
         } else {
             nextButton.stopAnimation()
@@ -71,13 +71,21 @@ class HLResetPassViewController: UIViewController, UITextFieldDelegate {
     func dismissKeyboard(){
         view.endEditing(true)
     }
+
+    /// Reset-mail GET. Short/blank emails must not hit `users/resetmail/`.
+    class func resetMailURL(apiBase: String, email: String?) -> String? {
+        return CommonUtils.resetMailURL(apiBase: apiBase, email: email)
+    }
+
     @IBAction func resetPassAction(_ sender: Any) {
         //print("Sending email...")
-        let email = emailField.text!.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard let encodedEmail = CommonUtils.resetMailPathComponent(email) else {
+        let email = AuthFormPolicy.fieldText(emailField.text).trimmingCharacters(in: .whitespacesAndNewlines)
+        guard let queryURL = HLResetPassViewController.resetMailURL(
+            apiBase: HulaConstants.apiURL,
+            email: email
+        ) else {
             return
         }
-        let queryURL = HulaConstants.apiURL + "users/resetmail/\(encodedEmail)"
         //print(queryURL)
         
         HLDataManager.sharedInstance.httpGet(urlstr: queryURL, taskCallback: { (ok, json) in

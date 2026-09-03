@@ -254,7 +254,7 @@ class HLSellerInfoViewController: BaseViewController, UITableViewDelegate, UITab
                 return
             }
             let status = HulaConstants.cancel_status
-            let dataString:String = "status=\(status)"
+            let dataString = CommonUtils.tradeStatusPostString(status: status)
             //print(dataString)
             HLDataManager.sharedInstance.httpPost(urlstr: queryURL, postString: dataString, isPut: true, taskCallback: { (ok, json) in
                 if (ok){

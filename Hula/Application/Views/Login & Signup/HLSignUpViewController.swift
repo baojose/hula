@@ -55,15 +55,16 @@ class HLSignUpViewController: UserBaseViewController, UITextFieldDelegate  {
     }
     //test
     @IBAction func nextStepPressed(_ sender: Any) {
-        if (signupField.text! != ""){
+        let fieldText = AuthFormPolicy.fieldText(signupField.text)
+        if AuthFormPolicy.shouldAdvanceSignup(fieldText: fieldText) {
             signupField.isSecureTextEntry = false
             switch currentStep {
             case 0:
-                userNick = signupField.text!
+                userNick = fieldText
                 checkUsernick(nick:userNick)
                 break
             case 1:
-                userEmail = signupField.text!
+                userEmail = fieldText
                 signupField.text = ""
                 signupField.isSecureTextEntry = true
                 currentStep += 1
@@ -73,7 +74,7 @@ class HLSignUpViewController: UserBaseViewController, UITextFieldDelegate  {
                 resetStepTexts()
                 break
             case 2:
-                userPassword = signupField.text!
+                userPassword = fieldText
                 signupField.text = ""
                 //resetStepTexts()
                 currentStep += 1
@@ -148,7 +149,7 @@ class HLSignUpViewController: UserBaseViewController, UITextFieldDelegate  {
         }
     }
     @IBAction func signupFieldChanged(_ sender: Any) {
-        if (self.signupField.text!.count>4){
+        if AuthFormPolicy.shouldEnableNext(text: signupField.text) {
             nextButton.startAnimation()
         } else {
             nextButton.stopAnimation()
