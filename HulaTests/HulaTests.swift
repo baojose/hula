@@ -4223,4 +4223,192 @@ class HulaTests: XCTestCase {
             URL(string: "https://hula.trading/")
         )
     }
+
+    // MARK: - Auth fields, splash token, remaining share/chat/reset URLs
+
+    func testAuthFormPolicyRejectsNilAndShortCredentials() {
+        XCTAssertEqual(AuthFormPolicy.fieldText(nil), "")
+        XCTAssertEqual(AuthFormPolicy.fieldText(" ada "), " ada ")
+        XCTAssertFalse(AuthFormPolicy.shouldEnableNext(text: nil))
+        XCTAssertFalse(AuthFormPolicy.shouldEnableNext(text: ""))
+        XCTAssertFalse(AuthFormPolicy.shouldEnableNext(text: String(repeating: Character("a"), count: 4)))
+        XCTAssertTrue(AuthFormPolicy.shouldEnableNext(text: String(repeating: Character("a"), count: 5)))
+        XCTAssertFalse(AuthFormPolicy.shouldEnableLogin(
+            email: "a@b.c",
+            password: String(repeating: Character("p"), count: 4)
+        ))
+        XCTAssertFalse(AuthFormPolicy.shouldEnableLogin(email: nil, password: "password"))
+        XCTAssertNil(AuthFormPolicy.loginCredentials(email: nil, password: "password"))
+        XCTAssertNil(AuthFormPolicy.loginCredentials(email: "user@x.com", password: "ab"))
+        let creds = AuthFormPolicy.loginCredentials(email: "user@x.com", password: "secret")
+        XCTAssertEqual(creds?.email, "user@x.com")
+        XCTAssertEqual(creds?.password, "secret")
+        XCTAssertFalse(AuthFormPolicy.shouldAdvanceSignup(fieldText: nil))
+        XCTAssertFalse(AuthFormPolicy.shouldAdvanceSignup(fieldText: ""))
+        XCTAssertTrue(AuthFormPolicy.shouldAdvanceSignup(fieldText: " "))
+        XCTAssertTrue(AuthFormPolicy.shouldAdvanceSignup(fieldText: "nick"))
+    }
+
+    func testSplashSkipUsesLoginTokenGateWithoutUnwrapping() {
+        XCTAssertFalse(HLMainViewController.shouldSkipSplashVideo(token: nil))
+        XCTAssertFalse(HLMainViewController.shouldSkipSplashVideo(token: ""))
+        XCTAssertFalse(HLMainViewController.shouldSkipSplashVideo(
+            token: String(repeating: Character("a"), count: 9)
+        ))
+        XCTAssertTrue(HLMainViewController.shouldSkipSplashVideo(
+            token: String(repeating: Character("a"), count: 10)
+        ))
+        XCTAssertEqual(
+            HLMainViewController.shouldSkipSplashVideo(token: String(repeating: Character("a"), count: 10)),
+            TabLoginPolicy.isLoggedIn(token: String(repeating: Character("a"), count: 10))
+        )
+    }
+
+    func testResetMailURLRejectsShortEmailAndPreservesAtPlus() {
+        XCTAssertNil(CommonUtils.resetMailURL(apiBase: "https://hula.trading/api/", email: nil))
+        XCTAssertNil(CommonUtils.resetMailURL(apiBase: "https://hula.trading/api/", email: ""))
+        XCTAssertNil(CommonUtils.resetMailURL(apiBase: "https://hula.trading/api/", email: "a@b"))
+        XCTAssertNil(HLResetPassViewController.resetMailURL(
+            apiBase: "https://hula.trading/api/",
+            email: "   "
+        ))
+        XCTAssertEqual(
+            HLResetPassViewController.resetMailURL(
+                apiBase: "https://hula.trading/api/",
+                email: "  user+tag@example.com "
+            ),
+            "https://hula.trading/api/users/resetmail/" +
+                ("user+tag@example.com".addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? "")
+        )
+        let encoded = CommonUtils.resetMailURL(
+            apiBase: "https://hula.trading/api",
+            email: "user+tag@example.com"
+        )
+        XCTAssertNotNil(encoded)
+        XCTAssertTrue(encoded?.contains("user+tag@example.com") ?? false)
+        XCTAssertFalse(encoded?.contains("user%2Btag") ?? true)
+        XCTAssertEqual(
+            CommonUtils.encodedPathSegment("user+tag@example.com"),
+            "user%2Btag%40example.com"
+        )
+    }
+
+    func testFacebookAppInviteURLsSkipBlankAndBuildPlaceholders() {
+        XCTAssertNil(FacebookInvitePolicy.inviteURLs(appLink: nil))
+        XCTAssertNil(FacebookInvitePolicy.inviteURLs(appLink: ""))
+        XCTAssertNil(FacebookInvitePolicy.inviteURLs(appLink: "   "))
+        XCTAssertNil(FacebookInvitePolicy.inviteURLs(appLink: "not a url"))
+        let urls = FacebookInvitePolicy.inviteURLs()
+        XCTAssertEqual(urls?.appLink, URL(string: "https://fb.me/YOUR_FACEBOOK_APP_ID"))
+        XCTAssertEqual(urls?.previewImageURL, URL(string: "https://hula.trading/img/logo-big.png"))
+        let previewMissing = FacebookInvitePolicy.inviteURLs(previewImage: "")
+        XCTAssertEqual(previewMissing?.appLink, URL(string: "https://fb.me/YOUR_FACEBOOK_APP_ID"))
+        XCTAssertNil(previewMissing?.previewImageURL)
+        XCTAssertEqual(
+            HLSettingViewController.facebookAppInviteURLs()?.appLink,
+            HLSwappViewController.facebookAppInviteURLs()?.appLink
+        )
+    }
+
+    func testProductDebugDescriptionSkipsNilIdentityWithoutCrashing() {
+        let empty = HulaProduct.debugDescriptionText(productId: nil, name: nil, distance: nil)
+        XCTAssertTrue(empty.contains("Product id: "))
+        XCTAssertTrue(empty.contains("name:"))
+        XCTAssertTrue(empty.contains("dist:   0"))
+        XCTAssertFalse(empty.contains("nil"))
+
+        let filled = HulaProduct.debugDescriptionText(productId: "p1", name: "Bike", distance: 12.5)
+        XCTAssertTrue(filled.contains("Product id: p1"))
+        XCTAssertTrue(filled.contains("Bike"))
+        XCTAssertTrue(filled.contains("12.5"))
+
+        XCTAssertNil(HulaProduct.debugDistance(productLocation: nil, userLocation: CLLocation(latitude: 0, longitude: 0)))
+        XCTAssertNil(HulaProduct.debugDistance(
+            productLocation: CLLocation(latitude: 0, longitude: 0),
+            userLocation: nil
+        ))
+        let dist = HulaProduct.debugDistance(
+            productLocation: CLLocation(latitude: 0, longitude: 0),
+            userLocation: CLLocation(latitude: 0, longitude: 0)
+        )
+        XCTAssertNotNil(dist)
+        XCTAssertEqual(dist!, 0.0)
+
+        let product = HulaProduct()
+        product.productId = nil
+        product.productName = nil
+        product.productLocation = nil
+        let rendered = product.description
+        XCTAssertTrue(rendered.contains("Product id: "))
+    }
+
+    func testChatPostStringEncodesMessageDelimiters() {
+        let body = ChatViewController.chatPostString(message: "hi&there=ok+1")
+        XCTAssertEqual(body, "message=hi%26there%3Dok%2B1")
+        XCTAssertEqual(body.components(separatedBy: "&").count, 1)
+        XCTAssertFalse(body.contains("hi&there"))
+    }
+
+    func testTradeStatusPostStringEncodesDelimiters() {
+        XCTAssertEqual(
+            CommonUtils.tradeStatusPostString(status: HulaConstants.cancel_status),
+            "status=closed"
+        )
+        let encoded = CommonUtils.tradeStatusPostString(status: "closed&x=1+2")
+        XCTAssertEqual(encoded, "status=closed%26x%3D1%2B2")
+        XCTAssertEqual(encoded.components(separatedBy: "&").count, 1)
+    }
+
+    func testBarterResolvedProductImageFallsBackWithoutForceUnwrap() {
+        XCTAssertEqual(
+            HLBarterScreenViewController.resolvedProductImage(
+                from: ["image_url": "https://cdn.example/p.jpg"],
+                productId: "p1"
+            ),
+            "https://cdn.example/p.jpg"
+        )
+        XCTAssertEqual(
+            HLBarterScreenViewController.resolvedProductImage(
+                from: ["image_url": ""],
+                productId: "p1"
+            ),
+            ""
+        )
+        let fallback = HLBarterScreenViewController.resolvedProductImage(
+            from: [:],
+            productId: "p1"
+        )
+        XCTAssertEqual(fallback, CommonUtils.sharedInstance.productImageURL(productId: "p1"))
+        XCTAssertEqual(
+            HLBarterScreenViewController.resolvedProductImage(
+                from: [:],
+                productId: "p&1"
+            ),
+            CommonUtils.sharedInstance.productImageURL(productId: "p&1")
+        )
+    }
+
+    func testMultipleDealsLabelRequiresCountGreaterThanOne() {
+        XCTAssertNil(HLProductModalViewController.multipleDealsLabelText(tradingCount: nil))
+        XCTAssertNil(HLProductModalViewController.multipleDealsLabelText(tradingCount: 0))
+        XCTAssertNil(HLProductModalViewController.multipleDealsLabelText(tradingCount: 1))
+        let text = HLProductModalViewController.multipleDealsLabelText(tradingCount: 2)
+        XCTAssertEqual(text, "2 " + NSLocalizedString("trades", comment: ""))
+        XCTAssertEqual(
+            HLProductModalViewController.multipleDealsLabelText(tradingCount: 9),
+            "9 " + NSLocalizedString("trades", comment: "")
+        )
+    }
+
+    func testShareRewardExtraRoomCapsAtFifty() {
+        XCTAssertTrue(HLSwappViewController.shouldGrantExtraTradeRoom(maxTrades: 3))
+        XCTAssertTrue(HLSwappViewController.shouldGrantExtraTradeRoom(maxTrades: 49))
+        XCTAssertFalse(HLSwappViewController.shouldGrantExtraTradeRoom(maxTrades: 50))
+        XCTAssertFalse(HLSwappViewController.shouldGrantExtraTradeRoom(maxTrades: 51))
+    }
+
+    func testSettingsAlertThumbnailSkipsMissingAsset() {
+        XCTAssertFalse(HLSettingViewController.shouldShowAlertThumbnail(nil))
+        XCTAssertTrue(HLSettingViewController.shouldShowAlertThumbnail(UIImage()))
+    }
 }
