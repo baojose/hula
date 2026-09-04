@@ -68,6 +68,11 @@ class HLPostProductViewController: BaseViewController {
     class func controlTag(from sender: Any?) -> Int? {
         return ControlSenderPolicy.tag(from: sender)
     }
+
+    /// Title field. `UITextField.text!` crashes when the outlet text is nil.
+    class func publishTitle(_ raw: String?) -> String {
+        return LabelMetricsPolicy.text(raw)
+    }
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -171,7 +176,7 @@ class HLPostProductViewController: BaseViewController {
         }
     }
     func initView(){
-        pageTitleLabel.attributedText = commonUtils.attributedStringWithTextSpacing(pageTitleLabel.text!, 2.33)
+        pageTitleLabel.attributedText = commonUtils.attributedStringWithTextSpacing(pageTitleLabel.text, 2.33)
         commonUtils.setRoundedRectBorderImageView(mainImage, 1.0, UIColor.lightGray, 0.0)
         commonUtils.setRoundedRectBorderImageView(secondImage, 1.0, UIColor.lightGray, 0.0)
         commonUtils.setRoundedRectBorderImageView(thirdImage, 1.0, UIColor.lightGray, 0.0)
@@ -339,7 +344,7 @@ class HLPostProductViewController: BaseViewController {
         return true
     }
     func textchange(_ textField:UITextField) {
-        self.changePublishBtnState(textField.text!)
+        self.changePublishBtnState(HLPostProductViewController.publishTitle(textField.text))
     }
     func textFieldShouldReturn(_ textField: UITextField) -> Bool{
         return textField.resignFirstResponder()

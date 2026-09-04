@@ -51,7 +51,7 @@ class HLCompleteProductProfileViewController: BaseViewController, UIScrollViewDe
         } else{
             productReferenceImage.loadImageFromURL(urlString: HLDataManager.sharedInstance.newProduct.productImage)
         }
-        pageTitleLabel.attributedText = commonUtils.attributedStringWithTextSpacing(pageTitleLabel.text!, 2.33)
+        pageTitleLabel.attributedText = commonUtils.attributedStringWithTextSpacing(pageTitleLabel.text, 2.33)
 
         // Prefill from the in-progress product so Done cannot overwrite title with "".
         let existingName = dataManager.newProduct.productName ?? ""
@@ -118,15 +118,18 @@ class HLCompleteProductProfileViewController: BaseViewController, UIScrollViewDe
         return true
     }
     func textchange(_ textField:UITextField) {
-        self.changeDoneBtnState(textField.text!)
+        self.changeDoneBtnState(HLCompleteProductProfileViewController.descriptionFieldText(textField.text))
     }
     func textFieldShouldReturn(_ textField: UITextField) -> Bool{
         perkScrollView.setContentOffset(CGPoint(x: 0.0, y: 0.0), animated: true)
         return textField.resignFirstResponder()
     }
     func changeDoneBtnState(_ string: String){
-        let charCount = string.count
-        if string.count != 0  {
+        let clamped = HLCompleteProductProfileViewController.clampedDescription(string)
+        if clamped.text != string {
+            desciptionTxtField.text = clamped.text
+        }
+        if clamped.text.characters.count != 0  {
             doneBtn.isEnabled = true
             doneBtn.alpha = 1
             //doneBtn.startAnimation()
@@ -137,14 +140,7 @@ class HLCompleteProductProfileViewController: BaseViewController, UIScrollViewDe
             //doneBtn.stopAnimation()
         }
         
-        var theRemainingChars = 200 - charCount
-        if (theRemainingChars < 1){
-            let str = self.desciptionTxtField.text!
-            let index = str.index(str.startIndex, offsetBy: 200)
-            desciptionTxtField.text = str.substring(to: index)
-            theRemainingChars = 0
-        }
-        charactersRemainingLabel.text = "\(theRemainingChars) " + NSLocalizedString("characters remaining", comment: "")
+        charactersRemainingLabel.text = "\(clamped.remaining) " + NSLocalizedString("characters remaining", comment: "")
     }
     
     @IBAction func doneBtnPRessed(_ sender: Any) {
@@ -189,6 +185,19 @@ class HLCompleteProductProfileViewController: BaseViewController, UIScrollViewDe
 
         let description = trimmedDescription.count > 0 ? trimmedDescription : priorDescription
         return (title, description)
+    }
+
+    /// Description field. `UITextField.text!` crashes when the outlet text is nil.
+    class func descriptionFieldText(_ raw: String?) -> String {
+        return LabelMetricsPolicy.text(raw)
+    }
+
+    static let descriptionCharacterLimit = 200
+
+    /// Over-limit pastes used `desciptionTxtField.text!` then `index(_, offsetBy: 200)`,
+    /// which crashes when the field is nil or shorter than the offset.
+    class func clampedDescription(_ raw: String?, limit: Int = descriptionCharacterLimit) -> (text: String, remaining: Int) {
+        return LabelMetricsPolicy.clampedField(raw, limit: limit)
     }
     
 }

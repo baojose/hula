@@ -57,7 +57,7 @@ class HLPictureSelectViewController: BaseViewController, UIImagePickerController
         
     }
     func initView(){
-        titleLabel.attributedText = commonUtils.attributedStringWithTextSpacing(titleLabel.text!, 2.33)
+        titleLabel.attributedText = commonUtils.attributedStringWithTextSpacing(titleLabel.text, 2.33)
     }
     func initCamera(){
         captureSession.sessionPreset = AVCaptureSessionPresetHigh

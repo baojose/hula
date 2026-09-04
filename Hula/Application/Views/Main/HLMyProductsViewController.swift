@@ -145,7 +145,11 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
             cell.warningView.isHidden = true
         }
          */
-        let titleHeight: CGFloat! = commonUtils.heightString(width: cell.productDescription.frame.size.width, font: cell.productDescription.font, string: cell.productDescription.text!)
+        let titleHeight: CGFloat! = HLMyProductsViewController.productTitleHeight(
+            width: cell.productDescription.frame.size.width,
+            font: cell.productDescription.font,
+            text: cell.productDescription.text
+        )
         cell.productDescription.frame = CGRect(x: cell.productDescription.frame.origin.x, y:(cell.contentView.frame.size.height - titleHeight) / 2.0, width: cell.productDescription.frame.size.width, height: titleHeight)
         
 
@@ -223,6 +227,11 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
     /// Inventory listing. Blank userId must not hit `products/user/`.
     class func userProductsURL(apiBase: String, userId: String?) -> String? {
         return CommonUtils.productsForUserURL(apiBase: apiBase, userId: userId)
+    }
+
+    /// Inventory title height used `cell.productDescription.text!`.
+    class func productTitleHeight(width: CGFloat, font: UIFont?, text: String?) -> CGFloat {
+        return LabelMetricsPolicy.layoutHeight(width: width, font: font, text: text, extra: 0)
     }
 
     /// Product create POST historically hits `products/` (trailing slash).

@@ -57,6 +57,27 @@ class HLProductModalViewController: UIViewController, UIImagePickerControllerDel
         return "\(count) " + NSLocalizedString("trades", comment: "")
     }
 
+    /// Description layout used `font!` / `text!`. Nil outlet metrics must not crash the barter modal.
+    class func descriptionLayoutHeight(width: CGFloat, font: UIFont?, text: String?) -> CGFloat {
+        return LabelMetricsPolicy.layoutHeight(width: width, font: font, text: text, extra: 30)
+    }
+
+    class func displayDescription(_ raw: String?) -> String {
+        let text = LabelMetricsPolicy.text(raw)
+        if text.characters.count > 0 {
+            return text
+        }
+        return NSLocalizedString("No product description provided.", comment: "")
+    }
+
+    class func localizedCategory(_ raw: String?) -> String {
+        return LabelMetricsPolicy.localizedField(raw)
+    }
+
+    class func localizedCondition(_ raw: String?) -> String {
+        return LabelMetricsPolicy.localizedField(raw)
+    }
+
     override func viewDidLoad() {
         super.viewDidLoad()
 
@@ -71,13 +92,9 @@ class HLProductModalViewController: UIViewController, UIImagePickerControllerDel
     func productSetup(){
         titleLabel.text = product.productName
         productDistance.text = CommonUtils.sharedInstance.getDistanceFrom(loc: product.productLocation)
-        productCategory.text = NSLocalizedString(product.productCategory, comment: "")
-        productCondition.text = NSLocalizedString(product.productCondition, comment: "")
-        if product.productDescription.count > 0 {
-            productDescriptionLabel.text = product.productDescription
-        } else {
-            productDescriptionLabel.text = NSLocalizedString("No product description provided.", comment: "")
-        }
+        productCategory.text = HLProductModalViewController.localizedCategory(product.productCategory)
+        productCondition.text = HLProductModalViewController.localizedCondition(product.productCondition)
+        productDescriptionLabel.text = HLProductModalViewController.displayDescription(product.productDescription)
         self.setupVideoButtons()
         
         self.multipleDealsImg.isHidden = true
@@ -90,7 +107,11 @@ class HLProductModalViewController: UIViewController, UIImagePickerControllerDel
         }
         
         // item height and position reset
-        let h = CommonUtils.sharedInstance.heightString(width: productDescriptionLabel.frame.width, font: productDescriptionLabel.font! , string: productDescriptionLabel.text!) + 30
+        let h = HLProductModalViewController.descriptionLayoutHeight(
+            width: productDescriptionLabel.frame.width,
+            font: productDescriptionLabel.font,
+            text: productDescriptionLabel.text
+        )
         productDescriptionLabel.frame.size = CGSize(width: productDescriptionLabel.frame.size.width, height: h)
         
         

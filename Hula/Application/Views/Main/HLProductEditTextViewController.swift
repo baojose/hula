@@ -27,6 +27,11 @@ class HLProductEditTextViewController: BaseViewController, UITextViewDelegate {
     var label: String = ""
     var item: String = ""
     var pageTitle: String = ""
+
+    /// Editor height used `font!`. Nil font must still return the historical extra padding.
+    class func editorLayoutHeight(width: CGFloat, font: UIFont?, text: String?) -> CGFloat {
+        return LabelMetricsPolicy.layoutHeight(width: width, font: font, text: text, extra: 40)
+    }
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -101,7 +106,11 @@ class HLProductEditTextViewController: BaseViewController, UITextViewDelegate {
     
     func textViewDidChange(_: UITextView){
         let w = self.view.frame.size.width-30
-        let h = commonUtils.heightString(width: w, font: editableTextView.font! , string: editableTextView.text) + 40
+        let h = HLProductEditTextViewController.editorLayoutHeight(
+            width: w,
+            font: editableTextView.font,
+            text: editableTextView.text
+        )
         
         UIView.animate(withDuration: 0.4, delay: 0, usingSpringWithDamping: 0.5, initialSpringVelocity: 0, options: [], animations: {
             self.editableTextView.frame.size = CGSize(width: self.view.frame.size.width-30, height: h)

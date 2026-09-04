@@ -84,7 +84,7 @@ class HLCustomCameraViewController: BaseViewController, UIImagePickerControllerD
         
         dataManager.newProduct = HulaProduct.init()
         
-        pageTitleLabel.attributedText = commonUtils.attributedStringWithTextSpacing(pageTitleLabel.text!, 2.33)
+        pageTitleLabel.attributedText = commonUtils.attributedStringWithTextSpacing(pageTitleLabel.text, 2.33)
         commonUtils.setRoundedRectBorderImageView(imageView1, 1.0, UIColor.init(white: 1, alpha: 0.9), 0.0)
         commonUtils.setRoundedRectBorderImageView(imageView2, 1.0, UIColor.init(white: 1, alpha: 0.9), 0.0)
         commonUtils.setRoundedRectBorderImageView(imageView3, 1.0, UIColor.init(white: 1, alpha: 0.9), 0.0)

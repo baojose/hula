@@ -146,6 +146,17 @@ class ChatViewController: UIViewController {
     class func shouldAutoDismissForOrientation(_ orientation: UIDeviceOrientation) -> Bool {
         return false
     }
+
+    /// Chat row height used `font!`. Nil cell font / non-string messages must not crash the table.
+    class func messageRowHeight(width: CGFloat, font: UIFont?, message: Any?) -> CGFloat {
+        return LabelMetricsPolicy.layoutHeight(
+            width: width,
+            font: font,
+            text: message as? String,
+            extra: 30,
+            scale: 1.3
+        )
+    }
     
     func updateData(forze: Bool){
         let prev_co = self.chatTableView.contentOffset
@@ -317,8 +328,11 @@ extension ChatViewController: UITableViewDelegate, UITableViewDataSource{
            indexPath.row < comments.count {
             
             let data:NSDictionary = comments[indexPath.row]
-            let message = data.object(forKey: "message") as? String ?? ""
-            let h = CommonUtils.sharedInstance.heightString(width: cell.messageText.frame.width, font: cell.messageText.font!, string: message)*1.3 + 30
+            let h = ChatViewController.messageRowHeight(
+                width: cell.messageText.frame.width,
+                font: cell.messageText.font,
+                message: data.object(forKey: "message")
+            )
             return h
         }
         return 100.0

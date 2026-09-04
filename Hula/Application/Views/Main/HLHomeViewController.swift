@@ -55,8 +55,7 @@ class HLHomeViewController: BaseViewController, UIScrollViewDelegate, UITextFiel
         
         
         // upper tabs setup
-        let tcat = categoriesBtn.title(for: .normal)
-        let attributedTitleCat = NSAttributedString(string: tcat!, attributes: [NSKernAttributeName: 2.33])
+        let attributedTitleCat = HLHomeViewController.kernedTabTitle(categoriesBtn.title(for: .normal))
         categoriesBtn.setAttributedTitle(attributedTitleCat, for: .normal)
         categoriesBtn.titleLabel?.textColor = UIColor(red: 70.0/255, green: 70.0/255, blue: 70.0/255, alpha: 1.0)
         let lineView = UIView(frame: CGRect(x: 0, y: categoriesBtn.frame.size.height - 1, width: categoriesBtn.frame.size.width, height: 1))
@@ -64,8 +63,7 @@ class HLHomeViewController: BaseViewController, UIScrollViewDelegate, UITextFiel
         categoriesBtn.addSubview(lineView)
         
         
-        let tnear = nearYouBtn.title(for: .normal)
-        let attributedTitleNear = NSAttributedString(string: tnear!, attributes: [NSKernAttributeName: 2.33])
+        let attributedTitleNear = HLHomeViewController.kernedTabTitle(nearYouBtn.title(for: .normal))
         nearYouBtn.setAttributedTitle(attributedTitleNear, for: .normal)
         nearYouBtn.titleLabel?.textColor = UIColor(red: 70.0/255, green: 70.0/255, blue: 70.0/255, alpha: 1.0)
         let lineViewn = UIView(frame: CGRect(x: 0, y: nearYouBtn.frame.size.height - 1, width: nearYouBtn.frame.size.width, height: 1))
@@ -121,6 +119,16 @@ class HLHomeViewController: BaseViewController, UIScrollViewDelegate, UITextFiel
     /// Home Near You. Coordinates are encoded path segments.
     class func productsNearURL(apiBase: String, latitude: Double, longitude: Double) -> String? {
         return CommonUtils.productsNearURL(apiBase: apiBase, latitude: latitude, longitude: longitude)
+    }
+
+    /// Search field. `UITextField.text!` crashes when the outlet text is nil.
+    class func searchKeyword(from text: String?) -> String {
+        return LabelMetricsPolicy.text(text)
+    }
+
+    /// Categories / Near You titles used `title(for:)!`. Missing storyboard titles must not crash Home.
+    class func kernedTabTitle(_ raw: String?) -> NSAttributedString {
+        return LabelMetricsPolicy.kernedTitle(raw)
     }
 
     /// Soft-parse category `num_products` — missing/null/NSNumber must not crash Categories tab.
@@ -361,7 +369,7 @@ class HLHomeViewController: BaseViewController, UIScrollViewDelegate, UITextFiel
     //#MARK: - UITextFieldDelegate
     func textFieldShouldBeginEditing(_ textField: UITextField) -> Bool{
         isSearching = true
-        self.searchProduct(textField.text!)
+        self.searchProduct(HLHomeViewController.searchKeyword(from: textField.text))
         UIView.animate(withDuration: 0.3, animations: {
             let newSize = CGSize(width: self.boxRoundedOriginalSize.width - 70, height: self.boxRoundedOriginalSize.height)
             self.cancelButton.alpha = 1
@@ -371,20 +379,21 @@ class HLHomeViewController: BaseViewController, UIScrollViewDelegate, UITextFiel
         return true
     }
     func textFieldShouldReturn(_ textField: UITextField) -> Bool{
-        if textField.text?.count == 0 {
+        let keyword = HLHomeViewController.searchKeyword(from: textField.text)
+        if keyword.characters.count == 0 {
             isSearching = false
-            self.searchProduct(textField.text!)
+            self.searchProduct(keyword)
         }else{
             isSearching = true
-            self.searchProduct(textField.text!)
+            self.searchProduct(keyword)
             
-            if (textField.text != ""){
+            if keyword.characters.count > 0 {
             
                 let searchResultViewController = self.storyboard?.instantiateViewController(withIdentifier: "searchResultPage") as! HLSearchResultViewController
                 searchResultViewController.searchByCategory = false
                 let category : NSDictionary = [:]
                 searchResultViewController.categoryToSearch = category
-                searchResultViewController.keywordToSearch = textField.text!
+                searchResultViewController.keywordToSearch = keyword
                 self.navigationController?.pushViewController(searchResultViewController, animated: true)
             }
         }
@@ -442,7 +451,7 @@ class HLHomeViewController: BaseViewController, UIScrollViewDelegate, UITextFiel
     
     func searchTextDidChange(_ textField:UITextField) {
         isSearching = true
-        self.searchProduct(textField.text!)
+        self.searchProduct(HLHomeViewController.searchKeyword(from: textField.text))
     }
     
     

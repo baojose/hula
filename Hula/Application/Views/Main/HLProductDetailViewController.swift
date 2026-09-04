@@ -91,13 +91,17 @@ class HLProductDetailViewController: BaseViewController, UIScrollViewDelegate, U
         // product details
         productNameLabel.text = currentProduct.productName
         productDescriptionLabel.text = currentProduct.productDescription
-        productCategory.text = NSLocalizedString(currentProduct.productCategory, comment: "")
-        productCondition.text = NSLocalizedString(currentProduct.productCondition, comment: "").capitalized
+        productCategory.text = HLProductDetailViewController.localizedCategory(currentProduct.productCategory)
+        productCondition.text = HLProductDetailViewController.localizedCondition(currentProduct.productCondition)
         productDistance.text = commonUtils.getDistanceFrom(loc: sellerUser.location)
 
         
         // item height and position reset
-        let h = commonUtils.heightString(width: productDescriptionLabel.frame.width, font: productDescriptionLabel.font! , string: productDescriptionLabel.text!) + 30
+        let h = HLProductDetailViewController.descriptionLayoutHeight(
+            width: productDescriptionLabel.frame.width,
+            font: productDescriptionLabel.font,
+            text: productDescriptionLabel.text
+        )
         productDescriptionLabel.frame.size = CGSize(width: productDescriptionLabel.frame.size.width, height: h)
         sellerView.frame.origin.y = productDescriptionLabel.frame.origin.y + productDescriptionLabel.frame.size.height
         
@@ -191,6 +195,19 @@ class HLProductDetailViewController: BaseViewController, UIScrollViewDelegate, U
     /// Seller avatar. Blank owner id must not hit `users//image`.
     class func sellerImageURL(apiBase: String, ownerId: String?) -> String? {
         return CommonUtils.userImageURL(apiBase: apiBase, userId: ownerId)
+    }
+
+    /// Description layout used `font!` / `text!`. Nil outlet metrics must not crash product detail.
+    class func descriptionLayoutHeight(width: CGFloat, font: UIFont?, text: String?) -> CGFloat {
+        return LabelMetricsPolicy.layoutHeight(width: width, font: font, text: text, extra: 30)
+    }
+
+    class func localizedCategory(_ raw: String?) -> String {
+        return LabelMetricsPolicy.localizedField(raw)
+    }
+
+    class func localizedCondition(_ raw: String?) -> String {
+        return LabelMetricsPolicy.localizedField(raw, capitalized: true)
     }
 
     /// Start-trade POST historically hits `trades/` (trailing slash).

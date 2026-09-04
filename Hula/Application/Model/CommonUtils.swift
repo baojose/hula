@@ -35,6 +35,10 @@ class CommonUtils: NSObject, EasyTipViewDelegate, UIGestureRecognizerDelegate {
         attributedString.addAttribute(NSKernAttributeName, value: textSpacing, range: NSRange(location: 0, length: attributedString.length))
         return attributedString
     }
+    /// Page titles used `label.text!`. Nil outlet text must space an empty string.
+    func attributedStringWithTextSpacing(_ str: String?, _ textSpacing: CGFloat) -> NSMutableAttributedString {
+        return attributedStringWithTextSpacing(str ?? "", textSpacing)
+    }
     func circleImageView(_ imageView: UIImageView) {
         imageView.layer.cornerRadius = imageView.frame.size.width / 2.0;
         imageView.clipsToBounds = true
@@ -1498,5 +1502,66 @@ struct FacebookInvitePolicy {
             return nil
         }
         return (link, CommonUtils.openableURL(previewImage))
+    }
+}
+
+/// UILabel / UITextField / UITextView optional text and font. Storyboard outlets
+/// expose `String?` / `UIFont?`; historical `text!` / `font!` crash Home search,
+/// product create, description layout, chat row height, and tab titles.
+struct LabelMetricsPolicy {
+    static let defaultFontSize: CGFloat = 14
+    static let defaultKern: CGFloat = 2.33
+
+    static func text(_ raw: String?) -> String {
+        return raw ?? ""
+    }
+
+    static func resolvedFont(_ font: UIFont?) -> UIFont {
+        return font ?? UIFont.systemFont(ofSize: defaultFontSize)
+    }
+
+    static func layoutHeight(
+        width: CGFloat,
+        font: UIFont?,
+        text: String?,
+        extra: CGFloat = 0,
+        scale: CGFloat = 1,
+        suffix: String = ""
+    ) -> CGFloat {
+        let measured = CommonUtils.sharedInstance.heightString(
+            width: width,
+            font: resolvedFont(font),
+            string: self.text(text) + suffix
+        )
+        return measured * scale + extra
+    }
+
+    static func truncated(_ raw: String?, maxLength: Int) -> String {
+        let str = text(raw)
+        if maxLength <= 0 {
+            return ""
+        }
+        if str.characters.count <= maxLength {
+            return str
+        }
+        let index = str.index(str.startIndex, offsetBy: maxLength)
+        return str.substring(to: index)
+    }
+
+    static func clampedField(_ raw: String?, limit: Int) -> (text: String, remaining: Int) {
+        let clipped = truncated(raw, maxLength: limit)
+        return (clipped, limit - clipped.characters.count)
+    }
+
+    static func kernedTitle(_ raw: String?, spacing: CGFloat = defaultKern) -> NSAttributedString {
+        return NSAttributedString(string: text(raw), attributes: [NSKernAttributeName: spacing])
+    }
+
+    static func localizedField(_ raw: String?, capitalized: Bool = false) -> String {
+        let value = NSLocalizedString(text(raw), comment: "")
+        if capitalized {
+            return value.capitalized
+        }
+        return value
     }
 }

@@ -35,6 +35,11 @@ class HLEditProductMainViewController: BaseViewController, ProductPictureDelegat
         return CommonUtils.productDeleteURL(apiBase: apiBase, productId: productId)
     }
 
+    /// Category / condition labels used `text!` as the editor's previous value.
+    class func editorPreviousText(_ raw: String?) -> String {
+        return LabelMetricsPolicy.text(raw)
+    }
+
     override func viewDidLoad() {
         super.viewDidLoad()
         self.initData()
@@ -152,13 +157,13 @@ class HLEditProductMainViewController: BaseViewController, ProductPictureDelegat
         case 20:
             // Category
             title = NSLocalizedString("Select a category", comment: "")
-            previous = categoryNameLabel.text!
+            previous = HLEditProductMainViewController.editorPreviousText(categoryNameLabel.text)
             label = NSLocalizedString("Category", comment: "")
             item_toUpdate = "category"
         case 30:
             // Condition
             title = NSLocalizedString("Change your product condition", comment: "")
-            previous = productConditionLabel.text!
+            previous = HLEditProductMainViewController.editorPreviousText(productConditionLabel.text)
             label = NSLocalizedString("Condition", comment: "")
             item_toUpdate = "condition"
         case 40:
