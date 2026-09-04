@@ -49,13 +49,14 @@ class HLCustomCameraViewController: BaseViewController, UIImagePickerControllerD
         picker.delegate = self
         if (PHPhotoLibrary.authorizationStatus() != .authorized){
             PHPhotoLibrary.requestAuthorization({ (st) in
-                if st == .authorized {
-                    DispatchQueue.main.async {
+                // Photo permission callbacks are not guaranteed on the main queue.
+                DispatchQueue.main.async {
+                    if st == .authorized {
                         self.initView()
                         self.initCamera()
+                    } else {
+                        self.showPermissionError()
                     }
-                } else {
-                    self.showPermissionError()
                 }
             })
         } else {
@@ -83,7 +84,7 @@ class HLCustomCameraViewController: BaseViewController, UIImagePickerControllerD
         
         dataManager.newProduct = HulaProduct.init()
         
-        pageTitleLabel.attributedText = commonUtils.attributedStringWithTextSpacing(pageTitleLabel.text!, 2.33)
+        pageTitleLabel.attributedText = commonUtils.attributedStringWithTextSpacing(pageTitleLabel.text, 2.33)
         commonUtils.setRoundedRectBorderImageView(imageView1, 1.0, UIColor.init(white: 1, alpha: 0.9), 0.0)
         commonUtils.setRoundedRectBorderImageView(imageView2, 1.0, UIColor.init(white: 1, alpha: 0.9), 0.0)
         commonUtils.setRoundedRectBorderImageView(imageView3, 1.0, UIColor.init(white: 1, alpha: 0.9), 0.0)
@@ -142,7 +143,9 @@ class HLCustomCameraViewController: BaseViewController, UIImagePickerControllerD
     
     func selectedImageTapped(_ sender: UITapGestureRecognizer){
         //print("Touches began")
-        let tappedIndex: Int = (sender.view?.tag)!
+        guard let tappedIndex = ControlSenderPolicy.viewTag(from: sender) else {
+            return
+        }
         //print(dataManager.newProduct.arrProductPhotos)
         if (dataManager.newProduct.arrProductPhotos.count > tappedIndex){
             print(dataManager.newProduct.arrProductPhotos[tappedIndex])
@@ -249,7 +252,10 @@ class HLCustomCameraViewController: BaseViewController, UIImagePickerControllerD
     
     //MARK: - Delegates
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [String : Any]) {
-        let chosenImage = info[UIImagePickerControllerOriginalImage] as! UIImage //2
+        guard let chosenImage = CommonUtils.pickedOriginalImage(from: info) else {
+            dismiss(animated: true, completion: nil)
+            return
+        }
         let croppedImage:UIImage = self.commonUtils.cropImage(chosenImage, HulaConstants.product_image_thumb_size)
         showImages(croppedImage)
         dismiss(animated:true, completion: nil) //5
@@ -261,7 +267,9 @@ class HLCustomCameraViewController: BaseViewController, UIImagePickerControllerD
     func openImagePicker(){
         picker.allowsEditing = false
         picker.sourceType = .photoLibrary
-        //picker.mediaTypes = UIImagePickerController.availableMediaTypes(for: .photoLibrary)!
+        // Images only — availableMediaTypes includes video and picking one
+        // crashed in didFinishPickingMediaWithInfo via as! UIImage.
+        picker.mediaTypes = CommonUtils.photoLibraryImageMediaTypes()
         present(picker, animated: true, completion: nil)
     }
     
@@ -329,10 +337,21 @@ class HLCustomCameraViewController: BaseViewController, UIImagePickerControllerD
                 }
                 
             } else {
-                self.showPermissionError()
+                // Camera permission callbacks are not guaranteed on the main queue.
+                DispatchQueue.main.async {
+                    self.showPermissionError()
+                }
             }
         }
         
+    }
+    /// Still-image and permission completions must hop to main before any UIKit work.
+    static func performCameraUIUpdate(_ work: @escaping () -> Void) {
+        if Thread.isMainThread {
+            work()
+        } else {
+            DispatchQueue.main.async(execute: work)
+        }
     }
     func showPermissionError(){
         let alert = UIAlertController(title: NSLocalizedString("Permission denied", comment: ""), message: "Please allow Hula access to your camera roll and camera.", preferredStyle: .alert)
@@ -395,8 +414,13 @@ class HLCustomCameraViewController: BaseViewController, UIImagePickerControllerD
                 if let imageData = AVCaptureStillImageOutput.jpegStillImageNSDataRepresentation(CMSampleBuffer) {
                     
                     if let cameraImage = UIImage(data: imageData) {
-                        self.showImages(self.commonUtils.cropImage(cameraImage, HulaConstants.product_image_thumb_size))
-                        self.selectFromCameraButton.isHidden = false
+                        let cropped = self.commonUtils.cropImage(cameraImage, HulaConstants.product_image_thumb_size)
+                        // captureStillImageAsynchronously completes off the main thread;
+                        // showImages mutates UIImageViews and shared arrProductPhotos.
+                        HLCustomCameraViewController.performCameraUIUpdate {
+                            self.showImages(cropped)
+                            self.selectFromCameraButton.isHidden = false
+                        }
                     }
                 }
             })
@@ -404,14 +428,20 @@ class HLCustomCameraViewController: BaseViewController, UIImagePickerControllerD
     }
     
     func isSelectedImage(_ index: Int!) -> Int{
-        var isSelected = -1
-        for i in 0 ..< arrSelectedIndexs.count{
-            if arrSelectedIndexs.object(at: i) as! Int == index {
-                isSelected = i
-                break
+        return HLCustomCameraViewController.indexOfSelectedAlbumItem(
+            matching: index,
+            in: arrSelectedIndexs
+        )
+    }
+
+    /// Soft-scan album selection indexes — bridged NSNumber/Int values must not force-cast crash.
+    class func indexOfSelectedAlbumItem(matching index: Int, in selectedIndexes: NSArray) -> Int {
+        for i in 0 ..< selectedIndexes.count {
+            if let value = CommonUtils.intFromJSON(selectedIndexes.object(at: i)), value == index {
+                return i
             }
         }
-        return isSelected
+        return -1
     }
     //
     func showImages(_ image: UIImage){

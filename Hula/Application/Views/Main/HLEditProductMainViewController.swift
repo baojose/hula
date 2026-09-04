@@ -30,6 +30,16 @@ class HLEditProductMainViewController: BaseViewController, ProductPictureDelegat
     var currentEditingIndex: Int = 0
     var image_dismissing : Bool = false
 
+    /// Product delete. Blank productId must not GET `products//delete`.
+    class func productDeleteURL(apiBase: String, productId: String?) -> String? {
+        return CommonUtils.productDeleteURL(apiBase: apiBase, productId: productId)
+    }
+
+    /// Category / condition labels used `text!` as the editor's previous value.
+    class func editorPreviousText(_ raw: String?) -> String {
+        return LabelMetricsPolicy.text(raw)
+    }
+
     override func viewDidLoad() {
         super.viewDidLoad()
         self.initData()
@@ -65,13 +75,20 @@ class HLEditProductMainViewController: BaseViewController, ProductPictureDelegat
             self.spinner.show(inView: self.view)
             
             
-            let queryURL = HulaConstants.apiURL + "products/" + self.product.productId + "/delete"
+            guard let queryURL = HLEditProductMainViewController.productDeleteURL(
+                apiBase: HulaConstants.apiURL,
+                productId: self.product.productId
+            ) else {
+                self.spinner.hide()
+                return
+            }
             //print(queryURL)
             HLDataManager.sharedInstance.httpGet(urlstr: queryURL, taskCallback: { (ok, json) in
                 //print(json)
-                if (ok){
-                    DispatchQueue.main.async {
-                        self.spinner.hide()
+                // Always clear the blocking spinner; transport/non-success previously left it stuck.
+                DispatchQueue.main.async {
+                    self.spinner.hide()
+                    if (ok){
                         if let productListVC = self.parent?.childViewControllers.first as? HLMyProductsViewController{
                             productListVC.getUserProducts()
                         }
@@ -86,8 +103,10 @@ class HLEditProductMainViewController: BaseViewController, ProductPictureDelegat
     }
     
     @IBAction func changeImageAction(_ sender: Any) {
-        
-        currentEditingIndex = (sender as! UIButton).tag - 1
+        guard let tag = ControlSenderPolicy.tag(from: sender) else {
+            return
+        }
+        currentEditingIndex = tag - 1
         var im : UIImage?
         switch currentEditingIndex {
         case 0:
@@ -109,7 +128,7 @@ class HLEditProductMainViewController: BaseViewController, ProductPictureDelegat
             fullScreenImage(image: im!, index: currentEditingIndex)
         } else {
             let cameraViewController = self.storyboard?.instantiateViewController(withIdentifier: "productPictureEdit") as! HLProductPictureEditViewController
-            cameraViewController.positionToReplace = (sender as! UIButton).tag
+            cameraViewController.positionToReplace = tag
             cameraViewController.prodDelegate = self
             self.present(cameraViewController, animated: true)
         }
@@ -117,13 +136,14 @@ class HLEditProductMainViewController: BaseViewController, ProductPictureDelegat
     }
     
     @IBAction func editItemAction(_ sender: Any) {
-        //let userData = HulaUser.sharedInstance
-        print((sender as! UIButton).tag)
+        guard let tag = ControlSenderPolicy.tag(from: sender) else {
+            return
+        }
         var title = "";
         var previous = "";
         var label = ""
         var item_toUpdate = "";
-        switch (sender as! UIButton).tag {
+        switch tag {
         case 0:
             // image update
             break
@@ -137,13 +157,13 @@ class HLEditProductMainViewController: BaseViewController, ProductPictureDelegat
         case 20:
             // Category
             title = NSLocalizedString("Select a category", comment: "")
-            previous = categoryNameLabel.text!
+            previous = HLEditProductMainViewController.editorPreviousText(categoryNameLabel.text)
             label = NSLocalizedString("Category", comment: "")
             item_toUpdate = "category"
         case 30:
             // Condition
             title = NSLocalizedString("Change your product condition", comment: "")
-            previous = productConditionLabel.text!
+            previous = HLEditProductMainViewController.editorPreviousText(productConditionLabel.text)
             label = NSLocalizedString("Condition", comment: "")
             item_toUpdate = "condition"
         case 40:
@@ -156,7 +176,7 @@ class HLEditProductMainViewController: BaseViewController, ProductPictureDelegat
             // nada
             break
         }
-        if ((sender as! UIButton).tag != 0 ){
+        if (tag != 0 ){
             let editViewController = self.storyboard?.instantiateViewController(withIdentifier: "productTextEditor") as! HLProductEditTextViewController
             editViewController.originalText = previous
             editViewController.label = label
@@ -190,24 +210,19 @@ class HLEditProductMainViewController: BaseViewController, ProductPictureDelegat
         }
         
         
-        if product.arrProductPhotoLink.count > 0 && product.arrProductPhotoLink[0].count > 0 {
-            product.productImage = product.arrProductPhotoLink[0]
-            productImage.loadImageFromURL(urlString: product.arrProductPhotoLink[0])
+        product.syncFeaturedImageFromPhotos()
+        if let featured = product.productImage, featured.count > 0 {
+            productImage.loadImageFromURL(urlString: featured)
         } else {
+            // Featured image_url cleared when the last photo is deleted.
             productImage.loadImageFromURL(urlString: HulaConstants.noProductThumb)
-            //prodImg1.loadImageFromURL(urlString: HulaConstants.noProductThumb)
         }
         numPicturesLabel.text = "\(product.arrProductPhotoLink.count)"
     }
     
     func imageUploaded(path: String, pos: Int){
-        if (product.arrProductPhotoLink.count < pos ){
-            product.arrProductPhotoLink.append(path)
-        } else {
-            product.arrProductPhotoLink[ pos - 1 ] = path
-        }
-        if (pos == 1){
-            product.productImage = path
+        product.applyUploadedImage(path: path, pos: pos)
+        if pos == 1 {
             self.productImage.loadImageFromURL(urlString: path)
         }
         redrawProductImages()

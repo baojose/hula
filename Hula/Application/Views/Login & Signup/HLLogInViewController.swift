@@ -77,7 +77,13 @@ class HLLogInViewController: UserBaseViewController, UITextFieldDelegate {
     @IBAction func gotoNextStep(_ sender: Any) {
         // check credentials over the API
         dismissKeyboard()
-        HLDataManager.sharedInstance.loginUser(email: emailField.text!, pass: passwordField.text!)
+        guard let credentials = AuthFormPolicy.loginCredentials(
+            email: emailField.text,
+            password: passwordField.text
+        ) else {
+            return
+        }
+        HLDataManager.sharedInstance.loginUser(email: credentials.email, pass: credentials.password)
         
         UIView.animate(withDuration: 0.2, animations: {
             self.loginErrorView.frame.origin.y = self.view.frame.height
@@ -86,9 +92,7 @@ class HLLogInViewController: UserBaseViewController, UITextFieldDelegate {
         
     }
     func checkUserInput(){
-        let email_str = emailField.text!
-        let pass_str = passwordField.text!
-        if ((pass_str.count>4) && (email_str.count>4)){
+        if AuthFormPolicy.shouldEnableLogin(email: emailField.text, password: passwordField.text) {
             nextButton.startAnimation()
         } else {
             nextButton.stopAnimation()
@@ -102,7 +106,9 @@ class HLLogInViewController: UserBaseViewController, UITextFieldDelegate {
     
     func loginDataRecieved(notification: NSNotification) {
         //print("Login received. Going to welcome vc")
-        let loginOk = notification.object as! String
+        guard let loginOk = HLLogInViewController.loginResultMessage(from: notification.object) else {
+            return
+        }
         //print(loginOk)
         if (loginOk == "ok"){
             DispatchQueue.main.async {
@@ -126,6 +132,11 @@ class HLLogInViewController: UserBaseViewController, UITextFieldDelegate {
                 self.view.setNeedsDisplay()
             }
         }
+    }
+
+    /// Email login posts a String message (`"ok"` or error text). Reject wrong types instead of crashing.
+    class func loginResultMessage(from object: Any?) -> String? {
+        return object as? String
     }
     
     func dismissKeyboard(){

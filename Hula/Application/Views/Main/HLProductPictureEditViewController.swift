@@ -57,7 +57,7 @@ class HLProductPictureEditViewController: BaseViewController, UIImagePickerContr
     
 
     func initView(){
-        titleLabel.attributedText = commonUtils.attributedStringWithTextSpacing(titleLabel.text!, 2.33)
+        titleLabel.attributedText = commonUtils.attributedStringWithTextSpacing(titleLabel.text, 2.33)
     }
     func initCamera(){
         captureSession.sessionPreset = AVCaptureSessionPresetHigh
@@ -107,7 +107,10 @@ class HLProductPictureEditViewController: BaseViewController, UIImagePickerContr
     
     
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [String : Any]) {
-        let chosenImage = info[UIImagePickerControllerOriginalImage] as! UIImage //2
+        guard let chosenImage = CommonUtils.pickedOriginalImage(from: info) else {
+            dismiss(animated: true, completion: nil)
+            return
+        }
         let croppedImage:UIImage = self.commonUtils.cropImage(chosenImage, HulaConstants.product_image_thumb_size)
         // save the image
         self.stopSession()
@@ -154,7 +157,7 @@ class HLProductPictureEditViewController: BaseViewController, UIImagePickerContr
     }
     func stopSession() {
         captureSession.stopRunning()
-        for i : AVCaptureDeviceInput in (self.captureSession.inputs as! [AVCaptureDeviceInput]){
+        for i in CommonUtils.captureDeviceInputs(from: self.captureSession.inputs) {
             self.captureSession.removeInput(i)
         }
     }
@@ -177,10 +180,21 @@ class HLProductPictureEditViewController: BaseViewController, UIImagePickerContr
         picker.delegate = self;
         picker.allowsEditing = false
         picker.sourceType = .photoLibrary
-        picker.mediaTypes = UIImagePickerController.availableMediaTypes(for: .photoLibrary)!
+        // Images only — availableMediaTypes includes video and picking one
+        // crashed in didFinishPickingMediaWithInfo via as! UIImage.
+        picker.mediaTypes = CommonUtils.photoLibraryImageMediaTypes()
         present(picker, animated: true, completion: nil)
     }
     
+    /// Still-image completions must hop to main before session/UI work.
+    static func performCameraUIUpdate(_ work: @escaping () -> Void) {
+        if Thread.isMainThread {
+            work()
+        } else {
+            DispatchQueue.main.async(execute: work)
+        }
+    }
+
     func saveToCamera(_ sender: Any) {
         
         if let videoConnection = stillImageOutput.connection(withMediaType: AVMediaTypeVideo) {
@@ -189,11 +203,13 @@ class HLProductPictureEditViewController: BaseViewController, UIImagePickerContr
                 if let imageData = AVCaptureStillImageOutput.jpegStillImageNSDataRepresentation(CMSampleBuffer) {
                     
                     if let cameraImage = UIImage(data: imageData) {
-                        
                         let croppedImage:UIImage = self.commonUtils.cropImage(cameraImage, HulaConstants.product_image_thumb_size)
-                        self.stopSession()
-                        // save this image
-                        self.uploadImage(croppedImage)
+                        // captureStillImageAsynchronously completes off the main thread;
+                        // stopSession/dismiss must not run off-main.
+                        HLProductPictureEditViewController.performCameraUIUpdate {
+                            self.stopSession()
+                            self.uploadImage(croppedImage)
+                        }
                     }
                 }
             })
@@ -201,6 +217,14 @@ class HLProductPictureEditViewController: BaseViewController, UIImagePickerContr
     }
     
     
+    /// Soft-parse 1-based upload `position` (String or numeric JSON); reject non-numeric/blank/zero.
+    class func uploadedImagePosition(from position: Any?) -> Int? {
+        guard let pos = HLMyProductsViewController.uploadSlotIndex(from: position, maxSlots: 100), pos >= 1 else {
+            return nil
+        }
+        return pos
+    }
+
     func uploadImage(_ image:UIImage) {
         //print("Getting user info...")
         print("Uploading images...")
@@ -212,13 +236,15 @@ class HLProductPictureEditViewController: BaseViewController, UIImagePickerContr
                         //print(dictionary)
                         if let filePath:String = dictionary["path"] as? String {
                             //print(filePath)
-                            if let pos = dictionary["position"] as? String {
+                            if let pos = HLProductPictureEditViewController.uploadedImagePosition(
+                                from: dictionary["position"]
+                            ) {
                                 //print(pos)
                                 self.resultingImage = HulaConstants.staticServerURL + filePath
                                 //print(self.resultingImage)
                                 
                                 
-                                self.prodDelegate?.imageUploaded(path:self.resultingImage, pos: Int(pos)! )
+                                self.prodDelegate?.imageUploaded(path:self.resultingImage, pos: pos )
                                 
                                 //print("sent to delegate")
                                 //print("dismiss")

@@ -28,8 +28,16 @@ class HLDashboardViewController: BaseViewController {
     let sectionInsets = UIEdgeInsets(top: 4, left: 0, bottom: 30, right: 0)
     var lastTradeInteracted:String = ""
     var last_trade_request : Double = 0
-    
-    
+
+    /// Empty userId must not GET `users/report/`.
+    class func reportUserURL(apiBase: String, userId: String?) -> String? {
+        return CommonUtils.apiResourceURL(apiBase: apiBase, path: ["users", "report", userId])
+    }
+
+    class func tradeUpdateURL(apiBase: String, tradeId: String?) -> String? {
+        return CommonUtils.apiResourceURL(apiBase: apiBase, path: ["trades", tradeId])
+    }
+
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -179,7 +187,12 @@ class HLDashboardViewController: BaseViewController {
     }
     
     func reportUser(_ userId:String){
-        let queryURL = HulaConstants.apiURL + "users/report/\(userId)"
+        guard let queryURL = HLDashboardViewController.reportUserURL(
+            apiBase: HulaConstants.apiURL,
+            userId: userId
+        ) else {
+            return
+        }
         //print(dataString)
         HLDataManager.sharedInstance.httpGet(urlstr: queryURL, taskCallback: { (ok, json) in
             if (ok){
@@ -216,9 +229,14 @@ extension HLDashboardViewController: AlertDelegate{
         if (trigger == "cancelconfirm" && response == "ok"){
             let tradeId = lastTradeInteracted
             if (tradeId != ""){
-                let queryURL = HulaConstants.apiURL + "trades/\(tradeId)"
+                guard let queryURL = HLDashboardViewController.tradeUpdateURL(
+                    apiBase: HulaConstants.apiURL,
+                    tradeId: tradeId
+                ) else {
+                    return
+                }
                 let status = HulaConstants.cancel_status
-                let dataString:String = "status=\(status)"
+                let dataString = CommonUtils.tradeStatusPostString(status: status)
                 //print(dataString)
                 HLDataManager.sharedInstance.httpPost(urlstr: queryURL, postString: dataString, isPut: true, taskCallback: { (ok, json) in
                     if (ok){
@@ -251,7 +269,17 @@ extension HLDashboardViewController: UICollectionViewDelegate, UICollectionViewD
     
     
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return max((swappPageVC?.arrTrades.count)!, HulaUser.sharedInstance.maxTrades)
+        // swappPageVC is assigned in refreshCollectionViewData (viewWillAppear).
+        // Layout/data-source calls can run earlier; never force-unwrap the optional count.
+        return HLDashboardViewController.tradeRoomCount(
+            tradeCount: swappPageVC?.arrTrades.count,
+            maxTrades: HulaUser.sharedInstance.maxTrades
+        )
+    }
+
+    /// Room grid always shows at least maxTrades slots; nil trade list → empty rooms only.
+    class func tradeRoomCount(tradeCount: Int?, maxTrades: Int) -> Int {
+        return max(tradeCount ?? 0, maxTrades)
     }
     
     
@@ -264,14 +292,20 @@ extension HLDashboardViewController: UICollectionViewDelegate, UICollectionViewD
         
         //print(cell.frame)
         // Configure the cell
-        if ((swappPageVC?.arrTrades.count)! > indexPath.row){
+        let trades = swappPageVC?.arrTrades
+        if let trades = trades, trades.count > indexPath.row {
             //print("Drawing row \(indexPath.row)")
             cell.isEmptyRoom = false
-            let thisTrade : NSDictionary = (swappPageVC?.arrTrades[indexPath.row])!
+            let thisTrade : NSDictionary = trades[indexPath.row]
             cell.emptyRoomLabel.text = ""
             //print(thisTrade)
             
-            let trade_status =  (thisTrade.object(forKey: "status") as? String)!
+            guard let trade_status = thisTrade.object(forKey: "status") as? String,
+                  let tradeId = thisTrade.object(forKey: "_id") as? String else {
+                cell.isEmptyRoom = true
+                cell.emptyRoomLabel.text = NSLocalizedString("Trade unavailable", comment: "")
+                return cell
+            }
             var status = trade_status
             if status == HulaConstants.end_status || status == HulaConstants.cancel_status {
                 status = "past"
@@ -279,56 +313,55 @@ extension HLDashboardViewController: UICollectionViewDelegate, UICollectionViewD
                 status = "current"
             }
             cell.tradeStatus = status
-            
-            cell.tradeId = (thisTrade.object(forKey: "_id") as? String)!
-            
+
+            cell.tradeId = tradeId
+
             var otherUserId = thisTrade.object(forKey: "other_id") as? String
             if otherUserId == HulaUser.sharedInstance.userId {
                 otherUserId = thisTrade.object(forKey: "owner_id") as? String
             }
-            if( otherUserId != nil){
-                cell.userImage.loadImageFromURL(urlString: CommonUtils.sharedInstance.userImageURL(userId: otherUserId!) )
-                
+            if let otherUserId = otherUserId {
+                cell.userImage.loadImageFromURL(urlString: CommonUtils.sharedInstance.userImageURL(userId: otherUserId) )
+                cell.userId = otherUserId
+            } else {
+                cell.userId = ""
             }
-            cell.userId = otherUserId!;
             cell.chatCountLabel.isHidden = true
             var owner_money : Float = 0;
             var other_money : Float = 0;
             
-            if let tmp = thisTrade.object(forKey: "owner_money") as? Float{
+            if let tmp = CommonUtils.floatFromJSON(thisTrade.object(forKey: "owner_money")) {
                 owner_money = tmp
             }
-            if let tmp = thisTrade.object(forKey: "other_money") as? Float{
+            if let tmp = CommonUtils.floatFromJSON(thisTrade.object(forKey: "other_money")) {
                 other_money = tmp
             }
             
             if (HulaUser.sharedInstance.userId == thisTrade.object(forKey: "other_id") as? String ){
                 // i am the other of the trade
-                if let other_products_arr = thisTrade.object(forKey: "other_products") as? [String]{
+                if let other_products_arr = CommonUtils.stringArrayFromJSON(thisTrade.object(forKey: "other_products")) {
                     drawProducts(inCell: cell, fromArr: other_products_arr, money: other_money, side: "left")
                 }
-                if let owner_products_arr = thisTrade.object(forKey: "owner_products") as? [String]{
+                if let owner_products_arr = CommonUtils.stringArrayFromJSON(thisTrade.object(forKey: "owner_products")) {
                     drawProducts(inCell: cell, fromArr: owner_products_arr, money: owner_money, side: "right")
                 }
                 
-                if let chat_count = thisTrade.object(forKey: "other_unread") as? Int{
-                    if chat_count > 0 {
-                        cell.chatCountLabel.text = "\(chat_count)"
-                        cell.chatCountLabel.isHidden = false
-                    }
+                if let chat_count = CommonUtils.intFromJSON(thisTrade.object(forKey: "other_unread")),
+                   chat_count > 0 {
+                    cell.chatCountLabel.text = "\(chat_count)"
+                    cell.chatCountLabel.isHidden = false
                 }
             } else {
-                if let other_products_arr = thisTrade.object(forKey: "other_products") as? [String]{
+                if let other_products_arr = CommonUtils.stringArrayFromJSON(thisTrade.object(forKey: "other_products")) {
                     drawProducts(inCell: cell, fromArr: other_products_arr, money: other_money, side: "right")
                 }
-                if let owner_products_arr = thisTrade.object(forKey: "owner_products") as? [String]{
+                if let owner_products_arr = CommonUtils.stringArrayFromJSON(thisTrade.object(forKey: "owner_products")) {
                     drawProducts(inCell: cell, fromArr: owner_products_arr, money: owner_money, side: "left")
                 }
-                if let chat_count = thisTrade.object(forKey: "owner_unread") as? Int{
-                    if chat_count > 0 {
-                        cell.chatCountLabel.text = "\(chat_count)"
-                        cell.chatCountLabel.isHidden = false
-                    }
+                if let chat_count = CommonUtils.intFromJSON(thisTrade.object(forKey: "owner_unread")),
+                   chat_count > 0 {
+                    cell.chatCountLabel.text = "\(chat_count)"
+                    cell.chatCountLabel.isHidden = false
                 }
             }
             
@@ -408,7 +441,7 @@ extension HLDashboardViewController: UICollectionViewDelegate, UICollectionViewD
         //print("Barter room clicked")
         //print(indexPath.row)
         
-        if ((swappPageVC?.arrTrades.count)! > indexPath.row){
+        if let trades = swappPageVC?.arrTrades, trades.count > indexPath.row {
 
             
             //let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "tradeCell", for: indexPath) as! HLTradesCollectionViewCell
@@ -419,13 +452,19 @@ extension HLDashboardViewController: UICollectionViewDelegate, UICollectionViewD
             
             DispatchQueue.main.asyncAfter(deadline: when) {
                 if let swappPageVC = self.parent as? HLSwappPageViewController{
+                    // Re-check bounds: getTrades / mode toggles can shrink arrTrades during the delay.
+                    guard indexPath.row < swappPageVC.arrTrades.count else {
+                        return
+                    }
                     self.selectedBarter = indexPath.row
                     let thisTrade: NSDictionary = swappPageVC.arrTrades[indexPath.row]
                     self.swappPageVC?.currentTrade = thisTrade
                     self.swappPageVC?.currentIndex = indexPath.row
                     //print(swappPageVC.currentTrade!)
-                    
-                    let tradeStatus = thisTrade.object(forKey: "status") as! String
+
+                    guard let tradeStatus = thisTrade.object(forKey: "status") as? String else {
+                        return
+                    }
                     if HLDataManager.sharedInstance.tradeMode == "current" && tradeStatus != HulaConstants.review_status {
                         let vc = (self.storyboard?.instantiateViewController( withIdentifier: "barterRoom")) as! HLBarterScreenViewController
                         self.swappPageVC?.orderedViewControllers[1] = vc
@@ -434,7 +473,7 @@ extension HLDashboardViewController: UICollectionViewDelegate, UICollectionViewD
                         vc.currTrade = thisTrade
                         self.swappPageVC?.orderedViewControllers[1] = vc
                     }
-                    
+
                     self.swappPageVC?.goTo(page: 1)
                 }
                 //print(self.parent!)
@@ -463,38 +502,35 @@ extension HLDashboardViewController: UICollectionViewDelegate, UICollectionViewD
         }
         let verticalCenter:CGFloat = (59.0/2) - productImagesWidth/2;
         for img in fromArr {
-            if (img != ""){
-                let newImg = UIImageView()
-                if (side=="right"){
-                    newImg.frame = CGRect(x: ( CGFloat(counter) * (productImagesWidth + productImagesMargin)) + productImagesMargin*2,
-                                          y: verticalCenter,
-                                          width: productImagesWidth,
-                                          height: productImagesWidth)
-                    inCell.right_side.addSubview(newImg)
-                } else {
-                    newImg.frame = CGRect(x: inCell.left_side.frame.width - ( CGFloat(counter) * (productImagesWidth + productImagesMargin)) - (productImagesMargin) - productImagesWidth,
-                                          y: verticalCenter,
-                                          width: productImagesWidth,
-                                          height: productImagesWidth)
-                    inCell.left_side.addSubview(newImg)
-                    
-                    
-                    /*
-                    
-                    let horizontalConstraint = NSLayoutConstraint(item: newImg, attribute: NSLayoutAttribute.centerX, relatedBy: NSLayoutRelation.equal, toItem: inCell.left_side, attribute: NSLayoutAttribute.right, multiplier: 1, constant:  -( ( CGFloat(counter) * (productImagesWidth + productImagesMargin)) - (productImagesMargin) - productImagesWidth))
-                    
-                    NSLayoutConstraint.activate([horizontalConstraint])
-                    */
-                }
-                
-                let thumb = commonUtils.getThumbFor(url: HulaConstants.apiURL + "products/\(img)/image")
-                newImg.loadImageFromURL(urlString: thumb)
-                
-
-                
-                
-                counter += 1
+            guard let imageURL = CommonUtils.productImageURL(apiBase: HulaConstants.apiURL, productId: img) else {
+                continue
             }
+            let newImg = UIImageView()
+            if (side=="right"){
+                newImg.frame = CGRect(x: ( CGFloat(counter) * (productImagesWidth + productImagesMargin)) + productImagesMargin*2,
+                                      y: verticalCenter,
+                                      width: productImagesWidth,
+                                      height: productImagesWidth)
+                inCell.right_side.addSubview(newImg)
+            } else {
+                newImg.frame = CGRect(x: inCell.left_side.frame.width - ( CGFloat(counter) * (productImagesWidth + productImagesMargin)) - (productImagesMargin) - productImagesWidth,
+                                      y: verticalCenter,
+                                      width: productImagesWidth,
+                                      height: productImagesWidth)
+                inCell.left_side.addSubview(newImg)
+                
+                
+                /*
+                
+                let horizontalConstraint = NSLayoutConstraint(item: newImg, attribute: NSLayoutAttribute.centerX, relatedBy: NSLayoutRelation.equal, toItem: inCell.left_side, attribute: NSLayoutAttribute.right, multiplier: 1, constant:  -( ( CGFloat(counter) * (productImagesWidth + productImagesMargin)) - (productImagesMargin) - productImagesWidth))
+                
+                NSLayoutConstraint.activate([horizontalConstraint])
+                */
+            }
+
+            let thumb = commonUtils.getThumbFor(url: imageURL)
+            newImg.loadImageFromURL(urlString: thumb)
+            counter += 1
         }
         if money > 0 {
             let mn = UILabel()

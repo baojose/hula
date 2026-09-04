@@ -16,6 +16,29 @@ class HLNotificationsViewController: BaseViewController, UITableViewDelegate, UI
     @IBOutlet weak var notificationsTable: UITableView!
     var last_logged_user:String = ""
     var timer:Timer!
+
+    /// Empty tradeId must not PUT `trades/` or GET `trades//agree`.
+    class func tradeUpdateURL(apiBase: String, tradeId: String?) -> String? {
+        return CommonUtils.apiResourceURL(apiBase: apiBase, path: ["trades", tradeId])
+    }
+
+    class func tradeAgreeURL(apiBase: String, tradeId: String?) -> String? {
+        return CommonUtils.apiResourceURL(apiBase: apiBase, path: ["trades", tradeId, "agree"])
+    }
+
+    class func notificationDeleteURL(apiBase: String, notificationId: String?) -> String? {
+        return CommonUtils.apiResourceURL(apiBase: apiBase, path: ["notifications", "delete", notificationId])
+    }
+
+    class func notificationReadURL(apiBase: String, notificationId: String?) -> String? {
+        return CommonUtils.apiResourceURL(apiBase: apiBase, path: ["notifications", notificationId])
+    }
+
+    /// Avatar GET. Blank from_id must not hit `users//image`.
+    class func userImageURL(apiBase: String, userId: String?) -> String? {
+        return CommonUtils.userImageURL(apiBase: apiBase, userId: userId)
+    }
+
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -86,7 +109,9 @@ class HLNotificationsViewController: BaseViewController, UITableViewDelegate, UI
 
         
         let cell = tableView.dequeueReusableCell(withIdentifier: "NotificationsCategoryCell") as! HLHomeNotificationsTableViewCell
-        let notification : NSDictionary = HLDataManager.sharedInstance.arrNotifications.object(at: indexPath.row) as! NSDictionary
+        guard let notification = HLDataManager.sharedInstance.notification(at: indexPath.row) else {
+            return cell
+        }
         
         var is_old = false
         
@@ -102,12 +127,13 @@ class HLNotificationsViewController: BaseViewController, UITableViewDelegate, UI
                 cell.backgroundColor = UIColor(red: 1, green: 1, blue: 1, alpha: 1)
             }
             
-            let date = notification.object(forKey: "date") as? String
-            let realdate = CommonUtils.sharedInstance.isoDateToNSDate(date: date!)
-            let days_since = daysBetween(start: realdate as Date, end: NSDate() as Date )
-            print(days_since);
-            if days_since > 3 {
-                is_old = true;
+            if let date = notification.object(forKey: "date") as? String, date.count > 0 {
+                let realdate = CommonUtils.sharedInstance.isoDateToNSDate(date: date)
+                let days_since = daysBetween(start: realdate as Date, end: NSDate() as Date )
+                print(days_since);
+                if days_since > 3 {
+                    is_old = true;
+                }
             }
             cell.newTradeActionView.isHidden = true
             if let type = notification.object(forKey: "type") as? String{
@@ -132,12 +158,14 @@ class HLNotificationsViewController: BaseViewController, UITableViewDelegate, UI
         
         cell.NotificationsText.text = notification.object(forKey: "text") as? String
         commonUtils.circleImageView(cell.NotificationImageView)
-        
-        let date = commonUtils.isoDateToNSDate(date: (notification.object(forKey: "date") as? String)!)
-        let relativeDate = commonUtils.timeAgoSinceDate(date: date, numericDates: false)
-        cell.NotificationsDate.text = relativeDate
-        if let usr = notification.object(forKey: "from_id") as? String{
-            cell.NotificationImageView.loadImageFromURL(urlString: HulaConstants.apiURL + "users/\(usr)/image")
+
+        cell.NotificationsDate.text = commonUtils.relativeDateLabel(
+            fromISO: notification.object(forKey: "date") as? String,
+            numericDates: false
+        )
+        if let usr = notification.object(forKey: "from_id") as? String,
+           let avatarURL = HLNotificationsViewController.userImageURL(apiBase: HulaConstants.apiURL, userId: usr) {
+            cell.NotificationImageView.loadImageFromURL(urlString: avatarURL)
         }
         return cell
     }
@@ -145,24 +173,27 @@ class HLNotificationsViewController: BaseViewController, UITableViewDelegate, UI
     
     func rejectBtnTapped(_ sender:UIButton){
         let tag = sender.tag
-        let notification : NSDictionary = HLDataManager.sharedInstance.arrNotifications.object(at: tag) as! NSDictionary
-        
-        if let notification_id = notification.object(forKey: "_id") as? String{
-            markAsReadNotification(notification_id)
-            
-        }
+        guard let notification = HLDataManager.sharedInstance.notification(at: tag) else { return }
+        let notification_id = notification.object(forKey: "_id") as? String
         
         if let user_id = notification.object(forKey: "from_id") as? String{
             let tradeId = HLDataManager.sharedInstance.getTradeWith(user_id)
-            if tradeId != "" {
+            if PendingOfferPolicy.shouldRunOfferAction(tradeId: tradeId) {
                 // close trade
-                let queryURL = HulaConstants.apiURL + "trades/\(tradeId)"
+                guard let queryURL = HLNotificationsViewController.tradeUpdateURL(
+                    apiBase: HulaConstants.apiURL,
+                    tradeId: tradeId
+                ) else {
+                    return
+                }
                 let status = HulaConstants.cancel_status
-                let dataString:String = "status=\(status)"
+                let dataString = CommonUtils.tradeStatusPostString(status: status)
                 print(queryURL)
                 HLDataManager.sharedInstance.httpPost(urlstr: queryURL, postString: dataString, isPut: true, taskCallback: { (ok, json) in
                     if (ok){
-                        //print(json!)
+                        if let nid = notification_id {
+                            self.markAsReadNotification(nid)
+                        }
                         HLDataManager.sharedInstance.getTrades(taskCallback: { (success) in
                             // update trade counts
                             print("Trades loaded from sellerinfo")
@@ -178,39 +209,39 @@ class HLNotificationsViewController: BaseViewController, UITableViewDelegate, UI
     func acceptBtnTapped(_ sender:UIButton){
         
         let tag = sender.tag
-        let notification : NSDictionary = HLDataManager.sharedInstance.arrNotifications.object(at: tag) as! NSDictionary
-        
-        if let notification_id = notification.object(forKey: "_id") as? String{
-            markAsReadNotification(notification_id)
-        }
+        guard let notification = HLDataManager.sharedInstance.notification(at: tag) else { return }
+        let notification_id = notification.object(forKey: "_id") as? String
         print("Accept pressed")
         if let user_id = notification.object(forKey: "from_id") as? String{
             let tradeId = HLDataManager.sharedInstance.getTradeWith(user_id)
             print("Trade id \(tradeId)")
             print("User id \(user_id)")
-            if tradeId != "" {
-                // close trade
-                let queryURL = HulaConstants.apiURL + "trades/\(tradeId)/agree";
+            if PendingOfferPolicy.shouldRunOfferAction(tradeId: tradeId) {
+                // Agree first; only open the trade room after the server accepts.
+                guard let queryURL = HLNotificationsViewController.tradeAgreeURL(
+                    apiBase: HulaConstants.apiURL,
+                    tradeId: tradeId
+                ) else {
+                    return
+                }
                 print("queryURL \(queryURL)");
                 HLDataManager.sharedInstance.httpGet(urlstr: queryURL, taskCallback: { (ok, json) in
-                    if (ok){
-                        //print(json!)
-                        if (json as? [String: Any]) != nil {
-                            //print(dictionary)
+                    guard CommonUtils.agreeResponseSucceeded(ok: ok, json: json) else { return }
+                    if let nid = notification_id {
+                        self.markAsReadNotification(nid)
+                    }
+                    DispatchQueue.main.async {
+                        if let portraitNC = self.tabBarController?.navigationController as? HulaPortraitNavigationController {
+                            portraitNC.openSwapView()
                         }
-                        //NotificationCenter.default.post(name: self.signupRecieved, object: signupSuccess)
                     }
                 })
             }
         }
         
-        if let portraitNC = self.tabBarController?.navigationController as? HulaPortraitNavigationController {
-            portraitNC.openSwapView()
-        }
-        
     }
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        let notification : NSDictionary = HLDataManager.sharedInstance.arrNotifications.object(at: indexPath.row) as! NSDictionary
+        guard let notification = HLDataManager.sharedInstance.notification(at: indexPath.row) else { return }
         
         if let type = notification.object(forKey: "type") as? String{
             if (type == "trade"){
@@ -227,17 +258,18 @@ class HLNotificationsViewController: BaseViewController, UITableViewDelegate, UI
             }
             
             if (type == "start"){
-                let user_id = notification.object(forKey: "from_id") as! String
-                HLDataManager.sharedInstance.getUserProfile(userId: user_id, taskCallback: {(user, prods, userfeedback) in
-                    let storyboard = UIStoryboard(name: "Main", bundle: nil)
-                    let myModalViewController = storyboard.instantiateViewController(withIdentifier: "sellerInfoPage") as! HLSellerInfoViewController
-                    myModalViewController.user = user
-                    myModalViewController.userProducts = prods
-                    myModalViewController.userFeedback = userfeedback
-                    myModalViewController.modalPresentationStyle = UIModalPresentationStyle.fullScreen
-                    myModalViewController.modalTransitionStyle = UIModalTransitionStyle.coverVertical
-                    self.navigationController?.pushViewController(myModalViewController, animated: true)
-                })
+                if let user_id = notification.object(forKey: "from_id") as? String, user_id.count > 0 {
+                    HLDataManager.sharedInstance.getUserProfile(userId: user_id, taskCallback: {(user, prods, userfeedback) in
+                        let storyboard = UIStoryboard(name: "Main", bundle: nil)
+                        let myModalViewController = storyboard.instantiateViewController(withIdentifier: "sellerInfoPage") as! HLSellerInfoViewController
+                        myModalViewController.user = user
+                        myModalViewController.userProducts = prods
+                        myModalViewController.userFeedback = userfeedback
+                        myModalViewController.modalPresentationStyle = UIModalPresentationStyle.fullScreen
+                        myModalViewController.modalTransitionStyle = UIModalTransitionStyle.coverVertical
+                        self.navigationController?.pushViewController(myModalViewController, animated: true)
+                    })
+                }
             }
         }
         
@@ -254,7 +286,7 @@ class HLNotificationsViewController: BaseViewController, UITableViewDelegate, UI
         
         if editingStyle == .delete {
             // remove the item from the data model
-            let notification : NSDictionary = HLDataManager.sharedInstance.arrNotifications.object(at: indexPath.row) as! NSDictionary
+            guard let notification = HLDataManager.sharedInstance.notification(at: indexPath.row) else { return }
             
             let cell = tableView.cellForRow(at: indexPath)
             cell?.alpha = 0.5
@@ -265,7 +297,12 @@ class HLNotificationsViewController: BaseViewController, UITableViewDelegate, UI
                 tableView.deleteRows(at: [indexPath], with: .fade)
              */
             if let notification_id = notification.object(forKey: "_id") as? String{
-                let queryURL = HulaConstants.apiURL + "notifications/delete/" + notification_id
+                guard let queryURL = HLNotificationsViewController.notificationDeleteURL(
+                    apiBase: HulaConstants.apiURL,
+                    notificationId: notification_id
+                ) else {
+                    return
+                }
                 HLDataManager.sharedInstance.httpGet(urlstr: queryURL, taskCallback: { (ok, json) in
                     //print(ok)
                     if (ok){
@@ -284,7 +321,12 @@ class HLNotificationsViewController: BaseViewController, UITableViewDelegate, UI
     }
     
     func markAsReadNotification(_ notification_id:String){
-        let queryURL = HulaConstants.apiURL + "notifications/" + notification_id
+        guard let queryURL = HLNotificationsViewController.notificationReadURL(
+            apiBase: HulaConstants.apiURL,
+            notificationId: notification_id
+        ) else {
+            return
+        }
         HLDataManager.sharedInstance.httpGet(urlstr: queryURL, taskCallback: { (ok, json) in
             //print(ok)
             if (ok){
