@@ -4411,4 +4411,138 @@ class HulaTests: XCTestCase {
         XCTAssertFalse(HLSettingViewController.shouldShowAlertThumbnail(nil))
         XCTAssertTrue(HLSettingViewController.shouldShowAlertThumbnail(UIImage()))
     }
+
+    // MARK: - Label metrics, search keywords, description height
+
+    func testLabelMetricsTextTreatsNilAsEmpty() {
+        XCTAssertEqual(LabelMetricsPolicy.text(nil), "")
+        XCTAssertEqual(LabelMetricsPolicy.text(""), "")
+        XCTAssertEqual(LabelMetricsPolicy.text(" bike "), " bike ")
+        XCTAssertEqual(HLHomeViewController.searchKeyword(from: nil), "")
+        XCTAssertEqual(HLHomeViewController.searchKeyword(from: "camera"), "camera")
+        XCTAssertEqual(HLPostProductViewController.publishTitle(nil), "")
+        XCTAssertEqual(HLPostProductViewController.publishTitle("Bike"), "Bike")
+        XCTAssertEqual(HLCompleteProductProfileViewController.descriptionFieldText(nil), "")
+        XCTAssertEqual(HLEditFieldViewController.savedFieldText(nil), "")
+        XCTAssertEqual(HLEditProductMainViewController.editorPreviousText(nil), "")
+        XCTAssertEqual(HLEditProductMainViewController.editorPreviousText(" Used "), " Used ")
+    }
+
+    func testLabelMetricsLayoutHeightUsesSystemFontWhenFontMissing() {
+        let font = UIFont.systemFont(ofSize: LabelMetricsPolicy.defaultFontSize)
+        let withFont = LabelMetricsPolicy.layoutHeight(width: 200, font: font, text: "Hello")
+        let withoutFont = LabelMetricsPolicy.layoutHeight(width: 200, font: nil, text: "Hello")
+        XCTAssertEqual(withFont, withoutFont)
+        XCTAssertGreaterThan(withFont, 0)
+
+        let empty = LabelMetricsPolicy.layoutHeight(width: 200, font: font, text: nil)
+        let emptyString = LabelMetricsPolicy.layoutHeight(width: 200, font: font, text: "")
+        XCTAssertEqual(empty, emptyString)
+
+        let measured = LabelMetricsPolicy.layoutHeight(width: 200, font: font, text: "desc")
+        XCTAssertEqual(
+            HLProductDetailViewController.descriptionLayoutHeight(width: 200, font: font, text: "desc"),
+            measured + 30
+        )
+        XCTAssertEqual(
+            HLProductModalViewController.descriptionLayoutHeight(width: 200, font: font, text: "desc"),
+            measured + 30
+        )
+
+        let chatMeasured = LabelMetricsPolicy.layoutHeight(width: 200, font: font, text: "hi")
+        XCTAssertEqual(
+            ChatViewController.messageRowHeight(width: 200, font: font, message: "hi"),
+            chatMeasured * 1.3 + 30
+        )
+        XCTAssertEqual(
+            ChatViewController.messageRowHeight(width: 200, font: nil, message: "hi"),
+            ChatViewController.messageRowHeight(width: 200, font: font, message: "hi")
+        )
+        XCTAssertEqual(
+            ChatViewController.messageRowHeight(width: 200, font: font, message: NSNull()),
+            ChatViewController.messageRowHeight(width: 200, font: font, message: nil)
+        )
+
+        let editorMeasured = LabelMetricsPolicy.layoutHeight(width: 200, font: font, text: "x")
+        XCTAssertEqual(
+            HLProductEditTextViewController.editorLayoutHeight(width: 200, font: font, text: "x"),
+            editorMeasured + 40
+        )
+        XCTAssertEqual(
+            HLEditFieldViewController.editorLayoutHeight(width: 200, font: font, text: "x"),
+            LabelMetricsPolicy.layoutHeight(width: 200, font: font, text: "x", extra: 50, suffix: "mmmm")
+        )
+        XCTAssertEqual(
+            HLMyProductsViewController.productTitleHeight(width: 200, font: nil, text: nil),
+            LabelMetricsPolicy.layoutHeight(width: 200, font: nil, text: nil, extra: 0)
+        )
+    }
+
+    func testLabelMetricsTruncationAndClampedDescription() {
+        XCTAssertEqual(LabelMetricsPolicy.truncated(nil, maxLength: 5), "")
+        XCTAssertEqual(LabelMetricsPolicy.truncated("abc", maxLength: 5), "abc")
+        XCTAssertEqual(LabelMetricsPolicy.truncated("abcdef", maxLength: 5), "abcde")
+        XCTAssertEqual(LabelMetricsPolicy.truncated("ab", maxLength: 0), "")
+
+        let empty = HLCompleteProductProfileViewController.clampedDescription(nil)
+        XCTAssertEqual(empty.text, "")
+        XCTAssertEqual(empty.remaining, 200)
+
+        let short = HLCompleteProductProfileViewController.clampedDescription("hello")
+        XCTAssertEqual(short.text, "hello")
+        XCTAssertEqual(short.remaining, 195)
+
+        let long = String(repeating: Character("a"), count: 250)
+        let clamped = HLCompleteProductProfileViewController.clampedDescription(long)
+        XCTAssertEqual(clamped.text.characters.count, 200)
+        XCTAssertEqual(clamped.remaining, 0)
+        XCTAssertEqual(clamped.text, String(repeating: Character("a"), count: 200))
+    }
+
+    func testKernedTabTitleSkipsNilWithoutCrashing() {
+        let empty = HLHomeViewController.kernedTabTitle(nil)
+        XCTAssertEqual(empty.string, "")
+        let titled = HLHomeViewController.kernedTabTitle("NEAR YOU")
+        XCTAssertEqual(titled.string, "NEAR YOU")
+        XCTAssertEqual(titled.length, 8)
+    }
+
+    func testSpacedTitleAcceptsNilText() {
+        let empty = CommonUtils.sharedInstance.attributedStringWithTextSpacing(nil, 2.33)
+        XCTAssertEqual(empty.string, "")
+        let titled = CommonUtils.sharedInstance.attributedStringWithTextSpacing("title", 2.33)
+        XCTAssertEqual(titled.string, "TITLE")
+    }
+
+    func testProductModalDisplayDescriptionFallsBackWhenBlank() {
+        XCTAssertEqual(
+            HLProductModalViewController.displayDescription(nil),
+            NSLocalizedString("No product description provided.", comment: "")
+        )
+        XCTAssertEqual(
+            HLProductModalViewController.displayDescription(""),
+            NSLocalizedString("No product description provided.", comment: "")
+        )
+        XCTAssertEqual(HLProductModalViewController.displayDescription("Nice bike"), "Nice bike")
+        XCTAssertEqual(HLProductDetailViewController.localizedCategory(nil), NSLocalizedString("", comment: ""))
+        XCTAssertEqual(
+            HLProductModalViewController.localizedCondition("used"),
+            NSLocalizedString("used", comment: "")
+        )
+        XCTAssertEqual(
+            HLProductDetailViewController.localizedCondition("used"),
+            NSLocalizedString("used", comment: "").capitalized
+        )
+    }
+
+    func testEditFieldEmailValidationSkipsNilEmail() {
+        XCTAssertEqual(
+            HLEditFieldViewController.emailValidationMessage(email: nil),
+            "We have just sent you an email to . Please follow the instructions provided on that message."
+        )
+        XCTAssertEqual(
+            HLEditFieldViewController.emailValidationMessage(email: "ada@hula.trading"),
+            "We have just sent you an email to ada@hula.trading. Please follow the instructions provided on that message."
+        )
+    }
 }
