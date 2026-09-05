@@ -55,15 +55,16 @@ class HLSignUpViewController: UserBaseViewController, UITextFieldDelegate  {
     }
     //test
     @IBAction func nextStepPressed(_ sender: Any) {
-        if (signupField.text! != ""){
+        let fieldText = AuthFormPolicy.fieldText(signupField.text)
+        if AuthFormPolicy.shouldAdvanceSignup(fieldText: fieldText) {
             signupField.isSecureTextEntry = false
             switch currentStep {
             case 0:
-                userNick = signupField.text!
+                userNick = fieldText
                 checkUsernick(nick:userNick)
                 break
             case 1:
-                userEmail = signupField.text!
+                userEmail = fieldText
                 signupField.text = ""
                 signupField.isSecureTextEntry = true
                 currentStep += 1
@@ -73,7 +74,7 @@ class HLSignUpViewController: UserBaseViewController, UITextFieldDelegate  {
                 resetStepTexts()
                 break
             case 2:
-                userPassword = signupField.text!
+                userPassword = fieldText
                 signupField.text = ""
                 //resetStepTexts()
                 currentStep += 1
@@ -107,8 +108,12 @@ class HLSignUpViewController: UserBaseViewController, UITextFieldDelegate  {
     }
     
     func checkUsernick(nick:String){
-        let escaped = nick.addingPercentEncoding(withAllowedCharacters: .alphanumerics)
-        let queryURL = HulaConstants.apiURL + "users/validatenick/\( escaped! )"
+        guard let queryURL = HLSignUpViewController.validateNickURL(
+            apiBase: HulaConstants.apiURL,
+            nick: nick
+        ) else {
+            return
+        }
         //print(queryURL)
         
         HLDataManager.sharedInstance.httpGet(urlstr: queryURL, taskCallback: { (ok, json) in
@@ -139,10 +144,12 @@ class HLSignUpViewController: UserBaseViewController, UITextFieldDelegate  {
     }
 
     @IBAction func gotoTermsConditionsAction(_ sender: Any) {
-        UIApplication.shared.openURL(URL(string: "https://hula.trading/legal.html")!)
+        if let url = HLSignUpViewController.legalURL() {
+            UIApplication.shared.openURL(url)
+        }
     }
     @IBAction func signupFieldChanged(_ sender: Any) {
-        if (self.signupField.text!.count>4){
+        if AuthFormPolicy.shouldEnableNext(text: signupField.text) {
             nextButton.startAnimation()
         } else {
             nextButton.stopAnimation()
@@ -183,21 +190,33 @@ class HLSignUpViewController: UserBaseViewController, UITextFieldDelegate  {
     func signupDataRecieved(notification: NSNotification) {
         //print("Signup received. Closing VC")
         DispatchQueue.main.async {
-            let signupOk = notification.object as! Bool
-            //print("signupOk")
-            //print(signupOk)
-            if (signupOk){
-                let storyBoard : UIStoryboard = UIStoryboard(name: "Main", bundle:nil)
-                let nextViewController = storyBoard.instantiateViewController(withIdentifier: "welcome") as! HLWelcomeViewController
-                //self.present(nextViewController, animated:true, completion:nil)
-                //print("navigationController?.pushViewController")
-                self.navigationController?.pushViewController(nextViewController, animated: true)
-               
-            } else {
+            guard HLSignUpViewController.authNotificationSucceeded(notification.object) else {
                 self.showError(HLDataManager.sharedInstance.lastServerMessage)
+                self.view.setNeedsDisplay()
+                return
             }
+            let storyBoard : UIStoryboard = UIStoryboard(name: "Main", bundle:nil)
+            let nextViewController = storyBoard.instantiateViewController(withIdentifier: "welcome") as! HLWelcomeViewController
+            //self.present(nextViewController, animated:true, completion:nil)
+            //print("navigationController?.pushViewController")
+            self.navigationController?.pushViewController(nextViewController, animated: true)
             self.view.setNeedsDisplay()
         }
+    }
+
+    /// Signup posts a Bool success flag. Missing/wrong-type payloads must not force-cast crash.
+    class func authNotificationSucceeded(_ object: Any?) -> Bool {
+        return CommonUtils.boolFromJSON(object) ?? false
+    }
+
+    /// Empty/unencodable nick must not force-unwrap encoding or hit `users/validatenick/`.
+    class func validateNickURL(apiBase: String, nick: String?) -> String? {
+        return CommonUtils.apiResourceURL(apiBase: apiBase, path: ["users", "validatenick", nick])
+    }
+
+    /// Terms link. Blank/malformed URLs must not crash via `URL(string:)!`.
+    class func legalURL() -> URL? {
+        return CommonUtils.openableURL("https://hula.trading/legal.html")
     }
     @IBAction func beginEditText(_ sender: Any) {
         moveUpView()

@@ -67,16 +67,23 @@ class HulaTrade: NSObject {
         self.num_bids = 0
     }
     
+    /// Create POST. Matches the slash-less `trades` list GET.
+    class func createURL(apiBase: String) -> String? {
+        return CommonUtils.apiCollectionURL(apiBase: apiBase, resource: "trades")
+    }
+
     func saveNewTrade(){
-        let queryURL = HulaConstants.apiURL + "trades"
+        guard let queryURL = HulaTrade.createURL(apiBase: HulaConstants.apiURL) else {
+            return
+        }
         let post_string = get_post_string();
         HLDataManager.sharedInstance.httpPost(urlstr: queryURL, postString: post_string, isPut: false, taskCallback: { (ok, json) in
             if (ok){
                 //print(json!)
                 if let dictionary = json as? NSDictionary {
                     //print(dictionary)
-                    if ((dictionary["id"] as? String) != nil){
-                        self.tradeId = dictionary["id"] as! String
+                    if let newId = dictionary["id"] as? String, newId.count > 0 {
+                        self.tradeId = newId
                     }
                 }
             }
@@ -84,11 +91,40 @@ class HulaTrade: NSObject {
     }
     
     func get_post_string() -> String {
-        return "product_id=\(self.product_id)&owner_id=\(self.owner_id)&other_id=\(self.other_id)&date=\(self.date.iso8601)&owner_products=\(self.owner_products.joined())&other_products=\(self.other_products.joined())&next_bid=\(self.next_bid)&status=\(self.status)&turn_user_id=\(self.turn_user_id)&owner_money=\(self.owner_money)&other_money=\(self.other_money)"
+        let ownerProducts = CommonUtils.formEncodedValue(self.owner_products.joined(separator: ","))
+        let otherProducts = CommonUtils.formEncodedValue(self.other_products.joined(separator: ","))
+        return "product_id=" + CommonUtils.formEncodedValue(self.product_id)
+            + "&owner_id=" + CommonUtils.formEncodedValue(self.owner_id)
+            + "&other_id=" + CommonUtils.formEncodedValue(self.other_id)
+            + "&date=" + CommonUtils.formEncodedValue(self.date.iso8601)
+            + "&owner_products=" + ownerProducts
+            + "&other_products=" + otherProducts
+            + "&next_bid=" + CommonUtils.formEncodedValue(self.next_bid)
+            + "&status=" + CommonUtils.formEncodedValue(self.status)
+            + "&turn_user_id=" + CommonUtils.formEncodedValue(self.turn_user_id)
+            + "&owner_money=\(self.owner_money)&other_money=\(self.other_money)"
+    }
+
+    /// Map trade cash onto the UI "owner"/my side vs "other" side for the current viewer.
+    func money(forSide side: String, viewerIsOwner: Bool) -> Float {
+        switch side {
+        case "other":
+            return viewerIsOwner ? other_money : owner_money
+        default:
+            return viewerIsOwner ? owner_money : other_money
+        }
+    }
+
+    /// Trade GET/PUT. Blank tradeId must not hit `trades/`.
+    class func resourceURL(apiBase: String, tradeId: String?) -> String? {
+        return CommonUtils.tradeResourceURL(apiBase: apiBase, tradeId: tradeId)
     }
     
     func loadTrade(tradeId:String, callback: @escaping (Bool) -> ()){
-        let queryURL = HulaConstants.apiURL + "trades/" + tradeId
+        guard let queryURL = HulaTrade.resourceURL(apiBase: HulaConstants.apiURL, tradeId: tradeId) else {
+            callback(false)
+            return
+        }
         HLDataManager.sharedInstance.httpGet(urlstr: queryURL, taskCallback: { (ok, json) in
             if (ok){
                 if let loaded_trade = json as? NSDictionary {
@@ -116,30 +152,29 @@ class HulaTrade: NSObject {
         if (dict["other_id"] as? String) != nil {
             self.other_id = dict["other_id"] as? String
         }
-        if (dict["other_agree"] as? Bool) != nil {
-            self.other_agree = (dict["other_agree"] as? Bool)!
+        if let flag = CommonUtils.boolFromJSON(dict["other_agree"]) {
+            self.other_agree = flag
         }
-        if (dict["other_ready"] as? Bool) != nil {
-            self.other_ready = (dict["other_ready"] as? Bool)!
+        if let flag = CommonUtils.boolFromJSON(dict["other_ready"]) {
+            self.other_ready = flag
         }
-        if (dict["owner_ready"] as? Bool) != nil {
-            self.owner_ready = (dict["owner_ready"] as? Bool)!
+        if let flag = CommonUtils.boolFromJSON(dict["owner_ready"]) {
+            self.owner_ready = flag
         }
-        if (dict["date"] as? String) != nil {
-            let str_date = dict["date"] as? String
-            self.date = (str_date?.dateFromISO8601)!
+        if let str_date = dict["date"] as? String, let parsed = str_date.dateFromISO8601 {
+            self.date = parsed
         }
-        if (dict["owner_products"] as? [String]) != nil {
-            self.owner_products = (dict["owner_products"] as? [String])!
+        if let products = CommonUtils.stringArrayFromJSON(dict["owner_products"]) {
+            self.owner_products = products
         }
-        if (dict["other_products"] as? [String]) != nil {
-            self.other_products = (dict["other_products"] as? [String])!
+        if let products = CommonUtils.stringArrayFromJSON(dict["other_products"]) {
+            self.other_products = products
         }
-        if (dict["owner_money"] as? Float) != nil {
-            self.owner_money = (dict["owner_money"] as? Float)!
+        if let money = CommonUtils.floatFromJSON(dict["owner_money"]) {
+            self.owner_money = money
         }
-        if (dict["other_money"] as? Float) != nil {
-            self.other_money = (dict["other_money"] as? Float)!
+        if let money = CommonUtils.floatFromJSON(dict["other_money"]) {
+            self.other_money = money
         }
         if (dict["next_bid"] as? String) != nil {
             self.next_bid = dict["next_bid"] as? String
@@ -150,43 +185,43 @@ class HulaTrade: NSObject {
         if (dict["turn_user_id"] as? String) != nil {
             self.turn_user_id = dict["turn_user_id"] as? String
         }
-        if (dict["last_update"] as? String) != nil {
-            let str_date = dict["last_update"] as! String
-            self.last_update = (str_date.dateFromISO8601)!
+        if let str_date = dict["last_update"] as? String, let parsed = str_date.dateFromISO8601 {
+            self.last_update = parsed
         }
-        if (dict["owner_unread"] as? Int) != nil {
-            self.owner_unread = dict["owner_unread"] as! Int
+        if let unread = CommonUtils.intFromJSON(dict["owner_unread"]) {
+            self.owner_unread = unread
         } else {
             self.owner_unread = 0
         }
-        if (dict["other_unread"] as? Int) != nil {
-            self.other_unread = dict["other_unread"] as! Int
+        if let unread = CommonUtils.intFromJSON(dict["other_unread"]) {
+            self.other_unread = unread
         } else {
             self.other_unread = 0
         }
-        if (dict["owner_accepted"] as? Bool) != nil {
-            self.owner_accepted = dict["owner_accepted"] as! Bool
+        if let flag = CommonUtils.boolFromJSON(dict["owner_accepted"]) {
+            self.owner_accepted = flag
         } else {
             self.owner_accepted = false
         }
-        if (dict["other_accepted"] as? Bool) != nil {
-            self.other_accepted = dict["other_accepted"] as! Bool
+        if let flag = CommonUtils.boolFromJSON(dict["other_accepted"]) {
+            self.other_accepted = flag
         } else {
             self.other_accepted = false
         }
         
         //print(dict)
         self.last_bid_diff = []
+        self.num_bids = 0
         if let bids = dict["bids"] as? [Any] {
             self.num_bids = bids.count
-            if let last_bid = bids[ (bids.count - 1) ] as? [String:Any]{
+            if let last_bid = bids.last as? [String:Any]{
                 //print(last_bid)
-                if let lb_owner = last_bid["owner_diff"] as? [String]{
+                if let lb_owner = CommonUtils.stringArrayFromJSON(last_bid["owner_diff"]) {
                     for item in lb_owner {
                         self.last_bid_diff.append(item)
                     }
                 }
-                if let lb_other = last_bid["other_diff"] as? [String]{
+                if let lb_other = CommonUtils.stringArrayFromJSON(last_bid["other_diff"]) {
                     for item in lb_other {
                         self.last_bid_diff.append(item)
                     }
@@ -199,7 +234,9 @@ class HulaTrade: NSObject {
     func updateServerData(){
         //print("Updating trade...")
         if(tradeId.count > 0){
-            let queryURL = HulaConstants.apiURL + "trades/" + self.tradeId
+            guard let queryURL = HulaTrade.resourceURL(apiBase: HulaConstants.apiURL, tradeId: self.tradeId) else {
+                return
+            }
             let post_string = get_post_string();
             HLDataManager.sharedInstance.httpPost(urlstr: queryURL, postString: post_string, isPut: true, taskCallback: { (ok, json) in
                 if (ok){

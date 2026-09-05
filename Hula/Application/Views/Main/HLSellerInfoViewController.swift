@@ -44,6 +44,24 @@ class HLSellerInfoViewController: BaseViewController, UITableViewDelegate, UITab
     var userFeedback: NSArray = []
     var initialTradeFrame: CGRect!
 
+    /// Empty userId must not force-unwrap or GET `users/report/`.
+    class func reportUserURL(apiBase: String, userId: String?) -> String? {
+        return CommonUtils.apiResourceURL(apiBase: apiBase, path: ["users", "report", userId])
+    }
+
+    class func tradeUpdateURL(apiBase: String, tradeId: String?) -> String? {
+        return CommonUtils.tradeResourceURL(apiBase: apiBase, tradeId: tradeId)
+    }
+
+    class func tradeAgreeURL(apiBase: String, tradeId: String?) -> String? {
+        return CommonUtils.tradeResourceURL(apiBase: apiBase, tradeId: tradeId, extra: ["agree"])
+    }
+
+    /// Start-trade POST historically hits `trades/` (trailing slash).
+    class func tradesCreateURL(apiBase: String) -> String? {
+        return CommonUtils.apiCollectionURL(apiBase: apiBase, resource: "trades", trailingSlash: true)
+    }
+
     override func viewDidLoad() {
         super.viewDidLoad()
         self.initData()
@@ -74,11 +92,14 @@ class HLSellerInfoViewController: BaseViewController, UITableViewDelegate, UITab
         
         let thumb = CommonUtils.sharedInstance.getThumbFor(url: user.userPhotoURL)
         profileImage.loadImageFromURL(urlString: thumb)
-        sellerNameLabel.text = user.userNick
+        sellerNameLabel.text = CommonUtils.displayNick(user.userNick)
         self.declineTradeBtn.isHidden = true
         self.acceptTradeBtn.isHidden = true
         if HLDataManager.sharedInstance.amITradingWith(user.userId){
-            self.tradeWithUserButton.setTitle(NSLocalizedString("Currently trading with", comment: "") + " \(user.userNick!)", for: .normal)
+            self.tradeWithUserButton.setTitle(
+                CommonUtils.tradeWithButtonTitle(currentlyTrading: true, nick: user.userNick),
+                for: .normal
+            )
         } else {
             if HLDataManager.sharedInstance.amIOfferedToTradeWith(user.userId){
                 // first offer
@@ -94,7 +115,10 @@ class HLSellerInfoViewController: BaseViewController, UITableViewDelegate, UITab
                 self.acceptTradeBtn.layer.borderColor = UIColor.white.cgColor
                 self.acceptTradeBtn.layer.borderWidth = 1.0
             } else {
-                self.tradeWithUserButton.setTitle(NSLocalizedString("Trade with", comment: "") + " \(user.userNick!)", for: .normal)
+                self.tradeWithUserButton.setTitle(
+                    CommonUtils.tradeWithButtonTitle(currentlyTrading: false, nick: user.userNick),
+                    for: .normal
+                )
             }
         }
         sellerLocationLabel.text = user.userLocationName
@@ -191,6 +215,10 @@ class HLSellerInfoViewController: BaseViewController, UITableViewDelegate, UITab
             if let pnc = self.navigationController?.navigationController as? HulaPortraitNavigationController {
                 pnc.openSwapView()
             }
+        } else if HLDataManager.sharedInstance.amIOfferedToTradeWith(user.userId) {
+            // Pending inbound offer already shows Accept/Decline. Do not POST a second trade
+            // (would burn another room and make getTradeWith prefer the new outbound trade).
+            return
         } else {
             let viewController = self.storyboard?.instantiateViewController(withIdentifier: "alertView") as! AlertViewController
             viewController.delegate = self
@@ -217,11 +245,16 @@ class HLSellerInfoViewController: BaseViewController, UITableViewDelegate, UITab
     
     @IBAction func declineTradeAction(_ sender: Any) {
         let tradeId = HLDataManager.sharedInstance.getTradeWith(user.userId)
-        if tradeId != "" {
+        if PendingOfferPolicy.shouldRunOfferAction(tradeId: tradeId) {
             // close trade
-            let queryURL = HulaConstants.apiURL + "trades/\(tradeId)"
+            guard let queryURL = HLSellerInfoViewController.tradeUpdateURL(
+                apiBase: HulaConstants.apiURL,
+                tradeId: tradeId
+            ) else {
+                return
+            }
             let status = HulaConstants.cancel_status
-            let dataString:String = "status=\(status)"
+            let dataString = CommonUtils.tradeStatusPostString(status: status)
             //print(dataString)
             HLDataManager.sharedInstance.httpPost(urlstr: queryURL, postString: dataString, isPut: true, taskCallback: { (ok, json) in
                 if (ok){
@@ -242,15 +275,23 @@ class HLSellerInfoViewController: BaseViewController, UITableViewDelegate, UITab
     }
     @IBAction func acceptTradeAction(_ sender: Any) {
         let tradeId = HLDataManager.sharedInstance.getTradeWith(user.userId)
-        if tradeId != "" {
+        if PendingOfferPolicy.shouldRunOfferAction(tradeId: tradeId) {
             // close trade
-            let queryURL = HulaConstants.apiURL + "trades/\(tradeId)/agree"
+            guard let queryURL = HLSellerInfoViewController.tradeAgreeURL(
+                apiBase: HulaConstants.apiURL,
+                tradeId: tradeId
+            ) else {
+                return
+            }
             HLDataManager.sharedInstance.httpGet(urlstr: queryURL, taskCallback: { (ok, json) in
                 if (ok){
                     print(json!)
                     if (json as? [String: Any]) != nil {
-                        if let pnc = self.navigationController?.navigationController as? HulaPortraitNavigationController {
-                            pnc.openSwapView()
+                        // httpGet completes off the main thread; present Trade Rooms on main.
+                        DispatchQueue.main.async {
+                            if let pnc = self.navigationController?.navigationController as? HulaPortraitNavigationController {
+                                pnc.openSwapView()
+                            }
                         }
                     }
                     //NotificationCenter.default.post(name: self.signupRecieved, object: signupSuccess)
@@ -266,10 +307,17 @@ class HLSellerInfoViewController: BaseViewController, UITableViewDelegate, UITab
         
         
         
-        let removeAction = UIAlertAction(title: NSLocalizedString("Trade with this user", comment: ""), style: .default, handler: { action -> Void in
-            self.addToTradeAction( UIButton() )
-        })
-        alert.addAction(removeAction)
+        // Hide start-trade when already trading or when a pending inbound offer needs Accept/Decline.
+        // Options → "Trade with this user" previously bypassed that UI and POSTed a duplicate room.
+        if HLDataManager.shouldOfferStartTradeAction(
+            tradingWith: HLDataManager.sharedInstance.amITradingWith(user.userId),
+            pendingInboundOffer: HLDataManager.sharedInstance.amIOfferedToTradeWith(user.userId)
+        ) {
+            let removeAction = UIAlertAction(title: NSLocalizedString("Trade with this user", comment: ""), style: .default, handler: { action -> Void in
+                self.addToTradeAction( UIButton() )
+            })
+            alert.addAction(removeAction)
+        }
         
         let reportAction = UIAlertAction(title: NSLocalizedString("Report this user to the admins", comment: ""), style: .destructive, handler: { action -> Void in
             self.reportUser()
@@ -283,7 +331,12 @@ class HLSellerInfoViewController: BaseViewController, UITableViewDelegate, UITab
     }
     
     func reportUser(){
-        let queryURL = HulaConstants.apiURL + "users/report/\(user.userId!)"
+        guard let queryURL = HLSellerInfoViewController.reportUserURL(
+            apiBase: HulaConstants.apiURL,
+            userId: user.userId
+        ) else {
+            return
+        }
         print(queryURL)
         HLDataManager.sharedInstance.httpGet(urlstr: queryURL, taskCallback: { (ok, json) in
             if (ok){
@@ -323,28 +376,33 @@ extension HLSellerInfoViewController: AlertDelegate{
         }
         if response == "ok" {
             let otherId = user.userId
+            // Re-check pending inbound offer before POSTing — options sheet / stale alert must not create a second room.
+            if HLDataManager.sharedInstance.amIOfferedToTradeWith(otherId ?? "") {
+                return
+            }
             if(HulaUser.sharedInstance.userId != otherId){
                 if (HulaUser.sharedInstance.userId.count>0){
                     // user is loggedin
-                    DispatchQueue.main.async {
-                        UIView.animate(withDuration: 0.3, animations: {
-                            self.addToTradeViewContainer.frame = self.view.frame
-                        })
+                    guard let dataString = StartTradeUIPolicy.postString(productId: "", otherId: otherId) else {
+                        return
                     }
-                    
-                    let queryURL = HulaConstants.apiURL + "trades/"
-                    let dataString:String = "product_id=&other_id=\(otherId!)"
+                    guard let queryURL = HLSellerInfoViewController.tradesCreateURL(apiBase: HulaConstants.apiURL) else {
+                        return
+                    }
                     HLDataManager.sharedInstance.httpPost(urlstr: queryURL, postString: dataString, isPut: false, taskCallback: { (ok, json) in
-                        if (ok){
-                            // show barter screen
-                            DispatchQueue.main.async {
+                        let expandOverlay = StartTradeUIPolicy.shouldExpandOverlay(postCompleted: true, postSucceeded: ok)
+                        let openSwap = StartTradeUIPolicy.shouldOpenSwapView(postSucceeded: ok)
+                        DispatchQueue.main.async {
+                            if expandOverlay {
+                                UIView.animate(withDuration: 0.3, animations: {
+                                    self.addToTradeViewContainer.frame = self.view.frame
+                                })
+                            }
+                            if openSwap {
                                 if let pnc = self.navigationController?.navigationController as? HulaPortraitNavigationController {
                                     pnc.openSwapView()
                                 }
                             }
-                        } else {
-                            // connection error
-                            print("Connection error")
                         }
                     })
                 }

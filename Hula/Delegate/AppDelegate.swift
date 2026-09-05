@@ -103,7 +103,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         
         
         if #available(iOS 9.0, *) {
-            let isHandled = FBSDKApplicationDelegate.sharedInstance().application(app, open: url, sourceApplication: options[.sourceApplication] as! String!, annotation: options[.annotation])
+            let sourceApplication = AppDelegate.facebookSourceApplication(from: options)
+            let isHandled = FBSDKApplicationDelegate.sharedInstance().application(app, open: url, sourceApplication: sourceApplication, annotation: options[.annotation])
             return isHandled
         }
         
@@ -111,6 +112,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         //if url.pathComponents
         
         return false
+    }
+
+    /// Soft-read Facebook deep-link sourceApplication — missing keys must not force-cast crash.
+    class func facebookSourceApplication(from options: [UIApplicationOpenURLOptionsKey : Any]) -> String? {
+        return options[.sourceApplication] as? String
     }
     func registerForPushNotifications() {
         if #available(iOS 10.0, *) {
@@ -143,12 +149,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     
     func application(_ application: UIApplication,
                      didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
-        let tokenParts = deviceToken.map { data -> String in
-            let dift = String(format: "%02.2hhx", data)
-            return dift
-        }
-        
-        let token = tokenParts.joined()
+        let token = AppDelegate.deviceTokenHex(deviceToken)
         print("Device Token: \(token)")
         HulaUser.sharedInstance.deviceId = token
         HulaUser.sharedInstance.updateServerData()
@@ -164,28 +165,171 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         //print(userInfo)
         
         
-        if let aps = userInfo["aps"] as? NSDictionary{
-            //print("aps")
-            //print(aps)
-            if let text = aps.object(forKey: "alert") as? String{
-                let banner = Banner(title: NSLocalizedString("Notification", comment: ""), subtitle: text, backgroundColor: HulaConstants.appMainColor)
-                banner.dismissesOnTap = true
-                banner.didTapBlock = {
-                    //print("tapped")
-                    let storyboard = UIStoryboard(name: "Main", bundle: nil)
-                    let myModalViewController = storyboard.instantiateViewController(withIdentifier: "swappView")
-                    myModalViewController.modalPresentationStyle = UIModalPresentationStyle.fullScreen
-                    myModalViewController.modalTransitionStyle = UIModalTransitionStyle.coverVertical
-                    self.window?.rootViewController?.present(myModalViewController, animated: true, completion: nil)
-                    
+        if let text = AppDelegate.pushAlertText(from: userInfo) {
+            let banner = Banner(title: NSLocalizedString("Notification", comment: ""), subtitle: text, backgroundColor: HulaConstants.appMainColor)
+            banner.dismissesOnTap = true
+            banner.didTapBlock = {
+                // Presenting swappView directly skipped the login gate in
+                // openSwapView and could surface stale in-memory trades after logout.
+                if let portraitNav = self.portraitNavigationController(from: self.window?.rootViewController) {
+                    portraitNav.openSwapView()
                 }
-                banner.show(duration: 5.0)
-                HLDataManager.sharedInstance.loadUserNotifications()
-                
             }
+            banner.show(duration: 5.0)
+            HLDataManager.sharedInstance.loadUserNotifications()
         } else {
             print("error")
         }
+    }
+
+    /// Hex-encode APNS device tokens. Empty Data must still produce a stable empty string.
+    class func deviceTokenHex(_ deviceToken: Data) -> String {
+        return deviceToken.map { data -> String in
+            return String(format: "%02.2hhx", data)
+        }.joined()
+    }
+
+    /// Soft-read the banner subtitle from a remote-notification payload.
+    /// String alerts, dictionary `body`/`title`/`subtitle`, and loc-key / loc-args
+    /// payloads are accepted. Missing `aps` or empty text still skip the banner.
+    class func pushAlertText(from userInfo: [AnyHashable : Any]) -> String? {
+        let aps: NSDictionary?
+        if let dict = userInfo["aps"] as? NSDictionary {
+            aps = dict
+        } else if let dict = userInfo["aps"] as? [String: Any] {
+            aps = dict as NSDictionary
+        } else {
+            aps = nil
+        }
+        guard let aps = aps else {
+            return nil
+        }
+        return nonEmptyAlertText(aps.object(forKey: "alert"))
+    }
+
+    /// APNS `alert` is either a string or `{title, body, subtitle}` plus optional
+    /// `loc-key` / `title-loc-key` / `subtitle-loc-key`. Prefer explicit body text.
+    class func nonEmptyAlertText(_ alert: Any?) -> String? {
+        if let text = alert as? String, text.characters.count > 0 {
+            return text
+        }
+        let dict: NSDictionary?
+        if let ns = alert as? NSDictionary {
+            dict = ns
+        } else if let swift = alert as? [String: Any] {
+            dict = swift as NSDictionary
+        } else {
+            dict = nil
+        }
+        guard let dict = dict else {
+            return nil
+        }
+        for key in ["body", "title", "subtitle"] {
+            if let text = dict.object(forKey: key) as? String, text.characters.count > 0 {
+                return text
+            }
+        }
+        if let localized = localizedAlertText(
+            locKey: dict.object(forKey: "loc-key") as? String,
+            locArgs: dict.object(forKey: "loc-args")
+        ) {
+            return localized
+        }
+        if let localized = localizedAlertText(
+            locKey: dict.object(forKey: "title-loc-key") as? String,
+            locArgs: dict.object(forKey: "title-loc-args")
+        ) {
+            return localized
+        }
+        if let localized = localizedAlertText(
+            locKey: dict.object(forKey: "subtitle-loc-key") as? String,
+            locArgs: dict.object(forKey: "subtitle-loc-args")
+        ) {
+            return localized
+        }
+        return nil
+    }
+
+    /// Resolve an APNS loc-key. Without a strings table, NSLocalizedString returns
+    /// the key so the banner still appears. Only `%@` placeholders are substituted
+    /// so mismatched loc-args cannot crash `String(format:)`.
+    class func localizedAlertText(locKey: String?, locArgs: Any?) -> String? {
+        guard let key = locKey, key.characters.count > 0 else {
+            return nil
+        }
+        let format = NSLocalizedString(key, comment: "")
+        let args = stringLocArgs(from: locArgs)
+        if args.count == 0 {
+            return format
+        }
+        return substitutingFormatArgs(format, args: args)
+    }
+
+    /// Soft-read APNS loc-args. Strings and numeric values are kept; booleans and
+    /// other types are skipped so a malformed payload cannot invent format args.
+    class func stringLocArgs(from value: Any?) -> [String] {
+        let items: NSArray
+        if let array = value as? NSArray {
+            items = array
+        } else if let array = value as? [Any] {
+            items = array as NSArray
+        } else {
+            return []
+        }
+        var result: [String] = []
+        for item in items {
+            if let text = item as? String {
+                result.append(text)
+            } else if let number = CommonUtils.intFromJSON(item) {
+                result.append(String(number))
+            }
+        }
+        return result
+    }
+
+    class func substitutingFormatArgs(_ format: String, args: [String]) -> String {
+        var result = format
+        for arg in args {
+            if let range = result.range(of: "%@") {
+                result.replaceSubrange(range, with: arg)
+            } else {
+                break
+            }
+        }
+        return result
+    }
+
+    /// Walk the presented/tab/nav hierarchy to find the portrait shell that owns openSwapView.
+    func portraitNavigationController(from root: UIViewController?) -> HulaPortraitNavigationController? {
+        if let portraitNav = root as? HulaPortraitNavigationController {
+            return portraitNav
+        }
+        if let nav = root as? UINavigationController {
+            if let portraitNav = nav as? HulaPortraitNavigationController {
+                return portraitNav
+            }
+            for child in nav.viewControllers {
+                if let found = portraitNavigationController(from: child) {
+                    return found
+                }
+            }
+        }
+        if let tab = root as? UITabBarController {
+            if let found = portraitNavigationController(from: tab.selectedViewController) {
+                return found
+            }
+            for child in tab.viewControllers ?? [] {
+                if let found = portraitNavigationController(from: child) {
+                    return found
+                }
+            }
+        }
+        for child in root?.childViewControllers ?? [] {
+            if let found = portraitNavigationController(from: child) {
+                return found
+            }
+        }
+        return nil
     }
 }
 
