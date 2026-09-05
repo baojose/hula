@@ -3050,7 +3050,10 @@ class HulaTests: XCTestCase {
             "Subtitle only"
         )
         XCTAssertNil(AppDelegate.pushAlertText(from: ["aps": ["alert": ["body": ""]]]))
-        XCTAssertNil(AppDelegate.pushAlertText(from: ["aps": ["alert": ["loc-key": "OFFER"]]]))
+        XCTAssertEqual(
+            AppDelegate.pushAlertText(from: ["aps": ["alert": ["loc-key": "OFFER"]]]),
+            "OFFER"
+        )
         XCTAssertEqual(AppDelegate.nonEmptyAlertText("plain"), "plain")
         XCTAssertNil(AppDelegate.nonEmptyAlertText(""))
         XCTAssertNil(AppDelegate.nonEmptyAlertText(1))
@@ -4543,6 +4546,205 @@ class HulaTests: XCTestCase {
         XCTAssertEqual(
             HLEditFieldViewController.emailValidationMessage(email: "ada@hula.trading"),
             "We have just sent you an email to ada@hula.trading. Please follow the instructions provided on that message."
+        )
+    }
+
+    // MARK: - Catalog fonts, image crop, localized push, category search title
+
+    func testCatalogFontFallsBackWhenNameMissing() {
+        let system13 = UIFont.systemFont(ofSize: 13)
+        XCTAssertEqual(CatalogFontPolicy.font(named: nil, size: 13), system13)
+        XCTAssertEqual(CatalogFontPolicy.font(named: "", size: 13), system13)
+        XCTAssertEqual(CatalogFontPolicy.font(named: "   ", size: 13), system13)
+        XCTAssertEqual(
+            CatalogFontPolicy.font(named: "DefinitelyMissingFont-xyz", size: 13),
+            system13
+        )
+
+        let helvetica = UIFont(name: "HelveticaNeue", size: 12)
+        let resolved = CatalogFontPolicy.font(named: "HelveticaNeue", size: 12)
+        if let helvetica = helvetica {
+            XCTAssertEqual(resolved, helvetica)
+        } else {
+            XCTAssertEqual(resolved, UIFont.systemFont(ofSize: 12))
+        }
+
+        XCTAssertEqual(
+            HLHomeViewController.catalogTipFont(),
+            CatalogFontPolicy.font(named: "Helvetica Neue", size: 13)
+        )
+        XCTAssertEqual(
+            HLHomeViewController.sectionHeaderFont(),
+            CatalogFontPolicy.font(named: "HelveticaNeue", size: 12)
+        )
+        XCTAssertEqual(
+            ChatViewController.sectionHeaderFont(),
+            CatalogFontPolicy.font(named: "HelveticaNeue", size: 12)
+        )
+        XCTAssertEqual(
+            HLNotificationsViewController.rowFont(isUnread: true),
+            CatalogFontPolicy.font(named: HulaConstants.regular_font, size: 15.0)
+        )
+        XCTAssertEqual(
+            HLNotificationsViewController.rowFont(isUnread: false),
+            CatalogFontPolicy.font(named: HulaConstants.light_font, size: 15.0)
+        )
+        XCTAssertEqual(
+            HLDashboardViewController.cashThumbFont(),
+            CatalogFontPolicy.font(named: HulaConstants.regular_font, size: 10.0)
+        )
+    }
+
+    func testImageCropAreaRejectsZeroSizeAndMatchesHistoricalRatios() {
+        XCTAssertNil(ImageCropPolicy.cropArea(
+            imageSize: CGSize.zero,
+            targetSize: HulaConstants.product_image_thumb_size
+        ))
+        XCTAssertNil(ImageCropPolicy.cropArea(
+            imageSize: CGSize(width: 800, height: 800),
+            targetSize: CGSize.zero
+        ))
+        XCTAssertNil(ImageCropPolicy.cropArea(
+            imageSize: CGSize(width: -10, height: 800),
+            targetSize: HulaConstants.product_image_thumb_size
+        ))
+
+        let square = ImageCropPolicy.cropArea(
+            imageSize: CGSize(width: 800, height: 800),
+            targetSize: CGSize(width: 800, height: 800)
+        )
+        XCTAssertEqual(square?.origin.x, 0)
+        XCTAssertEqual(square?.origin.y, 0)
+        XCTAssertEqual(square?.size.width, 800)
+        XCTAssertEqual(square?.size.height, 800)
+
+        let wide = ImageCropPolicy.cropArea(
+            imageSize: CGSize(width: 1600, height: 800),
+            targetSize: CGSize(width: 800, height: 800)
+        )
+        XCTAssertEqual(wide?.origin.x, -400)
+        XCTAssertEqual(wide?.origin.y, 0)
+        XCTAssertEqual(wide?.size.width, 1600)
+        XCTAssertEqual(wide?.size.height, 800)
+
+        let tall = ImageCropPolicy.cropArea(
+            imageSize: CGSize(width: 800, height: 1600),
+            targetSize: CGSize(width: 800, height: 800)
+        )
+        XCTAssertEqual(tall?.origin.x, 0)
+        XCTAssertEqual(tall?.origin.y, -400)
+        XCTAssertEqual(tall?.size.width, 800)
+        XCTAssertEqual(tall?.size.height, 1600)
+    }
+
+    func testCroppedImageSkipsNilAndKeepsEmptyUIImage() {
+        XCTAssertNil(ImageCropPolicy.croppedImage(nil, targetSize: HulaConstants.product_image_thumb_size))
+        XCTAssertNil(CommonUtils.sharedInstance.cropImage(nil, HulaConstants.product_image_thumb_size))
+
+        let empty = UIImage()
+        let kept = ImageCropPolicy.croppedImage(empty, targetSize: HulaConstants.product_image_thumb_size)
+        XCTAssertNotNil(kept)
+        XCTAssertEqual(kept?.size, empty.size)
+        XCTAssertNotNil(CommonUtils.sharedInstance.cropImage(empty, nil))
+    }
+
+    func testPushAlertTextResolvesLocKeyAndArgs() {
+        XCTAssertEqual(
+            AppDelegate.pushAlertText(from: ["aps": ["alert": ["loc-key": "OFFER"]]]),
+            "OFFER"
+        )
+        XCTAssertEqual(
+            AppDelegate.pushAlertText(from: [
+                "aps": ["alert": ["loc-key": "%@ sent an offer", "loc-args": ["Ada"]]]
+            ]),
+            "Ada sent an offer"
+        )
+        XCTAssertEqual(
+            AppDelegate.pushAlertText(from: [
+                "aps": ["alert": [
+                    "loc-key": "%@ and %@",
+                    "loc-args": NSArray(array: ["Ada", NSNumber(value: 2)])
+                ]]
+            ]),
+            "Ada and 2"
+        )
+        XCTAssertEqual(
+            AppDelegate.pushAlertText(from: [
+                "aps": ["alert": ["title-loc-key": "HULA_TITLE"]]
+            ]),
+            "HULA_TITLE"
+        )
+        XCTAssertEqual(
+            AppDelegate.pushAlertText(from: [
+                "aps": ["alert": ["subtitle-loc-key": "HULA_SUB", "subtitle-loc-args": ["x"]]]
+            ]),
+            "HULA_SUB"
+        )
+        XCTAssertEqual(
+            AppDelegate.pushAlertText(from: [
+                "aps": ["alert": ["body": "Offer received", "loc-key": "OFFER"]]
+            ]),
+            "Offer received"
+        )
+        XCTAssertNil(AppDelegate.localizedAlertText(locKey: nil, locArgs: ["Ada"]))
+        XCTAssertNil(AppDelegate.localizedAlertText(locKey: "", locArgs: nil))
+        XCTAssertEqual(AppDelegate.stringLocArgs(from: nil).count, 0)
+        XCTAssertEqual(AppDelegate.stringLocArgs(from: true).count, 0)
+        XCTAssertEqual(AppDelegate.stringLocArgs(from: ["Ada", true, 3] as [Any]), ["Ada", "3"])
+        XCTAssertEqual(
+            AppDelegate.substitutingFormatArgs("%@ sent %@", args: ["Ada"]),
+            "Ada sent %@"
+        )
+        XCTAssertEqual(
+            AppDelegate.substitutingFormatArgs("plain", args: ["Ada"]),
+            "plain"
+        )
+    }
+
+    func testCategorySearchTitleFallsBackWhenNameMissing() {
+        XCTAssertEqual(
+            HLSearchResultViewController.categorySearchTitle(from: nil),
+            NSLocalizedString("Category search", comment: "")
+        )
+        XCTAssertEqual(
+            HLSearchResultViewController.categorySearchTitle(from: [:]),
+            NSLocalizedString("Category search", comment: "")
+        )
+        XCTAssertEqual(
+            HLSearchResultViewController.categorySearchTitle(from: ["name": ""]),
+            NSLocalizedString("Category search", comment: "")
+        )
+        XCTAssertEqual(
+            HLSearchResultViewController.categorySearchTitle(from: ["name": "  "]),
+            NSLocalizedString("Category search", comment: "")
+        )
+        XCTAssertEqual(
+            HLSearchResultViewController.categorySearchTitle(from: ["name": "Bikes"]),
+            NSLocalizedString("Bikes", comment: "")
+        )
+        XCTAssertEqual(
+            HLSearchResultViewController.resultsTitle(
+                searchByCategory: true,
+                category: ["name": "Bikes"],
+                keyword: "ignored"
+            ),
+            NSLocalizedString("Bikes", comment: "")
+        )
+        XCTAssertEqual(
+            HLSearchResultViewController.resultsTitle(
+                searchByCategory: false,
+                category: ["name": "Bikes"],
+                keyword: "camera"
+            ),
+            "camera"
+        )
+        XCTAssertEqual(
+            HLSearchResultViewController.resultsTitle(
+                searchByCategory: false,
+                category: nil,
+                keyword: nil
+            ),
+            ""
         )
     }
 }
