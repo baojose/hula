@@ -38,6 +38,12 @@ class HLDashboardViewController: BaseViewController {
         return CommonUtils.apiResourceURL(apiBase: apiBase, path: ["trades", tradeId])
     }
 
+    /// Cash chip on a dashboard thumb. Missing HelveticaNeue-Medium must not
+    /// assign a nil font to the money label.
+    class func cashThumbFont() -> UIFont {
+        return CatalogFontPolicy.font(named: HulaConstants.regular_font, size: 10.0)
+    }
+
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -535,7 +541,7 @@ extension HLDashboardViewController: UICollectionViewDelegate, UICollectionViewD
         if money > 0 {
             let mn = UILabel()
             mn.text = "$\(Int(money))";
-            mn.font = UIFont(name: HulaConstants.regular_font, size: 10.0)
+            mn.font = HLDashboardViewController.cashThumbFont()
             mn.textColor = HulaConstants.appMainColor
             if (side=="right"){
                 mn.frame = CGRect(x: ( CGFloat(counter) * (productImagesWidth + productImagesMargin)) + productImagesMargin*2,

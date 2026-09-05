@@ -46,7 +46,7 @@ class HLHomeViewController: BaseViewController, UIScrollViewDelegate, UITextFiel
         
         // easy tip
         var preferences = EasyTipView.Preferences()
-        preferences.drawing.font = UIFont(name: "Helvetica Neue", size: 13)!
+        preferences.drawing.font = HLHomeViewController.catalogTipFont()
         preferences.drawing.foregroundColor = UIColor.darkGray
         preferences.drawing.backgroundColor = UIColor(red: 0.9, green: 0.9, blue: 0.9, alpha: 0.95)
         preferences.drawing.arrowPosition = EasyTipView.ArrowPosition.any
@@ -129,6 +129,17 @@ class HLHomeViewController: BaseViewController, UIScrollViewDelegate, UITextFiel
     /// Categories / Near You titles used `title(for:)!`. Missing storyboard titles must not crash Home.
     class func kernedTabTitle(_ raw: String?) -> NSAttributedString {
         return LabelMetricsPolicy.kernedTitle(raw)
+    }
+
+    /// Home EasyTipView used `UIFont(name: "Helvetica Neue")!`. A missing catalog
+    /// font must fall back to the system font instead of crashing viewDidLoad.
+    class func catalogTipFont() -> UIFont {
+        return CatalogFontPolicy.font(named: "Helvetica Neue", size: 13)
+    }
+
+    /// Section header. Missing HelveticaNeue must not assign a nil font.
+    class func sectionHeaderFont() -> UIFont {
+        return CatalogFontPolicy.font(named: "HelveticaNeue", size: 12)
     }
 
     /// Soft-parse category `num_products` — missing/null/NSNumber must not crash Categories tab.
@@ -239,7 +250,7 @@ class HLHomeViewController: BaseViewController, UIScrollViewDelegate, UITextFiel
         let label = UILabel(frame: CGRect(x: 20, y:1, width: 200, height: tableView.sectionHeaderHeight - 2))
         label.textColor = UIColor(red: 70.0/255, green: 70.0/255, blue: 70.0/255, alpha: 1.0)
         label.backgroundColor = UIColor.clear
-        label.font = UIFont(name: "HelveticaNeue", size: 12)
+        label.font = HLHomeViewController.sectionHeaderFont()
         label.attributedText = commonUtils.attributedStringWithTextSpacing(NSLocalizedString(" ", comment: ""), 2.33)
         view.addSubview(label)
         

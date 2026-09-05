@@ -86,7 +86,10 @@ class HLPictureSelectViewController: BaseViewController, UIImagePickerController
             dismiss(animated: true, completion: nil)
             return
         }
-        let croppedImage:UIImage = self.commonUtils.cropImage(chosenImage, HulaConstants.product_image_thumb_size)
+        guard let croppedImage = self.commonUtils.cropImage(chosenImage, HulaConstants.product_image_thumb_size) else {
+            dismiss(animated: true, completion: nil)
+            return
+        }
         // Album flow already dismisses here; camera capture dismisses from uploadImage.
         uploadImage(croppedImage, shouldDismiss: false)
         //dismiss(animated:true, completion: nil) //5
@@ -202,8 +205,8 @@ class HLPictureSelectViewController: BaseViewController, UIImagePickerController
             stillImageOutput.captureStillImageAsynchronously(from: videoConnection, completionHandler: { (CMSampleBuffer, Error) in
                 if let imageData = AVCaptureStillImageOutput.jpegStillImageNSDataRepresentation(CMSampleBuffer) {
                     
-                    if let cameraImage = UIImage(data: imageData) {
-                        let croppedImage:UIImage = self.commonUtils.cropImage(cameraImage, HulaConstants.product_image_thumb_size)
+                    if let cameraImage = UIImage(data: imageData),
+                        let croppedImage = self.commonUtils.cropImage(cameraImage, HulaConstants.product_image_thumb_size) {
                         // captureStillImageAsynchronously completes off the main thread.
                         HLPictureSelectViewController.performCameraUIUpdate {
                             self.stopSession()

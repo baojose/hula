@@ -39,6 +39,13 @@ class HLNotificationsViewController: BaseViewController, UITableViewDelegate, UI
         return CommonUtils.userImageURL(apiBase: apiBase, userId: userId)
     }
 
+    /// Unread rows used HelveticaNeue-Medium; read rows used Light. Missing
+    /// catalog fonts must not assign a nil UIFont to the notification cell.
+    class func rowFont(isUnread: Bool) -> UIFont {
+        let name = isUnread ? HulaConstants.regular_font : HulaConstants.light_font
+        return CatalogFontPolicy.font(named: name, size: 15.0)
+    }
+
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -118,11 +125,11 @@ class HLNotificationsViewController: BaseViewController, UITableViewDelegate, UI
         if let is_read = notification.object(forKey: "is_read") as? Bool{
         
             if !is_read {
-                cell.NotificationsText.font = UIFont(name: HulaConstants.regular_font, size: 15.0)
+                cell.NotificationsText.font = HLNotificationsViewController.rowFont(isUnread: true)
                 cell.unreadIcon.isHidden = false
                 cell.backgroundColor = UIColor(red: 0, green: 0, blue: 0, alpha: 0.05)
             } else {
-                cell.NotificationsText.font = UIFont(name: HulaConstants.light_font, size: 15.0)
+                cell.NotificationsText.font = HLNotificationsViewController.rowFont(isUnread: false)
                 cell.unreadIcon.isHidden = true
                 cell.backgroundColor = UIColor(red: 1, green: 1, blue: 1, alpha: 1)
             }

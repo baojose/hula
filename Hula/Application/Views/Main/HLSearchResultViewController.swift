@@ -39,6 +39,22 @@ class HLSearchResultViewController: BaseViewController, UITableViewDataSource, U
         return CommonUtils.apiResourceURL(apiBase: apiBase, path: ["products", "category", categoryId])
     }
 
+    /// Category results title used `category_name!` after a nil assignment.
+    /// Missing/blank `name` falls back to the historical "Category search" copy.
+    class func categorySearchTitle(from category: NSDictionary?) -> String {
+        if let name = CommonUtils.nonEmptyTrimmed(category?.object(forKey: "name") as? String) {
+            return NSLocalizedString(name, comment: "")
+        }
+        return NSLocalizedString("Category search", comment: "")
+    }
+
+    class func resultsTitle(searchByCategory: Bool, category: NSDictionary?, keyword: String?) -> String {
+        if searchByCategory {
+            return categorySearchTitle(from: category)
+        }
+        return keyword ?? ""
+    }
+
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -57,15 +73,11 @@ class HLSearchResultViewController: BaseViewController, UITableViewDataSource, U
     }
     func initView(){
         noResultAlertView.isHidden = true
-        if self.searchByCategory {
-            var category_name = categoryToSearch.object(forKey: "name") as? String
-            if (category_name == nil){
-                category_name = "Category search"
-            }
-            screenTitle.text = NSLocalizedString(category_name!, comment: "");
-        } else {
-            screenTitle.text = keywordToSearch
-        }
+        screenTitle.text = HLSearchResultViewController.resultsTitle(
+            searchByCategory: searchByCategory,
+            category: categoryToSearch,
+            keyword: keywordToSearch
+        )
     }
     
     override func viewWillAppear(_ animated: Bool) {

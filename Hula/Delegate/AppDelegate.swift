@@ -190,8 +190,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     }
 
     /// Soft-read the banner subtitle from a remote-notification payload.
-    /// String alerts and APNS dictionary alerts (`body` / `title` / `subtitle`) are accepted.
-    /// Missing `aps`, empty text, and loc-key-only dictionaries skip the banner.
+    /// String alerts, dictionary `body`/`title`/`subtitle`, and loc-key / loc-args
+    /// payloads are accepted. Missing `aps` or empty text still skip the banner.
     class func pushAlertText(from userInfo: [AnyHashable : Any]) -> String? {
         let aps: NSDictionary?
         if let dict = userInfo["aps"] as? NSDictionary {
@@ -207,7 +207,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         return nonEmptyAlertText(aps.object(forKey: "alert"))
     }
 
-    /// APNS `alert` is either a string or `{title, body, subtitle}`. Prefer body for the banner.
+    /// APNS `alert` is either a string or `{title, body, subtitle}` plus optional
+    /// `loc-key` / `title-loc-key` / `subtitle-loc-key`. Prefer explicit body text.
     class func nonEmptyAlertText(_ alert: Any?) -> String? {
         if let text = alert as? String, text.characters.count > 0 {
             return text
@@ -228,7 +229,74 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 return text
             }
         }
+        if let localized = localizedAlertText(
+            locKey: dict.object(forKey: "loc-key") as? String,
+            locArgs: dict.object(forKey: "loc-args")
+        ) {
+            return localized
+        }
+        if let localized = localizedAlertText(
+            locKey: dict.object(forKey: "title-loc-key") as? String,
+            locArgs: dict.object(forKey: "title-loc-args")
+        ) {
+            return localized
+        }
+        if let localized = localizedAlertText(
+            locKey: dict.object(forKey: "subtitle-loc-key") as? String,
+            locArgs: dict.object(forKey: "subtitle-loc-args")
+        ) {
+            return localized
+        }
         return nil
+    }
+
+    /// Resolve an APNS loc-key. Without a strings table, NSLocalizedString returns
+    /// the key so the banner still appears. Only `%@` placeholders are substituted
+    /// so mismatched loc-args cannot crash `String(format:)`.
+    class func localizedAlertText(locKey: String?, locArgs: Any?) -> String? {
+        guard let key = locKey, key.characters.count > 0 else {
+            return nil
+        }
+        let format = NSLocalizedString(key, comment: "")
+        let args = stringLocArgs(from: locArgs)
+        if args.count == 0 {
+            return format
+        }
+        return substitutingFormatArgs(format, args: args)
+    }
+
+    /// Soft-read APNS loc-args. Strings and numeric values are kept; booleans and
+    /// other types are skipped so a malformed payload cannot invent format args.
+    class func stringLocArgs(from value: Any?) -> [String] {
+        let items: NSArray
+        if let array = value as? NSArray {
+            items = array
+        } else if let array = value as? [Any] {
+            items = array as NSArray
+        } else {
+            return []
+        }
+        var result: [String] = []
+        for item in items {
+            if let text = item as? String {
+                result.append(text)
+            } else if let number = CommonUtils.intFromJSON(item) {
+                result.append(String(number))
+            }
+        }
+        return result
+    }
+
+    class func substitutingFormatArgs(_ format: String, args: [String]) -> String {
+        var result = format
+        for arg in args {
+            if let range = result.range(of: "%@") {
+                result.replaceSubrange(range, with: arg)
+            } else {
+                break
+            }
+        }
+        return result
     }
 
     /// Walk the presented/tab/nav hierarchy to find the portrait shell that owns openSwapView.

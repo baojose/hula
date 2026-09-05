@@ -147,6 +147,11 @@ class ChatViewController: UIViewController {
         return false
     }
 
+    /// Section header. Missing HelveticaNeue must not assign a nil font.
+    class func sectionHeaderFont() -> UIFont {
+        return CatalogFontPolicy.font(named: "HelveticaNeue", size: 12)
+    }
+
     /// Chat row height used `font!`. Nil cell font / non-string messages must not crash the table.
     class func messageRowHeight(width: CGFloat, font: UIFont?, message: Any?) -> CGFloat {
         return LabelMetricsPolicy.layoutHeight(
@@ -305,7 +310,7 @@ extension ChatViewController: UITableViewDelegate, UITableViewDataSource{
         let label = UILabel(frame: CGRect(x: 20, y:1, width: tableView.frame.size.width, height: 23))
         label.textColor = UIColor(red: 70.0/255, green: 70.0/255, blue: 70.0/255, alpha: 1.0)
         label.backgroundColor = UIColor(red: 0, green: 0, blue: 0, alpha: 0)
-        label.font = UIFont(name: "HelveticaNeue", size: 12)
+        label.font = ChatViewController.sectionHeaderFont()
         
         var sectionTitle = sectionKeys[section]
         if let comments = sortedChat.object(forKey: sectionKeys[section]) as? [NSDictionary], comments.count > 0 {

@@ -63,32 +63,10 @@ class CommonUtils: NSObject, EasyTipViewDelegate, UIGestureRecognizerDelegate {
         button.layer.borderColor = borderColor.cgColor
         button.layer.borderWidth = width
     }
-    func cropImage(_ image: UIImage!, _ newSize: CGSize!) -> UIImage{
-        let ratio: Double!
-        let delta: Double!
-        let offset: CGPoint!
-        
-        let hRatio: Double! = Double(newSize.width / image.size.width)
-        let vRatio: Double! = Double(newSize.height / image.size.height)
-        
-        if hRatio > vRatio {
-            ratio = hRatio
-            delta = Double(CGFloat(ratio) * image.size.height - newSize.height)
-            offset = CGPoint(x: 0.0, y: delta / 2)
-        }else{
-            ratio = vRatio
-            delta = Double(CGFloat(ratio) * image.size.width - newSize.width)
-            offset = CGPoint(x: delta / 2, y: 0.0)
-        }
-        let cropArea: CGRect = CGRect(x: -offset.x, y: -offset.y, width: CGFloat(ratio) * image.size.width, height: CGFloat(ratio) * image.size.height)
-        
-        UIGraphicsBeginImageContextWithOptions(newSize, true, 1)
-        UIRectClip(cropArea)
-        image.draw(in: cropArea)
-        let croppedImage = UIGraphicsGetImageFromCurrentImageContext()
-        UIGraphicsEndImageContext()
-        
-        return croppedImage!
+    /// Camera/album thumbs used IUO image/size and `croppedImage!`.
+    /// Missing image, zero size, or a failed graphics context must not crash create.
+    func cropImage(_ image: UIImage?, _ newSize: CGSize?) -> UIImage? {
+        return ImageCropPolicy.croppedImage(image, targetSize: newSize)
     }
     func heightString(width: CGFloat, font: UIFont, string: String) -> CGFloat {
         let constraintRect = CGSize(width: width, height: .greatestFiniteMagnitude)
@@ -1563,5 +1541,62 @@ struct LabelMetricsPolicy {
             return value.capitalized
         }
         return value
+    }
+}
+
+/// Named catalog fonts. Home EasyTipView used `UIFont(name:)!`; a missing
+/// PostScript name crashes the first logged-in screen. Other headers assigned
+/// nil fonts when HelveticaNeue was absent.
+struct CatalogFontPolicy {
+    static func font(named name: String?, size: CGFloat) -> UIFont {
+        if let name = name, name.characters.count > 0, let font = UIFont(name: name, size: size) {
+            return font
+        }
+        return UIFont.systemFont(ofSize: size)
+    }
+}
+
+/// Center-crop math used by camera/album thumbs. Zero or missing sizes skip
+/// the graphics context instead of dividing by zero or unwrapping a nil image.
+struct ImageCropPolicy {
+    static func cropArea(imageSize: CGSize, targetSize: CGSize) -> CGRect? {
+        if imageSize.width <= 0 || imageSize.height <= 0 || targetSize.width <= 0 || targetSize.height <= 0 {
+            return nil
+        }
+        let hRatio = Double(targetSize.width / imageSize.width)
+        let vRatio = Double(targetSize.height / imageSize.height)
+        let ratio: Double
+        let offset: CGPoint
+        if hRatio > vRatio {
+            ratio = hRatio
+            let delta = Double(CGFloat(ratio) * imageSize.height - targetSize.height)
+            offset = CGPoint(x: 0.0, y: delta / 2)
+        } else {
+            ratio = vRatio
+            let delta = Double(CGFloat(ratio) * imageSize.width - targetSize.width)
+            offset = CGPoint(x: delta / 2, y: 0.0)
+        }
+        return CGRect(
+            x: -offset.x,
+            y: -offset.y,
+            width: CGFloat(ratio) * imageSize.width,
+            height: CGFloat(ratio) * imageSize.height
+        )
+    }
+
+    static func croppedImage(_ image: UIImage?, targetSize: CGSize?) -> UIImage? {
+        guard let image = image else {
+            return nil
+        }
+        guard let targetSize = targetSize,
+            let area = cropArea(imageSize: image.size, targetSize: targetSize) else {
+            return image
+        }
+        UIGraphicsBeginImageContextWithOptions(targetSize, true, 1)
+        UIRectClip(area)
+        image.draw(in: area)
+        let cropped = UIGraphicsGetImageFromCurrentImageContext()
+        UIGraphicsEndImageContext()
+        return cropped ?? image
     }
 }

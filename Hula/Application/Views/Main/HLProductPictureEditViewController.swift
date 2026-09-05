@@ -111,7 +111,10 @@ class HLProductPictureEditViewController: BaseViewController, UIImagePickerContr
             dismiss(animated: true, completion: nil)
             return
         }
-        let croppedImage:UIImage = self.commonUtils.cropImage(chosenImage, HulaConstants.product_image_thumb_size)
+        guard let croppedImage = self.commonUtils.cropImage(chosenImage, HulaConstants.product_image_thumb_size) else {
+            dismiss(animated: true, completion: nil)
+            return
+        }
         // save the image
         self.stopSession()
         dismiss(animated:true, completion: nil)
@@ -202,8 +205,8 @@ class HLProductPictureEditViewController: BaseViewController, UIImagePickerContr
             stillImageOutput.captureStillImageAsynchronously(from: videoConnection, completionHandler: { (CMSampleBuffer, Error) in
                 if let imageData = AVCaptureStillImageOutput.jpegStillImageNSDataRepresentation(CMSampleBuffer) {
                     
-                    if let cameraImage = UIImage(data: imageData) {
-                        let croppedImage:UIImage = self.commonUtils.cropImage(cameraImage, HulaConstants.product_image_thumb_size)
+                    if let cameraImage = UIImage(data: imageData),
+                        let croppedImage = self.commonUtils.cropImage(cameraImage, HulaConstants.product_image_thumb_size) {
                         // captureStillImageAsynchronously completes off the main thread;
                         // stopSession/dismiss must not run off-main.
                         HLProductPictureEditViewController.performCameraUIUpdate {

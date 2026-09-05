@@ -256,7 +256,10 @@ class HLCustomCameraViewController: BaseViewController, UIImagePickerControllerD
             dismiss(animated: true, completion: nil)
             return
         }
-        let croppedImage:UIImage = self.commonUtils.cropImage(chosenImage, HulaConstants.product_image_thumb_size)
+        guard let croppedImage = self.commonUtils.cropImage(chosenImage, HulaConstants.product_image_thumb_size) else {
+            dismiss(animated: true, completion: nil)
+            return
+        }
         showImages(croppedImage)
         dismiss(animated:true, completion: nil) //5
     }
@@ -413,8 +416,8 @@ class HLCustomCameraViewController: BaseViewController, UIImagePickerControllerD
             stillImageOutput.captureStillImageAsynchronously(from: videoConnection, completionHandler: { (CMSampleBuffer, Error) in
                 if let imageData = AVCaptureStillImageOutput.jpegStillImageNSDataRepresentation(CMSampleBuffer) {
                     
-                    if let cameraImage = UIImage(data: imageData) {
-                        let cropped = self.commonUtils.cropImage(cameraImage, HulaConstants.product_image_thumb_size)
+                    if let cameraImage = UIImage(data: imageData),
+                        let cropped = self.commonUtils.cropImage(cameraImage, HulaConstants.product_image_thumb_size) {
                         // captureStillImageAsynchronously completes off the main thread;
                         // showImages mutates UIImageViews and shared arrProductPhotos.
                         HLCustomCameraViewController.performCameraUIUpdate {
