@@ -4747,4 +4747,182 @@ class HulaTests: XCTestCase {
             ""
         )
     }
+
+    // MARK: - Relative dates, notification age, barter drag indices
+
+    func testRelativeDatePolicyParsesFractionalAndWholeSecondISO() {
+        XCTAssertNil(RelativeDatePolicy.parseISO(nil))
+        XCTAssertNil(RelativeDatePolicy.parseISO(""))
+        XCTAssertNil(RelativeDatePolicy.parseISO("not-a-date"))
+        XCTAssertNil(RelativeDatePolicy.parseISO("2026-07-24"))
+
+        let fractional = RelativeDatePolicy.parseISO("2026-07-24T15:00:00.000Z")
+        XCTAssertNotNil(fractional)
+        XCTAssertEqual(fractional?.iso8601, "2026-07-24T15:00:00.000Z")
+
+        let wholeSecond = RelativeDatePolicy.parseISO("2026-07-24T15:30:00Z")
+        XCTAssertNotNil(wholeSecond)
+        XCTAssertEqual(wholeSecond?.iso8601, "2026-07-24T15:30:00.000Z")
+
+        let fromUtils = CommonUtils.sharedInstance.isoDateToNSDate(date: "2026-07-24T15:00:00Z")
+        XCTAssertEqual((fromUtils as Date).iso8601, "2026-07-24T15:00:00.000Z")
+
+        let fallback = CommonUtils.sharedInstance.isoDateToNSDate(date: "not-a-date")
+        XCTAssertEqual(fallback.timeIntervalSinceNow, 0, accuracy: 2)
+    }
+
+    func testTimeAgoLabelCoversAllBucketsWithoutUnwrapping() {
+        XCTAssertEqual(RelativeDatePolicy.component(nil), 0)
+        XCTAssertEqual(RelativeDatePolicy.component(4), 4)
+
+        XCTAssertEqual(
+            RelativeDatePolicy.timeAgoLabel(year: 2, month: 0, weekOfYear: 0, day: 0, hour: 0, minute: 0, second: 0, numericDates: true),
+            "2 " + NSLocalizedString("years ago", comment: "")
+        )
+        XCTAssertEqual(
+            RelativeDatePolicy.timeAgoLabel(year: 1, month: 0, weekOfYear: 0, day: 0, hour: 0, minute: 0, second: 0, numericDates: true),
+            NSLocalizedString("1 year ago", comment: "")
+        )
+        XCTAssertEqual(
+            RelativeDatePolicy.timeAgoLabel(year: 1, month: 0, weekOfYear: 0, day: 0, hour: 0, minute: 0, second: 0, numericDates: false),
+            NSLocalizedString("Last year", comment: "")
+        )
+        XCTAssertEqual(
+            RelativeDatePolicy.timeAgoLabel(year: 0, month: 3, weekOfYear: 0, day: 0, hour: 0, minute: 0, second: 0, numericDates: true),
+            "3 " + NSLocalizedString("months ago", comment: "")
+        )
+        XCTAssertEqual(
+            RelativeDatePolicy.timeAgoLabel(year: 0, month: 1, weekOfYear: 0, day: 0, hour: 0, minute: 0, second: 0, numericDates: false),
+            NSLocalizedString("Last month", comment: "")
+        )
+        XCTAssertEqual(
+            RelativeDatePolicy.timeAgoLabel(year: 0, month: 0, weekOfYear: 2, day: 0, hour: 0, minute: 0, second: 0, numericDates: true),
+            "2 " + NSLocalizedString("weeks ago", comment: "")
+        )
+        XCTAssertEqual(
+            RelativeDatePolicy.timeAgoLabel(year: 0, month: 0, weekOfYear: 1, day: 0, hour: 0, minute: 0, second: 0, numericDates: false),
+            NSLocalizedString("Last week", comment: "")
+        )
+        XCTAssertEqual(
+            RelativeDatePolicy.timeAgoLabel(year: 0, month: 0, weekOfYear: 0, day: 4, hour: 0, minute: 0, second: 0, numericDates: true),
+            "4 " + NSLocalizedString("days ago", comment: "")
+        )
+        XCTAssertEqual(
+            RelativeDatePolicy.timeAgoLabel(year: 0, month: 0, weekOfYear: 0, day: 1, hour: 0, minute: 0, second: 0, numericDates: false),
+            NSLocalizedString("Yesterday", comment: "")
+        )
+        XCTAssertEqual(
+            RelativeDatePolicy.timeAgoLabel(year: 0, month: 0, weekOfYear: 0, day: 0, hour: 5, minute: 0, second: 0, numericDates: true),
+            "5 " + NSLocalizedString("hours ago", comment: "")
+        )
+        XCTAssertEqual(
+            RelativeDatePolicy.timeAgoLabel(year: 0, month: 0, weekOfYear: 0, day: 0, hour: 1, minute: 0, second: 0, numericDates: false),
+            NSLocalizedString("An hour ago", comment: "")
+        )
+        XCTAssertEqual(
+            RelativeDatePolicy.timeAgoLabel(year: 0, month: 0, weekOfYear: 0, day: 0, hour: 0, minute: 8, second: 0, numericDates: true),
+            "8 " + NSLocalizedString("minutes ago", comment: "")
+        )
+        XCTAssertEqual(
+            RelativeDatePolicy.timeAgoLabel(year: 0, month: 0, weekOfYear: 0, day: 0, hour: 0, minute: 1, second: 0, numericDates: false),
+            NSLocalizedString("A minute ago", comment: "")
+        )
+        XCTAssertEqual(
+            RelativeDatePolicy.timeAgoLabel(year: 0, month: 0, weekOfYear: 0, day: 0, hour: 0, minute: 0, second: 9, numericDates: true),
+            "9 seconds ago" + NSLocalizedString("seconds ago", comment: "")
+        )
+        XCTAssertEqual(
+            RelativeDatePolicy.timeAgoLabel(year: 0, month: 0, weekOfYear: 0, day: 0, hour: 0, minute: 0, second: 2, numericDates: true),
+            NSLocalizedString("Just now", comment: "")
+        )
+        XCTAssertEqual(
+            RelativeDatePolicy.timeAgoLabel(year: 0, month: 0, weekOfYear: 0, day: 0, hour: 0, minute: 0, second: 0, numericDates: true),
+            NSLocalizedString("Just now", comment: "")
+        )
+    }
+
+    func testTimeAgoFromDatesUsesSafeComponents() {
+        let calendar = Calendar(identifier: .gregorian)
+        var comps = DateComponents()
+        comps.year = 2026
+        comps.month = 9
+        comps.day = 6
+        comps.hour = 12
+        comps.minute = 0
+        comps.second = 0
+        let now = calendar.date(from: comps)!
+
+        comps.year = 2024
+        let twoYears = calendar.date(from: comps)!
+        XCTAssertEqual(
+            RelativeDatePolicy.timeAgo(from: twoYears, now: now, numericDates: true, calendar: calendar),
+            "2 " + NSLocalizedString("years ago", comment: "")
+        )
+
+        comps.year = 2026
+        comps.day = 5
+        comps.hour = 10
+        let twoHours = calendar.date(from: comps)!
+        XCTAssertEqual(
+            RelativeDatePolicy.timeAgo(from: twoHours, now: now, numericDates: true, calendar: calendar),
+            "2 " + NSLocalizedString("hours ago", comment: "")
+        )
+
+        let viaUtils = CommonUtils.sharedInstance.timeAgoSinceDate(date: now as NSDate, numericDates: true)
+        XCTAssertEqual(viaUtils, NSLocalizedString("Just now", comment: ""))
+    }
+
+    func testNotificationAgeUsesSafeDayComponent() {
+        let calendar = Calendar(identifier: .gregorian)
+        var comps = DateComponents()
+        comps.year = 2026
+        comps.month = 9
+        comps.day = 6
+        let end = calendar.date(from: comps)!
+        comps.day = 2
+        let start = calendar.date(from: comps)!
+
+        XCTAssertEqual(RelativeDatePolicy.daysBetween(from: start, to: end, calendar: calendar), 4)
+        XCTAssertEqual(HLNotificationsViewController.daysBetween(start: start, end: start), 0)
+        XCTAssertFalse(HLNotificationsViewController.isOldNotification(daysSince: 3))
+        XCTAssertFalse(RelativeDatePolicy.isOldNotification(daysSince: 0))
+        XCTAssertTrue(HLNotificationsViewController.isOldNotification(daysSince: 4))
+    }
+
+    func testBarterDragIndexAndMoveAreBoundsSafe() {
+        let bike = HulaProduct(id: "bike", name: "Bike", image: "")
+        let camera = HulaProduct(id: "cam", name: "Camera", image: "")
+        let cash = HulaProduct(id: "xmoney", name: "Cash", image: "")
+        let products = [bike, camera, cash]
+
+        XCTAssertEqual(HLBarterScreenViewController.indexOfMatchingProduct(camera, in: products), 1)
+        XCTAssertNil(HLBarterScreenViewController.indexOfMatchingProduct(
+            HulaProduct(id: "cam", name: "Camera", image: ""),
+            in: products
+        ))
+        XCTAssertNil(HLBarterScreenViewController.indexOfMatchingProduct(bike, in: []))
+
+        XCTAssertEqual(HLBarterScreenViewController.product(at: 0, in: products)?.productId, "bike")
+        XCTAssertNil(HLBarterScreenViewController.product(at: -1, in: products))
+        XCTAssertNil(HLBarterScreenViewController.product(at: 3, in: products))
+        XCTAssertNil(HLBarterScreenViewController.product(at: 0, in: []))
+
+        XCTAssertEqual(HLBarterScreenViewController.clampedInsertionIndex(0, count: 0), 0)
+        XCTAssertEqual(HLBarterScreenViewController.clampedInsertionIndex(-2, count: 2), 0)
+        XCTAssertEqual(HLBarterScreenViewController.clampedInsertionIndex(2, count: 2), 2)
+        XCTAssertEqual(HLBarterScreenViewController.clampedInsertionIndex(9, count: 2), 2)
+
+        XCTAssertNil(HLBarterScreenViewController.movingProducts(products, from: -1, to: 0))
+        XCTAssertNil(HLBarterScreenViewController.movingProducts(products, from: 3, to: 0))
+        let movedUp = HLBarterScreenViewController.movingProducts(products, from: 0, to: 2)
+        XCTAssertEqual(movedUp?.count, 3)
+        XCTAssertEqual(movedUp?[0].productId, "cam")
+        XCTAssertEqual(movedUp?[1].productId, "xmoney")
+        XCTAssertEqual(movedUp?[2].productId, "bike")
+        let movedDown = HLBarterScreenViewController.movingProducts(products, from: 2, to: 0)
+        XCTAssertEqual(movedDown?.count, 3)
+        XCTAssertEqual(movedDown?[0].productId, "xmoney")
+        XCTAssertEqual(movedDown?[1].productId, "bike")
+        XCTAssertEqual(movedDown?[2].productId, "cam")
+    }
 }
