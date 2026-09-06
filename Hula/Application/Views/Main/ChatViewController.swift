@@ -23,6 +23,20 @@ class ChatViewController: UIViewController {
     
     var keyboardHeight:CGFloat = 150
     var timer: Timer!
+
+    static let maxChatMessageLength = 300
+
+    /// Returns a sendable message, or nil when over the limit (do not silently truncate).
+    class func validatedChatMessage(_ text: String?) -> String? {
+        let tx = (text ?? "").trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)
+        guard tx.count > 0 else {
+            return nil
+        }
+        if tx.count > maxChatMessageLength {
+            return nil
+        }
+        return tx
+    }
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -83,34 +97,70 @@ class ChatViewController: UIViewController {
     }
     */
 
+    /// Chat POST body. `&`/`=`/`+` in the message must not split the form.
+    class func chatPostString(message: String) -> String {
+        return "message=" + CommonUtils.formEncodedValue(message)
+    }
+
+    /// Chat load/send path. Empty trade_id must not hit `trades//chat`.
+    /// Reserved characters in the id must not invent extra path or query parts.
+    static func chatRequestURL(apiBase: String, tradeId: String) -> String? {
+        return CommonUtils.tradeResourceURL(apiBase: apiBase, tradeId: tradeId, extra: ["chat"])
+    }
+
     func refreshChat(forze: Bool){
         //print("refreshing...")
         //print("trade id: \(trade_id)")
-        let queryURL = HulaConstants.apiURL + "trades/\(trade_id)/chat"
-        HLDataManager.sharedInstance.httpGet(urlstr: queryURL, taskCallback: { (ok, json) in
-            //print("done")
-            //print(ok)
-            //print(json!)
-            if (ok){
-                if let dictionary = json as? [NSDictionary] {
-                    DispatchQueue.main.async(execute: {
-                        self.chat = dictionary
-                        self.updateData(forze: forze)
-                    })
-                } else {
+        if let queryURL = ChatViewController.chatRequestURL(apiBase: HulaConstants.apiURL, tradeId: trade_id) {
+            HLDataManager.sharedInstance.httpGet(urlstr: queryURL, taskCallback: { (ok, json) in
+                //print("done")
+                //print(ok)
+                //print(json!)
+                if (ok){
+                    if let dictionary = json as? [NSDictionary] {
+                        DispatchQueue.main.async(execute: {
+                            self.chat = dictionary
+                            self.updateData(forze: forze)
+                        })
+                    } else {
+                        
+                    }
                     
                 }
-                
-            }
-        })
+            })
+        }
         
         
-        if UIDeviceOrientationIsPortrait(UIDevice.current.orientation) {
+        // Portrait auto-dismiss used to live here and in rotated(). rotated() was disabled;
+        // keep the poll path consistent so composing drafts are not wiped by orientation flicker.
+        if ChatViewController.shouldAutoDismissForOrientation(UIDevice.current.orientation) {
             DispatchQueue.main.async(execute: {
                 self.dismiss(animated: true, completion: nil)
             })
         }
         
+    }
+
+    /// Chat is landscape-first; do not auto-dismiss on portrait polls (draft loss).
+    /// Explicit close remains via `closeChatAction`.
+    class func shouldAutoDismissForOrientation(_ orientation: UIDeviceOrientation) -> Bool {
+        return false
+    }
+
+    /// Section header. Missing HelveticaNeue must not assign a nil font.
+    class func sectionHeaderFont() -> UIFont {
+        return CatalogFontPolicy.font(named: "HelveticaNeue", size: 12)
+    }
+
+    /// Chat row height used `font!`. Nil cell font / non-string messages must not crash the table.
+    class func messageRowHeight(width: CGFloat, font: UIFont?, message: Any?) -> CGFloat {
+        return LabelMetricsPolicy.layoutHeight(
+            width: width,
+            font: font,
+            text: message as? String,
+            extra: 30,
+            scale: 1.3
+        )
     }
     
     func updateData(forze: Bool){
@@ -120,9 +170,8 @@ class ChatViewController: UIViewController {
         self.sectionKeys = []
         self.sortedChat = [:]
         for message in self.chat{
-            if let date = message.object(forKey: "date") as? String{
-                let index = date.index(date.startIndex, offsetBy: 13)
-                let date_extract = date.substring(to: index)
+            if let date = message.object(forKey: "date") as? String,
+                let date_extract = CommonUtils.chatDateSectionKey(date) {
                 //print(date_extract)
                 if var exists = self.sortedChat.object(forKey: date_extract) as? [NSDictionary]{
                     exists.append(message)
@@ -146,34 +195,39 @@ class ChatViewController: UIViewController {
     
     
     @IBAction func sendChatTextAction(_ sender: Any) {
-        var tx = self.chatTextField.text!
-        if tx.count > 300 {
-            tx = String( tx.prefix(300)  );
+        let raw = self.chatTextField.text ?? ""
+        if raw.count > ChatViewController.maxChatMessageLength {
+            let alert = UIAlertController(
+                title: NSLocalizedString("Message too long", comment: ""),
+                message: NSLocalizedString("Please keep trade chat messages to 300 characters or fewer.", comment: ""),
+                preferredStyle: .alert
+            )
+            alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: ""), style: .default, handler: nil))
+            self.present(alert, animated: true, completion: nil)
+            return
+        }
+        guard let tx = ChatViewController.validatedChatMessage(raw),
+            let queryURL = ChatViewController.chatRequestURL(apiBase: HulaConstants.apiURL, tradeId: self.trade_id) else {
+            return
         }
         //print("Sending...")
         //print("trade id: \(self.trade_id)")
-        if tx.count > 0 {
-            let queryURL = HulaConstants.apiURL + "trades/\(self.trade_id)/chat"
-            HLDataManager.sharedInstance.httpPost(urlstr: queryURL, postString: "message=\(tx)", isPut: false, taskCallback: { (ok, json) in
-                //print("done")
-                //print(ok)
-                if (ok){
-                    if (json as? NSDictionary) != nil {
-                        DispatchQueue.main.async(execute: {
-                            self.chatTextField.text = ""
-                            self.refreshChat(forze:true)
-                        })
-                    } else {
-                        
-                    }
-                    
+        HLDataManager.sharedInstance.httpPost(urlstr: queryURL, postString: ChatViewController.chatPostString(message: tx), isPut: false, taskCallback: { (ok, json) in
+            //print("done")
+            //print(ok)
+            if (ok){
+                if (json as? NSDictionary) != nil {
+                    DispatchQueue.main.async(execute: {
+                        self.chatTextField.text = ""
+                        self.refreshChat(forze:true)
+                    })
                 }
-                HLDataManager.sharedInstance.getTrades {(succ) in
-                    // trades refreshed
-                    print("Trades loaded from chat")
-                }
-            })
-        }
+            }
+            HLDataManager.sharedInstance.getTrades {(succ) in
+                // trades refreshed
+                print("Trades loaded from chat")
+            }
+        })
     }
     
     
@@ -256,13 +310,15 @@ extension ChatViewController: UITableViewDelegate, UITableViewDataSource{
         let label = UILabel(frame: CGRect(x: 20, y:1, width: tableView.frame.size.width, height: 23))
         label.textColor = UIColor(red: 70.0/255, green: 70.0/255, blue: 70.0/255, alpha: 1.0)
         label.backgroundColor = UIColor(red: 0, green: 0, blue: 0, alpha: 0)
-        label.font = UIFont(name: "HelveticaNeue", size: 12)
+        label.font = ChatViewController.sectionHeaderFont()
         
         var sectionTitle = sectionKeys[section]
-        if let comments = sortedChat.object(forKey: sectionKeys[section]) as? [NSDictionary]{
-            let lastDate = comments[0].object(forKey: "date") as! String
-            let dt = CommonUtils.sharedInstance.isoDateToNSDate(date:lastDate)
-            sectionTitle = CommonUtils.sharedInstance.timeAgoSinceDate(date: dt, numericDates: true)
+        if let comments = sortedChat.object(forKey: sectionKeys[section]) as? [NSDictionary], comments.count > 0 {
+            let lastDate = comments[0].object(forKey: "date") as? String
+            let relative = CommonUtils.sharedInstance.relativeDateLabel(fromISO: lastDate, numericDates: true)
+            if !relative.isEmpty {
+                sectionTitle = relative
+            }
         }
         label.text = sectionTitle
         label.textAlignment = .center
@@ -273,10 +329,15 @@ extension ChatViewController: UITableViewDelegate, UITableViewDataSource{
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat{
         let cell = tableView.dequeueReusableCell(withIdentifier: "chatCell") as! ChatTableViewCell
         
-        if let comments = sortedChat.object(forKey: sectionKeys[indexPath.section]) as? [NSDictionary]{
+        if let comments = sortedChat.object(forKey: sectionKeys[indexPath.section]) as? [NSDictionary],
+           indexPath.row < comments.count {
             
             let data:NSDictionary = comments[indexPath.row]
-            let h = CommonUtils.sharedInstance.heightString(width: cell.messageText.frame.width, font: cell.messageText.font!, string: data.object(forKey: "message") as! String)*1.3 + 30
+            let h = ChatViewController.messageRowHeight(
+                width: cell.messageText.frame.width,
+                font: cell.messageText.font,
+                message: data.object(forKey: "message")
+            )
             return h
         }
         return 100.0
@@ -287,12 +348,14 @@ extension ChatViewController: UITableViewDelegate, UITableViewDataSource{
         
         let cell = tableView.dequeueReusableCell(withIdentifier: "chatCell") as! ChatTableViewCell
         
-        if let comments = sortedChat.object(forKey: sectionKeys[indexPath.section]) as? [NSDictionary]{
+        if let comments = sortedChat.object(forKey: sectionKeys[indexPath.section]) as? [NSDictionary],
+           indexPath.row < comments.count {
             
             let data:NSDictionary = comments[indexPath.row]
             cell.userNameLabel.text = NSLocalizedString("You", comment: "")
-            cell.messageText.text = data.object(forKey: "message") as! String
-            let user_id = data.object(forKey: "user_id") as! String
+            let message = data.object(forKey: "message") as? String ?? ""
+            cell.messageText.text = message
+            let user_id = data.object(forKey: "user_id") as? String ?? ""
             if (user_id == HulaUser.sharedInstance.userId){
                 // my message
                 cell.userNameLabel.text = HulaUser.sharedInstance.userNick

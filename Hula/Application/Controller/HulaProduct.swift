@@ -77,7 +77,29 @@ class HulaProduct: NSObject {
         self.trading_count = 0
     }
     override var description : String {
-        return "(Product id: \(self.productId!); name:   \(self.productName!); dist:   \(self.distance))\n"
+        return HulaProduct.debugDescriptionText(
+            productId: self.productId,
+            name: self.productName,
+            distance: HulaProduct.debugDistance(
+                productLocation: self.productLocation,
+                userLocation: HulaUser.sharedInstance.location
+            )
+        )
+    }
+
+    /// Debug print used IUO unwraps of `productId!` / `productName!` / `distance`.
+    class func debugDescriptionText(productId: String?, name: String?, distance: Double?) -> String {
+        let id = productId ?? ""
+        let nameText = name ?? ""
+        let dist = distance ?? 0
+        return "(Product id: \(id); name:   \(nameText); dist:   \(dist))\n"
+    }
+
+    class func debugDistance(productLocation: CLLocation?, userLocation: CLLocation?) -> Double? {
+        guard let productLocation = productLocation, let userLocation = userLocation else {
+            return nil
+        }
+        return productLocation.distance(from: userLocation)
     }
     
     func populate(with: NSDictionary){
@@ -92,7 +114,9 @@ class HulaProduct: NSObject {
         if let tmp = with.object(forKey: "owner_id") as? String { productOwner = tmp }
         if let tmp = with.object(forKey: "video_requested") as? [String:Bool] { video_requested = tmp }
         if let tmp = with.object(forKey: "video_url") as? [String:String] { video_url = tmp }
-        if let tmp = with.object(forKey: "trading_count") as? Int { trading_count = tmp }
+        if let count = CommonUtils.intFromJSON(with.object(forKey: "trading_count")) {
+            trading_count = count
+        }
         if let tmp = with.object(forKey: "images") as? [String] {
             arrProductPhotoLink = []
             for im in tmp {
@@ -101,23 +125,22 @@ class HulaProduct: NSObject {
                 }
             }
         }
-        print (with.object(forKey: "location") as? [Any])
-        if let tmp = with.object(forKey: "location") as? [Any] {
-            let lat = tmp[0] as? Double
-            let lon = tmp[1] as? Double
-            print(Float(lat!))
-            
-            if (lat != nil && lon != nil){
-                productLocation = CLLocation(latitude: CLLocationDegrees(Float(lat!)), longitude: CLLocationDegrees(Float(lon!)))
-            }
- 
+        if let locationFromJSON = CommonUtils.location(fromJSON: with.object(forKey: "location")) {
+            productLocation = locationFromJSON
         }
+    }
+
+    /// Product PUT. Blank productId must not hit `products/`.
+    class func updateURL(apiBase: String, productId: String?) -> String? {
+        return CommonUtils.productResourceURL(apiBase: apiBase, productId: productId)
     }
     
     func updateServerData(){
         //print("Updating user...")
         if(HulaUser.sharedInstance.isUserLoggedIn()){
-            let queryURL = HulaConstants.apiURL + "products/" + self.productId
+            guard let queryURL = HulaProduct.updateURL(apiBase: HulaConstants.apiURL, productId: self.productId) else {
+                return
+            }
             HLDataManager.sharedInstance.httpPost(urlstr: queryURL, postString: getPostString(), isPut: true, taskCallback: { (ok, json) in
                 
                 //print("done")
@@ -134,22 +157,99 @@ class HulaProduct: NSObject {
         }
     }
     func getPostString() -> String {
-        var str = "title=" + self.productName +
-            "&description=" + self.productDescription +
-            "&condition=" + self.productCondition
-        str = str + "&category_name=" + self.productCategory +
-            "&category_id=" + self.productCategoryId +
-            "&image_url=" + self.productImage
-        str = str + "&owner_id=" + self.productOwner +
-            "&images=" + self.arrProductPhotoLink.joined(separator: ",")
-        /*
+        var str = "title=" + CommonUtils.formEncodedValue(self.productName) +
+            "&description=" + CommonUtils.formEncodedValue(self.productDescription) +
+            "&condition=" + CommonUtils.formEncodedValue(self.productCondition)
+        str = str + "&category_name=" + CommonUtils.formEncodedValue(self.productCategory) +
+            "&category_id=" + CommonUtils.formEncodedValue(self.productCategoryId) +
+            "&image_url=" + CommonUtils.formEncodedValue(self.productImage)
+        str = str + "&owner_id=" + CommonUtils.formEncodedValue(self.productOwner) +
+            "&images=" + CommonUtils.formEncodedValue(self.arrProductPhotoLink.joined(separator: ","))
+        // Persist the product's own coordinates on edit. Using the user's live GPS
+        // silently relocated listings whenever any field was updated.
         if (self.productLocation.coordinate.latitude != 0 && self.productLocation.coordinate.longitude != 0){
             str = str + "&lat=\(self.productLocation.coordinate.latitude)&lng=\(self.productLocation.coordinate.longitude)"
         }
-        */
-        str += "&lat=\(HulaUser.sharedInstance.location.coordinate.latitude)"
-        str += "&lng=\(HulaUser.sharedInstance.location.coordinate.longitude)"
         print(str)
         return str
     }
+
+    /// Keep featured `image_url` aligned with the first photo; clear when the album is empty
+    /// so a deleted last photo is not re-posted as the featured image.
+    func syncFeaturedImageFromPhotos() {
+        if let first = arrProductPhotoLink.first, first.count > 0 {
+            productImage = first
+        } else {
+            productImage = ""
+        }
+    }
+
+    /// Apply a uploaded image URL into a 1-based camera slot without corrupting earlier empties.
+    func applyUploadedImage(path: String, pos: Int) {
+        guard pos >= 1 else { return }
+        let index = pos - 1
+        while arrProductPhotoLink.count <= index {
+            arrProductPhotoLink.append("")
+        }
+        arrProductPhotoLink[index] = path
+        while let last = arrProductPhotoLink.last, last.isEmpty {
+            arrProductPhotoLink.removeLast()
+        }
+        if pos == 1 {
+            productImage = path
+        } else if productImage.isEmpty, let first = arrProductPhotoLink.first, !first.isEmpty {
+            productImage = first
+        }
+    }
+}
+
+/// Pins in-flight create POST/upload callbacks to the listing that started them.
+/// `HLDataManager.newProduct` is a singleton; replacing it while create is in flight
+/// must not retarget `product_id` or photo URLs onto a different object.
+struct ProductCreateSession {
+    static func firstLocalPhoto(on product: HulaProduct) -> UIImage? {
+        return CommonUtils.uiImage(at: 0, in: product.arrProductPhotos)
+    }
+
+    /// Present Complete Profile only for the captured listing, and only if nothing else is already presented.
+    static func shouldPresentCompleteProfile(captured: HulaProduct, current: HulaProduct, alreadyPresenting: Bool) -> Bool {
+        if alreadyPresenting {
+            return false
+        }
+        return captured === current
+    }
+
+    static func applyCreatedProductId(_ productId: String, to product: HulaProduct) {
+        if productId.count > 0 {
+            product.productId = productId
+        }
+    }
+
+    static func preparedPhotoSlots() -> [String] {
+        return ["", "", "", ""]
+    }
+
+    /// Writes a photo URL onto `product` (not whatever `newProduct` currently is).
+    /// Returns false if `position` is out of range for the 4-slot create array.
+    static func applyPhotoLink(_ url: String, at position: Int, to product: HulaProduct) -> Bool {
+        var links = product.arrProductPhotoLink ?? []
+        while links.count < 4 {
+            links.append("")
+        }
+        if position < 0 || position >= links.count {
+            return false
+        }
+        links[position] = url
+        product.arrProductPhotoLink = links
+        if position == 0 {
+            product.productImage = url
+        }
+        return true
+    }
+}
+
+/// Per-create upload counters so two in-flight listings cannot mix slot URLs or PUT timing.
+class ProductCreateUploadProgress {
+    var toUpload: Int = 0
+    var uploaded: Int = 0
 }
