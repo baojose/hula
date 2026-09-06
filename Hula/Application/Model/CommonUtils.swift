@@ -130,80 +130,14 @@ class CommonUtils: NSObject, EasyTipViewDelegate, UIGestureRecognizerDelegate {
     
     
     func timeAgoSinceDate(date:NSDate, numericDates:Bool) -> String {
-        let calendar = NSCalendar.current
-        let unitFlags: Set<Calendar.Component> = [.minute, .hour, .day, .weekOfYear, .month, .year, .second]
-        let now = NSDate()
-        let earliest = now.earlierDate(date as Date)
-        let latest = (earliest == now as Date) ? date : now
-        let components = calendar.dateComponents(unitFlags, from: earliest as Date,  to: latest as Date)
-        
-        if (components.year! >= 2) {
-            return "\(components.year!) " + NSLocalizedString("years ago", comment: "")
-        } else if (components.year! >= 1){
-            if (numericDates){
-                return NSLocalizedString("1 year ago", comment: "")
-            } else {
-                return NSLocalizedString("Last year", comment: "")
-            }
-        } else if (components.month! >= 2) {
-            return "\(components.month!) " + NSLocalizedString("months ago", comment: "")
-        } else if (components.month! >= 1){
-            if (numericDates){
-                return NSLocalizedString("1 month ago", comment: "")
-            } else {
-                return NSLocalizedString("Last month", comment: "")
-            }
-        } else if (components.weekOfYear! >= 2) {
-            return "\(components.weekOfYear!) " + NSLocalizedString("weeks ago", comment: "")
-        } else if (components.weekOfYear! >= 1){
-            if (numericDates){
-                return NSLocalizedString("1 week ago", comment: "")
-            } else {
-                return NSLocalizedString("Last week", comment: "")
-            }
-        } else if (components.day! >= 2) {
-            return "\(components.day!) " + NSLocalizedString("days ago", comment: "")
-        } else if (components.day! >= 1){
-            if (numericDates){
-                return NSLocalizedString("1 day ago", comment: "")
-            } else {
-                return NSLocalizedString("Yesterday", comment: "")
-            }
-        } else if (components.hour! >= 2) {
-            return "\(components.hour!) " + NSLocalizedString("hours ago", comment: "")
-        } else if (components.hour! >= 1){
-            if (numericDates){
-                return NSLocalizedString("1 hour ago", comment: "")
-            } else {
-                return NSLocalizedString("An hour ago", comment: "")
-            }
-        } else if (components.minute! >= 2) {
-            return "\(components.minute!) " + NSLocalizedString("minutes ago", comment: "")
-        } else if (components.minute! >= 1){
-            if (numericDates){
-                return NSLocalizedString("1 minute ago", comment: "")
-            } else {
-                return NSLocalizedString("A minute ago", comment: "")
-            }
-        } else if (components.second! >= 3) {
-            return "\(components.second!) seconds ago" + NSLocalizedString("seconds ago", comment: "")
-        } else {
-            return NSLocalizedString("Just now", comment: "")
-        }
-        
+        return RelativeDatePolicy.timeAgo(from: date as Date, now: Date(), numericDates: numericDates)
     }
     
     func isoDateToNSDate(date:String) -> NSDate{
-        //print(date)
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"
-        dateFormatter.timeZone = NSTimeZone(forSecondsFromGMT: 0) as TimeZone!
-        let dateObj = dateFormatter.date(from: date)
-        if (dateObj != nil){
-            return dateObj! as NSDate
-        } else {
-            return NSDate()
+        if let parsed = RelativeDatePolicy.parseISO(date) {
+            return parsed as NSDate
         }
+        return NSDate()
     }
 
     /// Safe relative-date label for optional API date strings (notifications/chat).
@@ -1598,5 +1532,123 @@ struct ImageCropPolicy {
         let cropped = UIGraphicsGetImageFromCurrentImageContext()
         UIGraphicsEndImageContext()
         return cropped ?? image
+    }
+}
+
+/// Chat, past-trade, and notification timestamps. Historical `timeAgoSinceDate`
+/// force-unwrapped every `DateComponents` field; `daysBetween` unwrapped `day!`;
+/// `isoDateToNSDate` only accepted fractional seconds and treated other valid
+/// ISO strings as "now". Missing components must fall through, not crash.
+struct RelativeDatePolicy {
+    static let oldNotificationDays = 3
+
+    static func component(_ value: Int?) -> Int {
+        return value ?? 0
+    }
+
+    static func parseISO(_ raw: String?) -> Date? {
+        guard let raw = raw, raw.characters.count > 0 else {
+            return nil
+        }
+        if let date = raw.dateFromISO8601 {
+            return date
+        }
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.timeZone = TimeZone(secondsFromGMT: 0)
+        formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"
+        if let date = formatter.date(from: raw) {
+            return date
+        }
+        formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss'Z'"
+        return formatter.date(from: raw)
+    }
+
+    static func timeAgoLabel(
+        year: Int,
+        month: Int,
+        weekOfYear: Int,
+        day: Int,
+        hour: Int,
+        minute: Int,
+        second: Int,
+        numericDates: Bool
+    ) -> String {
+        if year >= 2 {
+            return "\(year) " + NSLocalizedString("years ago", comment: "")
+        } else if year >= 1 {
+            if numericDates {
+                return NSLocalizedString("1 year ago", comment: "")
+            }
+            return NSLocalizedString("Last year", comment: "")
+        } else if month >= 2 {
+            return "\(month) " + NSLocalizedString("months ago", comment: "")
+        } else if month >= 1 {
+            if numericDates {
+                return NSLocalizedString("1 month ago", comment: "")
+            }
+            return NSLocalizedString("Last month", comment: "")
+        } else if weekOfYear >= 2 {
+            return "\(weekOfYear) " + NSLocalizedString("weeks ago", comment: "")
+        } else if weekOfYear >= 1 {
+            if numericDates {
+                return NSLocalizedString("1 week ago", comment: "")
+            }
+            return NSLocalizedString("Last week", comment: "")
+        } else if day >= 2 {
+            return "\(day) " + NSLocalizedString("days ago", comment: "")
+        } else if day >= 1 {
+            if numericDates {
+                return NSLocalizedString("1 day ago", comment: "")
+            }
+            return NSLocalizedString("Yesterday", comment: "")
+        } else if hour >= 2 {
+            return "\(hour) " + NSLocalizedString("hours ago", comment: "")
+        } else if hour >= 1 {
+            if numericDates {
+                return NSLocalizedString("1 hour ago", comment: "")
+            }
+            return NSLocalizedString("An hour ago", comment: "")
+        } else if minute >= 2 {
+            return "\(minute) " + NSLocalizedString("minutes ago", comment: "")
+        } else if minute >= 1 {
+            if numericDates {
+                return NSLocalizedString("1 minute ago", comment: "")
+            }
+            return NSLocalizedString("A minute ago", comment: "")
+        } else if second >= 3 {
+            return "\(second) seconds ago" + NSLocalizedString("seconds ago", comment: "")
+        }
+        return NSLocalizedString("Just now", comment: "")
+    }
+
+    static func timeAgo(
+        from date: Date,
+        now: Date,
+        numericDates: Bool,
+        calendar: Calendar = Calendar.current
+    ) -> String {
+        let unitFlags: Set<Calendar.Component> = [.minute, .hour, .day, .weekOfYear, .month, .year, .second]
+        let earliest = now < date ? now : date
+        let latest = now < date ? date : now
+        let components = calendar.dateComponents(unitFlags, from: earliest, to: latest)
+        return timeAgoLabel(
+            year: component(components.year),
+            month: component(components.month),
+            weekOfYear: component(components.weekOfYear),
+            day: component(components.day),
+            hour: component(components.hour),
+            minute: component(components.minute),
+            second: component(components.second),
+            numericDates: numericDates
+        )
+    }
+
+    static func daysBetween(from start: Date, to end: Date, calendar: Calendar = Calendar.current) -> Int {
+        return component(calendar.dateComponents([.day], from: start, to: end).day)
+    }
+
+    static func isOldNotification(daysSince: Int, threshold: Int = oldNotificationDays) -> Bool {
+        return daysSince > threshold
     }
 }

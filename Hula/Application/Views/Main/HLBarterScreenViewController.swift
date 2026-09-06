@@ -1083,13 +1083,13 @@ extension HLBarterScreenViewController: KDDragAndDropCollectionViewDataSource, U
         let product:HulaProduct
         switch collectionView.tag {
         case 1:
-            product = myProducts[indexPath.item]
+            product = HLBarterScreenViewController.product(at: indexPath.item, in: myProducts) ?? HulaProduct(id : "nada", name : "Test product", image: "https://api.hula.trading/v1/products/59400e5ce8825609f281bc68/image")
         case 2:
-            product = myTradedProducts[indexPath.item]
+            product = HLBarterScreenViewController.product(at: indexPath.item, in: myTradedProducts) ?? HulaProduct(id : "nada", name : "Test product", image: "https://api.hula.trading/v1/products/59400e5ce8825609f281bc68/image")
         case 3:
-            product = otherTradedProducts[indexPath.item]
+            product = HLBarterScreenViewController.product(at: indexPath.item, in: otherTradedProducts) ?? HulaProduct(id : "nada", name : "Test product", image: "https://api.hula.trading/v1/products/59400e5ce8825609f281bc68/image")
         case 4:
-            product = otherProducts[indexPath.item]
+            product = HLBarterScreenViewController.product(at: indexPath.item, in: otherProducts) ?? HulaProduct(id : "nada", name : "Test product", image: "https://api.hula.trading/v1/products/59400e5ce8825609f281bc68/image")
         default:
             product = HulaProduct(id : "nada", name : "Test product", image: "https://api.hula.trading/v1/products/59400e5ce8825609f281bc68/image")
         }
@@ -1131,23 +1131,23 @@ extension HLBarterScreenViewController: KDDragAndDropCollectionViewDataSource, U
         let product:HulaProduct
         switch collectionView.tag {
         case 1:
-            product = myProducts[indexPath.item]
+            product = HLBarterScreenViewController.product(at: indexPath.item, in: myProducts) ?? HulaProduct(id : "nada", name : "Test product", image: "https://api.hula.trading/v1/products/59400e5ce8825609f281bc68/image")
             cell = collectionView.dequeueReusableCell(withReuseIdentifier: "productcell1", for: indexPath) as! HLProductCollectionViewCell
             cell.side = "left"
             cell.type = "user"
         case 2:
-            product = myTradedProducts[indexPath.item]
+            product = HLBarterScreenViewController.product(at: indexPath.item, in: myTradedProducts) ?? HulaProduct(id : "nada", name : "Test product", image: "https://api.hula.trading/v1/products/59400e5ce8825609f281bc68/image")
             cell = collectionView.dequeueReusableCell(withReuseIdentifier: "productcell2", for: indexPath) as! HLProductCollectionViewCell
             cell.side = "left"
             cell.type = "select"
         case 3:
-            product = otherTradedProducts[indexPath.item]
+            product = HLBarterScreenViewController.product(at: indexPath.item, in: otherTradedProducts) ?? HulaProduct(id : "nada", name : "Test product", image: "https://api.hula.trading/v1/products/59400e5ce8825609f281bc68/image")
             cell = collectionView.dequeueReusableCell(withReuseIdentifier: "productcell3", for: indexPath) as! HLProductCollectionViewCell
             cell.side = "right"
             cell.type = "select"
         case 4:
             
-            product = otherProducts[indexPath.item]
+            product = HLBarterScreenViewController.product(at: indexPath.item, in: otherProducts) ?? HulaProduct(id : "nada", name : "Test product", image: "https://api.hula.trading/v1/products/59400e5ce8825609f281bc68/image")
             cell = collectionView.dequeueReusableCell(withReuseIdentifier: "productcell4", for: indexPath) as! HLProductCollectionViewCell
             cell.side = "right"
             cell.type = "user"
@@ -1223,13 +1223,13 @@ extension HLBarterScreenViewController: KDDragAndDropCollectionViewDataSource, U
         let product:HulaProduct
         switch collectionView.tag {
         case 1:
-            product = myProducts[indexPath.item]
+            product = HLBarterScreenViewController.product(at: indexPath.item, in: myProducts) ?? HulaProduct(id : "nada", name : "Test product", image: "https://hula.trading/v1/products/59400e5ce8825609f281bc68/image")
         case 2:
-            product = myTradedProducts[indexPath.item]
+            product = HLBarterScreenViewController.product(at: indexPath.item, in: myTradedProducts) ?? HulaProduct(id : "nada", name : "Test product", image: "https://hula.trading/v1/products/59400e5ce8825609f281bc68/image")
         case 3:
-            product = otherTradedProducts[indexPath.item]
+            product = HLBarterScreenViewController.product(at: indexPath.item, in: otherTradedProducts) ?? HulaProduct(id : "nada", name : "Test product", image: "https://hula.trading/v1/products/59400e5ce8825609f281bc68/image")
         case 4:
-            product = otherProducts[indexPath.item]
+            product = HLBarterScreenViewController.product(at: indexPath.item, in: otherProducts) ?? HulaProduct(id : "nada", name : "Test product", image: "https://hula.trading/v1/products/59400e5ce8825609f281bc68/image")
         default:
             product = HulaProduct(id : "nada", name : "Test product", image: "https://hula.trading/v1/products/59400e5ce8825609f281bc68/image")
         }
@@ -1240,17 +1240,25 @@ extension HLBarterScreenViewController: KDDragAndDropCollectionViewDataSource, U
         if let di = dataItem as? HulaProduct {
             switch collectionView.tag {
             case 1:
-                myProducts.insert(di, at: indexPath.item)
+                if let index = HLBarterScreenViewController.clampedInsertionIndex(indexPath.item, count: myProducts.count) {
+                    myProducts.insert(di, at: index)
+                }
             case 2:
-                myTradedProducts.insert(di, at: indexPath.item)
+                if let index = HLBarterScreenViewController.clampedInsertionIndex(indexPath.item, count: myTradedProducts.count) {
+                    myTradedProducts.insert(di, at: index)
+                }
                 
                 self.updateLiveBarter()
             case 3:
-                otherTradedProducts.insert(di, at: indexPath.item)
+                if let index = HLBarterScreenViewController.clampedInsertionIndex(indexPath.item, count: otherTradedProducts.count) {
+                    otherTradedProducts.insert(di, at: index)
+                }
                 
                 self.updateLiveBarter()
             case 4:
-                otherProducts.insert(di, at: indexPath.item)
+                if let index = HLBarterScreenViewController.clampedInsertionIndex(indexPath.item, count: otherProducts.count) {
+                    otherProducts.insert(di, at: index)
+                }
             default: break
             }
         }
@@ -1283,6 +1291,54 @@ extension HLBarterScreenViewController: KDDragAndDropCollectionViewDataSource, U
             return (ownerMoney, 0)
         }
         return (0, otherMoney)
+    }
+
+    /// Drag lookups used `index(of: item)!` after a custom `==` match. Pointer
+    /// equality and Equatable can disagree; enumerate the same `==` used to match.
+    class func indexOfMatchingProduct(_ product: HulaProduct, in products: [HulaProduct]) -> Int? {
+        for (index, item) in products.enumerated() {
+            if product == item {
+                return index
+            }
+        }
+        return nil
+    }
+
+    /// Collection data source / didSelect used `array[indexPath.item]` during
+    /// live_barter refreshes. A stale path must not crash the trade room.
+    class func product(at index: Int, in products: [HulaProduct]) -> HulaProduct? {
+        guard index >= 0 && index < products.count else {
+            return nil
+        }
+        return products[index]
+    }
+
+    /// `insert(_:at:)` allows `0...count`. Drag can send a path past the end.
+    class func clampedInsertionIndex(_ index: Int, count: Int) -> Int? {
+        guard count >= 0 else {
+            return nil
+        }
+        if index < 0 {
+            return 0
+        }
+        if index > count {
+            return count
+        }
+        return index
+    }
+
+    /// Same-collection reorder: remove then insert. Invalid `from` is a no-op.
+    class func movingProducts(_ products: [HulaProduct], from: Int, to: Int) -> [HulaProduct]? {
+        guard from >= 0 && from < products.count else {
+            return nil
+        }
+        var result = products
+        let item = result.remove(at: from)
+        guard let dest = clampedInsertionIndex(to, count: result.count) else {
+            return nil
+        }
+        result.insert(item, at: dest)
+        return result
     }
 
     func collectionView(_ collectionView: UICollectionView, deleteDataItemAtIndexPath indexPath : IndexPath) -> Void {
@@ -1333,31 +1389,30 @@ extension HLBarterScreenViewController: KDDragAndDropCollectionViewDataSource, U
     
     func collectionView(_ collectionView: UICollectionView, moveDataItemFromIndexPath from: IndexPath, toIndexPath to : IndexPath) -> Void {
         
-        let fromDataItem: HulaProduct
         switch collectionView.tag {
         case 1:
-            fromDataItem = myProducts[from.item]
-            myProducts.remove(at: from.item)
-            myProducts.insert(fromDataItem, at: to.item)
+            if let moved = HLBarterScreenViewController.movingProducts(myProducts, from: from.item, to: to.item) {
+                myProducts = moved
+            }
         case 2:
-            fromDataItem = myTradedProducts[from.item]
-            myTradedProducts.remove(at: from.item)
-            myTradedProducts.insert(fromDataItem, at: to.item)
-            self.updateLiveBarter()
+            if let moved = HLBarterScreenViewController.movingProducts(myTradedProducts, from: from.item, to: to.item) {
+                myTradedProducts = moved
+                self.updateLiveBarter()
+            }
         case 3:
-            fromDataItem = otherTradedProducts[from.item]
-            otherTradedProducts.remove(at: from.item)
-            otherTradedProducts.insert(fromDataItem, at: to.item)
-            self.updateLiveBarter()
+            if let moved = HLBarterScreenViewController.movingProducts(otherTradedProducts, from: from.item, to: to.item) {
+                otherTradedProducts = moved
+                self.updateLiveBarter()
+            }
         case 4:
-            fromDataItem = otherProducts[from.item]
-            otherProducts.remove(at: from.item)
-            otherProducts.insert(fromDataItem, at: to.item)
+            if let moved = HLBarterScreenViewController.movingProducts(otherProducts, from: from.item, to: to.item) {
+                otherProducts = moved
+            }
         default:
             print("Error: No product found!")
-            fromDataItem = myProducts[from.item]
-            myProducts.remove(at: from.item)
-            myProducts.insert(fromDataItem, at: to.item)
+            if let moved = HLBarterScreenViewController.movingProducts(myProducts, from: from.item, to: to.item) {
+                myProducts = moved
+            }
         }
         
         self.didTradeMutate = true
@@ -1383,13 +1438,8 @@ extension HLBarterScreenViewController: KDDragAndDropCollectionViewDataSource, U
             }
             
             
-            for item : HulaProduct in dataArr {
-                if candidate  == item {
-                    
-                    let position = dataArr.index(of: item)! // ! if we are inside the condition we are guaranteed a position
-                    let indexPath = IndexPath(item: position, section: 0)
-                    return indexPath
-                }
+            if let position = HLBarterScreenViewController.indexOfMatchingProduct(candidate, in: dataArr) {
+                return IndexPath(item: position, section: 0)
             }
         }
         

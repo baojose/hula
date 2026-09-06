@@ -46,6 +46,15 @@ class HLNotificationsViewController: BaseViewController, UITableViewDelegate, UI
         return CatalogFontPolicy.font(named: name, size: 15.0)
     }
 
+    /// `dateComponents.day!` crashed the notifications list when Calendar omitted day.
+    class func daysBetween(start: Date, end: Date) -> Int {
+        return RelativeDatePolicy.daysBetween(from: start, to: end)
+    }
+
+    class func isOldNotification(daysSince: Int) -> Bool {
+        return RelativeDatePolicy.isOldNotification(daysSince: daysSince)
+    }
+
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -110,7 +119,7 @@ class HLNotificationsViewController: BaseViewController, UITableViewDelegate, UI
         return 1
     }
     func daysBetween(start: Date, end: Date) -> Int {
-        return Calendar.current.dateComponents([.day], from: start, to: end).day!
+        return HLNotificationsViewController.daysBetween(start: start, end: end)
     }
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
 
@@ -138,7 +147,7 @@ class HLNotificationsViewController: BaseViewController, UITableViewDelegate, UI
                 let realdate = CommonUtils.sharedInstance.isoDateToNSDate(date: date)
                 let days_since = daysBetween(start: realdate as Date, end: NSDate() as Date )
                 print(days_since);
-                if days_since > 3 {
+                if HLNotificationsViewController.isOldNotification(daysSince: days_since) {
                     is_old = true;
                 }
             }
