@@ -751,30 +751,15 @@ class HLDataManager: NSObject {
             let queryURL = HulaConstants.apiURL + "notifications"
             httpGet(urlstr: queryURL, taskCallback: { (ok, json) in
                 //print(ok)
-                var num_pending = 0
                 if (ok){
-                    self.arrNotifications = [];
-                    if let array = json as? [Any] {
-                        for not in array {
-                            // access all objects in array
-                            if let dict = not as? [String: Any]{
-                                if let status = dict["status"] as? String{
-                                    if (status != "deleted"){
-                                        self.arrNotifications.add(not)
-                                    }
-                                }
-                                if let isread = dict["is_read"] as? Int{
-                                    if isread == 0{
-                                        num_pending += 1
-                                    }
-                                }
-                            }
-                        }
-                        
-                    }
-                    DispatchQueue.main.async { // Correct
-                        HLDataManager.sharedInstance.numNotificationsPending = num_pending
-                        UIApplication.shared.applicationIconBadgeNumber = num_pending
+                    // Parse off the URLSession queue, then publish atomically on main.
+                    // Replacing arrNotifications on the background thread races the
+                    // Notifications table (object(at:) / count) and crashes.
+                    let parsed = NotificationListParser.parse(json)
+                    DispatchQueue.main.async {
+                        self.arrNotifications = parsed.items
+                        HLDataManager.sharedInstance.numNotificationsPending = parsed.pendingCount
+                        UIApplication.shared.applicationIconBadgeNumber = parsed.pendingCount
                         self.isLoadingNotifications = false
                         
                         NotificationCenter.default.post(name: self.notificationsRecieved, object: nil)
@@ -788,5 +773,43 @@ class HLDataManager: NSObject {
             self.arrNotifications = []
             NotificationCenter.default.post(name: self.notificationsRecieved, object: nil)
         }
+    }
+
+    func notification(at index: Int) -> NSDictionary? {
+        return NotificationListParser.notification(at: index, in: arrNotifications)
+    }
+}
+
+struct NotificationListParser {
+    let items: NSMutableArray
+    let pendingCount: Int
+
+    static func parse(_ json: Any?) -> NotificationListParser {
+        let items = NSMutableArray()
+        var pendingCount = 0
+        if let array = json as? [Any] {
+            for not in array {
+                if let dict = not as? [String: Any] {
+                    if let status = dict["status"] as? String {
+                        if status != "deleted" {
+                            items.add(not)
+                        }
+                    }
+                    if let isread = dict["is_read"] as? Int {
+                        if isread == 0 {
+                            pendingCount += 1
+                        }
+                    }
+                }
+            }
+        }
+        return NotificationListParser(items: items, pendingCount: pendingCount)
+    }
+
+    static func notification(at index: Int, in items: NSArray) -> NSDictionary? {
+        guard index >= 0 && index < items.count else {
+            return nil
+        }
+        return items.object(at: index) as? NSDictionary
     }
 }
