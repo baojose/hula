@@ -69,10 +69,7 @@ class AlertViewController: UIViewController {
 
     @IBAction func okButtonAction(_ sender: Any) {
         self.dismiss(animated: true, completion: {
-            var response = "ok"
-            if self.points > 0 {
-                response = "\(self.points)"
-            }
+            let response = StarRatingPolicy.alertResponse(points: self.points)
             self.delegate?.alertResponded(response:response, trigger: self.trigger)
         })
     }
@@ -83,11 +80,15 @@ class AlertViewController: UIViewController {
     }
     
     @IBAction func starButtonTapped(_ sender: Any) {
-        let index = (sender as! UIButton).tag - 10
+        guard let index = StarRatingPolicy.rating(from: sender) else {
+            return
+        }
         self.points = index
         for i in 1 ... 5 {
-            let star = self.view.viewWithTag(i) as! UIImageView
-            if i <= index {
+            guard let star = self.view.viewWithTag(i) as? UIImageView else {
+                continue
+            }
+            if StarRatingPolicy.shouldFillStar(tag: i, rating: index) {
                 star.image = UIImage(named: "star-fill")
                 star.bouncer()
             } else {

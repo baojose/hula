@@ -26,6 +26,11 @@ class HLFinalFeedbackViewController: UIViewController {
     let wrong_copies : [String] = [NSLocalizedString("Late arrival", comment: ""), NSLocalizedString("Bad estate of product", comment: ""), NSLocalizedString("Annoying negotiation", comment: ""), NSLocalizedString("Difficult communication", comment: ""), NSLocalizedString("Complicated process", comment: ""), NSLocalizedString("Other", comment: "")]
     var step : Int = 0
     
+    /// Post-deal feedback. Blank resource must not POST to the API root.
+    class func feedbackURL(apiBase: String) -> String? {
+        return CommonUtils.apiCollectionURL(apiBase: apiBase, resource: "feedback")
+    }
+
     @IBOutlet weak var backBtn: UIButton!
     
     override func viewDidLoad() {
@@ -75,13 +80,17 @@ class HLFinalFeedbackViewController: UIViewController {
     */
 
     @IBAction func starsButtonAction(_ sender: Any) {
-        let index = (sender as! UIButton).tag - 10
+        guard let index = StarRatingPolicy.rating(from: sender) else {
+            return
+        }
         print(index)
-        
+
         self.points = index
         for i in 1 ... 5 {
-            let star = self.view.viewWithTag(i) as! UIImageView
-            if i <= index {
+            guard let star = self.view.viewWithTag(i) as? UIImageView else {
+                continue
+            }
+            if StarRatingPolicy.shouldFillStar(tag: i, rating: index) {
                 star.image = UIImage(named: "star-fill")
                 star.bouncer()
             } else {
@@ -114,10 +123,11 @@ class HLFinalFeedbackViewController: UIViewController {
     }
     
     @IBAction func okButtonAction(_ sender: Any) {
-        if points == 0 {
+        if !StarRatingPolicy.shouldAdvancePastRatingStep(points: points) {
             for i in 1 ... 5 {
-                let star = self.view.viewWithTag(i) as! UIImageView
-                star.bouncer()
+                if let star = self.view.viewWithTag(i) as? UIImageView {
+                    star.bouncer()
+                }
             }
             return
         }
@@ -185,9 +195,11 @@ class HLFinalFeedbackViewController: UIViewController {
         good_str = ""
         for i in 101 ..< 107{
             let st = self.view.viewWithTag(i) as? UIButton
-            if (st?.isSelected)! {
-                good_str = "\(good_str) \(st?.titleLabel?.text ?? "")"
-            }
+            good_str = FeedbackReasonPolicy.appended(
+                existing: good_str,
+                isSelected: st?.isSelected,
+                title: st?.titleLabel?.text
+            )
             UIView.animate(withDuration: Double(i-100)/10, animations: {
                 st?.alpha = 0
             }, completion: { (success) in
@@ -205,25 +217,47 @@ class HLFinalFeedbackViewController: UIViewController {
         bad_str = ""
         for i in 101 ..< 107{
             let st = self.view.viewWithTag(i) as? UIButton
-            if (st?.isSelected)! {
-                bad_str = "\(bad_str) \(st?.titleLabel?.text ?? "")"
-            }
+            bad_str = FeedbackReasonPolicy.appended(
+                existing: bad_str,
+                isSelected: st?.isSelected,
+                title: st?.titleLabel?.text
+            )
         }
         // send data
         sendFeedback()
     }
     
     func sendFeedback(){
-        let queryURL = HulaConstants.apiURL + "feedback"
+        guard let queryURL = HLFinalFeedbackViewController.feedbackURL(apiBase: HulaConstants.apiURL) else {
+            return
+        }
         let comments = "\(good_str). \(bad_str)"
-        let dataString:String = "trade_id=\(self.trade_id_closed)&user_id=\(self.user_id_closed)&comments=\(comments)&val=\(points)"
+        let dataString = CommonUtils.feedbackPostString(
+            tradeId: self.trade_id_closed,
+            userId: self.user_id_closed,
+            comments: comments,
+            points: points
+        )
         print(dataString)
         HLDataManager.sharedInstance.httpPost(urlstr: queryURL, postString: dataString, isPut: false, taskCallback: { (ok, json) in
-            if (ok){
-                print(json!)
-                DispatchQueue.main.async {
-                    self.dismiss(animated: true, completion: {
-                    })
+            // Always leave the post-deal modal on the main thread — transport failures
+            // previously dropped the httpPost callback and left this screen stuck.
+            DispatchQueue.main.async {
+                if ok {
+                    if json != nil {
+                        print(json!)
+                    }
+                    self.dismiss(animated: true, completion: nil)
+                } else {
+                    // Stay on the modal so the user can tap OK again after reconnecting.
+                    self.step = 2
+                    let alert = UIAlertController(
+                        title: NSLocalizedString("Could not send feedback", comment: ""),
+                        message: NSLocalizedString("Please check your connection and try again.", comment: ""),
+                        preferredStyle: .alert
+                    )
+                    alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: ""), style: .default, handler: nil))
+                    self.present(alert, animated: true, completion: nil)
                 }
             }
         })
