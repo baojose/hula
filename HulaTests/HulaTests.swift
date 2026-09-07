@@ -4925,4 +4925,208 @@ class HulaTests: XCTestCase {
         XCTAssertEqual(movedDown?[1].productId, "bike")
         XCTAssertEqual(movedDown?[2].productId, "cam")
     }
+
+    // MARK: - Beyond #142: distance IUOs, video-proof maps, drag snapshot, chat sections
+
+    func testProductDistanceSkipsNilLocationsWithoutCrashing() {
+        let product = HulaProduct()
+        let previous = HulaUser.sharedInstance.location
+        defer { HulaUser.sharedInstance.location = previous }
+
+        product.productLocation = nil
+        HulaUser.sharedInstance.location = CLLocation(latitude: 40.7, longitude: -74.0)
+        XCTAssertEqual(product.distance, 0.0)
+
+        product.productLocation = CLLocation(latitude: 40.7, longitude: -74.0)
+        HulaUser.sharedInstance.location = nil
+        XCTAssertEqual(product.distance, 0.0)
+
+        product.productLocation = nil
+        HulaUser.sharedInstance.location = nil
+        XCTAssertEqual(product.distance, 0.0)
+
+        product.productLocation = CLLocation(latitude: 0, longitude: 0)
+        HulaUser.sharedInstance.location = CLLocation(latitude: 0, longitude: 0)
+        XCTAssertEqual(product.distance, 0.0)
+    }
+
+    func testDistanceLabelsSkipNilProductAndUserLocations() {
+        let utils = CommonUtils.sharedInstance
+        let previous = HulaUser.sharedInstance.location
+        defer { HulaUser.sharedInstance.location = previous }
+
+        HulaUser.sharedInstance.location = CLLocation(latitude: 40.7128, longitude: -74.0060)
+        XCTAssertEqual(utils.getDistanceFrom(loc: nil), "-")
+        XCTAssertEqual(Double(utils.getCGDistanceFrom(loc: nil)), 0.0, accuracy: 0.0001)
+
+        HulaUser.sharedInstance.location = nil
+        XCTAssertEqual(
+            utils.getDistanceFrom(loc: CLLocation(latitude: 40.7, longitude: -74.0)),
+            "-"
+        )
+        XCTAssertEqual(
+            Double(utils.getCGDistanceFrom(loc: CLLocation(latitude: 40.7, longitude: -74.0))),
+            0.0,
+            accuracy: 0.0001
+        )
+    }
+
+    func testProductPostStringOmitsNilLocation() {
+        let product = HulaProduct()
+        product.productName = "Untitled"
+        product.productDescription = ""
+        product.productCondition = ""
+        product.productCategory = ""
+        product.productCategoryId = ""
+        product.productImage = ""
+        product.productOwner = ""
+        product.arrProductPhotoLink = []
+        product.productLocation = nil
+
+        let body = product.getPostString()
+        XCTAssertFalse(body.contains("&lat="), "Nil product location must not send lat; got \(body)")
+        XCTAssertFalse(body.contains("&lng="), "Nil product location must not send lng; got \(body)")
+    }
+
+    func testBoolMapFromJSONAcceptsBridgedZeroOneAndKeepsPartial() {
+        let typed = CommonUtils.boolMapFromJSON(["t1": true, "t2": false])
+        XCTAssertEqual(typed?["t1"], true)
+        XCTAssertEqual(typed?["t2"], false)
+
+        let mixed: [String: Any] = [
+            "a": NSNumber(value: true),
+            "b": NSNumber(value: 0),
+            "c": 1,
+            "d": "nope"
+        ]
+        let parsed = CommonUtils.boolMapFromJSON(mixed)
+        XCTAssertEqual(parsed?["a"], true)
+        XCTAssertEqual(parsed?["b"], false)
+        XCTAssertEqual(parsed?["c"], true)
+        XCTAssertNil(parsed?["d"])
+
+        XCTAssertEqual(CommonUtils.boolMapFromJSON([:] as [String: Any])?.count, 0)
+        XCTAssertNil(CommonUtils.boolMapFromJSON(nil))
+        XCTAssertNil(CommonUtils.boolMapFromJSON(["x": 2, "y": "no"]))
+        XCTAssertNil(CommonUtils.boolMapFromJSON("not-a-dict"))
+    }
+
+    func testStringMapFromJSONKeepsValidURLsWhenMixedWithNull() {
+        let typed = CommonUtils.stringMapFromJSON(["t1": "https://cdn.example/v.mov"])
+        XCTAssertEqual(typed?["t1"], "https://cdn.example/v.mov")
+
+        let mixed: [String: Any] = [
+            "keep": "https://cdn.example/keep.mov",
+            "pending": "",
+            "drop": NSNull()
+        ]
+        let parsed = CommonUtils.stringMapFromJSON(mixed)
+        XCTAssertEqual(parsed?["keep"], "https://cdn.example/keep.mov")
+        XCTAssertEqual(parsed?["pending"], "")
+        XCTAssertNil(parsed?["drop"])
+
+        XCTAssertEqual(CommonUtils.stringMapFromJSON([:] as [String: Any])?.count, 0)
+        XCTAssertNil(CommonUtils.stringMapFromJSON(nil))
+        XCTAssertNil(CommonUtils.stringMapFromJSON(["x": 1, "y": NSNull()]))
+    }
+
+    func testProductPopulateSoftParsesVideoMapsAndMixedImageArrays() {
+        let product = HulaProduct()
+        product.video_requested = ["stale": true]
+        product.video_url = ["stale": "https://old.example/v.mov"]
+        product.arrProductPhotoLink = ["stale.jpg"]
+
+        product.populate(with: [
+            "video_requested": [
+                "live": NSNumber(value: 1),
+                "done": NSNumber(value: 0)
+            ] as [String: Any],
+            "video_url": [
+                "live": "https://cdn.example/live.mov",
+                "gone": NSNull()
+            ] as [String: Any],
+            "images": ["keep.jpg", NSNull(), "", "also.jpg"] as [Any]
+        ])
+
+        XCTAssertEqual(product.video_requested["live"], true)
+        XCTAssertEqual(product.video_requested["done"], false)
+        XCTAssertNil(product.video_requested["stale"])
+        XCTAssertEqual(product.video_url["live"], "https://cdn.example/live.mov")
+        XCTAssertNil(product.video_url["gone"])
+        XCTAssertNil(product.video_url["stale"])
+        XCTAssertEqual(product.arrProductPhotoLink, ["keep.jpg", "also.jpg"])
+
+        product.populate(with: [
+            "video_requested": ["bad": 4],
+            "video_url": ["bad": NSNull()],
+            "images": [NSNull(), true] as [Any]
+        ])
+        XCTAssertEqual(product.video_requested["live"], true)
+        XCTAssertEqual(product.video_url["live"], "https://cdn.example/live.mov")
+        XCTAssertEqual(product.arrProductPhotoLink, ["keep.jpg", "also.jpg"])
+    }
+
+    func testVideoProofLookupSkipsNilMapsAndBlankTradeIds() {
+        XCTAssertFalse(HulaProduct.isVideoRequested(nil, forTradeId: "t1"))
+        XCTAssertFalse(HulaProduct.isVideoRequested(["t1": true], forTradeId: nil))
+        XCTAssertFalse(HulaProduct.isVideoRequested(["t1": true], forTradeId: "  "))
+        XCTAssertFalse(HulaProduct.isVideoRequested(["t1": true], forTradeId: "other"))
+        XCTAssertTrue(HulaProduct.isVideoRequested(["t1": true], forTradeId: "t1"))
+        XCTAssertFalse(HulaProduct.isVideoRequested(["t1": false], forTradeId: "t1"))
+
+        XCTAssertEqual(HulaProduct.videoURL(nil, forTradeId: "t1"), "")
+        XCTAssertEqual(HulaProduct.videoURL(["t1": "https://v"], forTradeId: nil), "")
+        XCTAssertEqual(HulaProduct.videoURL(["t1": "https://v"], forTradeId: ""), "")
+        XCTAssertEqual(HulaProduct.videoURL(["t1": "https://v"], forTradeId: "t1"), "https://v")
+        XCTAssertEqual(HulaProduct.videoURL(["t1": ""], forTradeId: "t1"), "")
+    }
+
+    func testViewSnapshotPolicyRejectsMissingAndZeroSizeViews() {
+        XCTAssertFalse(ViewSnapshotPolicy.canSnapshot(size: CGSize.zero))
+        XCTAssertFalse(ViewSnapshotPolicy.canSnapshot(size: CGSize(width: 10, height: 0)))
+        XCTAssertFalse(ViewSnapshotPolicy.canSnapshot(size: CGSize(width: 0, height: 10)))
+        XCTAssertFalse(ViewSnapshotPolicy.canSnapshot(size: CGSize(width: -1, height: 8)))
+        XCTAssertTrue(ViewSnapshotPolicy.canSnapshot(size: CGSize(width: 10, height: 8)))
+        XCTAssertNil(ViewSnapshotPolicy.snapshotImage(from: nil))
+        XCTAssertNil(ViewSnapshotPolicy.snapshotImage(from: UIView(frame: CGRect.zero)))
+    }
+
+    func testDragAndDropPolicySoftCastsMissingDataSourceAndViews() {
+        XCTAssertNil(DragAndDropPolicy.dataSource(from: nil))
+        XCTAssertNil(DragAndDropPolicy.draggable(nil))
+        XCTAssertNil(DragAndDropPolicy.draggable(UIView()))
+        XCTAssertNil(DragAndDropPolicy.droppable(nil))
+        XCTAssertNil(DragAndDropPolicy.droppable(UIView()))
+    }
+
+    func testChatCommentsLookupIsBoundsSafe() {
+        let sorted = NSMutableDictionary()
+        sorted.setValue([
+            ["message": "hi", "user_id": "u1"] as NSDictionary,
+            ["message": "yo", "user_id": "u2"] as NSDictionary
+        ], forKey: "2026-09-07")
+        let keys = ["2026-09-07"]
+
+        XCTAssertEqual(ChatViewController.sectionKey(keys, section: 0), "2026-09-07")
+        XCTAssertNil(ChatViewController.sectionKey(keys, section: 1))
+        XCTAssertNil(ChatViewController.sectionKey(keys, section: -1))
+        XCTAssertNil(ChatViewController.sectionKey([], section: 0))
+
+        XCTAssertEqual(
+            ChatViewController.comments(in: sorted, sectionKeys: keys, section: 0)?.count,
+            2
+        )
+        XCTAssertNil(ChatViewController.comments(in: sorted, sectionKeys: keys, section: 1))
+        XCTAssertEqual(
+            ChatViewController.comment(in: sorted, sectionKeys: keys, section: 0, row: 0)?.object(forKey: "message") as? String,
+            "hi"
+        )
+        XCTAssertEqual(
+            ChatViewController.comment(in: sorted, sectionKeys: keys, section: 0, row: 1)?.object(forKey: "user_id") as? String,
+            "u2"
+        )
+        XCTAssertNil(ChatViewController.comment(in: sorted, sectionKeys: keys, section: 0, row: 2))
+        XCTAssertNil(ChatViewController.comment(in: sorted, sectionKeys: keys, section: 0, row: -1))
+        XCTAssertNil(ChatViewController.comment(in: sorted, sectionKeys: keys, section: 4, row: 0))
+    }
 }
