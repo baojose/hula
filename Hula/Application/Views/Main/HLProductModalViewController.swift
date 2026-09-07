@@ -196,14 +196,8 @@ class HLProductModalViewController: UIViewController, UIImagePickerControllerDel
         }
         if !hideVideoBtn {
             videoBtnHolder.isHidden = false
-            var vreq : Bool = false
-            var vurl : String = ""
-            if let t = product.video_requested[currentTradeId] {
-                vreq = t
-            }
-            if let t = product.video_url[currentTradeId] {
-                vurl = t
-            }
+            var vreq : Bool = HulaProduct.isVideoRequested(product.video_requested, forTradeId: currentTradeId)
+            var vurl : String = HulaProduct.videoURL(product.video_url, forTradeId: currentTradeId)
             if (product.productOwner != HulaUser.sharedInstance.userId){
                 // not my product
                 if (vreq || vurl.count  > 0) {
@@ -269,11 +263,7 @@ class HLProductModalViewController: UIViewController, UIImagePickerControllerDel
                 if (tag == 43909){
                     playVideo()
                 } else {
-                    var vreq : Bool = false
-                    if let t: Bool = product.video_requested[currentTradeId] {
-                        vreq = t
-                    }
-                    
+                    let vreq = HulaProduct.isVideoRequested(product.video_requested, forTradeId: currentTradeId)
                     if !vreq {
                         guard let queryURL = HLProductModalViewController.requestVideoURL(
                             apiBase: HulaConstants.apiURL,

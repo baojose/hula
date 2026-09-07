@@ -81,37 +81,37 @@ class CommonUtils: NSObject, EasyTipViewDelegate, UIGestureRecognizerDelegate {
         
         return getDistanceFrom(loc:coordinate₀)
     }
-    func getDistanceFrom(loc:CLLocation) -> String{
-        let coordinate₀ = loc
-        
+    func getDistanceFrom(loc:CLLocation?) -> String{
+        guard let loc = loc else {
+            return "-"
+        }
         if loc.coordinate.latitude == 0 && loc.coordinate.longitude == 0 {
             return "-"
         }
-        if HulaUser.sharedInstance.location.coordinate.latitude == 0 && HulaUser.sharedInstance.location.coordinate.longitude == 0 {
+        guard let userLocation = HulaUser.sharedInstance.location else {
             return "-"
         }
-        if let userLocation = HulaUser.sharedInstance.location {
-            let distanceInMeters = coordinate₀.distance(from: userLocation) // result is in meters
-            
-            var distance = round( distanceInMeters / 1609 );
-            var dist_unit = NSLocalizedString("miles", comment: "");
-            if (!inUSA(HulaUser.sharedInstance.location)){
-                distance = round( distanceInMeters / 1000 );
-                dist_unit = NSLocalizedString("kilometers", comment: "");
-            }
-            if (distance<1){
-                distance = round( distance*10 ) / 10;
-            } else {
-                if (distance>1000){
-                    //distance = distance
-                    //return "Too far"
-                    return "\(Int(distance)) " + dist_unit
-                }
-            }
-            return "\(distance) " + dist_unit
+        if userLocation.coordinate.latitude == 0 && userLocation.coordinate.longitude == 0 {
+            return "-"
+        }
+        let distanceInMeters = loc.distance(from: userLocation) // result is in meters
+
+        var distance = round( distanceInMeters / 1609 );
+        var dist_unit = NSLocalizedString("miles", comment: "");
+        if (!inUSA(userLocation)){
+            distance = round( distanceInMeters / 1000 );
+            dist_unit = NSLocalizedString("kilometers", comment: "");
+        }
+        if (distance<1){
+            distance = round( distance*10 ) / 10;
         } else {
-            return "-"
+            if (distance>1000){
+                //distance = distance
+                //return "Too far"
+                return "\(Int(distance)) " + dist_unit
+            }
         }
+        return "\(distance) " + dist_unit
     }
     func inUSA(_ loc:CLLocation) -> Bool{
         if (loc.coordinate.longitude < -50) && (loc.coordinate.longitude > -170){
@@ -119,13 +119,12 @@ class CommonUtils: NSObject, EasyTipViewDelegate, UIGestureRecognizerDelegate {
         }
         return false;
     }
-    func getCGDistanceFrom(loc:CLLocation) -> CGFloat{
-        if let userLocation = HulaUser.sharedInstance.location {
-            let distanceInMeters:CGFloat = CGFloat(loc.distance(from: userLocation)) // result is in meters
-            return distanceInMeters  / 1609.0
-        } else {
+    func getCGDistanceFrom(loc:CLLocation?) -> CGFloat{
+        guard let loc = loc, let userLocation = HulaUser.sharedInstance.location else {
             return CGFloat(0.0)
         }
+        let distanceInMeters:CGFloat = CGFloat(loc.distance(from: userLocation)) // result is in meters
+        return distanceInMeters  / 1609.0
     }
     
     
@@ -374,6 +373,77 @@ extension CommonUtils {
             return v
         }
         return nil
+    }
+
+    /// Walk JSON objects that arrive as `[String: Any]` or `NSDictionary`.
+    /// Returns nil when the value is not a dictionary so callers keep stale maps.
+    static func dictionaryPairs(_ value: Any?) -> [(String, Any)]? {
+        if let dict = value as? [String: Any] {
+            var pairs: [(String, Any)] = []
+            for (key, val) in dict {
+                pairs.append((key, val))
+            }
+            return pairs
+        }
+        if let dict = value as? NSDictionary {
+            var pairs: [(String, Any)] = []
+            for (rawKey, val) in dict {
+                if let dictKey = rawKey as? String {
+                    pairs.append((dictKey, val))
+                }
+            }
+            return pairs
+        }
+        return nil
+    }
+
+    /// Soft-parse `video_requested` maps. JSON bools often arrive as NSNumber 0/1,
+    /// so `as? [String:Bool]` drops the whole dictionary and the proof UI resets.
+    /// Wholly unparsable values return nil so callers keep stale data.
+    static func boolMapFromJSON(_ value: Any?) -> [String:Bool]? {
+        if let typed = value as? [String:Bool] {
+            return typed
+        }
+        guard let pairs = dictionaryPairs(value) else {
+            return nil
+        }
+        if pairs.count == 0 {
+            return [:]
+        }
+        var result: [String:Bool] = [:]
+        for (key, val) in pairs {
+            if let flag = boolFromJSON(val) {
+                result[key] = flag
+            }
+        }
+        if result.count == 0 {
+            return nil
+        }
+        return result
+    }
+
+    /// Soft-parse `video_url` maps. Mixed NSNull / non-string values fail
+    /// `as? [String:String]` and previously wiped every proof URL.
+    static func stringMapFromJSON(_ value: Any?) -> [String:String]? {
+        if let typed = value as? [String:String] {
+            return typed
+        }
+        guard let pairs = dictionaryPairs(value) else {
+            return nil
+        }
+        if pairs.count == 0 {
+            return [:]
+        }
+        var result: [String:String] = [:]
+        for (key, val) in pairs {
+            if let s = val as? String {
+                result[key] = s
+            }
+        }
+        if result.count == 0 {
+            return nil
+        }
+        return result
     }
 
     /// Soft-parse product-id / bid-diff arrays. JSON `NSArray` with an `NSNull`
@@ -1532,6 +1602,28 @@ struct ImageCropPolicy {
         let cropped = UIGraphicsGetImageFromCurrentImageContext()
         UIGraphicsEndImageContext()
         return cropped ?? image
+    }
+}
+
+/// Barter drag snapshots used `UIGraphicsGetCurrentContext()!`. A failed
+/// image context (zero-size cell / missing context) must skip the snapshot
+/// instead of crashing mid-gesture.
+struct ViewSnapshotPolicy {
+    static func canSnapshot(size: CGSize) -> Bool {
+        return size.width > 0 && size.height > 0
+    }
+
+    static func snapshotImage(from view: UIView?) -> UIImage? {
+        guard let view = view, canSnapshot(size: view.bounds.size) else {
+            return nil
+        }
+        UIGraphicsBeginImageContextWithOptions(view.bounds.size, view.isOpaque, 0)
+        defer { UIGraphicsEndImageContext() }
+        guard let context = UIGraphicsGetCurrentContext() else {
+            return nil
+        }
+        view.layer.render(in: context)
+        return UIGraphicsGetImageFromCurrentImageContext()
     }
 }
 

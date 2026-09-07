@@ -29,7 +29,10 @@ class HulaProduct: NSObject {
     var trading_count: Int!
     var distance: Double {
         get {
-            return productLocation.distance(from: HulaUser.sharedInstance.location)
+            return HulaProduct.debugDistance(
+                productLocation: self.productLocation,
+                userLocation: HulaUser.sharedInstance.location
+            ) ?? 0
         }
     }
     
@@ -101,6 +104,22 @@ class HulaProduct: NSObject {
         }
         return productLocation.distance(from: userLocation)
     }
+
+    /// Video-proof flags keyed by trade id. Nil maps / blank trade ids must not
+    /// force-unwrap IUO dictionaries in barter cells or the product modal.
+    class func isVideoRequested(_ map: [String:Bool]?, forTradeId tradeId: String?) -> Bool {
+        guard let tradeId = CommonUtils.nonEmptyTrimmed(tradeId), let map = map else {
+            return false
+        }
+        return map[tradeId] ?? false
+    }
+
+    class func videoURL(_ map: [String:String]?, forTradeId tradeId: String?) -> String {
+        guard let tradeId = CommonUtils.nonEmptyTrimmed(tradeId), let map = map else {
+            return ""
+        }
+        return map[tradeId] ?? ""
+    }
     
     func populate(with: NSDictionary){
         if let tmp = with.object(forKey: "_id") as? String { productId = tmp }
@@ -112,12 +131,16 @@ class HulaProduct: NSObject {
         if let tmp = with.object(forKey: "image_url") as? String { productImage = tmp }
         if let tmp = with.object(forKey: "status") as? String { productStatus = tmp }
         if let tmp = with.object(forKey: "owner_id") as? String { productOwner = tmp }
-        if let tmp = with.object(forKey: "video_requested") as? [String:Bool] { video_requested = tmp }
-        if let tmp = with.object(forKey: "video_url") as? [String:String] { video_url = tmp }
+        if let tmp = CommonUtils.boolMapFromJSON(with.object(forKey: "video_requested")) {
+            video_requested = tmp
+        }
+        if let tmp = CommonUtils.stringMapFromJSON(with.object(forKey: "video_url")) {
+            video_url = tmp
+        }
         if let count = CommonUtils.intFromJSON(with.object(forKey: "trading_count")) {
             trading_count = count
         }
-        if let tmp = with.object(forKey: "images") as? [String] {
+        if let tmp = CommonUtils.stringArrayFromJSON(with.object(forKey: "images")) {
             arrProductPhotoLink = []
             for im in tmp {
                 if im.count > 0 {
@@ -167,8 +190,10 @@ class HulaProduct: NSObject {
             "&images=" + CommonUtils.formEncodedValue(self.arrProductPhotoLink.joined(separator: ","))
         // Persist the product's own coordinates on edit. Using the user's live GPS
         // silently relocated listings whenever any field was updated.
-        if (self.productLocation.coordinate.latitude != 0 && self.productLocation.coordinate.longitude != 0){
-            str = str + "&lat=\(self.productLocation.coordinate.latitude)&lng=\(self.productLocation.coordinate.longitude)"
+        if let location = self.productLocation,
+           location.coordinate.latitude != 0,
+           location.coordinate.longitude != 0 {
+            str = str + "&lat=\(location.coordinate.latitude)&lng=\(location.coordinate.longitude)"
         }
         print(str)
         return str

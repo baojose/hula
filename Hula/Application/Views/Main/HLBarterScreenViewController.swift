@@ -1172,15 +1172,8 @@ extension HLBarterScreenViewController: KDDragAndDropCollectionViewDataSource, U
         }
         //print(product.video_requested)
         //print(product.video_url)
-        var vreq : Bool = false
-        var vurl : String = ""
-        if let t = product.video_requested[thisTrade.tradeId] {
-            vreq = t
-        }
-
-        if let t = product.video_url[thisTrade.tradeId] {
-            vurl = t
-        }
+        var vreq : Bool = HulaProduct.isVideoRequested(product.video_requested, forTradeId: thisTrade.tradeId)
+        var vurl : String = HulaProduct.videoURL(product.video_url, forTradeId: thisTrade.tradeId)
         
         cell.statusImage.isHidden = false
         if ( vreq || vurl.count > 0 ){

@@ -98,10 +98,9 @@ class KDDragAndDropCollectionView: UICollectionView, KDDraggable, KDDroppable {
             return nil
         }
         
-        UIGraphicsBeginImageContextWithOptions(cell.bounds.size, cell.isOpaque, 0)
-        cell.layer.render(in: UIGraphicsGetCurrentContext()!)
-        let image = UIGraphicsGetImageFromCurrentImageContext()
-        UIGraphicsEndImageContext()
+        guard let image = ViewSnapshotPolicy.snapshotImage(from: cell) else {
+            return nil
+        }
         
         let imageView = UIImageView(image: image)
         imageView.frame = cell.frame
@@ -115,7 +114,7 @@ class KDDragAndDropCollectionView: UICollectionView, KDDraggable, KDDroppable {
             return nil
         }
         
-        guard let dragDropDS = self.dataSource as? KDDragAndDropCollectionViewDataSource else {
+        guard let dragDropDS = DragAndDropPolicy.dataSource(from: self.dataSource) else {
             return nil
         }
         
@@ -225,7 +224,9 @@ class KDDragAndDropCollectionView: UICollectionView, KDDraggable, KDDroppable {
     fileprivate var currentInRect : CGRect?
     func willMoveItem(_ item : AnyObject, inRect rect : CGRect) -> Void {
         
-        let dragDropDataSource = self.dataSource as! KDDragAndDropCollectionViewDataSource // its guaranteed to have a data source
+        guard let dragDropDataSource = DragAndDropPolicy.dataSource(from: self.dataSource) else {
+            return
+        }
         
         if let _ = dragDropDataSource.collectionView(self, indexPathForDataItem: item) { // if data item exists
             return
@@ -325,7 +326,9 @@ class KDDragAndDropCollectionView: UICollectionView, KDDraggable, KDDroppable {
     
     func didMoveItem(_ item : AnyObject, inRect rect : CGRect) -> Void {
         
-        let dragDropDS = self.dataSource as! KDDragAndDropCollectionViewDataSource // guaranteed to have a ds
+        guard let dragDropDS = DragAndDropPolicy.dataSource(from: self.dataSource) else {
+            return
+        }
         
         if  let existingIndexPath = dragDropDS.collectionView(self, indexPathForDataItem: item),
             let indexPath = self.indexPathForCellOverlappingRect(rect) {
@@ -369,7 +372,7 @@ class KDDragAndDropCollectionView: UICollectionView, KDDraggable, KDDroppable {
     
     func didMoveOutItem(_ item : AnyObject) -> Void {
         
-        guard let dragDropDataSource = self.dataSource as? KDDragAndDropCollectionViewDataSource,
+        guard let dragDropDataSource = DragAndDropPolicy.dataSource(from: self.dataSource),
               let existngIndexPath = dragDropDataSource.collectionView(self, indexPathForDataItem: item) else {
             
             return
@@ -426,4 +429,21 @@ class KDDragAndDropCollectionView: UICollectionView, KDDraggable, KDDroppable {
     }
     
     
+}
+
+/// Soft-cast barter collection/data-source protocols. `as!` crashed when a
+/// tray was not wired as KDDragAndDropCollectionViewDataSource or a canvas
+/// view was not KDDraggable/KDDroppable.
+struct DragAndDropPolicy {
+    static func dataSource(from dataSource: UICollectionViewDataSource?) -> KDDragAndDropCollectionViewDataSource? {
+        return dataSource as? KDDragAndDropCollectionViewDataSource
+    }
+
+    static func draggable(_ view: UIView?) -> KDDraggable? {
+        return view as? KDDraggable
+    }
+
+    static func droppable(_ view: UIView?) -> KDDroppable? {
+        return view as? KDDroppable
+    }
 }

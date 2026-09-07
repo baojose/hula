@@ -162,6 +162,30 @@ class ChatViewController: UIViewController {
             scale: 1.3
         )
     }
+
+    /// Chat table sections. Reloads that shrink `sectionKeys` must not OOB-crash
+    /// `numberOfRows` / `cellForRow` / header title lookups.
+    class func sectionKey(_ sectionKeys: [String], section: Int) -> String? {
+        guard section >= 0 && section < sectionKeys.count else {
+            return nil
+        }
+        return sectionKeys[section]
+    }
+
+    class func comments(in sortedChat: NSDictionary, sectionKeys: [String], section: Int) -> [NSDictionary]? {
+        guard let key = sectionKey(sectionKeys, section: section) else {
+            return nil
+        }
+        return sortedChat.object(forKey: key) as? [NSDictionary]
+    }
+
+    class func comment(in sortedChat: NSDictionary, sectionKeys: [String], section: Int, row: Int) -> NSDictionary? {
+        guard let comments = comments(in: sortedChat, sectionKeys: sectionKeys, section: section),
+              row >= 0 && row < comments.count else {
+            return nil
+        }
+        return comments[row]
+    }
     
     func updateData(forze: Bool){
         let prev_co = self.chatTableView.contentOffset
@@ -295,11 +319,7 @@ extension ChatViewController: UITableViewDelegate, UITableViewDataSource{
         return sectionKeys.count
     }
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        if let comments = sortedChat.object(forKey: sectionKeys[section]) as? [NSDictionary]{
-            return comments.count
-        } else {
-            return 0
-        }
+        return ChatViewController.comments(in: sortedChat, sectionKeys: sectionKeys, section: section)?.count ?? 0
     }
     func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat{
         return 25
@@ -312,8 +332,8 @@ extension ChatViewController: UITableViewDelegate, UITableViewDataSource{
         label.backgroundColor = UIColor(red: 0, green: 0, blue: 0, alpha: 0)
         label.font = ChatViewController.sectionHeaderFont()
         
-        var sectionTitle = sectionKeys[section]
-        if let comments = sortedChat.object(forKey: sectionKeys[section]) as? [NSDictionary], comments.count > 0 {
+        var sectionTitle = ChatViewController.sectionKey(sectionKeys, section: section) ?? ""
+        if let comments = ChatViewController.comments(in: sortedChat, sectionKeys: sectionKeys, section: section), comments.count > 0 {
             let lastDate = comments[0].object(forKey: "date") as? String
             let relative = CommonUtils.sharedInstance.relativeDateLabel(fromISO: lastDate, numericDates: true)
             if !relative.isEmpty {
@@ -329,10 +349,13 @@ extension ChatViewController: UITableViewDelegate, UITableViewDataSource{
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat{
         let cell = tableView.dequeueReusableCell(withIdentifier: "chatCell") as! ChatTableViewCell
         
-        if let comments = sortedChat.object(forKey: sectionKeys[indexPath.section]) as? [NSDictionary],
-           indexPath.row < comments.count {
+        if let data = ChatViewController.comment(
+            in: sortedChat,
+            sectionKeys: sectionKeys,
+            section: indexPath.section,
+            row: indexPath.row
+        ) {
             
-            let data:NSDictionary = comments[indexPath.row]
             let h = ChatViewController.messageRowHeight(
                 width: cell.messageText.frame.width,
                 font: cell.messageText.font,
@@ -348,10 +371,13 @@ extension ChatViewController: UITableViewDelegate, UITableViewDataSource{
         
         let cell = tableView.dequeueReusableCell(withIdentifier: "chatCell") as! ChatTableViewCell
         
-        if let comments = sortedChat.object(forKey: sectionKeys[indexPath.section]) as? [NSDictionary],
-           indexPath.row < comments.count {
+        if let data = ChatViewController.comment(
+            in: sortedChat,
+            sectionKeys: sectionKeys,
+            section: indexPath.section,
+            row: indexPath.row
+        ) {
             
-            let data:NSDictionary = comments[indexPath.row]
             cell.userNameLabel.text = NSLocalizedString("You", comment: "")
             let message = data.object(forKey: "message") as? String ?? ""
             cell.messageText.text = message
