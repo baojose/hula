@@ -327,28 +327,10 @@ class HLBarterScreenViewController: BaseViewController {
                 self.didTradeMutate = true
                 self.mainSwapViewHolder?.controlSetupBottomBar(index: myTradeIndex + 1)
             }
-            
-            if (self.otherProducts.count > 0){
-                for i in 0 ... (self.otherProducts.count - 1) {
-                    if (self.otherProducts[i].productId == pr_id){
-                        self.otherProducts.remove( at: i)
-                    }
-                    if (i >= self.otherProducts.count - 1){
-                        break
-                    }
-                }
-            }
-            if (self.myProducts.count > 0){
-                for i in 0 ... (self.myProducts.count - 1) {
-                    if (self.myProducts[i].productId == pr_id){
-                        self.myProducts.remove( at: i)
-                    }
-                    if (i >= self.myProducts.count - 1){
-                        break
-                    }
-                }
-            }
         }
+        // Pull traded ids out of inventory without mutating during a precomputed `0...count-1` walk.
+        self.otherProducts = BarterInventoryPolicy.removingTraded(from: self.otherProducts, tradedIds: list)
+        self.myProducts = BarterInventoryPolicy.removingTraded(from: self.myProducts, tradedIds: list)
         
         
         switch type {
@@ -1233,5 +1215,21 @@ extension HLBarterScreenViewController: CalculatorDelegate{
             }
         }
         return newArr
+    }
+}
+
+/// Moves listings from the available inventory columns into the traded columns.
+/// The previous implementation walked `0 ... count-1` and called `remove(at:)` on a match;
+/// after shrinking the array the loop still used the original last index and trapped.
+struct BarterInventoryPolicy {
+    static func removingTraded(from inventory: [HulaProduct], tradedIds: [String]) -> [HulaProduct] {
+        let traded = Set(tradedIds)
+        if traded.isEmpty {
+            return inventory
+        }
+        return inventory.filter { product in
+            let pid = product.productId ?? ""
+            return !traded.contains(pid)
+        }
     }
 }
