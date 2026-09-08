@@ -5129,4 +5129,96 @@ class HulaTests: XCTestCase {
         XCTAssertNil(ChatViewController.comment(in: sorted, sectionKeys: keys, section: 0, row: -1))
         XCTAssertNil(ChatViewController.comment(in: sorted, sectionKeys: keys, section: 4, row: 0))
     }
+
+    // MARK: - Beyond #144: feedback 1x1 color, empty GPS updates, featured photo swaps
+
+    func testSolidColorImagePolicyRejectsMissingColorAndZeroSize() {
+        XCTAssertFalse(SolidColorImagePolicy.canDraw(size: CGSize.zero))
+        XCTAssertFalse(SolidColorImagePolicy.canDraw(size: CGSize(width: 1, height: 0)))
+        XCTAssertFalse(SolidColorImagePolicy.canDraw(size: CGSize(width: 0, height: 1)))
+        XCTAssertFalse(SolidColorImagePolicy.canDraw(size: CGSize(width: -1, height: 8)))
+        XCTAssertTrue(SolidColorImagePolicy.canDraw(size: CGSize(width: 1, height: 1)))
+        XCTAssertNil(SolidColorImagePolicy.image(color: nil))
+        XCTAssertNil(SolidColorImagePolicy.image(color: UIColor.white, size: CGSize.zero))
+        XCTAssertNil(SolidColorImagePolicy.image(color: UIColor.red, size: CGSize(width: 1, height: 0)))
+    }
+
+    func testLocationUpdatePolicySkipsEmptyCallbacks() {
+        XCTAssertNil(LocationUpdatePolicy.firstLocation(from: nil))
+        XCTAssertNil(LocationUpdatePolicy.firstLocation(from: []))
+        XCTAssertNil(HLMyProductsViewController.firstUpdatedLocation(from: []))
+        XCTAssertNil(HLEditFieldViewController.firstUpdatedLocation(from: []))
+
+        let first = CLLocation(latitude: 40.7, longitude: -74.0)
+        let second = CLLocation(latitude: 41.0, longitude: -73.0)
+        let picked = LocationUpdatePolicy.firstLocation(from: [first, second])
+        XCTAssertEqual(picked?.coordinate.latitude ?? 0, 40.7, accuracy: 0.0001)
+        XCTAssertEqual(picked?.coordinate.longitude ?? 0, -74.0, accuracy: 0.0001)
+        let viaInventory = HLMyProductsViewController.firstUpdatedLocation(from: [first])
+        XCTAssertEqual(viaInventory?.coordinate.latitude ?? 0, 40.7, accuracy: 0.0001)
+        let viaEditor = HLEditFieldViewController.firstUpdatedLocation(from: [second])
+        XCTAssertEqual(viaEditor?.coordinate.longitude ?? 0, -73.0, accuracy: 0.0001)
+    }
+
+    func testFeaturedPhotoPolicyPromoteAndRemoveAreBoundsSafe() {
+        XCTAssertFalse(FeaturedPhotoPolicy.canPromote(index: 0, count: 3))
+        XCTAssertFalse(FeaturedPhotoPolicy.canPromote(index: 3, count: 3))
+        XCTAssertFalse(FeaturedPhotoPolicy.canPromote(index: -1, count: 3))
+        XCTAssertFalse(FeaturedPhotoPolicy.canPromote(index: 1, count: 0))
+        XCTAssertTrue(FeaturedPhotoPolicy.canPromote(index: 2, count: 3))
+
+        XCTAssertNil(FeaturedPhotoPolicy.swappedLinks(["a", "b", "c"], promoting: 0))
+        XCTAssertNil(FeaturedPhotoPolicy.swappedLinks(["a", "b"], promoting: 2))
+        XCTAssertNil(FeaturedPhotoPolicy.swappedLinks([], promoting: 1))
+        let swapped = FeaturedPhotoPolicy.swappedLinks(["a", "b", "c"], promoting: 2)
+        XCTAssertEqual(swapped?.count, 3)
+        XCTAssertEqual(swapped?[0], "c")
+        XCTAssertEqual(swapped?[1], "b")
+        XCTAssertEqual(swapped?[2], "a")
+        let viaEditor = HLEditProductMainViewController.swappedFeaturedLinks(["hero", "two"], promoting: 1)
+        XCTAssertEqual(viaEditor?[0], "two")
+        XCTAssertEqual(viaEditor?[1], "hero")
+
+        let photos: NSMutableArray = ["p0", "p1", "p2"]
+        XCTAssertFalse(FeaturedPhotoPolicy.promoteObject(in: photos, at: 0))
+        XCTAssertEqual(photos.object(at: 0) as? String, "p0")
+        XCTAssertEqual(photos.object(at: 2) as? String, "p2")
+        XCTAssertTrue(FeaturedPhotoPolicy.promoteObject(in: photos, at: 2))
+        XCTAssertEqual(photos.object(at: 0) as? String, "p2")
+        XCTAssertEqual(photos.object(at: 1) as? String, "p1")
+        XCTAssertEqual(photos.object(at: 2) as? String, "p0")
+        XCTAssertFalse(FeaturedPhotoPolicy.promoteObject(in: NSMutableArray(), at: 1))
+
+        let toDelete: NSMutableArray = ["keep", "drop", "tail"]
+        XCTAssertFalse(FeaturedPhotoPolicy.removeObject(in: toDelete, at: -1))
+        XCTAssertFalse(FeaturedPhotoPolicy.removeObject(in: toDelete, at: 3))
+        XCTAssertTrue(FeaturedPhotoPolicy.removeObject(in: toDelete, at: 1))
+        XCTAssertEqual(toDelete.count, 2)
+        XCTAssertEqual(toDelete.object(at: 0) as? String, "keep")
+        XCTAssertEqual(toDelete.object(at: 1) as? String, "tail")
+
+        XCTAssertNil(FeaturedPhotoPolicy.removingLink(["a", "b"], at: -1))
+        XCTAssertNil(FeaturedPhotoPolicy.removingLink(["a", "b"], at: 2))
+        let remaining = FeaturedPhotoPolicy.removingLink(["a", "b", "c"], at: 0)
+        XCTAssertEqual(remaining?.count, 2)
+        XCTAssertEqual(remaining?[0], "b")
+        XCTAssertEqual(remaining?[1], "c")
+
+        XCTAssertNil(FeaturedPhotoPolicy.firstURL(nil))
+        XCTAssertNil(FeaturedPhotoPolicy.firstURL([]))
+        XCTAssertNil(FeaturedPhotoPolicy.firstURL([""]))
+        XCTAssertNil(FeaturedPhotoPolicy.firstURL(["   "]))
+        XCTAssertEqual(
+            FeaturedPhotoPolicy.firstURL(["https://cdn.example/a.jpg", "b.jpg"]),
+            "https://cdn.example/a.jpg"
+        )
+    }
+
+    func testMotionUpdatePolicyFallsBackToMainQueue() {
+        XCTAssertTrue(MotionUpdatePolicy.updatesQueue(nil) === OperationQueue.main)
+        XCTAssertTrue(HLSwappViewController.accelerometerUpdatesQueue(nil) === OperationQueue.main)
+        let custom = OperationQueue()
+        XCTAssertTrue(MotionUpdatePolicy.updatesQueue(custom) === custom)
+        XCTAssertTrue(HLSwappViewController.accelerometerUpdatesQueue(custom) === custom)
+    }
 }
