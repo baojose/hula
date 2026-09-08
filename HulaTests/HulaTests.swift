@@ -13,24 +13,43 @@ class HulaTests: XCTestCase {
     
     override func setUp() {
         super.setUp()
-        // Put setup code here. This method is called before the invocation of each test method in the class.
     }
     
     override func tearDown() {
-        // Put teardown code here. This method is called after the invocation of each test method in the class.
         super.tearDown()
     }
-    
-    func testExample() {
-        // This is an example of a functional test case.
-        // Use XCTAssert and related functions to verify your tests produce the correct results.
+
+    func product(_ id: String) -> HulaProduct {
+        return HulaProduct(id: id, name: "Item \(id)", image: "")
     }
-    
-    func testPerformanceExample() {
-        // This is an example of a performance test case.
-        self.measure {
-            // Put the code you want to measure the time of here.
-        }
+
+    func ids(of products: [HulaProduct]) -> [String] {
+        return products.map { $0.productId ?? "" }
     }
-    
+
+    /// Opening a trade room with 3+ listings used to trap when the traded item was first
+    /// in inventory: `remove(at: 0)` then the `0...count-1` loop still indexed the old last slot.
+    func testBarterInventoryRemoveDoesNotTrapWhenTradedItemIsFirstOfMany() {
+        let inventory = [product("p0"), product("p1"), product("p2"), product("p3")]
+        let remaining = BarterInventoryPolicy.removingTraded(from: inventory, tradedIds: ["p0"])
+        XCTAssertEqual(ids(of: remaining), ["p1", "p2", "p3"])
+    }
+
+    func testBarterInventoryRemovesMultipleTradedIds() {
+        let inventory = [product("a"), product("b"), product("c"), product("d")]
+        let remaining = BarterInventoryPolicy.removingTraded(from: inventory, tradedIds: ["a", "c"])
+        XCTAssertEqual(ids(of: remaining), ["b", "d"])
+    }
+
+    func testBarterInventoryUnmatchedIdsLeaveInventoryIntact() {
+        let inventory = [product("a"), product("b")]
+        let remaining = BarterInventoryPolicy.removingTraded(from: inventory, tradedIds: ["missing"])
+        XCTAssertEqual(ids(of: remaining), ["a", "b"])
+    }
+
+    func testBarterInventoryEmptyAndEmptyTradeList() {
+        XCTAssertEqual(ids(of: BarterInventoryPolicy.removingTraded(from: [], tradedIds: ["a"])), [])
+        let inventory = [product("a")]
+        XCTAssertEqual(ids(of: BarterInventoryPolicy.removingTraded(from: inventory, tradedIds: [])), ["a"])
+    }
 }
