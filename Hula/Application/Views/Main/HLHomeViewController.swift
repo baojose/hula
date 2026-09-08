@@ -46,7 +46,7 @@ class HLHomeViewController: BaseViewController, UIScrollViewDelegate, UITextFiel
         
         // easy tip
         var preferences = EasyTipView.Preferences()
-        preferences.drawing.font = UIFont(name: "Helvetica Neue", size: 13)!
+        preferences.drawing.font = HLHomeViewController.catalogTipFont()
         preferences.drawing.foregroundColor = UIColor.darkGray
         preferences.drawing.backgroundColor = UIColor(red: 0.9, green: 0.9, blue: 0.9, alpha: 0.95)
         preferences.drawing.arrowPosition = EasyTipView.ArrowPosition.any
@@ -55,8 +55,7 @@ class HLHomeViewController: BaseViewController, UIScrollViewDelegate, UITextFiel
         
         
         // upper tabs setup
-        let tcat = categoriesBtn.title(for: .normal)
-        let attributedTitleCat = NSAttributedString(string: tcat!, attributes: [NSKernAttributeName: 2.33])
+        let attributedTitleCat = HLHomeViewController.kernedTabTitle(categoriesBtn.title(for: .normal))
         categoriesBtn.setAttributedTitle(attributedTitleCat, for: .normal)
         categoriesBtn.titleLabel?.textColor = UIColor(red: 70.0/255, green: 70.0/255, blue: 70.0/255, alpha: 1.0)
         let lineView = UIView(frame: CGRect(x: 0, y: categoriesBtn.frame.size.height - 1, width: categoriesBtn.frame.size.width, height: 1))
@@ -64,8 +63,7 @@ class HLHomeViewController: BaseViewController, UIScrollViewDelegate, UITextFiel
         categoriesBtn.addSubview(lineView)
         
         
-        let tnear = nearYouBtn.title(for: .normal)
-        let attributedTitleNear = NSAttributedString(string: tnear!, attributes: [NSKernAttributeName: 2.33])
+        let attributedTitleNear = HLHomeViewController.kernedTabTitle(nearYouBtn.title(for: .normal))
         nearYouBtn.setAttributedTitle(attributedTitleNear, for: .normal)
         nearYouBtn.titleLabel?.textColor = UIColor(red: 70.0/255, green: 70.0/255, blue: 70.0/255, alpha: 1.0)
         let lineViewn = UIView(frame: CGRect(x: 0, y: nearYouBtn.frame.size.height - 1, width: nearYouBtn.frame.size.width, height: 1))
@@ -112,6 +110,88 @@ class HLHomeViewController: BaseViewController, UIScrollViewDelegate, UITextFiel
         }
         searchTxtField.addTarget(self, action: #selector(searchTextDidChange(_:)), for: UIControlEvents.editingChanged)
     }
+
+    /// Autocomplete path. Blank keywords and failed encoding must not force-unwrap `encodedKw!`.
+    class func autocompleteRequestURL(apiBase: String, keyword: String?) -> String? {
+        return CommonUtils.apiResourceURL(apiBase: apiBase, path: ["search", "auto", keyword])
+    }
+
+    /// Home Near You. Coordinates are encoded path segments.
+    class func productsNearURL(apiBase: String, latitude: Double, longitude: Double) -> String? {
+        return CommonUtils.productsNearURL(apiBase: apiBase, latitude: latitude, longitude: longitude)
+    }
+
+    /// Search field. `UITextField.text!` crashes when the outlet text is nil.
+    class func searchKeyword(from text: String?) -> String {
+        return LabelMetricsPolicy.text(text)
+    }
+
+    /// Categories / Near You titles used `title(for:)!`. Missing storyboard titles must not crash Home.
+    class func kernedTabTitle(_ raw: String?) -> NSAttributedString {
+        return LabelMetricsPolicy.kernedTitle(raw)
+    }
+
+    /// Home EasyTipView used `UIFont(name: "Helvetica Neue")!`. A missing catalog
+    /// font must fall back to the system font instead of crashing viewDidLoad.
+    class func catalogTipFont() -> UIFont {
+        return CatalogFontPolicy.font(named: "Helvetica Neue", size: 13)
+    }
+
+    /// Section header. Missing HelveticaNeue must not assign a nil font.
+    class func sectionHeaderFont() -> UIFont {
+        return CatalogFontPolicy.font(named: "HelveticaNeue", size: 12)
+    }
+
+    /// Soft-parse category `num_products` — missing/null/NSNumber must not crash Categories tab.
+    class func categoryProductCount(from category: NSDictionary) -> Int {
+        if let v = category.object(forKey: "num_products") as? Int {
+            return v
+        }
+        if let v = category.object(forKey: "num_products") as? Double {
+            return Int(v)
+        }
+        if let v = category.object(forKey: "num_products") as? NSNumber {
+            return v.intValue
+        }
+        return 0
+    }
+
+    /// Soft-parse category `name`/`icon` for table cells — missing keys must not force-cast crash.
+    class func categoryPresentation(from category: NSDictionary) -> (name: String, icon: String)? {
+        guard let name = HLDataManager.stringField(category, keys: ["name"]), name.count > 0 else {
+            return nil
+        }
+        let icon = HLDataManager.stringField(category, keys: ["icon"]) ?? ""
+        return (name, icon)
+    }
+
+    /// Soft-parse category selection (`name` + `_id`) for Post/Edit pickers.
+    class func categorySelection(from category: NSDictionary) -> (name: String, id: String)? {
+        guard let name = HLDataManager.stringField(category, keys: ["name"]),
+              let id = HLDataManager.stringField(category, keys: ["_id"]),
+              name.count > 0, id.count > 0 else {
+            return nil
+        }
+        return (name, id)
+    }
+
+    /// Soft-read autocomplete keyword rows — malformed/non-String entries must not force-cast crash.
+    class func keyword(at index: Int, in array: NSArray) -> String? {
+        guard index >= 0, index < array.count else {
+            return nil
+        }
+        return array.object(at: index) as? String
+    }
+
+    /// Soft-read category rows. `arrCategories.object(at:) as! NSDictionary` crashes
+    /// when a payload element is a string, number, or missing.
+    class func categoryDictionary(at index: Int, in array: NSArray?) -> NSDictionary? {
+        guard let array = array, index >= 0, index < array.count else {
+            return nil
+        }
+        return array.object(at: index) as? NSDictionary
+    }
+
     // Custom functions for ViewController
     func getNearProducts() {
         
@@ -122,46 +202,40 @@ class HLHomeViewController: BaseViewController, UIScrollViewDelegate, UITextFiel
         var queryURL: String = ""
         let lat = HulaUser.sharedInstance.location.coordinate.latitude;
         let lng = HulaUser.sharedInstance.location.coordinate.longitude;
-        queryURL = HulaConstants.apiURL + "products/near/\(lat)/\(lng)";
+        guard let nearURL = HLHomeViewController.productsNearURL(
+            apiBase: HulaConstants.apiURL,
+            latitude: lat,
+            longitude: lng
+        ) else {
+            spinner.hide()
+            return
+        }
+        queryURL = nearURL
             
         print(queryURL)
         HLDataManager.sharedInstance.httpGet(urlstr: queryURL, taskCallback: { (ok, json) in
-            if (ok){
-                DispatchQueue.main.async {
-                    if let dictionary = json as? [String: Any] {
-                        self.spinner.hide()
-                        //print(dictionary)
-                        if let products = dictionary["products"] as? [NSDictionary] {
-                            //print(products)
-                            self.productArray = [];
-                            for prod in products{
-                                let p = HulaProduct()
-                                p.populate(with: prod)
-                                if (p.productOwner != HulaUser.sharedInstance.userId){
-                                    self.productArray.append(p);
-                                }
-                            }
-                            
-                            /*
-                            self.productArray = products
-                            if let ful = dictionary["found_users"] as? NSArray {
-                                self.foundUsersList = ful;
-                            } else {
-                                self.foundUsersList = [];
-                            }
-                             */
-                        }
-                        if let users = dictionary["users"] as? NSDictionary {
-                            //print(users)
-                            self.usersList = users
-                        }
-                        
-                    }
-                    self.productTableView.reloadData()
+            let dictionary = json as? [String: Any]
+            let ui = BlockingNetworkLoadUI.outcome(ok: ok, payloadUsable: dictionary != nil)
+            DispatchQueue.main.async {
+                if ui.hideSpinner {
+                    self.spinner.hide()
                 }
-            } else {
-                // connection error
-                print("Connection error")
+                if ui.applyPayload, let dictionary = dictionary {
+                    if let products = dictionary["products"] as? [NSDictionary] {
+                        self.productArray = [];
+                        for prod in products{
+                            let p = HulaProduct()
+                            p.populate(with: prod)
+                            if (p.productOwner != HulaUser.sharedInstance.userId){
+                                self.productArray.append(p);
+                            }
+                        }
+                    }
+                    if let users = dictionary["users"] as? NSDictionary {
+                        self.usersList = users
+                    }
+                }
+                self.productTableView.reloadData()
             }
         })
     }
@@ -176,7 +250,7 @@ class HLHomeViewController: BaseViewController, UIScrollViewDelegate, UITextFiel
         let label = UILabel(frame: CGRect(x: 20, y:1, width: 200, height: tableView.sectionHeaderHeight - 2))
         label.textColor = UIColor(red: 70.0/255, green: 70.0/255, blue: 70.0/255, alpha: 1.0)
         label.backgroundColor = UIColor.clear
-        label.font = UIFont(name: "HelveticaNeue", size: 12)
+        label.font = HLHomeViewController.sectionHeaderFont()
         label.attributedText = commonUtils.attributedStringWithTextSpacing(NSLocalizedString(" ", comment: ""), 2.33)
         view.addSubview(label)
         
@@ -209,7 +283,7 @@ class HLHomeViewController: BaseViewController, UIScrollViewDelegate, UITextFiel
         
         if self.isSearching == true {
             let cell = tableView.dequeueReusableCell(withIdentifier: "homeSearchCell") as! HLHomeSearchTableViewCell
-            let keyword: String = filteredKeywordsArray.object(at: indexPath.row) as! String
+            let keyword = HLHomeViewController.keyword(at: indexPath.row, in: filteredKeywordsArray) ?? ""
             cell.productMainNameLabel.attributedText = commonUtils.attributedStringWithTextSpacing(keyword, CGFloat(1.0))
             return cell
         }else{
@@ -245,14 +319,10 @@ class HLHomeViewController: BaseViewController, UIScrollViewDelegate, UITextFiel
                         let thumb = commonUtils.getThumbFor(url: user_img)
                         cell.productOwnerImage.loadImageFromURL(urlString: thumb)
                     }
-                    let up = user.object(forKey: "feedback_points") as? Float
-                    let uc = user.object(forKey: "feedback_count") as? Float
-                    if (up != nil) && (uc != nil) && (uc != 0) {
-                        let perc_trade = round( up! / uc! * 100)
-                        cell.productTradeRate.text = "\(perc_trade)%"
-                    } else {
-                        cell.productTradeRate.text = "-"
-                    }
+                    cell.productTradeRate.text = CommonUtils.feedbackTradeRateLabel(
+                        points: user.object(forKey: "feedback_points"),
+                        count: user.object(forKey: "feedback_count")
+                    )
                     cell.productDistance.text = "(" + commonUtils.getDistanceFrom(loc: product.productLocation) + ")"
                 }
                 
@@ -262,12 +332,17 @@ class HLHomeViewController: BaseViewController, UIScrollViewDelegate, UITextFiel
                 return cell
             } else {
                 let cell = tableView.dequeueReusableCell(withIdentifier: "homeCategoryCell") as! HLHomeCategoryTableViewCell
-                let category : NSDictionary = dataManager.arrCategories.object(at: indexPath.row) as! NSDictionary
-                let cat_name = category.object(forKey: "name") as! String;
-                print("\"\(cat_name)\" = \"\(cat_name)\";");
-                cell.categoryName.attributedText = commonUtils.attributedStringWithTextSpacing(NSLocalizedString(cat_name, comment: ""), CGFloat(2.33))
-                cell.categoryImage.image = UIImage.init(named: category.object(forKey: "icon") as! String)
-                cell.categoryProductNum.text = String(format:NSLocalizedString("%i products", comment: ""), (category.object(forKey: "num_products") as! Int))
+                guard let category = HLHomeViewController.categoryDictionary(at: indexPath.row, in: dataManager.arrCategories) else {
+                    return cell
+                }
+                if let presentation = HLHomeViewController.categoryPresentation(from: category) {
+                    print("\"\(presentation.name)\" = \"\(presentation.name)\";");
+                    cell.categoryName.attributedText = commonUtils.attributedStringWithTextSpacing(NSLocalizedString(presentation.name, comment: ""), CGFloat(2.33))
+                    if presentation.icon.count > 0 {
+                        cell.categoryImage.image = UIImage.init(named: presentation.icon)
+                    }
+                }
+                cell.categoryProductNum.text = String(format:NSLocalizedString("%i products", comment: ""), HLHomeViewController.categoryProductCount(from: category))
                 return cell
             }
         }
@@ -278,7 +353,10 @@ class HLHomeViewController: BaseViewController, UIScrollViewDelegate, UITextFiel
             searchResultViewController.searchByCategory = false
             let category : NSDictionary = [:]
             searchResultViewController.categoryToSearch = category
-            searchResultViewController.keywordToSearch = self.filteredKeywordsArray.object(at: indexPath.row) as! String
+            guard let keyword = HLHomeViewController.keyword(at: indexPath.row, in: filteredKeywordsArray) else {
+                return
+            }
+            searchResultViewController.keywordToSearch = keyword
             self.navigationController?.pushViewController(searchResultViewController, animated: true)
         } else {
             if (isNearYou){
@@ -287,7 +365,9 @@ class HLHomeViewController: BaseViewController, UIScrollViewDelegate, UITextFiel
                 self.navigationController?.pushViewController(viewController, animated: true)
             } else {
                 searchResultViewController.searchByCategory = true
-                let category : NSDictionary = dataManager.arrCategories.object(at: indexPath.row) as! NSDictionary
+                guard let category = HLHomeViewController.categoryDictionary(at: indexPath.row, in: dataManager.arrCategories) else {
+                    return
+                }
                 searchResultViewController.categoryToSearch = category
                 searchResultViewController.keywordToSearch = ""
                 self.navigationController?.pushViewController(searchResultViewController, animated: true)
@@ -300,7 +380,7 @@ class HLHomeViewController: BaseViewController, UIScrollViewDelegate, UITextFiel
     //#MARK: - UITextFieldDelegate
     func textFieldShouldBeginEditing(_ textField: UITextField) -> Bool{
         isSearching = true
-        self.searchProduct(textField.text!)
+        self.searchProduct(HLHomeViewController.searchKeyword(from: textField.text))
         UIView.animate(withDuration: 0.3, animations: {
             let newSize = CGSize(width: self.boxRoundedOriginalSize.width - 70, height: self.boxRoundedOriginalSize.height)
             self.cancelButton.alpha = 1
@@ -310,20 +390,21 @@ class HLHomeViewController: BaseViewController, UIScrollViewDelegate, UITextFiel
         return true
     }
     func textFieldShouldReturn(_ textField: UITextField) -> Bool{
-        if textField.text?.count == 0 {
+        let keyword = HLHomeViewController.searchKeyword(from: textField.text)
+        if keyword.characters.count == 0 {
             isSearching = false
-            self.searchProduct(textField.text!)
+            self.searchProduct(keyword)
         }else{
             isSearching = true
-            self.searchProduct(textField.text!)
+            self.searchProduct(keyword)
             
-            if (textField.text != ""){
+            if keyword.characters.count > 0 {
             
                 let searchResultViewController = self.storyboard?.instantiateViewController(withIdentifier: "searchResultPage") as! HLSearchResultViewController
                 searchResultViewController.searchByCategory = false
                 let category : NSDictionary = [:]
                 searchResultViewController.categoryToSearch = category
-                searchResultViewController.keywordToSearch = textField.text!
+                searchResultViewController.keywordToSearch = keyword
                 self.navigationController?.pushViewController(searchResultViewController, animated: true)
             }
         }
@@ -381,7 +462,7 @@ class HLHomeViewController: BaseViewController, UIScrollViewDelegate, UITextFiel
     
     func searchTextDidChange(_ textField:UITextField) {
         isSearching = true
-        self.searchProduct(textField.text!)
+        self.searchProduct(HLHomeViewController.searchKeyword(from: textField.text))
     }
     
     
@@ -431,25 +512,23 @@ class HLHomeViewController: BaseViewController, UIScrollViewDelegate, UITextFiel
     func getKeywords(_ kw:String) {
         //print("Getting keywords...")
         if (kw.count > 1){
-            let encodedKw = kw.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed)
-            let queryURL = HulaConstants.apiURL + "search/auto/" + encodedKw!   
+            guard let queryURL = HLHomeViewController.autocompleteRequestURL(
+                apiBase: HulaConstants.apiURL,
+                keyword: kw
+            ) else {
+                return
+            }
             //print(queryURL)
             HLDataManager.sharedInstance.httpGet(urlstr: queryURL, taskCallback: { (ok, json) in
-                self.filteredKeywordsArray.removeAllObjects()
-                self.filteredKeywordsArray.add(kw)
-                if (ok){
-                    DispatchQueue.main.async {
-                        if let dictionary = json as? [String:Any] {
-                            //print(dictionary)
-                            if let keys = dictionary["keywords"] as?  [Any] {
-                                for i in 0 ..< keys.count {
-                                    let nkw = keys[i] as! [String:Any]
-                                    let nkw_str = nkw["keyword"] as! String
-                                    if (nkw_str != kw){
-                                        self.filteredKeywordsArray.add(nkw_str)
-                                    }
-                                }
-                            }
+                // Mutate the shared keyword array only on the main thread. URLSession
+                // callbacks run in the background; overlapping searches race with
+                // searchProduct's main-thread removeAllObjects / table reads.
+                DispatchQueue.main.async {
+                    self.filteredKeywordsArray.removeAllObjects()
+                    if (ok){
+                        let keywords = CommonUtils.autocompleteKeywords(from: json, seed: kw)
+                        for keyword in keywords {
+                            self.filteredKeywordsArray.add(keyword)
                         }
                         if self.filteredKeywordsArray.count == 0 {
                             self.noResultView.isHidden = false
@@ -459,10 +538,10 @@ class HLHomeViewController: BaseViewController, UIScrollViewDelegate, UITextFiel
                             self.tableContainView.isHidden = false
                         }
                         self.productTableView.reloadData()
+                    } else {
+                        // connection error
+                        print("Connection error")
                     }
-                } else {
-                    // connection error
-                    print("Connection error")
                 }
             })
         }

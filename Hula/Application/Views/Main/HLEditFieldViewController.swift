@@ -31,6 +31,20 @@ class HLEditFieldViewController: BaseViewController, UITextFieldDelegate, UIText
     @IBOutlet weak var grayLocationLabel: UILabel!
     
     var remainingChars: Int = 200
+
+    /// Save used `newValueTextView.text!`. Nil text must persist as empty instead of crashing.
+    class func savedFieldText(_ raw: String?) -> String {
+        return LabelMetricsPolicy.text(raw)
+    }
+
+    /// Editor height used `font!`. Nil font must still return the historical extra + "mmmm" probe.
+    class func editorLayoutHeight(width: CGFloat, font: UIFont?, text: String?) -> CGFloat {
+        return LabelMetricsPolicy.layoutHeight(width: width, font: font, text: text, extra: 50, suffix: "mmmm")
+    }
+
+    class func emailValidationMessage(email: String?) -> String {
+        return "We have just sent you an email to \(LabelMetricsPolicy.text(email)). Please follow the instructions provided on that message."
+    }
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -87,7 +101,11 @@ class HLEditFieldViewController: BaseViewController, UITextFieldDelegate, UIText
    
     func textViewDidChange(_: UITextView){
         let w = newValueTextView.frame.size.width
-        let h = commonUtils.heightString(width: w, font: newValueTextView.font! , string: newValueTextView.text + "mmmm") + 50
+        let h = HLEditFieldViewController.editorLayoutHeight(
+            width: w,
+            font: newValueTextView.font,
+            text: newValueTextView.text
+        )
         
         UIView.animate(withDuration: 0.4, delay: 0, usingSpringWithDamping: 0.5, initialSpringVelocity: 0, options: [], animations: {
             self.newValueTextView.frame.size = CGSize(width: self.view.frame.size.width-30, height: h)
@@ -96,10 +114,10 @@ class HLEditFieldViewController: BaseViewController, UITextFieldDelegate, UIText
             self.useMyLocationBtn.frame.origin.y = self.lineSeparator.frame.origin.y + 30
             self.grayLocationLabel.frame.origin.y = self.lineSeparator.frame.origin.y + 5
         }, completion: nil)
-        var theRemainingChars = self.remainingChars - newValueTextView.text.count
+        var theRemainingChars = self.remainingChars - LabelMetricsPolicy.text(newValueTextView.text).characters.count
         if (theRemainingChars < 1){
-            let index = newValueTextView.text.index(newValueTextView.text.startIndex, offsetBy: self.remainingChars)
-            newValueTextView.text = newValueTextView.text.substring(to: index)
+            let clamped = LabelMetricsPolicy.clampedField(newValueTextView.text, limit: self.remainingChars)
+            newValueTextView.text = clamped.text
             theRemainingChars = 0
         }
         remainigLabel.text = "\(theRemainingChars) " + NSLocalizedString("characters remaining", comment: "")
@@ -116,8 +134,15 @@ class HLEditFieldViewController: BaseViewController, UITextFieldDelegate, UIText
         }
     }
     
+    /// Empty Core Location callbacks used `locations[0]` and crashed ZIP/location save.
+    class func firstUpdatedLocation(from locations: [CLLocation]) -> CLLocation? {
+        return LocationUpdatePolicy.firstLocation(from: locations)
+    }
+
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
-        let userLocation:CLLocation = locations[0]
+        guard let userLocation = HLEditFieldViewController.firstUpdatedLocation(from: locations) else {
+            return
+        }
         let long = userLocation.coordinate.longitude;
         let lat = userLocation.coordinate.latitude;
         print(userLocation)
@@ -136,11 +161,13 @@ class HLEditFieldViewController: BaseViewController, UITextFieldDelegate, UIText
         geoCoder.reverseGeocodeLocation(location) {
             (placemarks, error) -> Void in
             
-            let placeArray: [CLPlacemark] = placemarks as [CLPlacemark]!
+            guard let placeArray = placemarks, placeArray.count > 0 else {
+                self.spinner.hide()
+                return
+            }
             
             // Place details
-            var placeMark: CLPlacemark!
-            placeMark = placeArray[0]
+            let placeMark = placeArray[0]
             
             // Address dictionary
             //print(placeMark.addressDictionary)
@@ -148,14 +175,15 @@ class HLEditFieldViewController: BaseViewController, UITextFieldDelegate, UIText
             let city = placeMark.addressDictionary?["City"] as? String
             let zip = placeMark.addressDictionary?["ZIP"] as? String
             
-            self.newValueTextView.text = zip!
-            self.userData.zip = zip!
-            self.userData.userLocationName = city! + ", " + country!
-            self.grayLocationLabel.text = city! + ", " + country!
+            if let zip = zip {
+                self.newValueTextView.text = zip
+                self.userData.zip = zip
+            }
+            if let locationName = ZipGeocodePolicy.reverseLocationName(city: city, country: country) {
+                self.userData.userLocationName = locationName
+                self.grayLocationLabel.text = locationName
+            }
             self.spinner.hide()
-            
-            
-            
         }
     }
     
@@ -177,14 +205,14 @@ class HLEditFieldViewController: BaseViewController, UITextFieldDelegate, UIText
         
         if (field_key == "userEmail"){
             HulaUser.sharedInstance.resendValidationMail()
-            let alert = UIAlertController(title: NSLocalizedString("Email validation", comment: ""), message: "We have just sent you an email to \(HulaUser.sharedInstance.userEmail!). Please follow the instructions provided on that message.",
+            let alert = UIAlertController(title: NSLocalizedString("Email validation", comment: ""), message: HLEditFieldViewController.emailValidationMessage(email: HulaUser.sharedInstance.userEmail),
                 preferredStyle: UIAlertControllerStyle.alert
             )
             alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: ""), style: UIAlertActionStyle.default, handler: nil))
             self.present(alert, animated: true, completion: nil)
         }
         
-        field_new_val = newValueTextView.text!
+        field_new_val = HLEditFieldViewController.savedFieldText(newValueTextView.text)
         userData.setValue(field_new_val, forKey: field_key)
         userData.updateServerData()
         HLDataManager.sharedInstance.writeUserData()
@@ -205,13 +233,19 @@ class HLEditFieldViewController: BaseViewController, UITextFieldDelegate, UIText
     }
     
     func getLatLngForZip(zipCode: String) {
+        guard ZipGeocodePolicy.shouldGeocode(zipCode: zipCode) else {
+            return
+        }
         
         let geoCoder = CLGeocoder()
         geoCoder.geocodeAddressString(zipCode) { (places, error) in
             if let placemarks = places, let placemark = placemarks.first {
-                if let loc = placemark.locality {
-                    self.userData.userLocationName = loc + ", " + placemark.country!
-                    self.grayLocationLabel.text = loc + ", " + placemark.country!
+                if let locationName = ZipGeocodePolicy.forwardLocationName(
+                    locality: placemark.locality,
+                    country: placemark.country
+                ) {
+                    self.userData.userLocationName = locationName
+                    self.grayLocationLabel.text = locationName
                     self.userData.location = placemark.location
                 }
             }

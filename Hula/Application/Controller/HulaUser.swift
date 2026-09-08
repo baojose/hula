@@ -123,11 +123,23 @@ class HulaUser: NSObject {
         }
         return isLoggedIn
     }
+
+    /// Profile PUT. Blank userId must not hit `users/`.
+    class func updateURL(apiBase: String, userId: String?) -> String? {
+        return CommonUtils.userResourceURL(apiBase: apiBase, userId: userId)
+    }
+
+    /// Resend-validation PUT. Blank userId must not hit `users/resend/`.
+    class func resendValidationURL(apiBase: String, userId: String?) -> String? {
+        return CommonUtils.apiResourceURL(apiBase: apiBase, path: ["users", "resend", userId])
+    }
     
     func updateServerData(){
         //print("Updating user...")
         if(isUserLoggedIn()){
-            let queryURL = HulaConstants.apiURL + "users/" + self.userId
+            guard let queryURL = HulaUser.updateURL(apiBase: HulaConstants.apiURL, userId: self.userId) else {
+                return
+            }
             HLDataManager.sharedInstance.httpPost(urlstr: queryURL, postString: getPostString(), isPut: true, taskCallback: { (ok, json) in
                 
                 //print("done")
@@ -147,7 +159,9 @@ class HulaUser: NSObject {
     func resendValidationMail(){
         //print("Sending validation mail...")
         if(isUserLoggedIn()){
-            let queryURL = HulaConstants.apiURL + "users/resend/" + self.userId
+            guard let queryURL = HulaUser.resendValidationURL(apiBase: HulaConstants.apiURL, userId: self.userId) else {
+                return
+            }
             HLDataManager.sharedInstance.httpPost(urlstr: queryURL, postString: getPostString(), isPut: true, taskCallback: { (ok, json) in
                 //print("Message sent!")
                 if (ok){
@@ -161,13 +175,33 @@ class HulaUser: NSObject {
         }
     }
     func getPostString() -> String {
-        var str = "email=" + self.userEmail + "&name=" + self.userName + "&bio=" + self.userBio
-        str = str + "&nick=" + self.userNick + "&image=" + self.userPhotoURL + "&twtoken=" + self.twToken
-        str = str + "&litoken=" + self.liToken + "&fbtoken=" + self.fbToken + "&push_device_id=" + self.deviceId
-        str = str + "&zip=" + self.zip + "&max_trades=" + String(self.maxTrades)
+        // Only include optional credentials/location fields when non-empty.
+        // Sending empty twtoken/litoken/fbtoken/push_device_id/zip/image on a full-object PUT
+        // wipes server-side social verification, push delivery, avatar, and zip after cold start
+        // (those fields are not always present in local session state).
+        var str = "email=" + CommonUtils.formEncodedValue(self.userEmail) + "&name=" + CommonUtils.formEncodedValue(self.userName) + "&bio=" + CommonUtils.formEncodedValue(self.userBio)
+        str = str + "&nick=" + CommonUtils.formEncodedValue(self.userNick) + "&max_trades=" + String(self.maxTrades)
+        if self.userPhotoURL.count > 0 {
+            str = str + "&image=" + CommonUtils.formEncodedValue(self.userPhotoURL)
+        }
+        if self.twToken.count > 0 {
+            str = str + "&twtoken=" + CommonUtils.formEncodedValue(self.twToken)
+        }
+        if self.liToken.count > 0 {
+            str = str + "&litoken=" + CommonUtils.formEncodedValue(self.liToken)
+        }
+        if self.fbToken.count > 0 {
+            str = str + "&fbtoken=" + CommonUtils.formEncodedValue(self.fbToken)
+        }
+        if self.deviceId.count > 0 {
+            str = str + "&push_device_id=" + CommonUtils.formEncodedValue(self.deviceId)
+        }
+        if self.zip.count > 0 {
+            str = str + "&zip=" + CommonUtils.formEncodedValue(self.zip)
+        }
         
         if (self.location.coordinate.latitude != 0 && self.location.coordinate.longitude != 0){
-           str = str + "&lat=\(self.location.coordinate.latitude)&lng=\(self.location.coordinate.longitude)&location_name=" + self.userLocationName
+           str = str + "&lat=\(self.location.coordinate.latitude)&lng=\(self.location.coordinate.longitude)&location_name=" + CommonUtils.formEncodedValue(self.userLocationName)
         }
         return str
     }
@@ -182,8 +216,6 @@ class HulaUser: NSObject {
         return res
     }
     
-    
-    
     func populate(with: NSDictionary){
         if let tmp = with.object(forKey: "_id") as? String { userId = tmp }
         if let tmp = with.object(forKey: "name") as? String { userName = tmp }
@@ -191,29 +223,30 @@ class HulaUser: NSObject {
         if let tmp = with.object(forKey: "bio") as? String { userBio = tmp }
         if let tmp = with.object(forKey: "email") as? String { userEmail = tmp }
         if let tmp = with.object(forKey: "image") as? String { userPhotoURL = tmp }
-        if let tmp = with.object(forKey: "location") as? [CGFloat]  {
-            let lat = tmp[0]
-            let lon = tmp[1]
-            location = CLLocation(latitude:CLLocationDegrees(lat), longitude:CLLocationDegrees(lon));
+        if let locationFromJSON = CommonUtils.location(fromJSON: with.object(forKey: "location")) {
+            location = locationFromJSON
         }
         if let tmp = with.object(forKey: "location_name") as? String  {
             userLocationName = tmp;
         }
         if let tmp = with.object(forKey: "fb_token") as? String { fbToken = tmp }
+        if let tmp = with.object(forKey: "fbtoken") as? String { fbToken = tmp }
         if let tmp = with.object(forKey: "tw_token") as? String { twToken = tmp }
+        if let tmp = with.object(forKey: "twtoken") as? String { twToken = tmp }
         if let tmp = with.object(forKey: "li_token") as? String { liToken = tmp }
+        if let tmp = with.object(forKey: "litoken") as? String { liToken = tmp }
         if let tmp = with.object(forKey: "status") as? String { status = tmp }
         if let tmp = with.object(forKey: "zip") as? String { zip = tmp }
         
-        if let tmp = with.object(forKey: "feedback_count") as? Float { feedback_count = tmp }
-        if let tmp = with.object(forKey: "feedback_points") as? Float { feedback_points = tmp }
-        
-        
-        if let tmp = with.object(forKey: "trades_started") as? Float { trades_started = tmp }
-        if let tmp = with.object(forKey: "trades_finished") as? Float { trades_finished = tmp }
-        if let tmp = with.object(forKey: "trades_closed") as? Float { trades_closed = tmp }
+        if let tmp = CommonUtils.floatFromJSON(with.object(forKey: "feedback_count")) { feedback_count = tmp }
+        if let tmp = CommonUtils.floatFromJSON(with.object(forKey: "feedback_points")) { feedback_points = tmp }
+
+        if let tmp = CommonUtils.floatFromJSON(with.object(forKey: "trades_started")) { trades_started = tmp }
+        if let tmp = CommonUtils.floatFromJSON(with.object(forKey: "trades_finished")) { trades_finished = tmp }
+        if let tmp = CommonUtils.floatFromJSON(with.object(forKey: "trades_closed")) { trades_closed = tmp }
         
         if let tmp = with.object(forKey: "deviceId") as? String { deviceId = tmp }
+        if let tmp = with.object(forKey: "push_device_id") as? String { deviceId = tmp }
         if let tmp = with.object(forKey: "max_trades") as? Int { maxTrades = tmp }
         
         
@@ -222,7 +255,15 @@ class HulaUser: NSObject {
     
     
     
+    /// Debug print used IUO unwraps of `userId!` / `userNick!` / `location`.
+    class func debugDescriptionText(userId: String?, nick: String?, location: CLLocation?) -> String {
+        let id = userId ?? ""
+        let nickText = nick ?? ""
+        let loc = location ?? CLLocation(latitude: 0, longitude: 0)
+        return "User id: \(id); nick:   \(nickText)  location: \(loc.coordinate.latitude) ,  \(loc.coordinate.longitude)\n"
+    }
+
     override var description : String {
-        return "User id: \(self.userId!); nick:   \(self.userNick!)  location: \(self.location.coordinate.latitude) ,  \(self.location.coordinate.longitude)\n"
+        return HulaUser.debugDescriptionText(userId: self.userId, nick: self.userNick, location: self.location)
     }
 }
