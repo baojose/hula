@@ -40,6 +40,11 @@ class HLEditProductMainViewController: BaseViewController, ProductPictureDelegat
         return LabelMetricsPolicy.text(raw)
     }
 
+    /// "Set as featured" used unbounded `arrProductPhotoLink[0]` / `[index]`.
+    class func swappedFeaturedLinks(_ links: [String], promoting index: Int) -> [String]? {
+        return FeaturedPhotoPolicy.swappedLinks(links, promoting: index)
+    }
+
     override func viewDidLoad() {
         super.viewDidLoad()
         self.initData()
@@ -315,14 +320,15 @@ extension HLEditProductMainViewController {
         
         if (self.currentEditingIndex != 0){
             let setDefaultButton = UIAlertAction(title: NSLocalizedString("Set as featured image", comment: ""), style: .default, handler: { (action) -> Void in
-                //swap(&self.product.arrProductPhotoLink[0], &self.product.arrProductPhotoLink[self.currentEditingIndex])
-                let a = self.product.arrProductPhotoLink[0]
-                let b = self.product.arrProductPhotoLink[self.currentEditingIndex]
-                self.product.arrProductPhotoLink[self.currentEditingIndex] = a
-                self.product.arrProductPhotoLink[0] = b
-                self.dismissFullscreenImageDirect( )
-                self.redrawProductImages()
-                self.product.updateServerData()
+                if let swapped = HLEditProductMainViewController.swappedFeaturedLinks(
+                    self.product.arrProductPhotoLink,
+                    promoting: self.currentEditingIndex
+                ) {
+                    self.product.arrProductPhotoLink = swapped
+                    self.dismissFullscreenImageDirect( )
+                    self.redrawProductImages()
+                    self.product.updateServerData()
+                }
             })
             alertController.addAction(setDefaultButton)
         }
@@ -332,11 +338,9 @@ extension HLEditProductMainViewController {
             print("Delete button tapped")
             print("self.currentEditingIndex \(self.currentEditingIndex)")
             print("self.dataManager.newProduct.arrProductPhotos \(self.dataManager.newProduct.arrProductPhotos)")
-            if (self.product.arrProductPhotos.count > self.currentEditingIndex){
-                self.product.arrProductPhotos.removeObject(at: self.currentEditingIndex);
-            }
-            if (self.product.arrProductPhotoLink.count > self.currentEditingIndex){
-                self.product.arrProductPhotoLink.remove(at: self.currentEditingIndex);
+            _ = FeaturedPhotoPolicy.removeObject(in: self.product.arrProductPhotos, at: self.currentEditingIndex)
+            if let remaining = FeaturedPhotoPolicy.removingLink(self.product.arrProductPhotoLink, at: self.currentEditingIndex) {
+                self.product.arrProductPhotoLink = remaining
             }
             self.dismissFullscreenImageDirect( )
             self.redrawProductImages()

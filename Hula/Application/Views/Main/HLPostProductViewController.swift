@@ -277,7 +277,7 @@ class HLPostProductViewController: BaseViewController {
         
         let editButton = UIAlertAction(title:  NSLocalizedString("Try another image", comment: ""), style: .default, handler: { (action) -> Void in
             print("Close")
-            self.dataManager.newProduct.arrProductPhotos.removeObject(at: self.currentEditingIndex);
+            _ = FeaturedPhotoPolicy.removeObject(in: self.dataManager.newProduct.arrProductPhotos, at: self.currentEditingIndex)
             self.presentingViewController?.dismiss(animated: true, completion: nil)
         })
         alertController.addAction(editButton)
@@ -285,7 +285,7 @@ class HLPostProductViewController: BaseViewController {
         
         if (self.currentEditingIndex != 0){
             let setDefaultButton = UIAlertAction(title:  NSLocalizedString("Set as featured image", comment: ""), style: .default, handler: { (action) -> Void in
-                swap(&self.dataManager.newProduct.arrProductPhotos[0], &self.dataManager.newProduct.arrProductPhotos[self.currentEditingIndex])
+                _ = FeaturedPhotoPolicy.promoteObject(in: self.dataManager.newProduct.arrProductPhotos, at: self.currentEditingIndex)
                 self.dismissFullscreenImageDirect( )
                 self.setupImagesBoxes()
             })
@@ -295,7 +295,7 @@ class HLPostProductViewController: BaseViewController {
         
         let  deleteButton = UIAlertAction(title:  NSLocalizedString("Delete image", comment: ""), style: .destructive, handler: { (action) -> Void in
             //print("Delete button tapped")
-            self.dataManager.newProduct.arrProductPhotos.removeObject(at: self.currentEditingIndex);
+            _ = FeaturedPhotoPolicy.removeObject(in: self.dataManager.newProduct.arrProductPhotos, at: self.currentEditingIndex)
             self.dismissFullscreenImageDirect( )
             self.setupImagesBoxes()
         })
@@ -314,7 +314,7 @@ class HLPostProductViewController: BaseViewController {
             return
         }
         if (self.dataManager.newProduct.arrProductPhotos.count > tag){
-            self.dataManager.newProduct.arrProductPhotos.removeObject(at: tag);
+            _ = FeaturedPhotoPolicy.removeObject(in: self.dataManager.newProduct.arrProductPhotos, at: tag)
             self.setupImagesBoxes()
         }
     }

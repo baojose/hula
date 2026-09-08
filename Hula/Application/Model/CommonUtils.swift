@@ -1744,3 +1744,101 @@ struct RelativeDatePolicy {
         return daysSince > threshold
     }
 }
+
+/// Post-deal feedback reason buttons used `UIGraphicsGetCurrentContext()!` for
+/// a 1x1 fill. A failed image context (or a zero-size request) must skip the
+/// background image instead of crashing the rating modal.
+struct SolidColorImagePolicy {
+    static func canDraw(size: CGSize) -> Bool {
+        return size.width > 0 && size.height > 0
+    }
+
+    static func image(color: UIColor?, size: CGSize = CGSize(width: 1, height: 1)) -> UIImage? {
+        guard let color = color, canDraw(size: size) else {
+            return nil
+        }
+        UIGraphicsBeginImageContext(size)
+        defer { UIGraphicsEndImageContext() }
+        guard let context = UIGraphicsGetCurrentContext() else {
+            return nil
+        }
+        context.setFillColor(color.cgColor)
+        context.fill(CGRect(x: 0, y: 0, width: size.width, height: size.height))
+        return UIGraphicsGetImageFromCurrentImageContext()
+    }
+}
+
+/// Inventory GPS persist and ZIP/location editors used `locations[0]`. An
+/// empty Core Location callback must skip the write instead of crashing.
+struct LocationUpdatePolicy {
+    static func firstLocation(from locations: [CLLocation]?) -> CLLocation? {
+        guard let locations = locations, locations.count > 0 else {
+            return nil
+        }
+        return locations[0]
+    }
+}
+
+/// Create/edit "set as featured" used unbounded `swap(&[0], &[index])` and
+/// `arrProductPhotoLink[0]`. A stale editor index after a delete must no-op.
+/// Barter add/remove animations used `arrProductPhotoLink[0]` behind a disabled
+/// flag; firstURL stays safe if that path is re-enabled.
+struct FeaturedPhotoPolicy {
+    static func canPromote(index: Int, count: Int) -> Bool {
+        return index > 0 && index < count
+    }
+
+    static func swappedLinks(_ links: [String], promoting index: Int) -> [String]? {
+        guard canPromote(index: index, count: links.count) else {
+            return nil
+        }
+        var copy = links
+        let featured = copy[0]
+        copy[0] = copy[index]
+        copy[index] = featured
+        return copy
+    }
+
+    static func promoteObject(in array: NSMutableArray, at index: Int) -> Bool {
+        guard canPromote(index: index, count: array.count) else {
+            return false
+        }
+        let featured = array.object(at: 0)
+        let selected = array.object(at: index)
+        array.replaceObject(at: 0, with: selected)
+        array.replaceObject(at: index, with: featured)
+        return true
+    }
+
+    static func removeObject(in array: NSMutableArray, at index: Int) -> Bool {
+        guard index >= 0 && index < array.count else {
+            return false
+        }
+        array.removeObject(at: index)
+        return true
+    }
+
+    static func removingLink(_ links: [String], at index: Int) -> [String]? {
+        guard index >= 0 && index < links.count else {
+            return nil
+        }
+        var copy = links
+        copy.remove(at: index)
+        return copy
+    }
+
+    static func firstURL(_ links: [String]?) -> String? {
+        guard let links = links, links.count > 0 else {
+            return nil
+        }
+        return CommonUtils.nonEmptyTrimmed(links[0])
+    }
+}
+
+/// Trade-room accelerometer used `OperationQueue.current!`. A nil current
+/// queue (background hop with no queue) must fall back to main.
+struct MotionUpdatePolicy {
+    static func updatesQueue(_ current: OperationQueue?) -> OperationQueue {
+        return current ?? OperationQueue.main
+    }
+}

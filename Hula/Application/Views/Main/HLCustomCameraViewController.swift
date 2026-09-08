@@ -222,7 +222,7 @@ class HLCustomCameraViewController: BaseViewController, UIImagePickerControllerD
         
         if (self.currentEditingIndex != 0){
             let setDefaultButton = UIAlertAction(title: NSLocalizedString("Set image as default", comment: ""), style: .default, handler: { (action) -> Void in
-                swap(&self.dataManager.newProduct.arrProductPhotos[0], &self.dataManager.newProduct.arrProductPhotos[self.currentEditingIndex])
+                _ = FeaturedPhotoPolicy.promoteObject(in: self.dataManager.newProduct.arrProductPhotos, at: self.currentEditingIndex)
                 self.dismissFullscreenImageDirect( )
                 self.initData()
             })
@@ -232,7 +232,7 @@ class HLCustomCameraViewController: BaseViewController, UIImagePickerControllerD
         
         let  deleteButton = UIAlertAction(title: NSLocalizedString("Delete image", comment: ""), style: .destructive, handler: { (action) -> Void in
             //print("Delete button tapped")
-            self.dataManager.newProduct.arrProductPhotos.removeObject(at: self.currentEditingIndex);
+            _ = FeaturedPhotoPolicy.removeObject(in: self.dataManager.newProduct.arrProductPhotos, at: self.currentEditingIndex)
             self.dismissFullscreenImageDirect( )
             self.initData()
         })

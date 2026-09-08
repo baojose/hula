@@ -83,8 +83,15 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
     func initView(){
     }
     
+    /// Empty Core Location callbacks used `locations[0]` and crashed inventory GPS persist.
+    class func firstUpdatedLocation(from locations: [CLLocation]) -> CLLocation? {
+        return LocationUpdatePolicy.firstLocation(from: locations)
+    }
+
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
-        let userLocation:CLLocation = locations[0]
+        guard let userLocation = HLMyProductsViewController.firstUpdatedLocation(from: locations) else {
+            return
+        }
         let long = userLocation.coordinate.longitude;
         let lat = userLocation.coordinate.latitude;
         

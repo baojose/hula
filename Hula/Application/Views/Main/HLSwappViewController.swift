@@ -79,6 +79,11 @@ class HLSwappViewController: UIViewController {
         return FacebookInvitePolicy.inviteURLs()
     }
 
+    /// Trade-room accelerometer used `OperationQueue.current!`.
+    class func accelerometerUpdatesQueue(_ current: OperationQueue?) -> OperationQueue {
+        return MotionUpdatePolicy.updatesQueue(current)
+    }
+
     /// Soft-parse trade `last_update` into remaining courtesy hours for the waiting-turn label.
     /// Missing/malformed dates return nil so callers can hide the label instead of crashing.
     class func remainingResponseHoursLabel(
@@ -256,7 +261,7 @@ class HLSwappViewController: UIViewController {
     }
     override func viewDidAppear(_ animated: Bool) {
         threeDotsView.frame.origin.x = otherOfferBtn.frame.origin.x + otherOfferBtn.frame.width/2 - 20;
-        motionManager.startAccelerometerUpdates(to: OperationQueue.current!){ (data, error) in
+        motionManager.startAccelerometerUpdates(to: HLSwappViewController.accelerometerUpdatesQueue(OperationQueue.current)){ (data, error) in
             if let xc = data?.acceleration.x {
                 if abs( xc ) > 0.8 {
                     // portrait mode

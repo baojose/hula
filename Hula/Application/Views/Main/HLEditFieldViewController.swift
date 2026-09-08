@@ -134,8 +134,15 @@ class HLEditFieldViewController: BaseViewController, UITextFieldDelegate, UIText
         }
     }
     
+    /// Empty Core Location callbacks used `locations[0]` and crashed ZIP/location save.
+    class func firstUpdatedLocation(from locations: [CLLocation]) -> CLLocation? {
+        return LocationUpdatePolicy.firstLocation(from: locations)
+    }
+
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
-        let userLocation:CLLocation = locations[0]
+        guard let userLocation = HLEditFieldViewController.firstUpdatedLocation(from: locations) else {
+            return
+        }
         let long = userLocation.coordinate.longitude;
         let lat = userLocation.coordinate.latitude;
         print(userLocation)

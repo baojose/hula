@@ -855,7 +855,7 @@ class HLBarterScreenViewController: BaseViewController {
                 let fakeImg = UIImageView(frame: CGRect(x:posx, y:posy, width: 120, height:120))
                 fakeImg.contentMode = .scaleAspectFill
                 fakeImg.clipsToBounds = true
-                fakeImg.loadImageFromURL(urlString: p.arrProductPhotoLink[0])
+                fakeImg.loadImageFromURL(urlString: FeaturedPhotoPolicy.firstURL(p.arrProductPhotoLink) ?? HulaConstants.noProductThumb)
                 self.view.insertSubview(fakeImg, at: self.view.subviews.count - 2)
                 let cell = col.cellForItem(at: IndexPath(item: counter, section: 0))
                 cell?.alpha = 0
@@ -891,7 +891,7 @@ class HLBarterScreenViewController: BaseViewController {
                 let fakeImg = UIImageView(frame: CGRect(x:destx + smallSide, y:80, width: smallSide, height:smallSide))
                 fakeImg.contentMode = .scaleAspectFill
                 fakeImg.clipsToBounds = true
-                fakeImg.loadImageFromURL(urlString: p.arrProductPhotoLink[0])
+                fakeImg.loadImageFromURL(urlString: FeaturedPhotoPolicy.firstURL(p.arrProductPhotoLink) ?? HulaConstants.noProductThumb)
                 self.view.insertSubview(fakeImg, at: self.view.subviews.count - 2)
                 //self.view.addSubview(fakeImg)
                 let cell = col2.cellForItem(at: IndexPath(item: counter, section: 0))
