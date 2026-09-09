@@ -110,6 +110,14 @@ class HLBarterScreenViewController: BaseViewController {
         return "other_products=\(otherp)&owner_products=\(ownerp)&other_money=\(otherMoney)&owner_money=\(ownerMoney)"
     }
 
+    /// Pull traded ids out of available inventory without mutating during a precomputed
+    /// `0...count-1` walk. Opening a trade room used to trap when a traded listing sat
+    /// early among 3+ items: `remove(at:)` shrank the array while the original last
+    /// index stayed in range, and the post-remove `break` ran after the next access.
+    class func removingTradedProducts(from inventory: [HulaProduct], tradedIds: [String]) -> [HulaProduct] {
+        return BarterInventoryPolicy.removingTraded(from: inventory, tradedIds: tradedIds)
+    }
+
     /// Keep known trade product IDs after a failed inventory fetch without marking them deleted
     /// (deleted stubs are stripped by generateProductArray and would empty Accept/live_barter POSTs).
     class func placeholderTradedProducts(from ids: [String]) -> [HulaProduct] {
@@ -433,28 +441,17 @@ class HLBarterScreenViewController: BaseViewController {
                 self.didTradeMutate = true
                 self.mainSwapViewHolder?.controlSetupBottomBar(index: myTradeIndex + 1)
             }
-            
-            if (self.otherProducts.count > 0){
-                for i in 0 ... (self.otherProducts.count - 1) {
-                    if (self.otherProducts[i].productId == pr_id){
-                        self.otherProducts.remove( at: i)
-                    }
-                    if (i >= self.otherProducts.count - 1){
-                        break
-                    }
-                }
-            }
-            if (self.myProducts.count > 0){
-                for i in 0 ... (self.myProducts.count - 1) {
-                    if (self.myProducts[i].productId == pr_id){
-                        self.myProducts.remove( at: i)
-                    }
-                    if (i >= self.myProducts.count - 1){
-                        break
-                    }
-                }
-            }
         }
+        // Filter once after the walk. Mutating inside `0 ... count-1` trapped when a
+        // traded id sat early in a 3+ listing inventory (live_barter refresh too).
+        self.otherProducts = HLBarterScreenViewController.removingTradedProducts(
+            from: self.otherProducts,
+            tradedIds: list
+        )
+        self.myProducts = HLBarterScreenViewController.removingTradedProducts(
+            from: self.myProducts,
+            tradedIds: list
+        )
         
         
         switch type {
@@ -1570,5 +1567,21 @@ extension HLBarterScreenViewController: CalculatorDelegate{
             }
         }
         return newArr
+    }
+}
+
+/// Moves listings from the available inventory columns into the traded columns.
+/// The previous implementation walked `0 ... count-1` and called `remove(at:)` on a match;
+/// after shrinking the array the loop still used the original last index and trapped.
+struct BarterInventoryPolicy {
+    static func removingTraded(from inventory: [HulaProduct], tradedIds: [String]) -> [HulaProduct] {
+        let traded = Set(tradedIds)
+        if traded.isEmpty {
+            return inventory
+        }
+        return inventory.filter { product in
+            let pid = product.productId ?? ""
+            return !traded.contains(pid)
+        }
     }
 }
