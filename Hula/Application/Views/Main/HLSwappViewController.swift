@@ -222,13 +222,16 @@ class HLSwappViewController: UIViewController {
         
         if let chatVC = segue.destination as? ChatViewController {
             if let swappPageVC = self.childViewControllers.first as? HLSwappPageViewController {
-                let thisTrade: NSDictionary = swappPageVC.arrTrades[swappPageVC.currentIndex]
-                if let chat = thisTrade.object(forKey: "chat") as? [NSDictionary]{
-                    chatVC.chat = chat
-                    chatVC.trade_id = (thisTrade.object(forKey: "_id") as? String)!
-                    //print(chat)
-                    self.backFromChat = true
-                    self.chatCountLbl.isHidden = true
+                if let thisTrade = DashboardTradeSelection.resolvedTrade(currentTrade: swappPageVC.currentTrade, currentIndex: swappPageVC.currentIndex, trades: swappPageVC.arrTrades) {
+                    if let chat = thisTrade.object(forKey: "chat") as? [NSDictionary]{
+                        chatVC.chat = chat
+                        if let tradeId = thisTrade.object(forKey: "_id") as? String {
+                            chatVC.trade_id = tradeId
+                        }
+                        //print(chat)
+                        self.backFromChat = true
+                        self.chatCountLbl.isHidden = true
+                    }
                 }
             }
         }
@@ -564,9 +567,8 @@ class HLSwappViewController: UIViewController {
             self.threeDotsView.isHidden = true;
             
             if let swappPageVC = self.childViewControllers.first as? HLSwappPageViewController {
-                if swappPageVC.arrTrades.count > 0 {
+                if let thisTrade = DashboardTradeSelection.resolvedTrade(currentTrade: swappPageVC.currentTrade, currentIndex: swappPageVC.currentIndex, trades: swappPageVC.arrTrades) {
                     last_index_setup = swappPageVC.currentIndex
-                    let thisTrade: NSDictionary = swappPageVC.arrTrades[swappPageVC.currentIndex]
                     var other_user_id = ""
                     var chat_count = 0
                     
