@@ -5221,4 +5221,86 @@ class HulaTests: XCTestCase {
         XCTAssertTrue(MotionUpdatePolicy.updatesQueue(custom) === custom)
         XCTAssertTrue(HLSwappViewController.accelerometerUpdatesQueue(custom) === custom)
     }
+
+    // MARK: - Beyond #145/#146: barter inventory traded-id removal
+
+    /// Opening a trade room with 3+ listings used to trap when the traded item was first
+    /// in inventory: `remove(at: 0)` then the `0...count-1` loop still indexed the old last slot.
+    func testBarterInventoryRemoveDoesNotTrapWhenTradedItemIsFirstOfMany() {
+        let inventory = [
+            HulaProduct(id: "p0", name: "First", image: ""),
+            HulaProduct(id: "p1", name: "Second", image: ""),
+            HulaProduct(id: "p2", name: "Third", image: ""),
+            HulaProduct(id: "p3", name: "Fourth", image: "")
+        ]
+        let remaining = BarterInventoryPolicy.removingTraded(from: inventory, tradedIds: ["p0"])
+        XCTAssertEqual(remaining.count, 3)
+        XCTAssertEqual(remaining[0].productId, "p1")
+        XCTAssertEqual(remaining[1].productId, "p2")
+        XCTAssertEqual(remaining[2].productId, "p3")
+        let viaScreen = HLBarterScreenViewController.removingTradedProducts(
+            from: inventory,
+            tradedIds: ["p0"]
+        )
+        XCTAssertEqual(viaScreen.count, 3)
+        XCTAssertEqual(viaScreen[0].productId, "p1")
+    }
+
+    func testBarterInventoryRemovesMultipleTradedIdsAndKeepsOrder() {
+        let inventory = [
+            HulaProduct(id: "a", name: "A", image: ""),
+            HulaProduct(id: "b", name: "B", image: ""),
+            HulaProduct(id: "c", name: "C", image: ""),
+            HulaProduct(id: "d", name: "D", image: "")
+        ]
+        let remaining = BarterInventoryPolicy.removingTraded(from: inventory, tradedIds: ["a", "c"])
+        XCTAssertEqual(remaining.count, 2)
+        XCTAssertEqual(remaining[0].productId, "b")
+        XCTAssertEqual(remaining[1].productId, "d")
+    }
+
+    func testBarterInventoryUnmatchedIdsLeaveInventoryIntact() {
+        let inventory = [
+            HulaProduct(id: "a", name: "A", image: ""),
+            HulaProduct(id: "b", name: "B", image: "")
+        ]
+        let remaining = BarterInventoryPolicy.removingTraded(from: inventory, tradedIds: ["missing"])
+        XCTAssertEqual(remaining.count, 2)
+        XCTAssertEqual(remaining[0].productId, "a")
+        XCTAssertEqual(remaining[1].productId, "b")
+    }
+
+    func testBarterInventoryEmptyAndEmptyTradeList() {
+        let empty = BarterInventoryPolicy.removingTraded(from: [], tradedIds: ["a"])
+        XCTAssertEqual(empty.count, 0)
+        let inventory = [HulaProduct(id: "a", name: "A", image: "")]
+        let unchanged = BarterInventoryPolicy.removingTraded(from: inventory, tradedIds: [])
+        XCTAssertEqual(unchanged.count, 1)
+        XCTAssertEqual(unchanged[0].productId, "a")
+        XCTAssertTrue(unchanged[0] === inventory[0])
+    }
+
+    func testBarterInventoryRemovesDuplicateIdsInsteadOfSkippingShiftedNeighbors() {
+        let first = HulaProduct(id: "dup", name: "One", image: "")
+        let second = HulaProduct(id: "dup", name: "Two", image: "")
+        let keep = HulaProduct(id: "keep", name: "Keep", image: "")
+        let remaining = BarterInventoryPolicy.removingTraded(
+            from: [first, second, keep],
+            tradedIds: ["dup"]
+        )
+        XCTAssertEqual(remaining.count, 1)
+        XCTAssertEqual(remaining[0].productId, "keep")
+        XCTAssertTrue(remaining[0] === keep)
+    }
+
+    func testBarterInventoryKeepsBlankIdsUnlessExplicitlyTraded() {
+        let blank = HulaProduct()
+        let keep = HulaProduct(id: "keep", name: "Keep", image: "")
+        let remaining = BarterInventoryPolicy.removingTraded(from: [blank, keep], tradedIds: ["p0"])
+        XCTAssertEqual(remaining.count, 2)
+        XCTAssertEqual(remaining[1].productId, "keep")
+        let stripped = BarterInventoryPolicy.removingTraded(from: [blank, keep], tradedIds: [""])
+        XCTAssertEqual(stripped.count, 1)
+        XCTAssertEqual(stripped[0].productId, "keep")
+    }
 }
