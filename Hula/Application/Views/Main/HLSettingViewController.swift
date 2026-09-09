@@ -32,6 +32,21 @@ class HLSettingViewController: BaseViewController {
     @IBOutlet weak var fullNameView: UIView!
     
     var image_dismissing:Bool = false
+
+    /// Help link. Blank/malformed URLs must not crash via `URL(string:)!`.
+    class func helpURL() -> URL? {
+        return CommonUtils.openableURL("https://hula.trading/")
+    }
+
+    /// Facebook app-invite placeholders used `URL(string:)!`.
+    class func facebookAppInviteURLs() -> (appLink: URL, previewImageURL: URL?)? {
+        return FacebookInvitePolicy.inviteURLs()
+    }
+
+    /// Missing catalog asset must skip the incomplete-profile badge instead of crashing.
+    class func shouldShowAlertThumbnail(_ image: UIImage?) -> Bool {
+        return image != nil
+    }
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -115,13 +130,15 @@ class HLSettingViewController: BaseViewController {
         
     }
     @IBAction func editItemAction(_ sender: Any) {
-        print((sender as! UIButton).tag)
+        guard let tag = ControlSenderPolicy.tag(from: sender) else {
+            return
+        }
         var title = "";
         var previous = "";
         var label = ""
         var item_toUpdate = "";
         var remChar:Int = 200
-        switch (sender as! UIButton).tag {
+        switch tag {
         case 0:
             // image update
             selectedImageTapped()
@@ -172,13 +189,13 @@ class HLSettingViewController: BaseViewController {
             break
         }
         
-        if ((sender as! UIButton).tag == 5 ){
+        if (tag == 5 ){
             let editViewController = self.storyboard?.instantiateViewController(withIdentifier: "newPassword") as! NewPaswordViewController
             self.navigationController?.pushViewController(editViewController, animated: true)
 
         } else {
         
-            if ((sender as! UIButton).tag != 0 ){
+            if (tag != 0 ){
                 let editViewController = self.storyboard?.instantiateViewController(withIdentifier: "fieldEditor") as! HLEditFieldViewController
                 editViewController.field_label = label
                 editViewController.field_title = title
@@ -195,13 +212,18 @@ class HLSettingViewController: BaseViewController {
     }
     
     @IBAction func helpOptionAction(_ sender: Any) {
-        UIApplication.shared.openURL(URL(string: "https://hula.trading/")!)
+        if let url = HLSettingViewController.helpURL() {
+            UIApplication.shared.openURL(url)
+        }
     }
     // Custom functions for ViewController
     func addAlertIcon(toView: UIView){
         let imageName = "icon_alert_thumbnails"
-        let image = UIImage(named: imageName)
-        let imageView = UIImageView(image: image!)
+        guard let image = UIImage(named: imageName),
+            HLSettingViewController.shouldShowAlertThumbnail(image) else {
+            return
+        }
+        let imageView = UIImageView(image: image)
         imageView.tag = 220;
         imageView.frame = CGRect(x: toView.frame.width/2 + 20, y: toView.frame.height/2 - 8, width: 16, height: 16)
         toView.addSubview(imageView)
@@ -353,9 +375,12 @@ extension HLSettingViewController{
     }
     
     func shareHulaFB(){
-        let appInvite = AppInvite(appLink: URL(string: "https://fb.me/YOUR_FACEBOOK_APP_ID")!,
+        guard let urls = HLSettingViewController.facebookAppInviteURLs() else {
+            return
+        }
+        let appInvite = AppInvite(appLink: urls.appLink,
                                   deliveryMethod: .facebook,
-                                  previewImageURL: URL(string: "https://hula.trading/img/logo-big.png"))
+                                  previewImageURL: urls.previewImageURL)
         do {
             try AppInvite.Dialog.show(from: self, invite: appInvite) { result in
                 switch result {

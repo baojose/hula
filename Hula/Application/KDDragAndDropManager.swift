@@ -62,7 +62,9 @@ class KDDragAndDropManager: NSObject, UIGestureRecognizerDelegate {
         
         for view in self.views where view is KDDraggable  {
             
-            let draggable = view as! KDDraggable
+            guard let draggable = DragAndDropPolicy.draggable(view) else {
+                continue
+            }
                 
             let touchPointInView = touch.location(in: view)
             
@@ -109,7 +111,9 @@ class KDDragAndDropManager: NSObject, UIGestureRecognizerDelegate {
         if let bundl = self.bundle {
             
             let pointOnCanvas = recogniser.location(in: recogniser.view)
-            let sourceDraggable : KDDraggable = bundl.sourceDraggableView as! KDDraggable
+            guard let sourceDraggable = DragAndDropPolicy.draggable(bundl.sourceDraggableView) else {
+                return
+            }
             let pointOnSourceDraggable = recogniser.location(in: bundl.sourceDraggableView)
             
             switch recogniser.state {
@@ -167,7 +171,7 @@ class KDDragAndDropManager: NSObject, UIGestureRecognizerDelegate {
                         
                         if mainOverView != bundl.overDroppableView { // if it is the first time we are entering
                             
-                            (bundl.overDroppableView as! KDDroppable).didMoveOutItem(bundl.dataItem)
+                            DragAndDropPolicy.droppable(bundl.overDroppableView)?.didMoveOutItem(bundl.dataItem)
                             droppable.willMoveItem(bundl.dataItem, inRect: rect)
                             
                         }
