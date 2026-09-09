@@ -119,9 +119,19 @@ class HLBarterScreenViewController: BaseViewController {
             
             //print(swappPageVC.parent)
             
-            myTradeIndex = min(swappPageVC.currentIndex, swappPageVC.arrTrades.count)
-            
-            let ct = swappPageVC.arrTrades[swappPageVC.currentIndex]
+            guard let ct = DashboardTradeSelection.resolvedTrade(currentTrade: swappPageVC.currentTrade, currentIndex: swappPageVC.currentIndex, trades: swappPageVC.arrTrades) else {
+                alreadyLoaded = false
+                return
+            }
+            if let idx = DashboardTradeSelection.index(ofTradeId: DashboardTradeSelection.tradeId(from: ct), in: swappPageVC.arrTrades) {
+                myTradeIndex = idx
+                swappPageVC.currentIndex = idx
+                swappPageVC.currentTrade = ct
+            } else if swappPageVC.arrTrades.count > 0 {
+                myTradeIndex = min(swappPageVC.currentIndex, swappPageVC.arrTrades.count - 1)
+            } else {
+                myTradeIndex = 0
+            }
             //print("ct \(ct)")
             thisTrade.loadFrom(dict: ct)
             if (thisTrade.owner_id == HulaUser.sharedInstance.userId){

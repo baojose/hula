@@ -408,39 +408,44 @@ extension HLDashboardViewController: UICollectionViewDelegate, UICollectionViewD
         //print("Barter room clicked")
         //print(indexPath.row)
         
-        if ((swappPageVC?.arrTrades.count)! > indexPath.row){
+        guard let pageAtTap = swappPageVC ?? (self.parent as? HLSwappPageViewController) else { return }
+        guard let tappedTrade = DashboardTradeSelection.trade(at: indexPath.row, in: pageAtTap.arrTrades) else {
+            return
+        }
+        let tappedTradeId = DashboardTradeSelection.tradeId(from: tappedTrade)
 
-            
-            //let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "tradeCell", for: indexPath) as! HLTradesCollectionViewCell
+        //let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "tradeCell", for: indexPath) as! HLTradesCollectionViewCell
 
-            //isExpandedFlowLayoutUsed = !isExpandedFlowLayoutUsed
-            let when = DispatchTime.now() + 0.2
-            
-            
-            DispatchQueue.main.asyncAfter(deadline: when) {
-                if let swappPageVC = self.parent as? HLSwappPageViewController{
-                    self.selectedBarter = indexPath.row
-                    let thisTrade: NSDictionary = swappPageVC.arrTrades[indexPath.row]
-                    self.swappPageVC?.currentTrade = thisTrade
-                    self.swappPageVC?.currentIndex = indexPath.row
-                    //print(swappPageVC.currentTrade!)
-                    
-                    let tradeStatus = thisTrade.object(forKey: "status") as! String
-                    if HLDataManager.sharedInstance.tradeMode == "current" && tradeStatus != HulaConstants.review_status {
-                        let vc = (self.storyboard?.instantiateViewController( withIdentifier: "barterRoom")) as! HLBarterScreenViewController
-                        self.swappPageVC?.orderedViewControllers[1] = vc
-                    } else {
-                        let vc = (self.storyboard?.instantiateViewController( withIdentifier: "pastTrade")) as! HLPastTradeViewController
-                        vc.currTrade = thisTrade
-                        self.swappPageVC?.orderedViewControllers[1] = vc
-                    }
-                    
-                    self.swappPageVC?.goTo(page: 1)
+        //isExpandedFlowLayoutUsed = !isExpandedFlowLayoutUsed
+        let when = DispatchTime.now() + 0.2
+
+        DispatchQueue.main.asyncAfter(deadline: when) {
+            if let swappPageVC = self.parent as? HLSwappPageViewController{
+                // getTrades often completes during this 0.2s animation delay and
+                // replaces arrTrades (reorder, insert, or drop a room). Resolve by
+                // trade id captured at tap time — never reuse the stale row.
+                guard let resolved = DashboardTradeSelection.resolveAfterRefresh(tappedTradeId: tappedTradeId, trades: swappPageVC.arrTrades) else {
+                    return
                 }
-                //print(self.parent!)
+                self.selectedBarter = resolved.index
+                let thisTrade = resolved.trade
+                self.swappPageVC?.currentTrade = thisTrade
+                self.swappPageVC?.currentIndex = resolved.index
+                //print(swappPageVC.currentTrade!)
+
+                guard let tradeStatus = thisTrade.object(forKey: "status") as? String else { return }
+                if HLDataManager.sharedInstance.tradeMode == "current" && tradeStatus != HulaConstants.review_status {
+                    let vc = (self.storyboard?.instantiateViewController( withIdentifier: "barterRoom")) as! HLBarterScreenViewController
+                    self.swappPageVC?.orderedViewControllers[1] = vc
+                } else {
+                    let vc = (self.storyboard?.instantiateViewController( withIdentifier: "pastTrade")) as! HLPastTradeViewController
+                    vc.currTrade = thisTrade
+                    self.swappPageVC?.orderedViewControllers[1] = vc
+                }
+
+                self.swappPageVC?.goTo(page: 1)
             }
-            
-        
+            //print(self.parent!)
         }
  
     }
@@ -539,3 +544,55 @@ extension HLDashboardViewController : UICollectionViewDelegateFlowLayout {
     }
 }
  */
+
+/// Lobby rooms are identified by `_id`, not by collection-view row. `getTrades`
+/// can reorder or shrink `arrTrades` during the tap animation delay; callers
+/// must resolve by id instead of a captured index.
+struct DashboardTradeSelection {
+    static func tradeId(from trade: NSDictionary) -> String? {
+        return trade.object(forKey: "_id") as? String
+    }
+
+    static func trade(at index: Int, in trades: [NSDictionary]) -> NSDictionary? {
+        if index < 0 || index >= trades.count {
+            return nil
+        }
+        return trades[index]
+    }
+
+    static func index(ofTradeId tradeId: String?, in trades: [NSDictionary]) -> Int? {
+        guard let tradeId = tradeId, !tradeId.isEmpty else {
+            return nil
+        }
+        var i = 0
+        for trade in trades {
+            if let id = trade.object(forKey: "_id") as? String, id == tradeId {
+                return i
+            }
+            i += 1
+        }
+        return nil
+    }
+
+    /// After a list refresh, find the room the user tapped. Never fall back to
+    /// a stale row — that opens the wrong trade or indexes out of range.
+    static func resolveAfterRefresh(tappedTradeId: String?, trades: [NSDictionary]) -> (index: Int, trade: NSDictionary)? {
+        guard let idx = index(ofTradeId: tappedTradeId, in: trades) else {
+            return nil
+        }
+        return (idx, trades[idx])
+    }
+
+    /// Prefer the trade snapshot captured at tap time; if that `_id` is still
+    /// in the published list, return the fresh copy. Otherwise use a bounds-
+    /// checked index. Returns nil when nothing safe can be opened.
+    static func resolvedTrade(currentTrade: NSDictionary?, currentIndex: Int, trades: [NSDictionary]) -> NSDictionary? {
+        if let currentTrade = currentTrade {
+            if let idx = index(ofTradeId: tradeId(from: currentTrade), in: trades) {
+                return trades[idx]
+            }
+            return currentTrade
+        }
+        return trade(at: currentIndex, in: trades)
+    }
+}
