@@ -312,11 +312,13 @@ class HLSwappViewController: UIViewController {
         
         if let chatVC = segue.destination as? ChatViewController {
             if let swappPageVC = self.childViewControllers.first as? HLSwappPageViewController {
-                guard swappPageVC.currentIndex >= 0,
-                      swappPageVC.currentIndex < swappPageVC.arrTrades.count else {
+                guard let thisTrade = DashboardTradeSelection.resolvedTrade(
+                    currentTrade: swappPageVC.currentTrade,
+                    currentIndex: swappPageVC.currentIndex,
+                    trades: swappPageVC.arrTrades
+                ) else {
                     return
                 }
-                let thisTrade: NSDictionary = swappPageVC.arrTrades[swappPageVC.currentIndex]
                 // trade_id must be set even when `chat` is missing/null/non-array;
                 // otherwise ChatViewController hits trades//chat and drops messages.
                 let config = HLSwappViewController.chatConfiguration(from: thisTrade)
@@ -715,11 +717,12 @@ class HLSwappViewController: UIViewController {
             self.threeDotsView.isHidden = true;
             
             if let swappPageVC = self.childViewControllers.first as? HLSwappPageViewController {
-                if swappPageVC.arrTrades.count > 0,
-                   swappPageVC.currentIndex >= 0,
-                   swappPageVC.currentIndex < swappPageVC.arrTrades.count {
+                if let thisTrade = DashboardTradeSelection.resolvedTrade(
+                    currentTrade: swappPageVC.currentTrade,
+                    currentIndex: swappPageVC.currentIndex,
+                    trades: swappPageVC.arrTrades
+                ) {
                     last_index_setup = swappPageVC.currentIndex
-                    let thisTrade: NSDictionary = swappPageVC.arrTrades[swappPageVC.currentIndex]
                     let peer = HLSwappViewController.peerChatContext(
                         from: thisTrade,
                         viewerId: HulaUser.sharedInstance.userId

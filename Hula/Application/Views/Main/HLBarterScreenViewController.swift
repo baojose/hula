@@ -203,16 +203,28 @@ class HLBarterScreenViewController: BaseViewController {
             
             //print(swappPageVC.parent)
             
-            // currentIndex can become stale if arrTrades shrinks during an open session.
-            guard let safeIndex = CommonUtils.sharedInstance.clampedTradeIndex(
-                swappPageVC.currentIndex,
-                tradeCount: swappPageVC.arrTrades.count
+            // Prefer the tapped trade `_id`. Clamping currentIndex to a neighbor
+            // after getTrades reorder would load the wrong negotiation.
+            guard let ct = DashboardTradeSelection.resolvedTrade(
+                currentTrade: swappPageVC.currentTrade,
+                currentIndex: swappPageVC.currentIndex,
+                trades: swappPageVC.arrTrades
             ) else {
+                alreadyLoaded = false
                 return
             }
-            myTradeIndex = safeIndex
-
-            let ct = swappPageVC.arrTrades[myTradeIndex]
+            if let idx = DashboardTradeSelection.index(ofTradeId: DashboardTradeSelection.tradeId(from: ct), in: swappPageVC.arrTrades) {
+                myTradeIndex = idx
+                swappPageVC.currentIndex = idx
+                swappPageVC.currentTrade = ct
+            } else if let safeIndex = CommonUtils.sharedInstance.clampedTradeIndex(
+                swappPageVC.currentIndex,
+                tradeCount: swappPageVC.arrTrades.count
+            ) {
+                myTradeIndex = safeIndex
+            } else {
+                myTradeIndex = 0
+            }
             //print("ct \(ct)")
             thisTrade.loadFrom(dict: ct)
             if (thisTrade.owner_id == HulaUser.sharedInstance.userId){
