@@ -33,8 +33,7 @@ class BaseTabBarViewController: UITabBarController, UITabBarControllerDelegate{
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        let items : Int = (self.navigationController?.viewControllers.count)!
-        if items > 1{
+        if TabLoginPolicy.shouldTrimNavigationRoot(stackCount: self.navigationController?.viewControllers.count) {
             //print("Appear. Clearing previous vc...")
             self.navigationController?.viewControllers.remove(at: 0)
         }
@@ -42,30 +41,34 @@ class BaseTabBarViewController: UITabBarController, UITabBarControllerDelegate{
     
     func initTabbar(){
         
-        let tabArray = self.tabbar.items as NSArray!
-        let tabItem0 = tabArray?.object(at: 0) as! UITabBarItem
-        let myImage:UIImage = UIImage(named: "icon_tabbar_home_off")!
-        tabItem0.selectedImage = myImage
-        tabItem0.tag = 0
-        tabItem0.image = UIImage(named:"icon_tabbar_home_off")?.withRenderingMode(.alwaysOriginal)
-        
-        let tabItem1 = tabArray?.object(at: 1) as! UITabBarItem
-        let myImage1:UIImage = UIImage(named: "icon_tabbar_notification")!
-        tabItem1.selectedImage = myImage1
-        tabItem1.tag = 1
-        tabItem1.image = UIImage(named:"icon_tabbar_notification")?.withRenderingMode(.alwaysOriginal)
-        
-        let tabItem2 = tabArray?.object(at: 2) as! UITabBarItem
-        let myImage2:UIImage = UIImage(named: "icon_tabbar_stock_off")!
-        tabItem2.selectedImage = myImage2
-        tabItem2.tag = 2
-        tabItem2.image = UIImage(named:"icon_tabbar_stock_off")?.withRenderingMode(.alwaysOriginal)
-        
-        let tabItem3 = tabArray?.object(at: 3) as! UITabBarItem
-        let myImage3:UIImage = UIImage(named: "icon_tabbar_profile_off")!
-        tabItem3.selectedImage = myImage3
-        tabItem3.tag = 3
-        tabItem3.image = UIImage(named:"icon_tabbar_profile_off")?.withRenderingMode(.alwaysOriginal)
+        let items = self.tabbar.items
+        if let tabItem0 = TabLoginPolicy.tabItem(at: 0, in: items),
+           let images = TabLoginPolicy.tabImages(from: UIImage(named: "icon_tabbar_home_off")) {
+            tabItem0.selectedImage = images.selected
+            tabItem0.tag = 0
+            tabItem0.image = images.normal
+        }
+
+        if let tabItem1 = TabLoginPolicy.tabItem(at: 1, in: items),
+           let images = TabLoginPolicy.tabImages(from: UIImage(named: "icon_tabbar_notification")) {
+            tabItem1.selectedImage = images.selected
+            tabItem1.tag = 1
+            tabItem1.image = images.normal
+        }
+
+        if let tabItem2 = TabLoginPolicy.tabItem(at: 2, in: items),
+           let images = TabLoginPolicy.tabImages(from: UIImage(named: "icon_tabbar_stock_off")) {
+            tabItem2.selectedImage = images.selected
+            tabItem2.tag = 2
+            tabItem2.image = images.normal
+        }
+
+        if let tabItem3 = TabLoginPolicy.tabItem(at: 3, in: items),
+           let images = TabLoginPolicy.tabImages(from: UIImage(named: "icon_tabbar_profile_off")) {
+            tabItem3.selectedImage = images.selected
+            tabItem3.tag = 3
+            tabItem3.image = images.normal
+        }
         
         self.tabbar.tintColor = HulaConstants.appMainColor
         
@@ -77,23 +80,23 @@ class BaseTabBarViewController: UITabBarController, UITabBarControllerDelegate{
     
     override func tabBar(_ tabBar: UITabBar, didSelect item: UITabBarItem) {
         //print(item.tag)
-        if(item.tag > 0){
-            if (!checkUserLogin()){
-                openUserIdentification()
-                self.selectedIndex = 0;
-            }
+        if !TabLoginPolicy.shouldAllowTab(itemTag: item.tag, loggedIn: checkUserLogin()) {
+            openUserIdentification()
+            self.selectedIndex = 0;
         }
         
         notificationsRecieved(nil)
     }
     func tabBarController(_ tabBarController: UITabBarController, shouldSelect viewController: UIViewController) -> Bool {
-        //print("Tapp")
-        //print(tabBarController.selectedIndex)
-        if (!checkUserLogin()){
-            return false
-        } else {
+        let loggedIn = checkUserLogin()
+        let tag = TabLoginPolicy.itemTag(for: viewController, in: tabBarController.viewControllers) ?? 0
+        if TabLoginPolicy.shouldAllowTab(itemTag: tag, loggedIn: loggedIn) {
             return true
         }
+        // Protected tab while logged out: do not switch, but still present login.
+        // Returning false here used to swallow identification entirely.
+        openUserIdentification()
+        return false
     }
 
     func notificationsRecieved(_ notification: NSNotification?){
@@ -105,12 +108,7 @@ class BaseTabBarViewController: UITabBarController, UITabBarControllerDelegate{
     }
     
     func checkUserLogin() -> Bool{
-        let user = HulaUser.sharedInstance
-        if (user.token.count < 10){
-            isUserLoggedIn = false
-        } else {
-            isUserLoggedIn = true
-        }
+        isUserLoggedIn = TabLoginPolicy.isLoggedIn(token: HulaUser.sharedInstance.token)
         return isUserLoggedIn
     }
     

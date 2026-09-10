@@ -51,10 +51,22 @@ class HLCompleteProductProfileViewController: BaseViewController, UIScrollViewDe
         } else{
             productReferenceImage.loadImageFromURL(urlString: HLDataManager.sharedInstance.newProduct.productImage)
         }
-        pageTitleLabel.attributedText = commonUtils.attributedStringWithTextSpacing(pageTitleLabel.text!, 2.33)
+        pageTitleLabel.attributedText = commonUtils.attributedStringWithTextSpacing(pageTitleLabel.text, 2.33)
 
-        
-        self.changeConditionState(conditionNewBtn.tag)
+        // Prefill from the in-progress product so Done cannot overwrite title with "".
+        let existingName = dataManager.newProduct.productName ?? ""
+        if existingName.count > 0 && existingName != NSLocalizedString("Untitled product", comment: "") {
+            productNameFld.text = existingName
+        }
+        if let existingDescription = dataManager.newProduct.productDescription, existingDescription.count > 0 {
+            desciptionTxtField.text = existingDescription
+            self.changeDoneBtnState(existingDescription)
+        }
+        if let existingCondition = dataManager.newProduct.productCondition, existingCondition == "used" {
+            self.changeConditionState(conditionUsedBtn.tag)
+        } else {
+            self.changeConditionState(conditionNewBtn.tag)
+        }
         
         //doneBtn.setup()
         desciptionTxtField.addTarget(self, action: #selector(textchange(_:)), for: UIControlEvents.editingChanged)
@@ -64,7 +76,7 @@ class HLCompleteProductProfileViewController: BaseViewController, UIScrollViewDe
         //perkScrollView.contentSize = CGSize(width: mainScrollView.frame.size.width, height: mainScrollView.frame.size.height+130)
         print("Cat: \(dataManager.newProduct.productCategoryId)");
         print("Cat: \(dataManager.newProduct.productCategory)");
-        if dataManager.newProduct.productCategoryId! == "59124d47a0716d0938e9276c" {
+        if CompleteProductProfilePolicy.shouldHideConditionGroup(categoryId: dataManager.newProduct.productCategoryId) {
             // service product. No need to set as used or new
             conditionGroup.isHidden = true;
         } else {
@@ -106,15 +118,18 @@ class HLCompleteProductProfileViewController: BaseViewController, UIScrollViewDe
         return true
     }
     func textchange(_ textField:UITextField) {
-        self.changeDoneBtnState(textField.text!)
+        self.changeDoneBtnState(HLCompleteProductProfileViewController.descriptionFieldText(textField.text))
     }
     func textFieldShouldReturn(_ textField: UITextField) -> Bool{
         perkScrollView.setContentOffset(CGPoint(x: 0.0, y: 0.0), animated: true)
         return textField.resignFirstResponder()
     }
     func changeDoneBtnState(_ string: String){
-        let charCount = string.count
-        if string.count != 0  {
+        let clamped = HLCompleteProductProfileViewController.clampedDescription(string)
+        if clamped.text != string {
+            desciptionTxtField.text = clamped.text
+        }
+        if clamped.text.characters.count != 0  {
             doneBtn.isEnabled = true
             doneBtn.alpha = 1
             //doneBtn.startAnimation()
@@ -125,21 +140,20 @@ class HLCompleteProductProfileViewController: BaseViewController, UIScrollViewDe
             //doneBtn.stopAnimation()
         }
         
-        var theRemainingChars = 200 - charCount
-        if (theRemainingChars < 1){
-            let str = self.desciptionTxtField.text!
-            let index = str.index(str.startIndex, offsetBy: 200)
-            desciptionTxtField.text = str.substring(to: index)
-            theRemainingChars = 0
-        }
-        charactersRemainingLabel.text = "\(theRemainingChars) " + NSLocalizedString("characters remaining", comment: "")
+        charactersRemainingLabel.text = "\(clamped.remaining) " + NSLocalizedString("characters remaining", comment: "")
     }
     
     @IBAction func doneBtnPRessed(_ sender: Any) {
         //print("Complete button pressed")
         //if (dataManager.newProduct.arrProductPhotoLink.count>0 || dataManager.newProduct.productImage != ""){
-            dataManager.newProduct.productDescription = desciptionTxtField.text
-            dataManager.newProduct.productName = productNameFld.text
+            let resolved = HLCompleteProductProfileViewController.resolvedProductFields(
+                titleField: productNameFld.text,
+                descriptionField: desciptionTxtField.text,
+                existingTitle: dataManager.newProduct.productName,
+                existingDescription: dataManager.newProduct.productDescription
+            )
+            dataManager.newProduct.productName = resolved.title
+            dataManager.newProduct.productDescription = resolved.description
             dataManager.newProduct.productCondition = productCondition
             dataManager.uploadMode = true
             NotificationCenter.default.post(name: NSNotification.Name(rawValue: "uploadModeUpdateDesign"), object: nil)
@@ -147,6 +161,43 @@ class HLCompleteProductProfileViewController: BaseViewController, UIScrollViewDe
         //} else {
             //print("Images still uploading...")
         //}
+    }
+
+    /// Preserve non-empty existing title/description when the corresponding field is blank.
+    /// Prevents Done-from-description-only from wiping `productName` to "".
+    static func resolvedProductFields(titleField: String?,
+                                      descriptionField: String?,
+                                      existingTitle: String?,
+                                      existingDescription: String?) -> (title: String, description: String) {
+        let trimmedTitle = (titleField ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
+        let trimmedDescription = (descriptionField ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
+        let priorTitle = existingTitle ?? ""
+        let priorDescription = existingDescription ?? ""
+
+        let title: String
+        if trimmedTitle.count > 0 {
+            title = trimmedTitle
+        } else if priorTitle.count > 0 {
+            title = priorTitle
+        } else {
+            title = NSLocalizedString("Untitled product", comment: "")
+        }
+
+        let description = trimmedDescription.count > 0 ? trimmedDescription : priorDescription
+        return (title, description)
+    }
+
+    /// Description field. `UITextField.text!` crashes when the outlet text is nil.
+    class func descriptionFieldText(_ raw: String?) -> String {
+        return LabelMetricsPolicy.text(raw)
+    }
+
+    static let descriptionCharacterLimit = 200
+
+    /// Over-limit pastes used `desciptionTxtField.text!` then `index(_, offsetBy: 200)`,
+    /// which crashes when the field is nil or shorter than the offset.
+    class func clampedDescription(_ raw: String?, limit: Int = descriptionCharacterLimit) -> (text: String, remaining: Int) {
+        return LabelMetricsPolicy.clampedField(raw, limit: limit)
     }
     
 }

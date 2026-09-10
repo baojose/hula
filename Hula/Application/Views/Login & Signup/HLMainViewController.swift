@@ -37,11 +37,16 @@ class HLMainViewController: UserBaseViewController {
     
 
     
+    /// Splash used `token!` and `count>10`. Nil/short tokens must play the intro,
+    /// matching the tab login gate, instead of crashing launch.
+    class func shouldSkipSplashVideo(token: String?) -> Bool {
+        return TabLoginPolicy.isLoggedIn(token: token)
+    }
+
     private func playVideo(){
         
-        let token = HulaUser.sharedInstance.token!
         //print(token)
-        if (token.count>10   ){ //&& false
+        if HLMainViewController.shouldSkipSplashVideo(token: HulaUser.sharedInstance.token) {
             // we will jump to mainView only if user is not logged in
             self.navToMainView()
         } else {
@@ -61,9 +66,8 @@ class HLMainViewController: UserBaseViewController {
     
     @objc private func playerEnded (notification:NSNotification) {
         //print("finished")
-        let token = HulaUser.sharedInstance.token!
         //print(token)
-        if (token.count>10){ // && false
+        if HLMainViewController.shouldSkipSplashVideo(token: HulaUser.sharedInstance.token) {
             // we will jump to mainView only if user is not logged in
             self.navToMainView()
         } else {
