@@ -5303,4 +5303,100 @@ class HulaTests: XCTestCase {
         XCTAssertEqual(stripped.count, 1)
         XCTAssertEqual(stripped[0].productId, "keep")
     }
+
+    func lobbyTrade(_ id: String, status: String = "pending") -> NSDictionary {
+        return ["_id": id, "status": status] as NSDictionary
+    }
+
+    /// Tapping Trade Room #3 while getTrades drops that room used to index
+    /// `arrTrades[2]` after the 0.2s animation delay and trap. A bounds re-check
+    /// still opens a neighbor if the list only reordered.
+    func testDashboardTapDoesNotUseStaleIndexAfterListShrinks() {
+        let before = [lobbyTrade("t0"), lobbyTrade("t1"), lobbyTrade("t2")]
+        XCTAssertNotNil(DashboardTradeSelection.trade(at: 2, in: before))
+        XCTAssertEqual(DashboardTradeSelection.tradeId(from: before[2]), "t2")
+
+        let after = [lobbyTrade("t0"), lobbyTrade("t1")]
+        XCTAssertNil(DashboardTradeSelection.resolveAfterRefresh(tappedTradeId: "t2", trades: after))
+        XCTAssertNil(DashboardTradeSelection.trade(at: 2, in: after))
+    }
+
+    /// A new trade inserted at row 0 used to make the delayed handler open
+    /// the neighbor room (Accept/Close Deal on the wrong negotiation).
+    func testDashboardTapFollowsTradeIdWhenListReorders() {
+        let after = [lobbyTrade("new"), lobbyTrade("t0"), lobbyTrade("t1")]
+        guard let resolved = DashboardTradeSelection.resolveAfterRefresh(tappedTradeId: "t1", trades: after) else {
+            XCTFail("expected t1 to still be in the refreshed lobby")
+            return
+        }
+        XCTAssertEqual(resolved.index, 2)
+        XCTAssertEqual(DashboardTradeSelection.tradeId(from: resolved.trade), "t1")
+    }
+
+    func testDashboardTapAbortsWhenTradeLeavesTheList() {
+        XCTAssertNil(DashboardTradeSelection.resolveAfterRefresh(tappedTradeId: "gone", trades: [lobbyTrade("t0")]))
+        XCTAssertNil(DashboardTradeSelection.resolveAfterRefresh(tappedTradeId: "", trades: [lobbyTrade("t0")]))
+        XCTAssertNil(DashboardTradeSelection.resolveAfterRefresh(tappedTradeId: nil, trades: [lobbyTrade("t0")]))
+        XCTAssertNil(DashboardTradeSelection.resolveAfterRefresh(tappedTradeId: "t0", trades: []))
+        XCTAssertNil(DashboardTradeSelection.trade(at: -1, in: [lobbyTrade("t0")]))
+        XCTAssertNil(DashboardTradeSelection.trade(at: 0, in: []))
+    }
+
+    func testDashboardIndexOfTradeIdReturnsFirstMatch() {
+        let trades = [lobbyTrade("dup"), lobbyTrade("keep"), lobbyTrade("dup")]
+        XCTAssertEqual(DashboardTradeSelection.index(ofTradeId: "dup", in: trades), 0)
+        XCTAssertEqual(DashboardTradeSelection.index(ofTradeId: "keep", in: trades), 1)
+        XCTAssertNil(DashboardTradeSelection.index(ofTradeId: "missing", in: trades))
+        XCTAssertNil(DashboardTradeSelection.tradeId(from: ["status": "pending"]))
+    }
+
+    func testResolvedTradePrefersSnapshotIdOverStaleIndex() {
+        let snapshot = lobbyTrade("t1")
+        let trades = [lobbyTrade("t0"), lobbyTrade("t1"), lobbyTrade("t2")]
+        guard let resolved = DashboardTradeSelection.resolvedTrade(currentTrade: snapshot, currentIndex: 0, trades: trades) else {
+            XCTFail("expected snapshot id t1")
+            return
+        }
+        XCTAssertEqual(DashboardTradeSelection.tradeId(from: resolved), "t1")
+        XCTAssertFalse(resolved === snapshot)
+        XCTAssertTrue(resolved === trades[1])
+    }
+
+    func testResolvedTradeKeepsSnapshotIfTradeLeftPublishedList() {
+        let snapshot = lobbyTrade("opened")
+        guard let resolved = DashboardTradeSelection.resolvedTrade(currentTrade: snapshot, currentIndex: 9, trades: [lobbyTrade("t0")]) else {
+            XCTFail("expected to keep the opened snapshot")
+            return
+        }
+        XCTAssertEqual(DashboardTradeSelection.tradeId(from: resolved), "opened")
+        XCTAssertTrue(resolved === snapshot)
+    }
+
+    func testResolvedTradeBoundsChecksIndexWhenNoSnapshot() {
+        XCTAssertNil(DashboardTradeSelection.resolvedTrade(currentTrade: nil, currentIndex: 2, trades: [lobbyTrade("t0")]))
+        XCTAssertNil(DashboardTradeSelection.resolvedTrade(currentTrade: nil, currentIndex: -1, trades: [lobbyTrade("t0")]))
+        guard let resolved = DashboardTradeSelection.resolvedTrade(currentTrade: nil, currentIndex: 0, trades: [lobbyTrade("t0")]) else {
+            XCTFail("expected index 0")
+            return
+        }
+        XCTAssertEqual(DashboardTradeSelection.tradeId(from: resolved), "t0")
+    }
+
+    /// Chat seed must still come from the resolved room, including when `chat`
+    /// is missing, so the segue cannot hit `trades//chat`.
+    func testChatConfigurationUsesResolvedTradeIdentity() {
+        let snapshot: NSDictionary = ["_id": "t1", "status": "pending"]
+        let trades: [NSDictionary] = [
+            ["_id": "new", "status": "pending"] as NSDictionary,
+            ["_id": "t1", "status": "pending"] as NSDictionary
+        ]
+        guard let resolved = DashboardTradeSelection.resolvedTrade(currentTrade: snapshot, currentIndex: 0, trades: trades) else {
+            XCTFail("expected t1 after lobby insert")
+            return
+        }
+        XCTAssertEqual(DashboardTradeSelection.tradeId(from: resolved), "t1")
+        let config = HLSwappViewController.chatConfiguration(from: resolved)
+        XCTAssertEqual(config.tradeId, "t1")
+        XCTAssertEqual(config.chat.count, 0)
+    }
 }
