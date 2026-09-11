@@ -26,13 +26,13 @@ class HulaTests: XCTestCase {
         XCTAssertFalse(SignupNickCheckPolicy.canStartNickCheck(currentStep: 0, nickCheckInFlight: true))
         XCTAssertFalse(SignupNickCheckPolicy.canStartNickCheck(currentStep: 1, nickCheckInFlight: false))
     }
-    
+
     func testSignupNickCheckAppliesOnlyLatestStepZeroResponse() {
         XCTAssertTrue(SignupNickCheckPolicy.shouldApplyNickCheckResponse(currentStep: 0, requestId: 2, expectedRequestId: 2))
         XCTAssertFalse(SignupNickCheckPolicy.shouldApplyNickCheckResponse(currentStep: 0, requestId: 1, expectedRequestId: 2))
         XCTAssertFalse(SignupNickCheckPolicy.shouldApplyNickCheckResponse(currentStep: 1, requestId: 2, expectedRequestId: 2))
     }
-    
+
     func testSignupNickCheckLandsOnEmailStepNotIncrement() {
         XCTAssertEqual(SignupNickCheckPolicy.stepAfterNickAvailable(), 1)
         XCTAssertTrue(SignupNickCheckPolicy.isValidDisplayStep(0))

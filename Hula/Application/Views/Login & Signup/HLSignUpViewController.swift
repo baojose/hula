@@ -239,19 +239,19 @@ class HLSignUpViewController: UserBaseViewController, UITextFieldDelegate  {
 struct SignupNickCheckPolicy {
     static let emailStep = 1
     static let stepCount = 3
-    
+
     static func canStartNickCheck(currentStep: Int, nickCheckInFlight: Bool) -> Bool {
         return currentStep == 0 && !nickCheckInFlight
     }
-    
+
     static func shouldApplyNickCheckResponse(currentStep: Int, requestId: Int, expectedRequestId: Int) -> Bool {
         return currentStep == 0 && requestId == expectedRequestId
     }
-    
+
     static func stepAfterNickAvailable() -> Int {
         return emailStep
     }
-    
+
     static func isValidDisplayStep(_ step: Int) -> Bool {
         return step >= 0 && step < stepCount
     }
