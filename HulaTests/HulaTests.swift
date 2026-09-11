@@ -5399,4 +5399,150 @@ class HulaTests: XCTestCase {
         XCTAssertEqual(config.tradeId, "t1")
         XCTAssertEqual(config.chat.count, 0)
     }
+
+    // MARK: - Beyond #149: live_barter GET vs POST generation, past-trade snapshot, animation frames
+
+    /// GET every 2s and POST on drag both merged into thisTrade. A GET issued
+    /// before a publish that finished afterwards used to apply a stale snapshot
+    /// and wipe the user's latest offer.
+    func testLiveBarterRemoteSnapshotSkipsWhenPublishIsInFlight() {
+        XCTAssertFalse(LiveBarterWritePolicy.shouldApplyRemoteSnapshot(
+            inFlightAtStart: 1,
+            inFlightAtApply: 0,
+            fetchGeneration: 1,
+            currentGeneration: 1
+        ))
+        XCTAssertFalse(HLBarterScreenViewController.shouldApplyLiveBarterRemoteSnapshot(
+            inFlightAtStart: 0,
+            inFlightAtApply: 1,
+            fetchGeneration: 1,
+            currentGeneration: 1
+        ))
+        XCTAssertTrue(LiveBarterWritePolicy.shouldApplyRemoteSnapshot(
+            inFlightAtStart: 0,
+            inFlightAtApply: 0,
+            fetchGeneration: 2,
+            currentGeneration: 2
+        ))
+        XCTAssertTrue(LiveBarterWritePolicy.shouldApplyRemoteSnapshot(
+            inFlightAtStart: 0,
+            inFlightAtApply: 0,
+            fetchGeneration: 0,
+            currentGeneration: 0
+        ))
+    }
+
+    func testLiveBarterRemoteSnapshotSkipsWhenGenerationMoved() {
+        XCTAssertFalse(LiveBarterWritePolicy.shouldApplyRemoteSnapshot(
+            inFlightAtStart: 0,
+            inFlightAtApply: 0,
+            fetchGeneration: 1,
+            currentGeneration: 2
+        ))
+        XCTAssertFalse(LiveBarterWritePolicy.shouldApplyRemoteSnapshot(
+            inFlightAtStart: 0,
+            inFlightAtApply: 0,
+            fetchGeneration: 2,
+            currentGeneration: 1
+        ))
+    }
+
+    func testLiveBarterLocalPublishAppliesOnlyLatestToken() {
+        let first = LiveBarterWritePolicy.beginningPublish(inFlight: 0, generation: 0)
+        XCTAssertEqual(first.inFlight, 1)
+        XCTAssertEqual(first.generation, 1)
+        XCTAssertEqual(first.token, 1)
+        let second = HLBarterScreenViewController.beginningLiveBarterPublish(
+            inFlight: first.inFlight,
+            generation: first.generation
+        )
+        XCTAssertEqual(second.inFlight, 2)
+        XCTAssertEqual(second.generation, 2)
+        XCTAssertEqual(second.token, 2)
+
+        XCTAssertFalse(LiveBarterWritePolicy.shouldApplyLocalPublish(
+            publishToken: first.token,
+            currentGeneration: second.generation
+        ))
+        XCTAssertTrue(HLBarterScreenViewController.shouldApplyLiveBarterLocalPublish(
+            publishToken: second.token,
+            currentGeneration: second.generation
+        ))
+
+        let afterFirst = LiveBarterWritePolicy.finishingPublish(inFlight: second.inFlight)
+        XCTAssertEqual(afterFirst, 1)
+        XCTAssertEqual(HLBarterScreenViewController.finishingLiveBarterPublish(inFlight: afterFirst), 0)
+        XCTAssertEqual(LiveBarterWritePolicy.finishingPublish(inFlight: 0), 0)
+        XCTAssertEqual(LiveBarterWritePolicy.finishingPublish(inFlight: -1), 0)
+    }
+
+    func testLiveBarterGenerationWrapsAtIntMax() {
+        XCTAssertEqual(LiveBarterWritePolicy.nextGeneration(Int.max), 1)
+        XCTAssertEqual(LiveBarterWritePolicy.nextGeneration(0), 1)
+        XCTAssertEqual(LiveBarterWritePolicy.nextGeneration(8), 9)
+    }
+
+    /// Past Trades used `currTrade!` in loadProductsArrays. A missing snapshot
+    /// after lobby navigation crashed the completed-deal screen.
+    func testPastTradeSnapshotSkipsNilAndLoadsIdentity() {
+        XCTAssertNil(HLPastTradeViewController.tradeSnapshot(nil))
+        let snapshot: NSDictionary = [
+            "_id": "past-1",
+            "owner_id": "owner-1",
+            "other_id": "other-2",
+            "status": HulaConstants.end_status
+        ]
+        XCTAssertTrue(HLPastTradeViewController.tradeSnapshot(snapshot) === snapshot)
+
+        let trade = HulaTrade()
+        trade.loadFrom(dict: snapshot)
+        XCTAssertEqual(trade.tradeId, "past-1")
+        XCTAssertEqual(trade.owner_id, "owner-1")
+        XCTAssertEqual(trade.other_id, "other-2")
+    }
+
+    func testPastTradeProductLookupIsBoundsSafe() {
+        let bike = HulaProduct(id: "bike", name: "Bike", image: "")
+        let camera = HulaProduct(id: "cam", name: "Camera", image: "")
+        let products = [bike, camera]
+        XCTAssertEqual(HLPastTradeViewController.product(at: 1, in: products)?.productId, "cam")
+        XCTAssertTrue(HLPastTradeViewController.product(at: 0, in: products) === bike)
+        XCTAssertNil(HLPastTradeViewController.product(at: -1, in: products))
+        XCTAssertNil(HLPastTradeViewController.product(at: 2, in: products))
+        XCTAssertNil(HLPastTradeViewController.product(at: 0, in: []))
+    }
+
+    /// Add/remove fly-in used `(cell?.frame)!` and superview origin unwraps.
+    /// Missing cell/superview must fall back so re-enabling the path cannot crash.
+    func testBarterAnimationFramesSkipMissingCellAndSuperview() {
+        XCTAssertNil(BarterAnimationPolicy.addedProductFrame(
+            cellFrame: nil,
+            collectionFrame: CGRect(x: 10, y: 20, width: 100, height: 80),
+            superviewOrigin: CGPoint(x: 3, y: 4)
+        ))
+        XCTAssertNil(BarterAnimationPolicy.addedProductFrame(
+            cellFrame: CGRect(x: 1, y: 2, width: 30, height: 40),
+            collectionFrame: CGRect(x: 10, y: 20, width: 100, height: 80),
+            superviewOrigin: nil
+        ))
+        XCTAssertNil(BarterAnimationPolicy.removedProductFrame(cellFrame: nil))
+
+        let added = BarterAnimationPolicy.addedProductFrame(
+            cellFrame: CGRect(x: 1, y: 2, width: 30, height: 40),
+            collectionFrame: CGRect(x: 10, y: 20, width: 100, height: 80),
+            superviewOrigin: CGPoint(x: 3, y: 4)
+        )
+        XCTAssertEqual(added?.origin.x, 19)
+        XCTAssertEqual(added?.origin.y, 31)
+        XCTAssertEqual(added?.size.width, 20)
+        XCTAssertEqual(added?.size.height, 30)
+
+        let removed = BarterAnimationPolicy.removedProductFrame(
+            cellFrame: CGRect(x: 8, y: 9, width: 12, height: 13)
+        )
+        XCTAssertEqual(removed?.origin.x, 8)
+        XCTAssertEqual(removed?.origin.y, 9)
+        XCTAssertEqual(removed?.size.width, 12)
+        XCTAssertEqual(removed?.size.height, 13)
+    }
 }
