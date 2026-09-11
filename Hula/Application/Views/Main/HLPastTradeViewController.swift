@@ -31,6 +31,18 @@ class HLPastTradeViewController: UIViewController, UICollectionViewDelegate, UIC
     class func productURL(apiBase: String, productId: String?) -> String? {
         return CommonUtils.productResourceURL(apiBase: apiBase, productId: productId)
     }
+
+    /// Opening a completed deal used `currTrade!`. A missing snapshot (lobby
+    /// navigation before assignment, or a dropped room) crashed Past Trades.
+    class func tradeSnapshot(_ raw: NSDictionary?) -> NSDictionary? {
+        return raw
+    }
+
+    /// Collection cells used `myTradedProducts[indexPath.item]` while product
+    /// GETs append asynchronously. A stale path must not crash Past Trades.
+    class func product(at index: Int, in products: [HulaProduct]) -> HulaProduct? {
+        return HLBarterScreenViewController.product(at: index, in: products)
+    }
     
     
     override func viewDidLoad() {
@@ -125,12 +137,12 @@ class HLPastTradeViewController: UIViewController, UICollectionViewDelegate, UIC
         let product:HulaProduct
         switch collectionView.tag {
         case 1:
-            product = myTradedProducts[indexPath.item]
+            product = HLPastTradeViewController.product(at: indexPath.item, in: myTradedProducts) ?? HulaProduct(id : "nada", name : "Test product", image: "https://api.hula.trading/v1/products/59400e5ce8825609f281bc68/image")
             cell = collectionView.dequeueReusableCell(withReuseIdentifier: "productcell_1", for: indexPath) as! HLProductCollectionViewCell
             cell.side = "left"
             cell.type = "select"
         case 2:
-            product = otherTradedProducts[indexPath.item]
+            product = HLPastTradeViewController.product(at: indexPath.item, in: otherTradedProducts) ?? HulaProduct(id : "nada", name : "Test product", image: "https://api.hula.trading/v1/products/59400e5ce8825609f281bc68/image")
             cell = collectionView.dequeueReusableCell(withReuseIdentifier: "productcell_2", for: indexPath) as! HLProductCollectionViewCell
             cell.side = "right"
             cell.type = "select"
@@ -154,7 +166,10 @@ class HLPastTradeViewController: UIViewController, UICollectionViewDelegate, UIC
     func loadProductsArrays(){
         var mtp:[String] = []
         var otp:[String] = []
-        thisTrade.loadFrom(dict: currTrade!)
+        guard let tradeDict = HLPastTradeViewController.tradeSnapshot(currTrade) else {
+            return
+        }
+        thisTrade.loadFrom(dict: tradeDict)
         if (thisTrade.owner_id == HulaUser.sharedInstance.userId){
             // I am the owner
             mtp = thisTrade.owner_products

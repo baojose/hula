@@ -70,6 +70,11 @@ class HLBarterScreenViewController: BaseViewController {
     var myInventoryFetchSucceeded: Bool = false
     var otherInventoryFetchSucceeded: Bool = false
 
+    /// Monotonic token incremented for each local live_barter POST. GET polls
+    /// that started before a newer publish must not apply a stale snapshot.
+    var liveBarterWriteGeneration: Int = 0
+    var liveBarterInFlightPublishes: Int = 0
+
     /// Gate live_barter POSTs until both inventory callbacks have finished at least once.
     class func canPublishLiveBarter(ownerFetchFinished: Bool, otherFetchFinished: Bool) -> Bool {
         return ownerFetchFinished && otherFetchFinished
@@ -108,6 +113,37 @@ class HLBarterScreenViewController: BaseViewController {
         let ownerp = CommonUtils.formEncodedValue(ownerIds.joined(separator: ","))
         let otherp = CommonUtils.formEncodedValue(otherIds.joined(separator: ","))
         return "other_products=\(otherp)&owner_products=\(ownerp)&other_money=\(otherMoney)&owner_money=\(ownerMoney)"
+    }
+
+    /// GET every 2s and POST on drag both call `updateTradeInterface`. A GET that
+    /// started before (or during) a local publish must not wipe the latest offer.
+    class func beginningLiveBarterPublish(inFlight: Int, generation: Int) -> (inFlight: Int, generation: Int, token: Int) {
+        return LiveBarterWritePolicy.beginningPublish(inFlight: inFlight, generation: generation)
+    }
+
+    class func finishingLiveBarterPublish(inFlight: Int) -> Int {
+        return LiveBarterWritePolicy.finishingPublish(inFlight: inFlight)
+    }
+
+    class func shouldApplyLiveBarterRemoteSnapshot(
+        inFlightAtStart: Int,
+        inFlightAtApply: Int,
+        fetchGeneration: Int,
+        currentGeneration: Int
+    ) -> Bool {
+        return LiveBarterWritePolicy.shouldApplyRemoteSnapshot(
+            inFlightAtStart: inFlightAtStart,
+            inFlightAtApply: inFlightAtApply,
+            fetchGeneration: fetchGeneration,
+            currentGeneration: currentGeneration
+        )
+    }
+
+    class func shouldApplyLiveBarterLocalPublish(publishToken: Int, currentGeneration: Int) -> Bool {
+        return LiveBarterWritePolicy.shouldApplyLocalPublish(
+            publishToken: publishToken,
+            currentGeneration: currentGeneration
+        )
     }
 
     /// Pull traded ids out of available inventory without mutating during a precomputed
@@ -227,6 +263,8 @@ class HLBarterScreenViewController: BaseViewController {
             }
             //print("ct \(ct)")
             thisTrade.loadFrom(dict: ct)
+            liveBarterWriteGeneration = 0
+            liveBarterInFlightPublishes = 0
             if (thisTrade.owner_id == HulaUser.sharedInstance.userId){
                 // I am the owner
                 mtp = thisTrade.owner_products
@@ -645,16 +683,31 @@ class HLBarterScreenViewController: BaseViewController {
             otherMoney: thisTrade.other_money
         )
         print(postStr)
+        let started = HLBarterScreenViewController.beginningLiveBarterPublish(
+            inFlight: liveBarterInFlightPublishes,
+            generation: liveBarterWriteGeneration
+        )
+        liveBarterInFlightPublishes = started.inFlight
+        liveBarterWriteGeneration = started.generation
+        let publishToken = started.token
         HLDataManager.sharedInstance.httpPost(urlstr: queryURL, postString: postStr, isPut: false, taskCallback:  { (ok, json) in
-            if (ok){
-                DispatchQueue.main.async {
-                    if let dictionary = json as? NSDictionary {
-                        self.updateTradeInterface(dict: dictionary);
-                    }
+            DispatchQueue.main.async {
+                self.liveBarterInFlightPublishes = HLBarterScreenViewController.finishingLiveBarterPublish(
+                    inFlight: self.liveBarterInFlightPublishes
+                )
+                guard ok else {
+                    print("Connection error");
+                    return
                 }
-            } else {
-                // connection error
-                print("Connection error");
+                guard HLBarterScreenViewController.shouldApplyLiveBarterLocalPublish(
+                    publishToken: publishToken,
+                    currentGeneration: self.liveBarterWriteGeneration
+                ) else {
+                    return
+                }
+                if let dictionary = json as? NSDictionary {
+                    self.updateTradeInterface(dict: dictionary);
+                }
             }
         })
     }
@@ -665,9 +718,19 @@ class HLBarterScreenViewController: BaseViewController {
         ) else {
             return
         }
-        HLDataManager.sharedInstance.httpGet(urlstr: queryURL, taskCallback: { (ok, json) in}
+        let fetchGeneration = liveBarterWriteGeneration
+        let inFlightAtStart = liveBarterInFlightPublishes
+        HLDataManager.sharedInstance.httpGet(urlstr: queryURL, taskCallback: { (ok, json) in
             if (ok){
                 DispatchQueue.main.async {
+                    guard HLBarterScreenViewController.shouldApplyLiveBarterRemoteSnapshot(
+                        inFlightAtStart: inFlightAtStart,
+                        inFlightAtApply: self.liveBarterInFlightPublishes,
+                        fetchGeneration: fetchGeneration,
+                        currentGeneration: self.liveBarterWriteGeneration
+                    ) else {
+                        return
+                    }
                     if let dictionary = json as? NSDictionary {
                         self.updateTradeInterface(dict: dictionary);
                     }
@@ -872,12 +935,11 @@ class HLBarterScreenViewController: BaseViewController {
                 let animDuration = 0.1;
                 UIView.animate(withDuration: animDuration , animations: {
                     fakeImg.alpha = 1
-                    if cell != nil{
-                        var rct = (cell?.frame)!
-                        rct.origin.x += col.frame.origin.x + (col.superview?.frame.origin.x)! + 5
-                        rct.origin.y += col.frame.origin.y + (col.superview?.frame.origin.y)! + 5
-                        rct.size.width -= 10
-                        rct.size.height -= 10
+                    if let rct = BarterAnimationPolicy.addedProductFrame(
+                        cellFrame: cell?.frame,
+                        collectionFrame: col.frame,
+                        superviewOrigin: col.superview?.frame.origin
+                    ) {
                         fakeImg.frame = rct
                     } else {
                         fakeImg.frame.origin = CGPoint(x:destx + CGFloat(counter%3) * smallSide + 8, y:7)
@@ -909,8 +971,8 @@ class HLBarterScreenViewController: BaseViewController {
                 let animDuration = 0.1;
                 UIView.animate(withDuration: animDuration, animations: {
                     fakeImg.alpha = 1
-                    if cell != nil{
-                        fakeImg.frame = (cell?.frame)!
+                    if let frame = BarterAnimationPolicy.removedProductFrame(cellFrame: cell?.frame) {
+                        fakeImg.frame = frame
                     } else {
                         fakeImg.frame.origin = CGPoint(x:column_x, y: 5 + CGFloat(counter-1) * largeSide)
                         fakeImg.frame.size = CGSize(width:120, height:85)
@@ -1595,5 +1657,74 @@ struct BarterInventoryPolicy {
             let pid = product.productId ?? ""
             return !traded.contains(pid)
         }
+    }
+}
+
+/// GET polls (2s) and POST publishes (drag/cash) both merge into `thisTrade`.
+/// Without generation tokens a GET issued before a publish can finish afterwards
+/// and apply a stale snapshot, wiping the user's latest offer (or empty products).
+struct LiveBarterWritePolicy {
+    static func nextGeneration(_ current: Int) -> Int {
+        if current >= Int.max {
+            return 1
+        }
+        return current + 1
+    }
+
+    static func beginningPublish(inFlight: Int, generation: Int) -> (inFlight: Int, generation: Int, token: Int) {
+        let next = nextGeneration(generation)
+        let flights = inFlight + 1
+        return (flights, next, next)
+    }
+
+    static func finishingPublish(inFlight: Int) -> Int {
+        if inFlight <= 0 {
+            return 0
+        }
+        return inFlight - 1
+    }
+
+    /// Skip a GET body if a local publish was already in flight when it started,
+    /// a newer publish started while it was outstanding, or a later publish
+    /// bumped the generation.
+    static func shouldApplyRemoteSnapshot(
+        inFlightAtStart: Int,
+        inFlightAtApply: Int,
+        fetchGeneration: Int,
+        currentGeneration: Int
+    ) -> Bool {
+        return inFlightAtStart <= 0
+            && inFlightAtApply <= 0
+            && fetchGeneration == currentGeneration
+    }
+
+    /// Skip a POST body when a newer local publish has already started.
+    static func shouldApplyLocalPublish(publishToken: Int, currentGeneration: Int) -> Bool {
+        return publishToken == currentGeneration
+    }
+}
+
+/// Add/remove fly-in used `(cell?.frame)!` and `(superview?.frame.origin)!`.
+/// Missing cell or superview must fall back instead of crashing if animations
+/// are re-enabled (they currently sit behind `&& false`).
+struct BarterAnimationPolicy {
+    static func addedProductFrame(
+        cellFrame: CGRect?,
+        collectionFrame: CGRect,
+        superviewOrigin: CGPoint?
+    ) -> CGRect? {
+        guard let cellFrame = cellFrame, let origin = superviewOrigin else {
+            return nil
+        }
+        var rct = cellFrame
+        rct.origin.x += collectionFrame.origin.x + origin.x + 5
+        rct.origin.y += collectionFrame.origin.y + origin.y + 5
+        rct.size.width -= 10
+        rct.size.height -= 10
+        return rct
+    }
+
+    static func removedProductFrame(cellFrame: CGRect?) -> CGRect? {
+        return cellFrame
     }
 }
