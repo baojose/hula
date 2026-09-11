@@ -21,9 +21,24 @@ class HulaTests: XCTestCase {
         super.tearDown()
     }
     
-    func testExample() {
-        // This is an example of a functional test case.
-        // Use XCTAssert and related functions to verify your tests produce the correct results.
+    func testSignupNickCheckIgnoresTapsWhileInFlight() {
+        XCTAssertTrue(SignupNickCheckPolicy.canStartNickCheck(currentStep: 0, nickCheckInFlight: false))
+        XCTAssertFalse(SignupNickCheckPolicy.canStartNickCheck(currentStep: 0, nickCheckInFlight: true))
+        XCTAssertFalse(SignupNickCheckPolicy.canStartNickCheck(currentStep: 1, nickCheckInFlight: false))
+    }
+    
+    func testSignupNickCheckAppliesOnlyLatestStepZeroResponse() {
+        XCTAssertTrue(SignupNickCheckPolicy.shouldApplyNickCheckResponse(currentStep: 0, requestId: 2, expectedRequestId: 2))
+        XCTAssertFalse(SignupNickCheckPolicy.shouldApplyNickCheckResponse(currentStep: 0, requestId: 1, expectedRequestId: 2))
+        XCTAssertFalse(SignupNickCheckPolicy.shouldApplyNickCheckResponse(currentStep: 1, requestId: 2, expectedRequestId: 2))
+    }
+    
+    func testSignupNickCheckLandsOnEmailStepNotIncrement() {
+        XCTAssertEqual(SignupNickCheckPolicy.stepAfterNickAvailable(), 1)
+        XCTAssertTrue(SignupNickCheckPolicy.isValidDisplayStep(0))
+        XCTAssertTrue(SignupNickCheckPolicy.isValidDisplayStep(2))
+        XCTAssertFalse(SignupNickCheckPolicy.isValidDisplayStep(3))
+        XCTAssertFalse(SignupNickCheckPolicy.isValidDisplayStep(-1))
     }
     
     func testPerformanceExample() {

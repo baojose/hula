@@ -27,6 +27,8 @@ class HLSignUpViewController: UserBaseViewController, UITextFieldDelegate  {
     var userEmail = ""
     var userNick = ""
     var userPassword = ""
+    var nickCheckInFlight = false
+    var nickCheckRequestId = 0
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -39,6 +41,8 @@ class HLSignUpViewController: UserBaseViewController, UITextFieldDelegate  {
     
     override func viewWillAppear(_ animated: Bool) {
         currentStep = 0
+        nickCheckInFlight = false
+        nickCheckRequestId += 1
         nextButton.setup()
         resetStepTexts()
         HLDataManager.sharedInstance.ga("signup")
@@ -59,8 +63,13 @@ class HLSignUpViewController: UserBaseViewController, UITextFieldDelegate  {
             signupField.isSecureTextEntry = false
             switch currentStep {
             case 0:
+                if !SignupNickCheckPolicy.canStartNickCheck(currentStep: currentStep, nickCheckInFlight: nickCheckInFlight) {
+                    break
+                }
                 userNick = signupField.text!
-                checkUsernick(nick:userNick)
+                nickCheckInFlight = true
+                nickCheckRequestId += 1
+                checkUsernick(nick:userNick, requestId: nickCheckRequestId)
                 break
             case 1:
                 userEmail = signupField.text!
@@ -106,33 +115,33 @@ class HLSignUpViewController: UserBaseViewController, UITextFieldDelegate  {
         })
     }
     
-    func checkUsernick(nick:String){
+    func checkUsernick(nick:String, requestId: Int){
         let escaped = nick.addingPercentEncoding(withAllowedCharacters: .alphanumerics)
         let queryURL = HulaConstants.apiURL + "users/validatenick/\( escaped! )"
         //print(queryURL)
         
         HLDataManager.sharedInstance.httpGet(urlstr: queryURL, taskCallback: { (ok, json) in
             //print(ok)
-            if (ok){
-                if let dict = json as? [String:String]{
-                    if dict["user"] == "found" {
-                        
-                        DispatchQueue.main.async {
+            DispatchQueue.main.async {
+                guard SignupNickCheckPolicy.shouldApplyNickCheckResponse(currentStep: self.currentStep, requestId: requestId, expectedRequestId: self.nickCheckRequestId) else {
+                    return
+                }
+                self.nickCheckInFlight = false
+                if (ok){
+                    if let dict = json as? [String:String]{
+                        if dict["user"] == "found" {
                             self.showError(NSLocalizedString("Username has already been taken.", comment: ""))
-                            
-                            
                             self.currentStep = 0
                             self.nextButton.setup()
                             //self.resetStepTexts()
-                        }
-                        
-                    } else {
-                        DispatchQueue.main.async {
+                        } else {
                             self.signupField.text = ""
-                            self.currentStep += 1
+                            self.currentStep = SignupNickCheckPolicy.stepAfterNickAvailable()
                             self.resetStepTexts()
                         }
                     }
+                } else {
+                    self.showError(NSLocalizedString("Could not verify that username. Please try again.", comment: ""))
                 }
             }
         })
@@ -165,6 +174,9 @@ class HLSignUpViewController: UserBaseViewController, UITextFieldDelegate  {
             self.signupField.frame.origin.x = -self.view.frame.width*12
             
         }, completion: { (finished: Bool) in
+            guard SignupNickCheckPolicy.isValidDisplayStep(self.currentStep) else {
+                return
+            }
             self.stepLabel.text = "\(self.currentStep+1)/3"
             self.descriptionLabel.text = self.descriptions[self.currentStep]
             self.signupField.placeholder = self.placeholders[self.currentStep]
@@ -218,5 +230,29 @@ class HLSignUpViewController: UserBaseViewController, UITextFieldDelegate  {
     }
     func dismissKeyboard(){
         view.endEditing(true)
+    }
+}
+
+/// Signup nick-check must not `+=` currentStep for every in-flight Next tap.
+/// Three overlapping "available" responses used to land on step 3 and crash
+/// `descriptions[currentStep]` (only 0...2 exist). Two taps skipped the email step.
+struct SignupNickCheckPolicy {
+    static let emailStep = 1
+    static let stepCount = 3
+    
+    static func canStartNickCheck(currentStep: Int, nickCheckInFlight: Bool) -> Bool {
+        return currentStep == 0 && !nickCheckInFlight
+    }
+    
+    static func shouldApplyNickCheckResponse(currentStep: Int, requestId: Int, expectedRequestId: Int) -> Bool {
+        return currentStep == 0 && requestId == expectedRequestId
+    }
+    
+    static func stepAfterNickAvailable() -> Int {
+        return emailStep
+    }
+    
+    static func isValidDisplayStep(_ step: Int) -> Bool {
+        return step >= 0 && step < stepCount
     }
 }
