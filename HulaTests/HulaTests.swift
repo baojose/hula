@@ -5545,4 +5545,36 @@ class HulaTests: XCTestCase {
         XCTAssertEqual(removed?.size.width, 12)
         XCTAssertEqual(removed?.size.height, 13)
     }
+
+    // MARK: - Beyond #150/#151: signup nick-check in-flight increment
+
+    /// Overlapping validatenick successes each did `currentStep += 1`. A third
+    /// available response indexed `descriptions[3]` (only 0...2) and crashed.
+    /// Two taps skipped the email step and signed up with `email=""`.
+    func testSignupNickCheckIgnoresTapsWhileInFlight() {
+        XCTAssertTrue(SignupNickCheckPolicy.canStartNickCheck(currentStep: 0, nickCheckInFlight: false))
+        XCTAssertFalse(SignupNickCheckPolicy.canStartNickCheck(currentStep: 0, nickCheckInFlight: true))
+        XCTAssertFalse(SignupNickCheckPolicy.canStartNickCheck(currentStep: 1, nickCheckInFlight: false))
+        XCTAssertFalse(HLSignUpViewController.canStartNickCheck(currentStep: 2, nickCheckInFlight: false))
+        XCTAssertTrue(HLSignUpViewController.canStartNickCheck(currentStep: 0, nickCheckInFlight: false))
+    }
+
+    func testSignupNickCheckAppliesOnlyLatestStepZeroResponse() {
+        XCTAssertTrue(SignupNickCheckPolicy.shouldApplyNickCheckResponse(currentStep: 0, requestId: 2, expectedRequestId: 2))
+        XCTAssertFalse(SignupNickCheckPolicy.shouldApplyNickCheckResponse(currentStep: 0, requestId: 1, expectedRequestId: 2))
+        XCTAssertFalse(SignupNickCheckPolicy.shouldApplyNickCheckResponse(currentStep: 1, requestId: 2, expectedRequestId: 2))
+        XCTAssertFalse(HLSignUpViewController.shouldApplyNickCheckResponse(currentStep: 0, requestId: 3, expectedRequestId: 4))
+        XCTAssertTrue(HLSignUpViewController.shouldApplyNickCheckResponse(currentStep: 0, requestId: 4, expectedRequestId: 4))
+    }
+
+    func testSignupNickCheckLandsOnEmailStepNotIncrement() {
+        XCTAssertEqual(SignupNickCheckPolicy.stepAfterNickAvailable(), 1)
+        XCTAssertEqual(HLSignUpViewController.stepAfterNickAvailable(), SignupNickCheckPolicy.emailStep)
+        XCTAssertTrue(SignupNickCheckPolicy.isValidDisplayStep(0))
+        XCTAssertTrue(SignupNickCheckPolicy.isValidDisplayStep(2))
+        XCTAssertFalse(SignupNickCheckPolicy.isValidDisplayStep(3))
+        XCTAssertFalse(SignupNickCheckPolicy.isValidDisplayStep(-1))
+        XCTAssertFalse(HLSignUpViewController.isValidDisplayStep(3))
+        XCTAssertTrue(HLSignUpViewController.isValidDisplayStep(1))
+    }
 }
