@@ -5577,4 +5577,113 @@ class HulaTests: XCTestCase {
         XCTAssertFalse(HLSignUpViewController.isValidDisplayStep(3))
         XCTAssertTrue(HLSignUpViewController.isValidDisplayStep(1))
     }
+
+    // MARK: - Beyond #152: hung live_barter POST recovery and notification row is_read
+
+    /// A POST whose callback never arrives left inFlight > 0, so every 2s GET
+    /// stayed skipped and the room never merged the peer's latest offer.
+    func testLiveBarterHungPublishRecoversAfterTimeout() {
+        let started = Date(timeIntervalSince1970: 1_000)
+        let beforeTimeout = Date(timeIntervalSince1970: 1_014)
+        let atTimeout = Date(timeIntervalSince1970: 1_015)
+        let afterTimeout = Date(timeIntervalSince1970: 1_020)
+
+        XCTAssertFalse(LiveBarterWritePolicy.shouldRecoverHungPublish(
+            inFlight: 1,
+            lastStartedAt: started,
+            now: beforeTimeout
+        ))
+        XCTAssertTrue(LiveBarterWritePolicy.shouldRecoverHungPublish(
+            inFlight: 1,
+            lastStartedAt: started,
+            now: atTimeout
+        ))
+        XCTAssertTrue(HLBarterScreenViewController.shouldRecoverHungLiveBarterPublish(
+            inFlight: 2,
+            lastStartedAt: started,
+            now: afterTimeout
+        ))
+    }
+
+    func testLiveBarterHungPublishDoesNotRecoverWhenStillFreshOrIdle() {
+        let started = Date(timeIntervalSince1970: 1_000)
+        let now = Date(timeIntervalSince1970: 1_030)
+
+        XCTAssertFalse(LiveBarterWritePolicy.shouldRecoverHungPublish(
+            inFlight: 0,
+            lastStartedAt: started,
+            now: now
+        ))
+        XCTAssertFalse(LiveBarterWritePolicy.shouldRecoverHungPublish(
+            inFlight: 1,
+            lastStartedAt: nil,
+            now: now
+        ))
+        XCTAssertFalse(HLBarterScreenViewController.shouldRecoverHungLiveBarterPublish(
+            inFlight: 1,
+            lastStartedAt: started,
+            now: Date(timeIntervalSince1970: 1_001)
+        ))
+    }
+
+    /// Recovery must bump generation so a late hung-POST callback cannot apply
+    /// after GET polls resume, and inFlight must return to 0 so the next GET
+    /// can merge.
+    func testLiveBarterHungPublishRecoveryClearsInFlightAndInvalidatesToken() {
+        let started = LiveBarterWritePolicy.beginningPublish(inFlight: 0, generation: 3)
+        XCTAssertEqual(started.inFlight, 1)
+        XCTAssertEqual(started.generation, 4)
+        XCTAssertEqual(started.token, 4)
+
+        let recovered = LiveBarterWritePolicy.recoveredPublishState(
+            currentGeneration: started.generation
+        )
+        XCTAssertEqual(recovered.inFlight, 0)
+        XCTAssertEqual(recovered.generation, 5)
+        let viaVC = HLBarterScreenViewController.recoveredLiveBarterPublishState(
+            currentGeneration: started.generation
+        )
+        XCTAssertEqual(viaVC.inFlight, 0)
+        XCTAssertEqual(viaVC.generation, 5)
+
+        XCTAssertFalse(LiveBarterWritePolicy.shouldApplyLocalPublish(
+            publishToken: started.token,
+            currentGeneration: recovered.generation
+        ))
+        XCTAssertTrue(LiveBarterWritePolicy.shouldApplyRemoteSnapshot(
+            inFlightAtStart: recovered.inFlight,
+            inFlightAtApply: recovered.inFlight,
+            fetchGeneration: recovered.generation,
+            currentGeneration: recovered.generation
+        ))
+    }
+
+    func testLiveBarterHungPublishRecoveryWrapsGenerationAtIntMax() {
+        let recovered = LiveBarterWritePolicy.recoveredPublishState(currentGeneration: Int.max)
+        XCTAssertEqual(recovered.inFlight, 0)
+        XCTAssertEqual(recovered.generation, 1)
+    }
+
+    /// Badge already counted unread via intFromJSON 0/1. The cell gated Accept
+    /// / Decline and unread styling on `as? Bool`, so numeric or missing flags
+    /// hid incoming start-offer actions.
+    func testNotificationRowTreatsBridgedZeroOneAndMissingAsUnread() {
+        XCTAssertFalse(NotificationRowPolicy.isRead(0))
+        XCTAssertFalse(NotificationRowPolicy.isRead(NSNumber(value: 0)))
+        XCTAssertFalse(NotificationRowPolicy.isRead(false))
+        XCTAssertFalse(NotificationRowPolicy.isRead(nil))
+        XCTAssertFalse(HLNotificationsViewController.isNotificationRead("no"))
+        XCTAssertTrue(NotificationRowPolicy.isRead(1))
+        XCTAssertTrue(NotificationRowPolicy.isRead(NSNumber(value: 1)))
+        XCTAssertTrue(HLNotificationsViewController.isNotificationRead(true))
+    }
+
+    func testNotificationRowShowsStartActionsWithoutRequiringBoolIsRead() {
+        XCTAssertTrue(NotificationRowPolicy.shouldShowStartActions(type: "start"))
+        XCTAssertTrue(HLNotificationsViewController.shouldShowStartActions(type: "start"))
+        XCTAssertFalse(NotificationRowPolicy.shouldShowStartActions(type: "chat"))
+        XCTAssertFalse(NotificationRowPolicy.shouldShowStartActions(type: "trade"))
+        XCTAssertFalse(NotificationRowPolicy.shouldShowStartActions(type: nil))
+        XCTAssertFalse(HLNotificationsViewController.shouldShowStartActions(type: ""))
+    }
 }

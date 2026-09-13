@@ -74,6 +74,9 @@ class HLBarterScreenViewController: BaseViewController {
     /// that started before a newer publish must not apply a stale snapshot.
     var liveBarterWriteGeneration: Int = 0
     var liveBarterInFlightPublishes: Int = 0
+    /// Set when a local publish starts; cleared when in-flight count returns to 0
+    /// or a hung POST is recovered so GET polls are not skipped forever.
+    var liveBarterPublishStartedAt: Date?
 
     /// Gate live_barter POSTs until both inventory callbacks have finished at least once.
     class func canPublishLiveBarter(ownerFetchFinished: Bool, otherFetchFinished: Bool) -> Bool {
@@ -144,6 +147,26 @@ class HLBarterScreenViewController: BaseViewController {
             publishToken: publishToken,
             currentGeneration: currentGeneration
         )
+    }
+
+    /// A POST whose callback never arrives used to leave inFlight > 0 so every
+    /// 2s GET stayed skipped. Recover after `timeout` so the room can merge again.
+    class func shouldRecoverHungLiveBarterPublish(
+        inFlight: Int,
+        lastStartedAt: Date?,
+        now: Date,
+        timeout: TimeInterval = LiveBarterWritePolicy.hungPublishTimeout
+    ) -> Bool {
+        return LiveBarterWritePolicy.shouldRecoverHungPublish(
+            inFlight: inFlight,
+            lastStartedAt: lastStartedAt,
+            now: now,
+            timeout: timeout
+        )
+    }
+
+    class func recoveredLiveBarterPublishState(currentGeneration: Int) -> (inFlight: Int, generation: Int) {
+        return LiveBarterWritePolicy.recoveredPublishState(currentGeneration: currentGeneration)
     }
 
     /// Pull traded ids out of available inventory without mutating during a precomputed
@@ -265,6 +288,7 @@ class HLBarterScreenViewController: BaseViewController {
             thisTrade.loadFrom(dict: ct)
             liveBarterWriteGeneration = 0
             liveBarterInFlightPublishes = 0
+            liveBarterPublishStartedAt = nil
             if (thisTrade.owner_id == HulaUser.sharedInstance.userId){
                 // I am the owner
                 mtp = thisTrade.owner_products
@@ -689,12 +713,16 @@ class HLBarterScreenViewController: BaseViewController {
         )
         liveBarterInFlightPublishes = started.inFlight
         liveBarterWriteGeneration = started.generation
+        liveBarterPublishStartedAt = Date()
         let publishToken = started.token
         HLDataManager.sharedInstance.httpPost(urlstr: queryURL, postString: postStr, isPut: false, taskCallback:  { (ok, json) in
             DispatchQueue.main.async {
                 self.liveBarterInFlightPublishes = HLBarterScreenViewController.finishingLiveBarterPublish(
                     inFlight: self.liveBarterInFlightPublishes
                 )
+                if self.liveBarterInFlightPublishes == 0 {
+                    self.liveBarterPublishStartedAt = nil
+                }
                 guard ok else {
                     print("Connection error");
                     return
@@ -712,6 +740,18 @@ class HLBarterScreenViewController: BaseViewController {
         })
     }
     func getLiveBarter(){
+        if HLBarterScreenViewController.shouldRecoverHungLiveBarterPublish(
+            inFlight: liveBarterInFlightPublishes,
+            lastStartedAt: liveBarterPublishStartedAt,
+            now: Date()
+        ) {
+            let recovered = HLBarterScreenViewController.recoveredLiveBarterPublishState(
+                currentGeneration: liveBarterWriteGeneration
+            )
+            liveBarterInFlightPublishes = recovered.inFlight
+            liveBarterWriteGeneration = recovered.generation
+            liveBarterPublishStartedAt = nil
+        }
         guard let queryURL = HLBarterScreenViewController.liveBarterRequestURL(
             apiBase: HulaConstants.apiURL,
             tradeId: self.thisTrade.tradeId
@@ -1701,6 +1741,30 @@ struct LiveBarterWritePolicy {
     /// Skip a POST body when a newer local publish has already started.
     static func shouldApplyLocalPublish(publishToken: Int, currentGeneration: Int) -> Bool {
         return publishToken == currentGeneration
+    }
+
+    /// Hung POSTs leave inFlight > 0 so GET polls stay skipped. Recover after this
+    /// interval so the room can merge remote snapshots again.
+    static let hungPublishTimeout: TimeInterval = 15
+
+    /// Recover only when a publish is outstanding and the latest start is older
+    /// than `timeout`. A newer overlapping POST resets the clock.
+    static func shouldRecoverHungPublish(
+        inFlight: Int,
+        lastStartedAt: Date?,
+        now: Date,
+        timeout: TimeInterval = hungPublishTimeout
+    ) -> Bool {
+        guard inFlight > 0, let lastStartedAt = lastStartedAt else {
+            return false
+        }
+        return now.timeIntervalSince(lastStartedAt) >= timeout
+    }
+
+    /// Drop the hung in-flight count and bump generation so a late callback
+    /// cannot apply after GET polls resume.
+    static func recoveredPublishState(currentGeneration: Int) -> (inFlight: Int, generation: Int) {
+        return (0, nextGeneration(currentGeneration))
     }
 }
 
