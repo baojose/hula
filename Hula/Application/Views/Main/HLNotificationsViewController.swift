@@ -55,6 +55,16 @@ class HLNotificationsViewController: BaseViewController, UITableViewDelegate, UI
         return RelativeDatePolicy.isOldNotification(daysSince: daysSince)
     }
 
+    /// Cell used `is_read as? Bool`, which skipped Accept/Decline and unread
+    /// styling when the API sent 0/1 or omitted the flag.
+    class func isNotificationRead(_ value: Any?) -> Bool {
+        return NotificationRowPolicy.isRead(value)
+    }
+
+    class func shouldShowStartActions(type: String?) -> Bool {
+        return NotificationRowPolicy.shouldShowStartActions(type: type)
+    }
+
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -130,44 +140,44 @@ class HLNotificationsViewController: BaseViewController, UITableViewDelegate, UI
         }
         
         var is_old = false
+        let is_read = HLNotificationsViewController.isNotificationRead(
+            notification.object(forKey: "is_read")
+        )
         
-        if let is_read = notification.object(forKey: "is_read") as? Bool{
-        
-            if !is_read {
-                cell.NotificationsText.font = HLNotificationsViewController.rowFont(isUnread: true)
-                cell.unreadIcon.isHidden = false
-                cell.backgroundColor = UIColor(red: 0, green: 0, blue: 0, alpha: 0.05)
-            } else {
-                cell.NotificationsText.font = HLNotificationsViewController.rowFont(isUnread: false)
-                cell.unreadIcon.isHidden = true
-                cell.backgroundColor = UIColor(red: 1, green: 1, blue: 1, alpha: 1)
-            }
+        if !is_read {
+            cell.NotificationsText.font = HLNotificationsViewController.rowFont(isUnread: true)
+            cell.unreadIcon.isHidden = false
+            cell.backgroundColor = UIColor(red: 0, green: 0, blue: 0, alpha: 0.05)
+        } else {
+            cell.NotificationsText.font = HLNotificationsViewController.rowFont(isUnread: false)
+            cell.unreadIcon.isHidden = true
+            cell.backgroundColor = UIColor(red: 1, green: 1, blue: 1, alpha: 1)
+        }
             
-            if let date = notification.object(forKey: "date") as? String, date.count > 0 {
-                let realdate = CommonUtils.sharedInstance.isoDateToNSDate(date: date)
-                let days_since = daysBetween(start: realdate as Date, end: NSDate() as Date )
-                print(days_since);
-                if HLNotificationsViewController.isOldNotification(daysSince: days_since) {
-                    is_old = true;
-                }
+        if let date = notification.object(forKey: "date") as? String, date.count > 0 {
+            let realdate = CommonUtils.sharedInstance.isoDateToNSDate(date: date)
+            let days_since = daysBetween(start: realdate as Date, end: NSDate() as Date )
+            print(days_since);
+            if HLNotificationsViewController.isOldNotification(daysSince: days_since) {
+                is_old = true;
             }
-            cell.newTradeActionView.isHidden = true
-            if let type = notification.object(forKey: "type") as? String{
-                if (type == "start"){
-                    cell.rotationIcon.isHidden = true
-                    cell.forwardIcon.isHidden = false
-                    //if !is_read && !is_old {
-                        print("old \(is_old)")
-                        cell.rejectBtn.tag = indexPath.row;
-                        cell.rejectBtn.addTarget(self, action: #selector(rejectBtnTapped), for: .touchUpInside)
-                        cell.acceptBtn.tag = indexPath.row;
-                        cell.acceptBtn.addTarget(self, action: #selector(acceptBtnTapped), for: .touchUpInside)
-                        cell.newTradeActionView.isHidden = false
-                    //}
-                } else {
-                    cell.rotationIcon.isHidden = false
-                    cell.forwardIcon.isHidden = true
-                }
+        }
+        cell.newTradeActionView.isHidden = true
+        if let type = notification.object(forKey: "type") as? String{
+            if HLNotificationsViewController.shouldShowStartActions(type: type) {
+                cell.rotationIcon.isHidden = true
+                cell.forwardIcon.isHidden = false
+                //if !is_read && !is_old {
+                    print("old \(is_old)")
+                    cell.rejectBtn.tag = indexPath.row;
+                    cell.rejectBtn.addTarget(self, action: #selector(rejectBtnTapped), for: .touchUpInside)
+                    cell.acceptBtn.tag = indexPath.row;
+                    cell.acceptBtn.addTarget(self, action: #selector(acceptBtnTapped), for: .touchUpInside)
+                    cell.newTradeActionView.isHidden = false
+                //}
+            } else {
+                cell.rotationIcon.isHidden = false
+                cell.forwardIcon.isHidden = true
             }
         }
         
@@ -422,6 +432,19 @@ class HLNotificationsViewController: BaseViewController, UITableViewDelegate, UI
         } else {
             self.tabBarController?.tabBar.items?[1].badgeValue = nil
         }
+    }
+}
+
+/// Notification cells used `is_read as? Bool`. The list/badge parser already
+/// accepts bridged 0/1 via intFromJSON; a missing or numeric flag must not hide
+/// unread styling or Accept/Decline on incoming start offers.
+struct NotificationRowPolicy {
+    static func isRead(_ value: Any?) -> Bool {
+        return CommonUtils.boolFromJSON(value) ?? false
+    }
+
+    static func shouldShowStartActions(type: String?) -> Bool {
+        return type == "start"
     }
 }
 
