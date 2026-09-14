@@ -5686,4 +5686,148 @@ class HulaTests: XCTestCase {
         XCTAssertFalse(NotificationRowPolicy.shouldShowStartActions(type: nil))
         XCTAssertFalse(HLNotificationsViewController.shouldShowStartActions(type: ""))
     }
+
+    // MARK: - Beyond #153: reset-sent login pop, cash-chip pan, dashboard itemSize
+
+    /// Reset-sent "Go to login" indexed `count - 3` on `navigationController!`.
+    /// Login, ResetPass, ResetSent (count 3) lands on login; a shorter stack
+    /// (modal / already popped) must not OOB-crash.
+    func testResetSentLoginIndexSkipsResetPassOnHistoricalStack() {
+        XCTAssertEqual(ResetSentNavigationPolicy.loginStackIndex(count: 3), 0)
+        XCTAssertEqual(ResetSentNavigationPolicy.loginStackIndex(count: 4), 1)
+        XCTAssertEqual(HLResetSentViewController.loginStackIndex(count: 5), 2)
+    }
+
+    func testResetSentLoginIndexRejectsShortOrEmptyStacks() {
+        XCTAssertNil(ResetSentNavigationPolicy.loginStackIndex(count: 0))
+        XCTAssertNil(ResetSentNavigationPolicy.loginStackIndex(count: 1))
+        XCTAssertNil(ResetSentNavigationPolicy.loginStackIndex(count: 2))
+        XCTAssertNil(HLResetSentViewController.loginStackIndex(count: 2))
+        XCTAssertNil(ResetSentNavigationPolicy.loginStackIndex(count: -1))
+    }
+
+    /// Cash chips used `initialPoint!` and `dragStartPositionRelativeToCenter!`.
+    /// Ending a pan without an origin, or `.changed` without `.began`, must
+    /// skip instead of crashing and leaving trade cash stuck.
+    func testCashChipDragRelativeOffsetAndMoveMatchHistoricalMath() {
+        let relative = CashChipDragPolicy.relativeOffset(
+            location: CGPoint(x: 40, y: 25),
+            center: CGPoint(x: 10, y: 5)
+        )
+        XCTAssertEqual(relative.x, 30)
+        XCTAssertEqual(relative.y, 20)
+
+        let viaImage = HLDragableImage.relativeOffset(
+            location: CGPoint(x: 40, y: 25),
+            center: CGPoint(x: 10, y: 5)
+        )
+        XCTAssertEqual(viaImage.x, 30)
+        XCTAssertEqual(viaImage.y, 20)
+
+        let moved = CashChipDragPolicy.movedCenter(
+            location: CGPoint(x: 50, y: 40),
+            relativeToCenter: relative
+        )
+        XCTAssertEqual(moved?.x, 20)
+        XCTAssertEqual(moved?.y, 20)
+        XCTAssertNil(CashChipDragPolicy.movedCenter(
+            location: CGPoint(x: 50, y: 40),
+            relativeToCenter: nil
+        ))
+        XCTAssertNil(HLDragableImage.movedCenter(
+            location: CGPoint(x: 1, y: 1),
+            relativeToCenter: nil
+        ))
+    }
+
+    func testCashChipDragSnapBackAndDropSkipMissingOrigin() {
+        XCTAssertTrue(CashChipDragPolicy.shouldSnapBack(isEnded: true, alpha: 1))
+        XCTAssertTrue(CashChipDragPolicy.shouldSnapBack(isEnded: false, alpha: 0))
+        XCTAssertFalse(CashChipDragPolicy.shouldSnapBack(isEnded: false, alpha: 1))
+        XCTAssertTrue(HLDragableImage.shouldSnapBack(isEnded: true, alpha: 0.5))
+
+        let origin = CGPoint(x: 8, y: 9)
+        XCTAssertEqual(CashChipDragPolicy.snapBackCenter(initialPoint: origin)?.x, 8)
+        XCTAssertEqual(CashChipDragPolicy.snapBackCenter(initialPoint: origin)?.y, 9)
+        XCTAssertNil(CashChipDragPolicy.snapBackCenter(initialPoint: nil))
+        XCTAssertNil(HLDragableImage.snapBackCenter(initialPoint: nil))
+
+        XCTAssertFalse(CashChipDragPolicy.shouldDrop(
+            center: CGPoint(x: 20, y: 0),
+            initialPoint: CGPoint(x: 10, y: 0)
+        ))
+        XCTAssertFalse(CashChipDragPolicy.shouldDrop(
+            center: CGPoint(x: 25, y: 0),
+            initialPoint: CGPoint(x: 10, y: 0)
+        ))
+        XCTAssertTrue(CashChipDragPolicy.shouldDrop(
+            center: CGPoint(x: 26, y: 0),
+            initialPoint: CGPoint(x: 10, y: 0)
+        ))
+        XCTAssertFalse(CashChipDragPolicy.shouldDrop(
+            center: CGPoint(x: 100, y: 0),
+            initialPoint: nil
+        ))
+        XCTAssertFalse(HLDragableImage.shouldDrop(
+            center: CGPoint(x: 100, y: 0),
+            initialPoint: nil
+        ))
+    }
+
+    /// Dashboard `itemSize` used `collectionView!.frame` while viewDidLoad
+    /// assigns a fresh layout. Missing collection bounds must not crash the
+    /// trade lobby; attached sizes keep the historical max(w,h) - margin math.
+    func testDashboardPortraitItemWidthUsesMaxSideMinusMargin() {
+        XCTAssertEqual(
+            DashboardItemSizePolicy.portraitItemWidth(
+                collectionWidth: 320,
+                collectionHeight: 200,
+                hMargin: 1
+            ),
+            319
+        )
+        XCTAssertEqual(
+            DashboardItemSizePolicy.portraitItemWidth(
+                collectionWidth: 200,
+                collectionHeight: 400,
+                hMargin: 60
+            ),
+            340
+        )
+        XCTAssertEqual(
+            HLDashboardNormalViewFlowLayout.portraitItemWidth(
+                collectionWidth: 320,
+                collectionHeight: 200,
+                hMargin: 1
+            ),
+            319
+        )
+    }
+
+    func testDashboardItemWidthSkipsMissingCollectionView() {
+        XCTAssertEqual(
+            DashboardItemSizePolicy.portraitItemWidth(
+                collectionWidth: nil,
+                collectionHeight: nil,
+                hMargin: 1
+            ),
+            -1
+        )
+        XCTAssertEqual(
+            DashboardItemSizePolicy.expandedItemWidth(collectionWidth: nil),
+            0
+        )
+        XCTAssertEqual(
+            DashboardItemSizePolicy.expandedItemWidth(collectionWidth: 320),
+            160
+        )
+        XCTAssertEqual(
+            HLDashboardExpandedViewFlowLayout.expandedItemWidth(collectionWidth: nil),
+            0
+        )
+        XCTAssertEqual(
+            HLDashboardExpandedViewFlowLayout.expandedItemWidth(collectionWidth: 200),
+            100
+        )
+    }
 }

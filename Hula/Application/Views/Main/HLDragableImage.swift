@@ -34,41 +34,70 @@ class HLDragableImage: UIImageView {
 
         initialPoint = self.center
     }
+
+    class func relativeOffset(location: CGPoint, center: CGPoint) -> CGPoint {
+        return CashChipDragPolicy.relativeOffset(location: location, center: center)
+    }
+
+    class func shouldSnapBack(isEnded: Bool, alpha: CGFloat) -> Bool {
+        return CashChipDragPolicy.shouldSnapBack(isEnded: isEnded, alpha: alpha)
+    }
+
+    class func snapBackCenter(initialPoint: CGPoint?) -> CGPoint? {
+        return CashChipDragPolicy.snapBackCenter(initialPoint: initialPoint)
+    }
+
+    class func shouldDrop(center: CGPoint, initialPoint: CGPoint?) -> Bool {
+        return CashChipDragPolicy.shouldDrop(center: center, initialPoint: initialPoint)
+    }
+
+    class func movedCenter(location: CGPoint, relativeToCenter: CGPoint?) -> CGPoint? {
+        return CashChipDragPolicy.movedCenter(location: location, relativeToCenter: relativeToCenter)
+    }
     
     func handlePan(nizer: UIPanGestureRecognizer!) {
         let locationInView = nizer.location(in: superview)
         if nizer.state == UIGestureRecognizerState.began {
-            dragStartPositionRelativeToCenter = CGPoint(x: locationInView.x - center.x, y: locationInView.y - center.y)
-            
-            
+            dragStartPositionRelativeToCenter = CashChipDragPolicy.relativeOffset(
+                location: locationInView,
+                center: center
+            )
             return
         }
         
-        if nizer.state == UIGestureRecognizerState.ended || self.alpha == 0{
+        if CashChipDragPolicy.shouldSnapBack(
+            isEnded: nizer.state == UIGestureRecognizerState.ended,
+            alpha: self.alpha
+        ) {
             dragStartPositionRelativeToCenter = nil
-            
-            UIView.animate(withDuration: 0.2) {
-                self.center = self.initialPoint!
+            if let origin = CashChipDragPolicy.snapBackCenter(initialPoint: self.initialPoint) {
+                UIView.animate(withDuration: 0.2) {
+                    self.center = origin
+                }
             }
-            
             return
         }
         
-        
-        if  abs( self.center.x - initialPoint!.x ) > 15 {
-            //print("lejos")
-            UIView.animate(withDuration: 0.2) {
-                self.center = self.initialPoint!
+        if CashChipDragPolicy.shouldDrop(center: self.center, initialPoint: self.initialPoint) {
+            if let origin = CashChipDragPolicy.snapBackCenter(initialPoint: self.initialPoint) {
+                UIView.animate(withDuration: 0.2) {
+                    self.center = origin
+                    self.alpha = 0
+                }
+            } else {
                 self.alpha = 0
             }
             delegate?.productDropped(image: self, item: item)
             return
         }
         
-        
-        UIView.animate(withDuration: 0.1) {
-            self.center = CGPoint(x: locationInView.x - self.dragStartPositionRelativeToCenter!.x,
-                                  y: locationInView.y - self.dragStartPositionRelativeToCenter!.y)
+        if let nextCenter = CashChipDragPolicy.movedCenter(
+            location: locationInView,
+            relativeToCenter: dragStartPositionRelativeToCenter
+        ) {
+            UIView.animate(withDuration: 0.1) {
+                self.center = nextCenter
+            }
         }
     }
  
@@ -85,4 +114,37 @@ class HLDragableImage: UIImageView {
 
 protocol DraggableProductDelegate: class {
     func productDropped(image: HLDragableImage, item: Int)
+}
+
+/// Cash-chip pan used `initialPoint!` and `dragStartPositionRelativeToCenter!`.
+/// A `.changed` without `.began`, or an ended gesture after those optionals
+/// were cleared, crashed and could leave trade cash stuck on screen.
+struct CashChipDragPolicy {
+    static let dropDistance: CGFloat = 15
+
+    static func relativeOffset(location: CGPoint, center: CGPoint) -> CGPoint {
+        return CGPoint(x: location.x - center.x, y: location.y - center.y)
+    }
+
+    static func shouldSnapBack(isEnded: Bool, alpha: CGFloat) -> Bool {
+        return isEnded || alpha == 0
+    }
+
+    static func snapBackCenter(initialPoint: CGPoint?) -> CGPoint? {
+        return initialPoint
+    }
+
+    static func shouldDrop(center: CGPoint, initialPoint: CGPoint?) -> Bool {
+        guard let initialPoint = initialPoint else {
+            return false
+        }
+        return abs(center.x - initialPoint.x) > dropDistance
+    }
+
+    static func movedCenter(location: CGPoint, relativeToCenter: CGPoint?) -> CGPoint? {
+        guard let relativeToCenter = relativeToCenter else {
+            return nil
+        }
+        return CGPoint(x: location.x - relativeToCenter.x, y: location.y - relativeToCenter.y)
+    }
 }

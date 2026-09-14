@@ -34,10 +34,26 @@ class HLDashboardNormalViewFlowLayout: UICollectionViewFlowLayout {
         scrollDirection = .vertical
     }
     
+    /// `collectionView!` crashed when UIKit read `itemSize` before the layout
+    /// was attached (viewDidLoad assigns a fresh layout instance).
+    class func portraitItemWidth(
+        collectionWidth: CGFloat?,
+        collectionHeight: CGFloat?,
+        hMargin: CGFloat
+    ) -> CGFloat {
+        return DashboardItemSizePolicy.portraitItemWidth(
+            collectionWidth: collectionWidth,
+            collectionHeight: collectionHeight,
+            hMargin: hMargin
+        )
+    }
+
     func itemWidth() -> CGFloat {
-        let w = collectionView!.frame.width
-        let h = collectionView!.frame.height
-        return max(w, h) - hMargin
+        return DashboardItemSizePolicy.portraitItemWidth(
+            collectionWidth: collectionView?.frame.width,
+            collectionHeight: collectionView?.frame.height,
+            hMargin: hMargin
+        )
     }
     
     override var itemSize: CGSize {
@@ -75,4 +91,23 @@ class HLDashboardNormalViewFlowLayout: UICollectionViewFlowLayout {
         return true
     }
     
+}
+
+/// Dashboard `itemSize` used `collectionView!.frame`. Creating the layout in
+/// `viewDidLoad` / `setCollectionViewLayout` can query size before the
+/// collection view pointer is set and crash the trade lobby.
+struct DashboardItemSizePolicy {
+    static func portraitItemWidth(
+        collectionWidth: CGFloat?,
+        collectionHeight: CGFloat?,
+        hMargin: CGFloat
+    ) -> CGFloat {
+        let w = collectionWidth ?? 0
+        let h = collectionHeight ?? 0
+        return max(w, h) - hMargin
+    }
+
+    static func expandedItemWidth(collectionWidth: CGFloat?) -> CGFloat {
+        return (collectionWidth ?? 0) / 2
+    }
 }
