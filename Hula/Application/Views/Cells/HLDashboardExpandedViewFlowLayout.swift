@@ -31,8 +31,12 @@ class HLDashboardExpandedViewFlowLayout: UICollectionViewFlowLayout {
     }
     
     /// here we define the width of each cell, creating a 2 column layout. In case you would create 3 columns, change the number 2 to 3
+    class func expandedItemWidth(collectionWidth: CGFloat?) -> CGFloat {
+        return DashboardItemSizePolicy.expandedItemWidth(collectionWidth: collectionWidth)
+    }
+
     func itemWidth() -> CGFloat {
-        return collectionView!.frame.width/2
+        return DashboardItemSizePolicy.expandedItemWidth(collectionWidth: collectionView?.frame.width)
     }
     
     override var itemSize: CGSize {
