@@ -403,7 +403,11 @@ class HLProductModalViewController: UIViewController, UIImagePickerControllerDel
     @IBAction func fsImageAction(_ sender: Any) {
         print("Fullingscreening")
         if let im = productsScrollView.viewWithTag(pageControl.currentPage + 1000) as? UIImageView{
-            fullScreenImage(im.image!)
+            // Photos are loaded asynchronously. Tapping Full screen before Kingfisher
+            // finishes left `im.image` nil and crashed on the force unwrap.
+            if let image = FullscreenLoadedImagePolicy.imageForPresentation(im.image) {
+                fullScreenImage(image)
+            }
         }
     }
     
@@ -508,6 +512,14 @@ extension HLProductModalViewController {
         alertController.addAction(cancelButton)
         
         self.present(alertController, animated: true)
+    }
+}
+
+/// Product-modal photos are `UIImageView`s created empty, then filled by Kingfisher.
+/// Full screen must not force-unwrap `image` while the download is still in flight.
+struct FullscreenLoadedImagePolicy {
+    static func imageForPresentation(_ image: UIImage?) -> UIImage? {
+        return image
     }
 }
 
