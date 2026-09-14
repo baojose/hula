@@ -21,9 +21,13 @@ class HulaTests: XCTestCase {
         super.tearDown()
     }
     
-    func testExample() {
-        // This is an example of a functional test case.
-        // Use XCTAssert and related functions to verify your tests produce the correct results.
+    func testFullscreenSkipsNilImageBeforeDownloadFinishes() {
+        XCTAssertNil(FullscreenLoadedImagePolicy.imageForPresentation(nil))
+    }
+
+    func testFullscreenPresentsOnceImageHasLoaded() {
+        let image = UIImage()
+        XCTAssertTrue(FullscreenLoadedImagePolicy.imageForPresentation(image) === image)
     }
     
     func testPerformanceExample() {
