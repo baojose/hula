@@ -5830,4 +5830,265 @@ class HulaTests: XCTestCase {
             100
         )
     }
+
+    // MARK: - Beyond #154: trade ready checkmarks, page-control dots, filter chips
+
+    /// Accept / Close Deal used `trade!` after a nil test. Owner-ready when the
+    /// viewer is owner (other-ready when the viewer is the peer) is "I accepted";
+    /// the inverse still promotes the button to Close Deal.
+    func testTradeReadyViewerIsOwnerWhenOwnerFlagIsSet() {
+        XCTAssertTrue(TradeReadyPolicy.viewerIsReady(
+            ownerId: "me",
+            otherId: "peer",
+            ownerReady: true,
+            otherReady: false,
+            viewerId: "me"
+        ))
+        XCTAssertFalse(TradeReadyPolicy.peerIsReady(
+            ownerId: "me",
+            otherId: "peer",
+            ownerReady: true,
+            otherReady: false,
+            viewerId: "me"
+        ))
+        XCTAssertFalse(TradeReadyPolicy.viewerIsReady(
+            ownerId: "me",
+            otherId: "peer",
+            ownerReady: true,
+            otherReady: false,
+            viewerId: "peer"
+        ))
+        XCTAssertTrue(HLSwappViewController.peerIsReady(
+            trade: tradeReadyFixture(
+                ownerId: "me",
+                otherId: "peer",
+                ownerReady: true,
+                otherReady: false
+            ),
+            viewerId: "peer"
+        ))
+    }
+
+    func testTradeReadyPeerFlagPromotesCloseDealForOwner() {
+        XCTAssertFalse(TradeReadyPolicy.viewerIsReady(
+            ownerId: "me",
+            otherId: "peer",
+            ownerReady: false,
+            otherReady: true,
+            viewerId: "me"
+        ))
+        XCTAssertTrue(TradeReadyPolicy.peerIsReady(
+            ownerId: "me",
+            otherId: "peer",
+            ownerReady: false,
+            otherReady: true,
+            viewerId: "me"
+        ))
+        XCTAssertTrue(HLSwappViewController.viewerIsReady(
+            trade: tradeReadyFixture(
+                ownerId: "me",
+                otherId: "peer",
+                ownerReady: false,
+                otherReady: true
+            ),
+            viewerId: "peer"
+        ))
+        XCTAssertFalse(HLSwappViewController.peerIsReady(
+            trade: tradeReadyFixture(
+                ownerId: "me",
+                otherId: "peer",
+                ownerReady: false,
+                otherReady: true
+            ),
+            viewerId: "peer"
+        ))
+    }
+
+    func testTradeReadyBothFlagsKeepHistoricalOwnerMapping() {
+        XCTAssertTrue(TradeReadyPolicy.viewerIsReady(
+            ownerId: "me",
+            otherId: "peer",
+            ownerReady: true,
+            otherReady: true,
+            viewerId: "me"
+        ))
+        XCTAssertTrue(TradeReadyPolicy.peerIsReady(
+            ownerId: "me",
+            otherId: "peer",
+            ownerReady: true,
+            otherReady: true,
+            viewerId: "me"
+        ))
+        XCTAssertTrue(TradeReadyPolicy.viewerIsReady(
+            ownerId: "me",
+            otherId: "peer",
+            ownerReady: true,
+            otherReady: true,
+            viewerId: "peer"
+        ))
+        XCTAssertTrue(TradeReadyPolicy.peerIsReady(
+            ownerId: "me",
+            otherId: "peer",
+            ownerReady: true,
+            otherReady: true,
+            viewerId: "peer"
+        ))
+    }
+
+    func testTradeReadySkipsNilTradeAndUnknownViewer() {
+        XCTAssertFalse(TradeReadyPolicy.viewerIsReady(trade: nil, viewerId: "me"))
+        XCTAssertFalse(TradeReadyPolicy.peerIsReady(trade: nil, viewerId: "me"))
+        XCTAssertFalse(HLSwappViewController.viewerIsReady(trade: nil, viewerId: "me"))
+        XCTAssertFalse(HLSwappViewController.peerIsReady(trade: nil, viewerId: nil))
+        XCTAssertFalse(TradeReadyPolicy.viewerIsReady(
+            ownerId: "me",
+            otherId: "peer",
+            ownerReady: true,
+            otherReady: true,
+            viewerId: nil
+        ))
+        XCTAssertFalse(TradeReadyPolicy.peerIsReady(
+            ownerId: "me",
+            otherId: "peer",
+            ownerReady: true,
+            otherReady: true,
+            viewerId: "stranger"
+        ))
+        XCTAssertFalse(TradeReadyPolicy.viewerIsReady(
+            ownerId: "me",
+            otherId: "peer",
+            ownerReady: false,
+            otherReady: false,
+            viewerId: "me"
+        ))
+    }
+
+    /// Empty participant ids still match empty viewer ids (historical `==`).
+    func testTradeReadyEmptyIdsStillMatchEmptyViewer() {
+        XCTAssertTrue(TradeReadyPolicy.viewerIsReady(
+            ownerId: "",
+            otherId: "peer",
+            ownerReady: true,
+            otherReady: false,
+            viewerId: ""
+        ))
+        XCTAssertFalse(TradeReadyPolicy.viewerIsReady(
+            ownerId: "",
+            otherId: "peer",
+            ownerReady: true,
+            otherReady: false,
+            viewerId: "me"
+        ))
+    }
+
+    /// Page-control dots used `imageView!` after creating the view. Index 0 is
+    /// the house icon; later indexes are page circles.
+    func testPageControlDotImageUsesHomeIconsAtIndexZero() {
+        let home = UIImage()
+        let homeSel = UIImage()
+        let page = UIImage()
+        let pageSel = UIImage()
+        XCTAssertTrue(
+            PageControlPolicy.dotImage(
+                index: 0,
+                currentPage: 0,
+                homeIcon: home,
+                homeSelIcon: homeSel,
+                pageCircle: page,
+                pageSelCircle: pageSel
+            ) === homeSel
+        )
+        XCTAssertTrue(
+            HLPageControl.dotImage(
+                index: 0,
+                currentPage: 2,
+                homeIcon: home,
+                homeSelIcon: homeSel,
+                pageCircle: page,
+                pageSelCircle: pageSel
+            ) === home
+        )
+    }
+
+    func testPageControlDotImageUsesPageCirclesAfterHome() {
+        let home = UIImage()
+        let homeSel = UIImage()
+        let page = UIImage()
+        let pageSel = UIImage()
+        XCTAssertTrue(
+            PageControlPolicy.dotImage(
+                index: 2,
+                currentPage: 2,
+                homeIcon: home,
+                homeSelIcon: homeSel,
+                pageCircle: page,
+                pageSelCircle: pageSel
+            ) === pageSel
+        )
+        XCTAssertTrue(
+            HLPageControl.dotImage(
+                index: 1,
+                currentPage: 0,
+                homeIcon: home,
+                homeSelIcon: homeSel,
+                pageCircle: page,
+                pageSelCircle: pageSel
+            ) === page
+        )
+        XCTAssertTrue(
+            PageControlPolicy.dotImage(
+                index: -1,
+                currentPage: -1,
+                homeIcon: home,
+                homeSelIcon: homeSel,
+                pageCircle: page,
+                pageSelCircle: pageSel
+            ) === pageSel
+        )
+    }
+
+    func testPageControlResolvedDotReusesExistingAndCreatesWhenMissing() {
+        let existing = UIImageView()
+        XCTAssertTrue(PageControlPolicy.resolvedDotImageView(existing: existing) === existing)
+        XCTAssertTrue(HLPageControl.resolvedDotImageView(existing: existing) === existing)
+        let created = PageControlPolicy.resolvedDotImageView(existing: nil)
+        XCTAssertFalse(created === existing)
+        let viaControl = HLPageControl.resolvedDotImageView(existing: nil)
+        XCTAssertFalse(viaControl === existing)
+    }
+
+    /// Filter chips stored `viewWithTag as? UIButton` in `UIButton!`. Missing
+    /// tags and non-button views must skip so discovery filters cannot crash.
+    func testTaggedControlPolicySkipsMissingAndNonButtonViews() {
+        XCTAssertNil(TaggedControlPolicy.button(in: nil, tag: 1))
+        XCTAssertNil(TaggedControlPolicy.button(in: UIView(), tag: 1))
+        XCTAssertNil(HLFilterViewController.filterButton(in: nil, tag: 6))
+
+        let host = UIView()
+        let chip = UIButton(type: .custom)
+        chip.tag = 3
+        host.addSubview(chip)
+        XCTAssertTrue(TaggedControlPolicy.button(in: host, tag: 3) === chip)
+        XCTAssertTrue(HLFilterViewController.filterButton(in: host, tag: 3) === chip)
+        XCTAssertNil(TaggedControlPolicy.button(in: host, tag: 1))
+
+        let label = UILabel()
+        label.tag = 12
+        host.addSubview(label)
+        XCTAssertNil(HLFilterViewController.filterButton(in: host, tag: 12))
+    }
+
+    private func tradeReadyFixture(
+        ownerId: String,
+        otherId: String,
+        ownerReady: Bool,
+        otherReady: Bool
+    ) -> HulaTrade {
+        let trade = HulaTrade()
+        trade.owner_id = ownerId
+        trade.other_id = otherId
+        trade.owner_ready = ownerReady
+        trade.other_ready = otherReady
+        return trade
+    }
 }
