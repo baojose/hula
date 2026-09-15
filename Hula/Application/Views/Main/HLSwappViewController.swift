@@ -158,6 +158,16 @@ class HLSwappViewController: UIViewController {
         }
         return children
     }
+
+    /// Ready checkmarks used `trade!` after a nil test. Missing snapshots must
+    /// not unwrap, and owner/other ready must keep the historical mapping.
+    class func viewerIsReady(trade: HulaTrade?, viewerId: String?) -> Bool {
+        return TradeReadyPolicy.viewerIsReady(trade: trade, viewerId: viewerId)
+    }
+
+    class func peerIsReady(trade: HulaTrade?, viewerId: String?) -> Bool {
+        return TradeReadyPolicy.peerIsReady(trade: trade, viewerId: viewerId)
+    }
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -677,12 +687,12 @@ class HLSwappViewController: UIViewController {
             self.sendOfferBtn.tag = kTagJustAccept
             self.sendOfferBtn.setTitle(NSLocalizedString("Accept", comment: ""), for: .normal);
             
-            if ( (trade!.owner_ready && trade!.owner_id == HulaUser.sharedInstance.userId) || (trade!.other_ready && trade!.other_id == HulaUser.sharedInstance.userId) ) {
+            if TradeReadyPolicy.viewerIsReady(trade: trade, viewerId: HulaUser.sharedInstance.userId) {
                 // I am ready
                 self.myCheckMark.alpha = 1;
                 self.sendOfferBtn.setTitle("", for: .normal);
             }
-            if ( (trade!.other_ready && trade!.owner_id == HulaUser.sharedInstance.userId) || (trade!.owner_ready && trade!.other_id == HulaUser.sharedInstance.userId) ){
+            if TradeReadyPolicy.peerIsReady(trade: trade, viewerId: HulaUser.sharedInstance.userId) {
                 self.sendOfferBtn.tag = kTagCloseDeal
                 self.otherCheckMark.alpha = 1;
                 self.otherOfferBtn.setTitle("", for: .normal)
@@ -1181,5 +1191,63 @@ extension HLSwappViewController: AlertDelegate{
                 }
             })
         }
+    }
+}
+
+/// Trade-room Accept / Close Deal used `trade!` after `if trade != nil`.
+/// A missing snapshot, or a nil viewer id, must not unwrap. Owner-ready when
+/// the viewer is owner (and other-ready when the viewer is the peer) still
+/// means "I accepted"; the inverse still means the peer accepted.
+struct TradeReadyPolicy {
+    static func viewerIsReady(
+        ownerId: String?,
+        otherId: String?,
+        ownerReady: Bool,
+        otherReady: Bool,
+        viewerId: String?
+    ) -> Bool {
+        guard let viewerId = viewerId else {
+            return false
+        }
+        return (ownerReady && ownerId == viewerId) || (otherReady && otherId == viewerId)
+    }
+
+    static func peerIsReady(
+        ownerId: String?,
+        otherId: String?,
+        ownerReady: Bool,
+        otherReady: Bool,
+        viewerId: String?
+    ) -> Bool {
+        guard let viewerId = viewerId else {
+            return false
+        }
+        return (otherReady && ownerId == viewerId) || (ownerReady && otherId == viewerId)
+    }
+
+    static func viewerIsReady(trade: HulaTrade?, viewerId: String?) -> Bool {
+        guard let trade = trade else {
+            return false
+        }
+        return viewerIsReady(
+            ownerId: trade.owner_id,
+            otherId: trade.other_id,
+            ownerReady: trade.owner_ready,
+            otherReady: trade.other_ready,
+            viewerId: viewerId
+        )
+    }
+
+    static func peerIsReady(trade: HulaTrade?, viewerId: String?) -> Bool {
+        guard let trade = trade else {
+            return false
+        }
+        return peerIsReady(
+            ownerId: trade.owner_id,
+            otherId: trade.other_id,
+            ownerReady: trade.owner_ready,
+            otherReady: trade.other_ready,
+            viewerId: viewerId
+        )
     }
 }

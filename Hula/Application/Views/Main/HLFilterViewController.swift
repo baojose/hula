@@ -83,9 +83,17 @@ class HLFilterViewController: BaseViewController {
     
     // Custom functions for ViewController
     
+    /// Filter chips used `viewWithTag as? UIButton` stored in `UIButton!`.
+    /// A missing or non-button tag must skip instead of crashing discovery.
+    class func filterButton(in view: UIView?, tag: Int) -> UIButton? {
+        return TaggedControlPolicy.button(in: view, tag: tag)
+    }
+
     func changeDistanceFilterButtonSelctedState(_ index: Int!) {
         for i in 1 ..< 6 {
-            let button: UIButton! = self.view.viewWithTag(i) as? UIButton
+            guard let button = HLFilterViewController.filterButton(in: self.view, tag: i) else {
+                continue
+            }
             if (index == Int(i)) {
                 button.backgroundColor = HulaConstants.appMainColor
                 button.setTitleColor(UIColor.white, for: UIControlState.normal)
@@ -216,7 +224,9 @@ class HLFilterViewController: BaseViewController {
     
     func changeTradeFilterButtonSelctedState(_ index: Int!) {
         for i in 6 ..< 12 {
-            let button: UIButton! = self.view.viewWithTag(i) as? UIButton
+            guard let button = HLFilterViewController.filterButton(in: self.view, tag: i) else {
+                continue
+            }
             if (index == Int(i)) {
                 button.backgroundColor = HulaConstants.appMainColor
                 button.setTitleColor(UIColor.white, for: UIControlState.normal)
@@ -232,7 +242,9 @@ class HLFilterViewController: BaseViewController {
     }
     func changeConditionFilterButtonSelctedState(_ index: Int!) {
         for i in 12 ..< 15 {
-            let button: UIButton! = self.view.viewWithTag(i) as? UIButton
+            guard let button = HLFilterViewController.filterButton(in: self.view, tag: i) else {
+                continue
+            }
             if (index == Int(i)) {
                 button.backgroundColor = HulaConstants.appMainColor
                 button.setTitleColor(UIColor.white, for: UIControlState.normal)
@@ -252,4 +264,13 @@ class HLFilterViewController: BaseViewController {
 
 protocol FiltersDelegate{
     func filtersChanged(distance:Int, reputation:Int, condition:String)
+}
+
+/// Discovery filter chips looked up tags with `as? UIButton` into `UIButton!`.
+/// A missing tag or a non-button view (label overlay, container) crashed
+/// distance / reputation / condition selection.
+struct TaggedControlPolicy {
+    static func button(in view: UIView?, tag: Int) -> UIButton? {
+        return view?.viewWithTag(tag) as? UIButton
+    }
 }

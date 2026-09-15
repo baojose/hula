@@ -1317,6 +1317,32 @@ struct PageControlPolicy {
         }
         return (home, homeSelected, page, pageSelected)
     }
+
+    /// Index 0 is the home house icon; later dots are page circles.
+    /// Selected vs unselected must not depend on force-unwrapping the image view.
+    static func dotImage(
+        index: Int,
+        currentPage: Int,
+        homeIcon: UIImage,
+        homeSelIcon: UIImage,
+        pageCircle: UIImage,
+        pageSelCircle: UIImage
+    ) -> UIImage {
+        let selected = index == currentPage
+        if index == 0 {
+            return selected ? homeSelIcon : homeIcon
+        }
+        return selected ? pageSelCircle : pageCircle
+    }
+
+    /// `updateDots` created a UIImageView then immediately used `imageView!`.
+    /// Reuse the existing dot when present; otherwise return a fresh view.
+    static func resolvedDotImageView(existing: UIImageView?) -> UIImageView {
+        if let existing = existing {
+            return existing
+        }
+        return UIImageView()
+    }
 }
 
 /// Soft-read IBAction senders. Settings/filter/edit/modal used `sender as! UIButton`.

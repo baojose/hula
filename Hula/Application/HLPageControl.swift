@@ -64,6 +64,30 @@ class HLPageControl: UIPageControl {
         pageSelCircle = images.pageSelected
     }
 
+    /// Per-dot icons used `imageView!` after creating the view. Missing dots
+    /// must skip instead of crashing the trade-room pager.
+    class func dotImage(
+        index: Int,
+        currentPage: Int,
+        homeIcon: UIImage,
+        homeSelIcon: UIImage,
+        pageCircle: UIImage,
+        pageSelCircle: UIImage
+    ) -> UIImage {
+        return PageControlPolicy.dotImage(
+            index: index,
+            currentPage: currentPage,
+            homeIcon: homeIcon,
+            homeSelIcon: homeSelIcon,
+            pageCircle: pageCircle,
+            pageSelCircle: pageSelCircle
+        )
+    }
+
+    class func resolvedDotImageView(existing: UIImageView?) -> UIImageView {
+        return PageControlPolicy.resolvedDotImageView(existing: existing)
+    }
+
     func updateDots() {
         guard let homeIcon = homeIcon,
             let homeSelIcon = homeSelIcon,
@@ -73,30 +97,21 @@ class HLPageControl: UIPageControl {
         }
         var i = 0
         for view in self.subviews {
-            var imageView = self.imageView(forSubview: view)
-            if imageView == nil {
-                if i == 0 {
-                    imageView = UIImageView(image: homeIcon)
-                } else {
-                    imageView = UIImageView(image: pageCircle)
-                }
-                imageView!.center = view.center
-                view.addSubview(imageView!)
+            let existing = self.imageView(forSubview: view)
+            let imageView = HLPageControl.resolvedDotImageView(existing: existing)
+            if existing == nil {
+                imageView.center = view.center
+                view.addSubview(imageView)
                 view.clipsToBounds = false
             }
-            if i == self.currentPage {
-                if i != 0 {
-                    imageView!.image = pageSelCircle
-                } else {
-                    imageView!.image = homeSelIcon
-                }
-            } else {
-                if i == 0 {
-                    imageView!.image = homeIcon
-                } else {
-                    imageView!.image = pageCircle
-                }
-            }
+            imageView.image = HLPageControl.dotImage(
+                index: i,
+                currentPage: self.currentPage,
+                homeIcon: homeIcon,
+                homeSelIcon: homeSelIcon,
+                pageCircle: pageCircle,
+                pageSelCircle: pageSelCircle
+            )
             i += 1
         }
     }
