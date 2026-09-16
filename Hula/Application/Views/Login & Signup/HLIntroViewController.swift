@@ -34,6 +34,12 @@ class HLIntroViewController: UserBaseViewController, UIScrollViewDelegate {
     
     var jump_just_once : Bool = true
     //var scene: [HulaVideoTransp] = []
+
+    /// Intro paging used `Int(round(offset / width))` into `Int!`. A zero-
+    /// width frame before layout must not convert Inf to Int.
+    class func introPageIndex(offset: CGFloat, pageWidth: CGFloat) -> Int {
+        return ScrollPagePolicy.roundedPageIndex(offset: offset, pageWidth: pageWidth)
+    }
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -234,7 +240,10 @@ class HLIntroViewController: UserBaseViewController, UIScrollViewDelegate {
     }
     
     func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
-        let posX: Int! = Int(round( mainScrollView.contentOffset.x / mainScrollView.frame.size.width) )
+        let posX = HLIntroViewController.introPageIndex(
+            offset: mainScrollView.contentOffset.x,
+            pageWidth: mainScrollView.frame.size.width
+        )
         pageCtrl.currentPage = posX
         if (posX == 0 ){
             playVideo(1)

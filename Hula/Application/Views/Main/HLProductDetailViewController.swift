@@ -214,6 +214,12 @@ class HLProductDetailViewController: BaseViewController, UIScrollViewDelegate, U
     class func tradesCreateURL(apiBase: String) -> String? {
         return CommonUtils.apiCollectionURL(apiBase: apiBase, resource: "trades", trailingSlash: true)
     }
+
+    /// Photo paging used `Int(offset / width)`. A zero-width frame before
+    /// layout must not convert Inf to Int.
+    class func galleryPageIndex(offset: CGFloat, pageWidth: CGFloat) -> Int {
+        return ScrollPagePolicy.truncatedPageIndex(offset: offset, pageWidth: pageWidth)
+    }
     
     //#MARK: - TableViewDelegate
     
@@ -285,8 +291,10 @@ class HLProductDetailViewController: BaseViewController, UIScrollViewDelegate, U
     //MARK: - UIScrollViewDelegate
     func scrollViewDidScroll(_ scrollView: UIScrollView){
         if (scrollView == productsScrollView) {
-            let xPos = productsScrollView.contentOffset.x / productsScrollView.frame.size.width
-            pageControl.currentPage = Int(xPos)
+            pageControl.currentPage = HLProductDetailViewController.galleryPageIndex(
+                offset: productsScrollView.contentOffset.x,
+                pageWidth: productsScrollView.frame.size.width
+            )
         }
     }
     

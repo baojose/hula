@@ -78,6 +78,12 @@ class HLProductModalViewController: UIViewController, UIImagePickerControllerDel
         return LabelMetricsPolicy.localizedField(raw)
     }
 
+    /// Photo paging used `Int(round(offset / width))`. A zero-width frame
+    /// before layout must not convert Inf to Int.
+    class func galleryPageIndex(offset: CGFloat, pageWidth: CGFloat) -> Int {
+        return ScrollPagePolicy.roundedPageIndex(offset: offset, pageWidth: pageWidth)
+    }
+
     override func viewDidLoad() {
         super.viewDidLoad()
 
@@ -154,8 +160,10 @@ class HLProductModalViewController: UIViewController, UIImagePickerControllerDel
     
     func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
         if productsScrollView == scrollView {
-            let page: Int = Int(round(productsScrollView.contentOffset.x / productsScrollView.frame.width))
-            pageControl.currentPage = page
+            pageControl.currentPage = HLProductModalViewController.galleryPageIndex(
+                offset: productsScrollView.contentOffset.x,
+                pageWidth: productsScrollView.frame.width
+            )
         }
     }
     

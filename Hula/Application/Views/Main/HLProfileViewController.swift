@@ -282,6 +282,12 @@ class HLProfileViewController: BaseViewController {
         return CommonUtils.apiCollectionURL(apiBase: apiBase, resource: "me")
     }
 
+    /// Avatar tap. A still-downloading image must skip fullscreen instead of
+    /// unwrapping `profileImageView.image`.
+    class func fullscreenImage(_ image: UIImage?) -> UIImage? {
+        return LoadedImagePolicy.imageForPresentation(image)
+    }
+
     func getUserProfile() {
         
         //print("Getting user info...")
@@ -380,7 +386,7 @@ class HLProfileViewController: BaseViewController {
     func selectedImageTapped(_ sender: UITapGestureRecognizer){
         // Avatar may still be nil while Kingfisher loads (or after a failed load).
         // Settings already nil-guards; Profile must too (PR#98 only covered product modal/edit).
-        if let image = profileImageView.image {
+        if let image = HLProfileViewController.fullscreenImage(profileImageView.image) {
             fullScreenImage(image: image, index: 1)
         }
     }

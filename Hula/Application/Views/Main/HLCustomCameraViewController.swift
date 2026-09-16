@@ -446,6 +446,12 @@ class HLCustomCameraViewController: BaseViewController, UIImagePickerControllerD
         }
         return -1
     }
+
+    /// Capture slots used `imageView.image!` after a nil test. Empty slots
+    /// must be skipped so listing photos stay a dense array of loaded images.
+    class func loadedCapturePhotos(_ images: [UIImage?]) -> [UIImage] {
+        return LoadedImagePolicy.loadedPhotos(images)
+    }
     //
     func showImages(_ image: UIImage){
         if imageView1.image != nil{
@@ -469,10 +475,14 @@ class HLCustomCameraViewController: BaseViewController, UIImagePickerControllerD
         
         
         dataManager.newProduct.arrProductPhotos = NSMutableArray.init()
-        if imageView1.image != nil {dataManager.newProduct.arrProductPhotos.add(imageView1.image! as UIImage)}
-        if imageView2.image != nil {dataManager.newProduct.arrProductPhotos.add(imageView2.image! as UIImage)}
-        if imageView3.image != nil {dataManager.newProduct.arrProductPhotos.add(imageView3.image! as UIImage)}
-        if imageView4.image != nil {dataManager.newProduct.arrProductPhotos.add(imageView4.image! as UIImage)}
+        for image in HLCustomCameraViewController.loadedCapturePhotos([
+            imageView1.image,
+            imageView2.image,
+            imageView3.image,
+            imageView4.image
+        ]) {
+            dataManager.newProduct.arrProductPhotos.add(image)
+        }
     }
     func hideImages(_ image: UIImage){
         if imageView1.image == image{
