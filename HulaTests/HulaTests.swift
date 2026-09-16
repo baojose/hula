@@ -6078,6 +6078,117 @@ class HulaTests: XCTestCase {
         XCTAssertNil(HLFilterViewController.filterButton(in: host, tag: 12))
     }
 
+    // MARK: - Beyond #156: loaded fullscreen images, camera slots, gallery paging
+
+    /// Settings/edit-product used `image!` after a nil test. A still-
+    /// downloading avatar must skip fullscreen instead of crashing.
+    func testLoadedImagePresentationSkipsNilAndReusesLoadedImage() {
+        XCTAssertNil(LoadedImagePolicy.imageForPresentation(nil))
+        XCTAssertNil(HLSettingViewController.fullscreenImage(nil))
+        XCTAssertNil(HLEditProductMainViewController.fullscreenImage(nil))
+        XCTAssertNil(HLProfileViewController.fullscreenImage(nil))
+
+        let image = UIImage()
+        XCTAssertTrue(LoadedImagePolicy.imageForPresentation(image) === image)
+        XCTAssertTrue(HLSettingViewController.fullscreenImage(image) === image)
+        XCTAssertTrue(HLEditProductMainViewController.fullscreenImage(image) === image)
+        XCTAssertTrue(HLProfileViewController.fullscreenImage(image) === image)
+    }
+
+    /// Camera capture rebuilt listing photos with `imageView.image!`. Empty
+    /// slots must be omitted so the array stays dense and ordered.
+    func testLoadedCapturePhotosSkipEmptySlotsAndKeepOrder() {
+        XCTAssertEqual(LoadedImagePolicy.loadedPhotos([]).count, 0)
+        XCTAssertEqual(LoadedImagePolicy.loadedPhotos([nil, nil]).count, 0)
+        XCTAssertEqual(HLCustomCameraViewController.loadedCapturePhotos([nil]).count, 0)
+
+        let first = UIImage()
+        let third = UIImage()
+        let loaded = LoadedImagePolicy.loadedPhotos([first, nil, third, nil])
+        XCTAssertEqual(loaded.count, 2)
+        XCTAssertTrue(loaded[0] === first)
+        XCTAssertTrue(loaded[1] === third)
+
+        let viaCamera = HLCustomCameraViewController.loadedCapturePhotos([nil, first, nil, third])
+        XCTAssertEqual(viaCamera.count, 2)
+        XCTAssertTrue(viaCamera[0] === first)
+        XCTAssertTrue(viaCamera[1] === third)
+    }
+
+    /// Product detail paging truncated `offset / width`. A zero-width frame
+    /// must not convert Inf to Int.
+    func testGalleryPageIndexTruncatesAndSkipsZeroWidth() {
+        XCTAssertEqual(
+            ScrollPagePolicy.truncatedPageIndex(offset: 100, pageWidth: 0),
+            0
+        )
+        XCTAssertEqual(
+            ScrollPagePolicy.truncatedPageIndex(offset: 100, pageWidth: -320),
+            0
+        )
+        XCTAssertEqual(
+            ScrollPagePolicy.truncatedPageIndex(offset: CGFloat.nan, pageWidth: 320),
+            0
+        )
+        XCTAssertEqual(
+            HLProductDetailViewController.galleryPageIndex(offset: 160, pageWidth: 320),
+            0
+        )
+        XCTAssertEqual(
+            HLProductDetailViewController.galleryPageIndex(offset: 319, pageWidth: 320),
+            0
+        )
+        XCTAssertEqual(
+            ScrollPagePolicy.truncatedPageIndex(offset: 320, pageWidth: 320),
+            1
+        )
+        XCTAssertEqual(
+            HLProductDetailViewController.galleryPageIndex(offset: 480, pageWidth: 320),
+            1
+        )
+        XCTAssertEqual(
+            ScrollPagePolicy.truncatedPageIndex(offset: 640, pageWidth: 320),
+            2
+        )
+    }
+
+    /// Product modal and intro paging used `Int(round(offset / width))`.
+    /// Half-pages round away from zero; missing layout still returns page 0.
+    func testGalleryPageIndexRoundsAndSkipsZeroWidth() {
+        XCTAssertEqual(
+            ScrollPagePolicy.roundedPageIndex(offset: 100, pageWidth: 0),
+            0
+        )
+        XCTAssertEqual(
+            HLProductModalViewController.galleryPageIndex(offset: 0, pageWidth: 0),
+            0
+        )
+        XCTAssertEqual(
+            HLIntroViewController.introPageIndex(offset: 50, pageWidth: 0),
+            0
+        )
+        XCTAssertEqual(
+            HLProductModalViewController.galleryPageIndex(offset: 160, pageWidth: 320),
+            1
+        )
+        XCTAssertEqual(
+            HLIntroViewController.introPageIndex(offset: 159, pageWidth: 320),
+            0
+        )
+        XCTAssertEqual(
+            ScrollPagePolicy.roundedPageIndex(offset: 320, pageWidth: 320),
+            1
+        )
+        XCTAssertEqual(
+            HLProductModalViewController.galleryPageIndex(offset: 480, pageWidth: 320),
+            2
+        )
+        XCTAssertEqual(
+            HLIntroViewController.introPageIndex(offset: 640, pageWidth: 320),
+            2
+        )
+    }
+
     private func tradeReadyFixture(
         ownerId: String,
         otherId: String,
