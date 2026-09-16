@@ -1631,6 +1631,52 @@ struct ImageCropPolicy {
     }
 }
 
+/// Settings/edit-product fullscreen used `image!` after `if image != nil`.
+/// Camera capture rebuilt the listing photos the same way. Kingfisher can
+/// still leave the view empty, so presentation and capture must optional-bind.
+struct LoadedImagePolicy {
+    static func imageForPresentation(_ image: UIImage?) -> UIImage? {
+        return image
+    }
+
+    static func loadedPhotos(_ images: [UIImage?]) -> [UIImage] {
+        var photos: [UIImage] = []
+        for image in images {
+            if let image = image {
+                photos.append(image)
+            }
+        }
+        return photos
+    }
+}
+
+/// Product galleries and intro paging used `offset / width` then `Int` /
+/// `Int(round:)`. A zero-width frame (before layout) produced Inf and
+/// trapped when converted to Int, crashing photo paging and onboarding.
+struct ScrollPagePolicy {
+    static func pageIndex(offset: CGFloat, pageWidth: CGFloat, rounded: Bool) -> Int {
+        guard pageWidth > 0, offset.isFinite, pageWidth.isFinite else {
+            return 0
+        }
+        let raw = offset / pageWidth
+        guard raw.isFinite else {
+            return 0
+        }
+        if rounded {
+            return Int(round(raw))
+        }
+        return Int(raw)
+    }
+
+    static func roundedPageIndex(offset: CGFloat, pageWidth: CGFloat) -> Int {
+        return pageIndex(offset: offset, pageWidth: pageWidth, rounded: true)
+    }
+
+    static func truncatedPageIndex(offset: CGFloat, pageWidth: CGFloat) -> Int {
+        return pageIndex(offset: offset, pageWidth: pageWidth, rounded: false)
+    }
+}
+
 /// Barter drag snapshots used `UIGraphicsGetCurrentContext()!`. A failed
 /// image context (zero-size cell / missing context) must skip the snapshot
 /// instead of crashing mid-gesture.

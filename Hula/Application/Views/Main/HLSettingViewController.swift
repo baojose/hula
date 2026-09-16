@@ -47,6 +47,12 @@ class HLSettingViewController: BaseViewController {
     class func shouldShowAlertThumbnail(_ image: UIImage?) -> Bool {
         return image != nil
     }
+
+    /// Avatar tap used `smallProfileImage.image!` after a nil test. A still-
+    /// downloading Kingfisher image must open the camera instead of crashing.
+    class func fullscreenImage(_ image: UIImage?) -> UIImage? {
+        return LoadedImagePolicy.imageForPresentation(image)
+    }
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -259,8 +265,8 @@ extension HLSettingViewController{
     
     
     func selectedImageTapped(){
-        if (self.smallProfileImage.image != nil){
-            fullScreenImage(image: self.smallProfileImage.image!, index: 1)
+        if let image = HLSettingViewController.fullscreenImage(self.smallProfileImage.image) {
+            fullScreenImage(image: image, index: 1)
         } else {
             self.openCameraVC();
          }

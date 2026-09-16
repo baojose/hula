@@ -40,6 +40,12 @@ class HLEditProductMainViewController: BaseViewController, ProductPictureDelegat
         return LabelMetricsPolicy.text(raw)
     }
 
+    /// Photo tap used `im!` after `if im != nil`. A missing slot must open
+    /// the camera instead of crashing fullscreen presentation.
+    class func fullscreenImage(_ image: UIImage?) -> UIImage? {
+        return LoadedImagePolicy.imageForPresentation(image)
+    }
+
     /// "Set as featured" used unbounded `arrProductPhotoLink[0]` / `[index]`.
     class func swappedFeaturedLinks(_ links: [String], promoting index: Int) -> [String]? {
         return FeaturedPhotoPolicy.swappedLinks(links, promoting: index)
@@ -129,8 +135,8 @@ class HLEditProductMainViewController: BaseViewController, ProductPictureDelegat
         if currentEditingIndex == 3 && product.arrProductPhotoLink.count < 4 {
             im = nil
         }
-        if im != nil{
-            fullScreenImage(image: im!, index: currentEditingIndex)
+        if let image = HLEditProductMainViewController.fullscreenImage(im) {
+            fullScreenImage(image: image, index: currentEditingIndex)
         } else {
             let cameraViewController = self.storyboard?.instantiateViewController(withIdentifier: "productPictureEdit") as! HLProductPictureEditViewController
             cameraViewController.positionToReplace = tag
