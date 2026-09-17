@@ -11,8 +11,9 @@ import MapKit
 
 extension NSMutableData {
     func appendString(_ string: String) {
-        let data = string.data(using: String.Encoding.utf8, allowLossyConversion: false)
-        append(data!)
+        if let data = UTF8DataPolicy.data(from: string) {
+            append(data)
+        }
     }
 }
 
@@ -641,6 +642,11 @@ class HLDataManager: NSObject {
     /// Soft-parse a network body. HTML/empty/invalid payloads must not crash via `try!`.
     class func jsonObject(from data: Data) -> Any? {
         return try? JSONSerialization.jsonObject(with: data, options: [])
+    }
+
+    /// Multipart `appendString` used `data!`. Failed UTF-8 conversion must skip.
+    class func utf8Data(from string: String) -> Data? {
+        return UTF8DataPolicy.data(from: string)
     }
 
     /// Upload endpoints used `URL(string:)!`. Blank/malformed bases must skip the request.

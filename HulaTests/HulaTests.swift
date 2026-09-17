@@ -6189,6 +6189,112 @@ class HulaTests: XCTestCase {
         )
     }
 
+    // MARK: - Beyond #157: inventory reverse index, trade-room pager, listing IUOs
+
+    /// Inventory listed newest-first as `count - row - 1`, then clamped empty
+    /// arrays to 0. A reload that empties the list must skip instead of crashing.
+    func testInventoryReverseIndexSkipsEmptyAndOutOfRangeRows() {
+        XCTAssertNil(InventoryRowPolicy.reversedIndex(row: 0, count: 0))
+        XCTAssertNil(InventoryRowPolicy.reversedIndex(row: -1, count: 3))
+        XCTAssertNil(InventoryRowPolicy.reversedIndex(row: 3, count: 3))
+        XCTAssertNil(HLMyProductsViewController.reversedProductIndex(row: 0, count: 0))
+        XCTAssertNil(HLMyProductsViewController.product(atRow: 0, in: []))
+        XCTAssertNil(HLMyProductsViewController.product(at: 0, in: []))
+
+        XCTAssertEqual(InventoryRowPolicy.reversedIndex(row: 0, count: 1), 0)
+        XCTAssertEqual(HLMyProductsViewController.reversedProductIndex(row: 0, count: 3), 2)
+        XCTAssertEqual(InventoryRowPolicy.reversedIndex(row: 1, count: 3), 1)
+        XCTAssertEqual(HLMyProductsViewController.reversedProductIndex(row: 2, count: 3), 0)
+
+        let oldest = HulaProduct(id: "old", name: "Old", image: "")
+        let newest = HulaProduct(id: "new", name: "New", image: "")
+        let products = [oldest, newest]
+        XCTAssertTrue(HLMyProductsViewController.product(atRow: 0, in: products) === newest)
+        XCTAssertTrue(InventoryRowPolicy.product(atRow: 1, in: products) === oldest)
+        XCTAssertNil(InventoryRowPolicy.product(atRow: 2, in: products))
+        XCTAssertTrue(HLMyProductsViewController.product(at: 0, in: products) === oldest)
+        XCTAssertNil(HLMyProductsViewController.product(at: -1, in: products))
+    }
+
+    /// `goTo(page:)` only checked `page < count`. Negative pages and replacing
+    /// `orderedViewControllers[1]` on a short stack must no-op.
+    func testTradeRoomPageIndexRejectsNegativeAndMissingSlots() {
+        XCTAssertNil(TradeRoomPagePolicy.pageIndex(-1, count: 2))
+        XCTAssertNil(TradeRoomPagePolicy.pageIndex(0, count: 0))
+        XCTAssertNil(HLSwappPageViewController.pageIndex(2, count: 2))
+        XCTAssertEqual(TradeRoomPagePolicy.pageIndex(0, count: 2), 0)
+        XCTAssertEqual(HLSwappPageViewController.pageIndex(1, count: 2), 1)
+        XCTAssertEqual(TradeRoomPagePolicy.tradeRoomPage, 1)
+
+        let lobby = UIViewController()
+        let barter = UIViewController()
+        let past = UIViewController()
+        let original = [lobby, barter]
+        let updated = HLSwappPageViewController.replacingControllers(original, at: 1, with: past)
+        XCTAssertTrue(updated[0] === lobby)
+        XCTAssertTrue(updated[1] === past)
+        XCTAssertEqual(updated.count, 2)
+
+        let skipped = TradeRoomPagePolicy.replacing(original, at: -1, with: past)
+        XCTAssertTrue(skipped[0] === lobby)
+        XCTAssertTrue(skipped[1] === barter)
+        XCTAssertEqual(TradeRoomPagePolicy.replacing([], at: 0, with: past).count, 0)
+        XCTAssertEqual(
+            HLSwappPageViewController.replacingControllers([lobby], at: 1, with: past).count,
+            1
+        )
+    }
+
+    /// Home / search / inventory compared IUO `trading_count` and force-converted
+    /// `productOwner`. Missing values must hide the badge and skip avatar lookup.
+    func testProductListingPolicyTreatsNilOwnerAndCountAsEmpty() {
+        XCTAssertFalse(ProductListingPolicy.showsMultipleTrades(nil))
+        XCTAssertFalse(HLHomeViewController.showsMultipleTrades(0))
+        XCTAssertFalse(HLSearchResultViewController.showsMultipleTrades(1))
+        XCTAssertTrue(HLMyProductsViewController.showsMultipleTrades(2))
+        XCTAssertTrue(ProductListingPolicy.showsMultipleTrades(9))
+
+        XCTAssertEqual(ProductListingPolicy.ownerId(nil), "")
+        XCTAssertEqual(HLHomeViewController.listingOwnerId(nil), "")
+        XCTAssertEqual(HLSearchResultViewController.listingOwnerId("owner-1"), "owner-1")
+        XCTAssertEqual(ProductListingPolicy.imageURL(nil), "")
+        XCTAssertEqual(HLMyProductsViewController.listingImageURL(nil), "")
+        XCTAssertEqual(HLHomeViewController.listingImageURL("https://cdn.example/p.jpg"), "https://cdn.example/p.jpg")
+
+        let product = HulaProduct()
+        product.trading_count = nil
+        product.productOwner = nil
+        product.productImage = nil
+        XCTAssertFalse(HLHomeViewController.showsMultipleTrades(product.trading_count))
+        XCTAssertEqual(HLSearchResultViewController.listingOwnerId(product.productOwner), "")
+        XCTAssertEqual(HLMyProductsViewController.listingImageURL(product.productImage), "")
+    }
+
+    /// Multipart `appendString` used `data!`. Form chunks must encode as UTF-8
+    /// without unwrapping a failed conversion.
+    func testUTF8DataPolicyEncodesMultipartChunks() {
+        let encoded = UTF8DataPolicy.data(from: "hi&there=ok+1")
+        XCTAssertNotNil(encoded)
+        if let encoded = encoded, let text = String(data: encoded, encoding: String.Encoding.utf8) {
+            XCTAssertEqual(text, "hi&there=ok+1")
+        }
+        let empty = HLDataManager.utf8Data(from: "")
+        XCTAssertNotNil(empty)
+        if let empty = empty {
+            XCTAssertEqual(empty.count, 0)
+        }
+        let body = NSMutableData()
+        body.appendString("name=bike")
+        if let text = String(data: body as Data, encoding: String.Encoding.utf8) {
+            XCTAssertEqual(text, "name=bike")
+        }
+        let chunk = "name=bike&x=1"
+        XCTAssertEqual(
+            UTF8DataPolicy.data(from: chunk)?.count,
+            chunk.data(using: String.Encoding.utf8, allowLossyConversion: false)?.count
+        )
+    }
+
     private func tradeReadyFixture(
         ownerId: String,
         otherId: String,

@@ -475,16 +475,26 @@ extension HLDashboardViewController: UICollectionViewDelegate, UICollectionViewD
                 guard let tradeStatus = thisTrade.object(forKey: "status") as? String else {
                     return
                 }
-                if HLDataManager.sharedInstance.tradeMode == "current" && tradeStatus != HulaConstants.review_status {
-                    let vc = (self.storyboard?.instantiateViewController( withIdentifier: "barterRoom")) as! HLBarterScreenViewController
-                    self.swappPageVC?.orderedViewControllers[1] = vc
-                } else {
-                    let vc = (self.storyboard?.instantiateViewController( withIdentifier: "pastTrade")) as! HLPastTradeViewController
-                    vc.currTrade = thisTrade
-                    self.swappPageVC?.orderedViewControllers[1] = vc
-                }
+                if let pageVC = self.swappPageVC {
+                    if HLDataManager.sharedInstance.tradeMode == "current" && tradeStatus != HulaConstants.review_status {
+                        let vc = (self.storyboard?.instantiateViewController( withIdentifier: "barterRoom")) as! HLBarterScreenViewController
+                        pageVC.orderedViewControllers = HLSwappPageViewController.replacingControllers(
+                            pageVC.orderedViewControllers,
+                            at: TradeRoomPagePolicy.tradeRoomPage,
+                            with: vc
+                        )
+                    } else {
+                        let vc = (self.storyboard?.instantiateViewController( withIdentifier: "pastTrade")) as! HLPastTradeViewController
+                        vc.currTrade = thisTrade
+                        pageVC.orderedViewControllers = HLSwappPageViewController.replacingControllers(
+                            pageVC.orderedViewControllers,
+                            at: TradeRoomPagePolicy.tradeRoomPage,
+                            with: vc
+                        )
+                    }
 
-                self.swappPageVC?.goTo(page: 1)
+                    pageVC.goTo(page: TradeRoomPagePolicy.tradeRoomPage)
+                }
             }
             //print(self.parent!)
         }
