@@ -1914,3 +1914,81 @@ struct MotionUpdatePolicy {
         return current ?? OperationQueue.main
     }
 }
+
+/// Inventory listed newest-first as `count - row - 1`, then clamped empty
+/// arrays to index 0 (`array[0]` crash) and OOB rows to a neighbor listing.
+/// Empty or out-of-range rows must skip instead of opening the wrong product.
+struct InventoryRowPolicy {
+    static func product(at index: Int, in products: [HulaProduct]) -> HulaProduct? {
+        guard index >= 0 && index < products.count else {
+            return nil
+        }
+        return products[index]
+    }
+
+    static func reversedIndex(row: Int, count: Int) -> Int? {
+        guard count > 0, row >= 0, row < count else {
+            return nil
+        }
+        return count - row - 1
+    }
+
+    static func product(atRow row: Int, in products: [HulaProduct]) -> HulaProduct? {
+        guard let index = reversedIndex(row: row, count: products.count) else {
+            return nil
+        }
+        return products[index]
+    }
+}
+
+/// Trade-room pager `goTo(page:)` only checked `page < count`, so a negative
+/// page (or replacing `orderedViewControllers[1]` when the stack is short)
+/// crashed instead of staying on the lobby.
+struct TradeRoomPagePolicy {
+    static let tradeRoomPage = 1
+
+    static func pageIndex(_ page: Int, count: Int) -> Int? {
+        guard page >= 0 && page < count else {
+            return nil
+        }
+        return page
+    }
+
+    static func replacing(
+        _ controllers: [UIViewController],
+        at page: Int,
+        with replacement: UIViewController
+    ) -> [UIViewController] {
+        guard let index = pageIndex(page, count: controllers.count) else {
+            return controllers
+        }
+        var result = controllers
+        result[index] = replacement
+        return result
+    }
+}
+
+/// Home / search / inventory compared IUO `trading_count` and force-converted
+/// `productOwner as String`. A nil count or owner (unpopulated listing) crashed
+/// the table instead of hiding the badge or skipping the avatar lookup.
+struct ProductListingPolicy {
+    static func showsMultipleTrades(_ tradingCount: Int?) -> Bool {
+        return (tradingCount ?? 0) > 1
+    }
+
+    static func ownerId(_ owner: String?) -> String {
+        return owner ?? ""
+    }
+
+    static func imageURL(_ image: String?) -> String {
+        return image ?? ""
+    }
+}
+
+/// Multipart `appendString` used `string.data(using: .utf8)!`. A failed
+/// conversion must skip the chunk instead of crashing photo/video upload.
+struct UTF8DataPolicy {
+    static func data(from string: String) -> Data? {
+        return string.data(using: String.Encoding.utf8, allowLossyConversion: false)
+    }
+}

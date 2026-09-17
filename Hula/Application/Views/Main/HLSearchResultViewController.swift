@@ -48,6 +48,19 @@ class HLSearchResultViewController: BaseViewController, UITableViewDataSource, U
         return NSLocalizedString("Category search", comment: "")
     }
 
+    /// Search rows compared IUO `trading_count` and force-converted `productOwner`.
+    class func showsMultipleTrades(_ tradingCount: Int?) -> Bool {
+        return ProductListingPolicy.showsMultipleTrades(tradingCount)
+    }
+
+    class func listingOwnerId(_ owner: String?) -> String {
+        return ProductListingPolicy.ownerId(owner)
+    }
+
+    class func listingImageURL(_ image: String?) -> String {
+        return ProductListingPolicy.imageURL(image)
+    }
+
     class func resultsTitle(searchByCategory: Bool, category: NSDictionary?, keyword: String?) -> String {
         if searchByCategory {
             return categorySearchTitle(from: category)
@@ -129,7 +142,7 @@ class HLSearchResultViewController: BaseViewController, UITableViewDataSource, U
         
         //print(product)
         cell.productName.text = product.productName
-        let prod_thumb = commonUtils.getThumbFor(url: product.productImage)
+        let prod_thumb = commonUtils.getThumbFor(url: HLSearchResultViewController.listingImageURL(product.productImage))
         cell.productImage.loadImageFromURL(urlString: prod_thumb)
         
         if product.productCategoryId == "xx_user" {
@@ -148,13 +161,13 @@ class HLSearchResultViewController: BaseViewController, UITableViewDataSource, U
             cell.productOwnerImage.isHidden = false;
             cell.productOwnerName.isHidden = false;
             
-            if product.trading_count > 1 {
+            if HLSearchResultViewController.showsMultipleTrades(product.trading_count) {
                 cell.isMultipleTrades.isHidden = false
             } else {
                 cell.isMultipleTrades.isHidden = true
             }
             
-            let user_id = product.productOwner as String;
+            let user_id = HLSearchResultViewController.listingOwnerId(product.productOwner)
             if let user = self.usersList.object(forKey: user_id) as? NSDictionary {
                 //print(user)
                 cell.productOwnerName.text = user.object(forKey: "nick") as? String

@@ -115,23 +115,17 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         
         let cell = tableView.dequeueReusableCell(withIdentifier: "myProductTableViewCell") as! HLMyProductTableViewCell
-        var order_sorted = self.arrayProducts.count - indexPath.row - 1
-        if(order_sorted > self.arrayProducts.count){
-            order_sorted = self.arrayProducts.count - 1
+        guard let product = HLMyProductsViewController.product(atRow: indexPath.row, in: self.arrayProducts) else {
+            return cell
         }
-        if(order_sorted < 0){
-            order_sorted = 0
-        }
-        
-        let product : HulaProduct = self.arrayProducts[order_sorted]
         //print(product)
         cell.productDescription.text = product.productName
-        if product.trading_count > 1 {
+        if HLMyProductsViewController.showsMultipleTrades(product.trading_count) {
             cell.isMultipleTrades.isHidden = false
         } else {
             cell.isMultipleTrades.isHidden = true
         }
-        if (product.productImage.count == 0){
+        if (HLMyProductsViewController.listingImageURL(product.productImage).count == 0){
             if (dataManager.newProduct.arrProductPhotos.count>0){
                 if let img = dataManager.newProduct.arrProductPhotos.object(at: 0) as? UIImage {
                     cell.productImage.image = img
@@ -142,7 +136,7 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
                 cell.productImage.loadImageFromURL(urlString: HulaConstants.noProductThumb)
             }
         } else {
-            let thumb = commonUtils.getThumbFor(url: product.productImage)
+            let thumb = commonUtils.getThumbFor(url: HLMyProductsViewController.listingImageURL(product.productImage))
             cell.productImage.loadImageFromURL(urlString: thumb)
         }
         
@@ -163,15 +157,15 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
         return cell
     }
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath){
-        var order_sorted = self.arrayProducts.count - indexPath.row - 1
-        if(order_sorted > self.arrayProducts.count){
-            order_sorted = self.arrayProducts.count - 1
+        guard let order_sorted = HLMyProductsViewController.reversedProductIndex(
+            row: indexPath.row,
+            count: self.arrayProducts.count
+        ) else {
+            return
         }
-        if(order_sorted < 0){
-            order_sorted = 0
+        guard let product = HLMyProductsViewController.product(at: order_sorted, in: self.arrayProducts) else {
+            return
         }
-        
-        let product : HulaProduct = self.arrayProducts[order_sorted]
         if (product.productName == NSLocalizedString("Untitled product", comment: "") ) {
             // product is incomplete
             let viewController = self.storyboard?.instantiateViewController(withIdentifier: "completeProductProfilePage") as! HLCompleteProductProfileViewController
@@ -219,6 +213,28 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
     
     
     // Custom functions for ViewController
+
+    /// Newest-first inventory used `count - row - 1` then clamped empty lists
+    /// to index 0. A reload that empties the array must skip instead of crashing.
+    class func reversedProductIndex(row: Int, count: Int) -> Int? {
+        return InventoryRowPolicy.reversedIndex(row: row, count: count)
+    }
+
+    class func product(atRow row: Int, in products: [HulaProduct]) -> HulaProduct? {
+        return InventoryRowPolicy.product(atRow: row, in: products)
+    }
+
+    class func product(at index: Int, in products: [HulaProduct]) -> HulaProduct? {
+        return InventoryRowPolicy.product(at: index, in: products)
+    }
+
+    class func showsMultipleTrades(_ tradingCount: Int?) -> Bool {
+        return ProductListingPolicy.showsMultipleTrades(tradingCount)
+    }
+
+    class func listingImageURL(_ image: String?) -> String {
+        return ProductListingPolicy.imageURL(image)
+    }
 
     /// Locate a product by id so Complete Profile Done updates the edited row, not always the last row.
     class func indexOfProduct(withId productId: String, in products: [HulaProduct]) -> Int? {
@@ -558,10 +574,12 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
     }
     func goEditProductPage(index: Int){
         //print(sender.tag)
-        //let productToDisplay : HulaProduct = self.arrayProducts[index]
+        guard let productToEdit = HLMyProductsViewController.product(at: index, in: self.arrayProducts) else {
+            return
+        }
         let viewController = self.storyboard?.instantiateViewController(withIdentifier: "editProductMainPage") as! HLEditProductMainViewController
         //viewController.productToDisplay = productToDisplay
-        viewController.product = self.arrayProducts[index]
+        viewController.product = productToEdit
         self.navigationController?.pushViewController(viewController, animated: true)
     }
     

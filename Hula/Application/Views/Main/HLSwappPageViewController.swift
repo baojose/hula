@@ -55,6 +55,40 @@ class HLSwappPageViewController: UIPageViewController {
         //print("supportedInterfaceOrientations")
         return .landscape
     }
+
+    /// Pager `goTo` only checked `page < count`. Negative pages and a missing
+    /// barter slot must skip instead of crashing the trade-room stack.
+    class func pageIndex(_ page: Int, count: Int) -> Int? {
+        return TradeRoomPagePolicy.pageIndex(page, count: count)
+    }
+
+    class func replacingControllers(
+        _ controllers: [UIViewController],
+        at page: Int,
+        with replacement: UIViewController
+    ) -> [UIViewController] {
+        return TradeRoomPagePolicy.replacing(controllers, at: page, with: replacement)
+    }
+
+    public func goTo(page: Int){
+        guard let page = HLSwappPageViewController.pageIndex(page, count: orderedViewControllers.count) else {
+            return
+        }
+        let newVC = orderedViewControllers[page]
+        if (page != 0){
+            setViewControllers([newVC],
+                           direction: .forward,
+                           animated: true,
+                           completion: nil)
+        } else {
+            setViewControllers([newVC],
+                           direction: .reverse,
+                           animated: true,
+                           completion: nil)
+        }
+        swappDelegate?.swappPageViewController(swappPageViewController: self,
+                                               didUpdatePageIndex: page)
+    }
     
 
     /*
@@ -129,27 +163,6 @@ extension HLSwappPageViewController: UIPageViewControllerDataSource, UIPageViewC
             }
         }
     }
-    
-    public func goTo(page: Int){
-        if (page < orderedViewControllers.count){
-            let newVC = orderedViewControllers[page]
-            if (page != 0){
-                setViewControllers([newVC],
-                               direction: .forward,
-                               animated: true,
-                               completion: nil)
-            } else {
-                setViewControllers([newVC],
-                               direction: .reverse,
-                               animated: true,
-                               completion: nil)
-            }
-            swappDelegate?.swappPageViewController(swappPageViewController: self,
-                                                   didUpdatePageIndex: page)
-        }
-    }
-    
-    
 }
 
 protocol SwappPageViewControllerDelegate: class {

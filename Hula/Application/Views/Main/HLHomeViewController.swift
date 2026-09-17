@@ -183,6 +183,19 @@ class HLHomeViewController: BaseViewController, UIScrollViewDelegate, UITextFiel
         return array.object(at: index) as? String
     }
 
+    /// Near You rows compared IUO `trading_count` and force-converted `productOwner`.
+    class func showsMultipleTrades(_ tradingCount: Int?) -> Bool {
+        return ProductListingPolicy.showsMultipleTrades(tradingCount)
+    }
+
+    class func listingOwnerId(_ owner: String?) -> String {
+        return ProductListingPolicy.ownerId(owner)
+    }
+
+    class func listingImageURL(_ image: String?) -> String {
+        return ProductListingPolicy.imageURL(image)
+    }
+
     /// Soft-read category rows. `arrCategories.object(at:) as! NSDictionary` crashes
     /// when a payload element is a string, number, or missing.
     class func categoryDictionary(at index: Int, in array: NSArray?) -> NSDictionary? {
@@ -293,7 +306,7 @@ class HLHomeViewController: BaseViewController, UIScrollViewDelegate, UITextFiel
                 
                 
                 cell.productName.text = product.productName
-                let prod_thumb = commonUtils.getThumbFor(url: product.productImage)
+                let prod_thumb = commonUtils.getThumbFor(url: HLHomeViewController.listingImageURL(product.productImage))
                 cell.productImage.loadImageFromURL(urlString: prod_thumb)
                 
                 cell.productName.text = product.productName;
@@ -305,13 +318,13 @@ class HLHomeViewController: BaseViewController, UIScrollViewDelegate, UITextFiel
                 cell.productOwnerImage.isHidden = false;
                 cell.productOwnerName.isHidden = false;
                 
-                if product.trading_count > 1 {
+                if HLHomeViewController.showsMultipleTrades(product.trading_count) {
                     cell.isMultipleTrades.isHidden = false
                 } else {
                     cell.isMultipleTrades.isHidden = true
                 }
                 
-                let user_id = product.productOwner as String;
+                let user_id = HLHomeViewController.listingOwnerId(product.productOwner)
                 if let user = self.usersList.object(forKey: user_id) as? NSDictionary {
                     //print(user)
                     cell.productOwnerName.text = user.object(forKey: "nick") as? String
