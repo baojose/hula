@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import CoreLocation
 import EasyTipView
 
 class HLHomeViewController: BaseViewController, UIScrollViewDelegate, UITextFieldDelegate, UITableViewDelegate, UITableViewDataSource {
@@ -196,6 +197,17 @@ class HLHomeViewController: BaseViewController, UIScrollViewDelegate, UITextFiel
         return ProductListingPolicy.imageURL(image)
     }
 
+    /// Near You rows used `productArray[indexPath.row]` after a background
+    /// reload could shrink the list. Stale rows must skip instead of crashing.
+    class func product(at index: Int, in products: [HulaProduct]) -> HulaProduct? {
+        return ListingIndexPolicy.product(at: index, in: products)
+    }
+
+    /// Home Near You used `location.coordinate` on a `CLLocation!`.
+    class func viewerCoordinates(_ location: CLLocation?) -> (latitude: Double, longitude: Double)? {
+        return UserCoordinatePolicy.coordinates(location)
+    }
+
     /// Soft-read category rows. `arrCategories.object(at:) as! NSDictionary` crashes
     /// when a payload element is a string, number, or missing.
     class func categoryDictionary(at index: Int, in array: NSArray?) -> NSDictionary? {
@@ -213,12 +225,14 @@ class HLHomeViewController: BaseViewController, UIScrollViewDelegate, UITextFiel
         spinner.show(inView: self.view)
         
         var queryURL: String = ""
-        let lat = HulaUser.sharedInstance.location.coordinate.latitude;
-        let lng = HulaUser.sharedInstance.location.coordinate.longitude;
+        guard let coords = HLHomeViewController.viewerCoordinates(HulaUser.sharedInstance.location) else {
+            spinner.hide()
+            return
+        }
         guard let nearURL = HLHomeViewController.productsNearURL(
             apiBase: HulaConstants.apiURL,
-            latitude: lat,
-            longitude: lng
+            latitude: coords.latitude,
+            longitude: coords.longitude
         ) else {
             spinner.hide()
             return
@@ -234,12 +248,12 @@ class HLHomeViewController: BaseViewController, UIScrollViewDelegate, UITextFiel
                     self.spinner.hide()
                 }
                 if ui.applyPayload, let dictionary = dictionary {
-                    if let products = dictionary["products"] as? [NSDictionary] {
+                            if let products = dictionary["products"] as? [NSDictionary] {
                         self.productArray = [];
                         for prod in products{
                             let p = HulaProduct()
                             p.populate(with: prod)
-                            if (p.productOwner != HulaUser.sharedInstance.userId){
+                            if HLHomeViewController.listingOwnerId(p.productOwner) != HLHomeViewController.listingOwnerId(HulaUser.sharedInstance.userId) {
                                 self.productArray.append(p);
                             }
                         }
@@ -302,7 +316,9 @@ class HLHomeViewController: BaseViewController, UIScrollViewDelegate, UITextFiel
         }else{
             if self.isNearYou == true {
                 let cell = tableView.dequeueReusableCell(withIdentifier: "homeProductCell") as! HLProductTableViewCell
-                let product = productArray[indexPath.row];
+                guard let product = HLHomeViewController.product(at: indexPath.row, in: productArray) else {
+                    return cell
+                }
                 
                 
                 cell.productName.text = product.productName
@@ -373,8 +389,11 @@ class HLHomeViewController: BaseViewController, UIScrollViewDelegate, UITextFiel
             self.navigationController?.pushViewController(searchResultViewController, animated: true)
         } else {
             if (isNearYou){
+                guard let product = HLHomeViewController.product(at: indexPath.row, in: productArray) else {
+                    return
+                }
                 let viewController = self.storyboard?.instantiateViewController(withIdentifier: "productDetailPage") as! HLProductDetailViewController
-                viewController.productData = productArray[indexPath.row]
+                viewController.productData = product
                 self.navigationController?.pushViewController(viewController, animated: true)
             } else {
                 searchResultViewController.searchByCategory = true

@@ -6295,6 +6295,140 @@ class HulaTests: XCTestCase {
         )
     }
 
+    // MARK: - Beyond #158: listing index, GPS IUO, session plist identity
+
+    /// Home Near You and search used `productArray[indexPath.row]` /
+    /// `filteredList[indexPath.row]` after a reload could shrink the list.
+    func testListingIndexPolicySkipsEmptyAndOutOfRangeRows() {
+        XCTAssertNil(ListingIndexPolicy.product(at: 0, in: []))
+        XCTAssertNil(HLHomeViewController.product(at: -1, in: [HulaProduct()]))
+        XCTAssertNil(HLSearchResultViewController.product(at: 1, in: [HulaProduct()]))
+        XCTAssertNil(ListingIndexPolicy.product(at: 2, in: [HulaProduct()]))
+
+        let first = HulaProduct(id: "a", name: "A", image: "")
+        let second = HulaProduct(id: "b", name: "B", image: "")
+        let products = [first, second]
+        XCTAssertTrue(ListingIndexPolicy.product(at: 0, in: products) === first)
+        XCTAssertTrue(HLHomeViewController.product(at: 1, in: products) === second)
+        XCTAssertTrue(HLSearchResultViewController.product(at: 0, in: products) === first)
+        XCTAssertNil(HLHomeViewController.product(at: 2, in: products))
+    }
+
+    /// Search filters used `object(forKey: productOwner)` with an IUO owner.
+    /// A nil key must not crash; missing owners skip reputation lookup.
+    func testListingSellerLookupSkipsNilUsersAndMissingOwners() {
+        XCTAssertNil(ProductListingPolicy.seller(in: nil, ownerId: "u1"))
+        let users: NSDictionary = ["u1": ["nick": "Ann"] as NSDictionary]
+        XCTAssertNil(HLSearchResultViewController.seller(in: users, ownerId: nil))
+        XCTAssertNil(ProductListingPolicy.seller(in: users, ownerId: "missing"))
+        XCTAssertEqual(
+            ProductListingPolicy.seller(in: users, ownerId: "u1")?.object(forKey: "nick") as? String,
+            "Ann"
+        )
+        XCTAssertEqual(
+            HLSearchResultViewController.seller(in: users, ownerId: "u1")?.object(forKey: "nick") as? String,
+            "Ann"
+        )
+    }
+
+    /// Home Near You, profile PUT, inventory update, and session plist used
+    /// `location.coordinate` on a `CLLocation!`. Nil/zero GPS must not crash.
+    func testUserCoordinatePolicySkipsNilAndZeroFixes() {
+        XCTAssertNil(UserCoordinatePolicy.coordinates(nil))
+        XCTAssertNil(HLHomeViewController.viewerCoordinates(nil))
+        XCTAssertNil(HulaUser.usableCoordinates(nil))
+        XCTAssertNil(UserCoordinatePolicy.usableCoordinates(CLLocation(latitude: 0, longitude: 0)))
+        XCTAssertNil(HulaUser.usableCoordinates(CLLocation(latitude: 0, longitude: 1)))
+        XCTAssertNil(UserCoordinatePolicy.usableCoordinates(CLLocation(latitude: 1, longitude: 0)))
+
+        let nyc = CLLocation(latitude: 40.7, longitude: -74.0)
+        let coords = HLHomeViewController.viewerCoordinates(nyc)
+        XCTAssertEqual(coords?.latitude ?? 0, 40.7, accuracy: 0.0001)
+        XCTAssertEqual(coords?.longitude ?? 0, -74.0, accuracy: 0.0001)
+        let usable = HulaUser.usableCoordinates(nyc)
+        XCTAssertEqual(usable?.latitude ?? 0, 40.7, accuracy: 0.0001)
+        XCTAssertEqual(usable?.longitude ?? 0, -74.0, accuracy: 0.0001)
+
+        let zeroPlist = CommonUtils.location(fromJSON: HLDataManager.plistCoordinates(nil) as NSArray)
+        XCTAssertEqual(zeroPlist?.coordinate.latitude ?? 99, 0, accuracy: 0.0001)
+        XCTAssertEqual(zeroPlist?.coordinate.longitude ?? 99, 0, accuracy: 0.0001)
+
+        let form = HLMyProductsViewController.formCoordinates(nil)
+        XCTAssertEqual(form.latitude, 0, accuracy: 0.0001)
+        XCTAssertEqual(form.longitude, 0, accuracy: 0.0001)
+
+        let nycPlist = CommonUtils.location(
+            fromJSON: UserCoordinatePolicy.plistCoordinates(nyc) as NSArray
+        )
+        XCTAssertEqual(nycPlist?.coordinate.latitude ?? 0, 40.7, accuracy: 0.0001)
+        XCTAssertEqual(nycPlist?.coordinate.longitude ?? 0, -74.0, accuracy: 0.0001)
+    }
+
+    /// UserData.plist `setObject` used IUO strings and `location.coordinate`.
+    /// Nil identity after a partial restore must persist empty strings and 0,0.
+    func testSessionWritePolicyCoalescesNilIdentityFields() {
+        let user = HulaUser()
+        user.token = nil
+        user.userId = nil
+        user.userNick = nil
+        user.userName = nil
+        user.userEmail = nil
+        user.userLocationName = nil
+        user.userPhotoURL = nil
+        user.userBio = nil
+        user.location = nil
+        user.maxTrades = 4
+        user.numProducts = 2
+
+        XCTAssertEqual(SessionWritePolicy.stringValue(nil), "")
+        XCTAssertEqual(HLDataManager.sessionStringValue(nil), "")
+        XCTAssertEqual(HulaUser.sessionStringValue("kept"), "kept")
+
+        let fields = HLDataManager.sessionIdentityDictionary(from: user)
+        XCTAssertEqual(fields.object(forKey: "token") as? String, "")
+        XCTAssertEqual(fields.object(forKey: "userId") as? String, "")
+        XCTAssertEqual(fields.object(forKey: "userNick") as? String, "")
+        XCTAssertEqual(fields.object(forKey: "userName") as? String, "")
+        XCTAssertEqual(fields.object(forKey: "userEmail") as? String, "")
+        XCTAssertEqual(fields.object(forKey: "userLocationName") as? String, "")
+        XCTAssertEqual(fields.object(forKey: "userPhotoURL") as? String, "")
+        XCTAssertEqual(fields.object(forKey: "userBio") as? String, "")
+        XCTAssertEqual(CommonUtils.intFromJSON(fields.object(forKey: "max_trades")), 4)
+        XCTAssertEqual(CommonUtils.intFromJSON(fields.object(forKey: "numProducts")), 2)
+        let loc = CommonUtils.location(fromJSON: fields.object(forKey: "userLocation"))
+        XCTAssertEqual(loc?.coordinate.latitude ?? 99, 0, accuracy: 0.0001)
+        XCTAssertEqual(loc?.coordinate.longitude ?? 99, 0, accuracy: 0.0001)
+
+        let body = user.getPostString()
+        XCTAssertTrue(body.contains("email="), body)
+        XCTAssertFalse(body.contains("&lat="), "Nil GPS must omit lat; got \(body)")
+        XCTAssertFalse(body.contains("&lng="), "Nil GPS must omit lng; got \(body)")
+        XCTAssertFalse(body.contains("&image="), "Nil photo must omit image; got \(body)")
+    }
+
+    /// Usable GPS still encodes lat/lng on the profile PUT.
+    func testUserPostStringIncludesUsableCoordinates() {
+        let user = HulaUser()
+        user.userEmail = "a@b.com"
+        user.userName = "Ann"
+        user.userBio = ""
+        user.userNick = "ann"
+        user.userPhotoURL = ""
+        user.twToken = ""
+        user.liToken = ""
+        user.fbToken = ""
+        user.deviceId = ""
+        user.zip = ""
+        user.userLocationName = "NYC"
+        user.location = CLLocation(latitude: 40.7, longitude: -74.0)
+
+        let body = user.getPostString()
+        XCTAssertTrue(body.contains("&lat="), body)
+        XCTAssertTrue(body.contains("&lng="), body)
+        XCTAssertTrue(body.contains("location_name=NYC"), body)
+        XCTAssertFalse(body.contains("&image="), body)
+    }
+
     private func tradeReadyFixture(
         ownerId: String,
         otherId: String,

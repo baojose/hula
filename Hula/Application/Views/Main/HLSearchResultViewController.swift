@@ -61,6 +61,17 @@ class HLSearchResultViewController: BaseViewController, UITableViewDataSource, U
         return ProductListingPolicy.imageURL(image)
     }
 
+    /// Search rows used `filteredList[indexPath.row]` after filters/reload
+    /// could shrink the list. Stale rows must skip instead of crashing.
+    class func product(at index: Int, in products: [HulaProduct]) -> HulaProduct? {
+        return ListingIndexPolicy.product(at: index, in: products)
+    }
+
+    /// Reputation lookup used `object(forKey: productOwner)` with an IUO owner.
+    class func seller(in users: NSDictionary?, ownerId: String?) -> NSDictionary? {
+        return ProductListingPolicy.seller(in: users, ownerId: ownerId)
+    }
+
     class func resultsTitle(searchByCategory: Bool, category: NSDictionary?, keyword: String?) -> String {
         if searchByCategory {
             return categorySearchTitle(from: category)
@@ -137,7 +148,9 @@ class HLSearchResultViewController: BaseViewController, UITableViewDataSource, U
         
         let cell = tableView.dequeueReusableCell(withIdentifier: "homeProductCell") as! HLProductTableViewCell
         
-        let product = filteredList[indexPath.row]
+        guard let product = HLSearchResultViewController.product(at: indexPath.row, in: filteredList) else {
+            return cell
+        }
         
         
         //print(product)
@@ -195,7 +208,9 @@ class HLSearchResultViewController: BaseViewController, UITableViewDataSource, U
         return cell
     }
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath){
-        let product = filteredList[indexPath.row]
+        guard let product = HLSearchResultViewController.product(at: indexPath.row, in: filteredList) else {
+            return
+        }
         
         if product.productCategoryId == "xx_user" {
             // not a product, but a user!!!
@@ -329,7 +344,7 @@ class HLSearchResultViewController: BaseViewController, UITableViewDataSource, U
                 isValidCond = true
             }
             
-            let seller = usersList.object(forKey: hprod.productOwner) as? NSDictionary
+            let seller = HLSearchResultViewController.seller(in: usersList, ownerId: hprod.productOwner)
             isValidRep = HLSearchResultViewController.sellerMeetsReputation(seller, minimumPercent: filterReputation)
             
             
@@ -337,7 +352,7 @@ class HLSearchResultViewController: BaseViewController, UITableViewDataSource, U
                 isValidDist = true
             }
             
-            if hprod.productOwner != HulaUser.sharedInstance.userId {
+            if HLSearchResultViewController.listingOwnerId(hprod.productOwner) != HLSearchResultViewController.listingOwnerId(HulaUser.sharedInstance.userId) {
                 // remove my products from the list
                 isValidUser = true
             }
