@@ -1983,6 +1983,83 @@ struct ProductListingPolicy {
     static func imageURL(_ image: String?) -> String {
         return image ?? ""
     }
+
+    /// Search filters used `usersList.object(forKey: productOwner)` with an IUO
+    /// owner. A nil NSDictionary key crashes; missing owners skip reputation.
+    static func seller(in users: NSDictionary?, ownerId owner: String?) -> NSDictionary? {
+        guard let users = users else {
+            return nil
+        }
+        return users.object(forKey: ownerId(owner)) as? NSDictionary
+    }
+}
+
+/// Home Near You and search listed `productArray[indexPath.row]` /
+/// `filteredList[indexPath.row]` without a bounds check. A reload that
+/// shrinks the list while a stale row is still on screen crashed discovery
+/// instead of skipping the cell or tap.
+struct ListingIndexPolicy {
+    static func product(at index: Int, in products: [HulaProduct]) -> HulaProduct? {
+        guard index >= 0 && index < products.count else {
+            return nil
+        }
+        return products[index]
+    }
+}
+
+/// Home Near You, profile PUT, inventory update, and session plist used
+/// `location.coordinate` on a `CLLocation!`. A nil GPS fix must not crash
+/// those paths; unusable 0,0 still omits lat/lng from the profile PUT.
+struct UserCoordinatePolicy {
+    static func coordinates(_ location: CLLocation?) -> (latitude: Double, longitude: Double)? {
+        guard let location = location else {
+            return nil
+        }
+        return (location.coordinate.latitude, location.coordinate.longitude)
+    }
+
+    static func usableCoordinates(_ location: CLLocation?) -> (latitude: Double, longitude: Double)? {
+        guard let coords = coordinates(location), coords.latitude != 0, coords.longitude != 0 else {
+            return nil
+        }
+        return coords
+    }
+
+    /// Session plist historically always wrote a 2-element array. Nil location
+    /// must persist 0,0 instead of crashing `user.location.coordinate`.
+    static func plistCoordinates(_ location: CLLocation?) -> [CGFloat] {
+        let coords = coordinates(location) ?? (latitude: 0, longitude: 0)
+        return [CGFloat(coords.latitude), CGFloat(coords.longitude)]
+    }
+}
+
+/// UserData.plist `setObject` used IUO strings and `location.coordinate`.
+/// Nil token/nick/location after a partial restore must persist empty
+/// strings and 0,0 instead of crashing logout/save.
+struct SessionWritePolicy {
+    static func stringValue(_ value: String?) -> String {
+        return value ?? ""
+    }
+
+    static func identityDictionary(from user: HulaUser) -> NSMutableDictionary {
+        let dict = NSMutableDictionary()
+        applyIdentity(from: user, to: dict)
+        return dict
+    }
+
+    static func applyIdentity(from user: HulaUser, to dict: NSMutableDictionary) {
+        dict.setObject(stringValue(user.token), forKey: "token" as NSCopying)
+        dict.setObject(stringValue(user.userId), forKey: "userId" as NSCopying)
+        dict.setObject(stringValue(user.userNick), forKey: "userNick" as NSCopying)
+        dict.setObject(stringValue(user.userName), forKey: "userName" as NSCopying)
+        dict.setObject(stringValue(user.userEmail), forKey: "userEmail" as NSCopying)
+        dict.setObject(user.maxTrades, forKey: "max_trades" as NSCopying)
+        dict.setObject(stringValue(user.userLocationName), forKey: "userLocationName" as NSCopying)
+        dict.setObject(UserCoordinatePolicy.plistCoordinates(user.location), forKey: "userLocation" as NSCopying)
+        dict.setObject(stringValue(user.userPhotoURL), forKey: "userPhotoURL" as NSCopying)
+        dict.setObject(stringValue(user.userBio), forKey: "userBio" as NSCopying)
+        dict.setObject(user.numProducts, forKey: "numProducts" as NSCopying)
+    }
 }
 
 /// Multipart `appendString` used `string.data(using: .utf8)!`. A failed

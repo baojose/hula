@@ -253,6 +253,19 @@ class HLDataManager: NSObject {
         ]
     }
 
+    /// Session plist identity used IUO strings and `location.coordinate`.
+    class func sessionIdentityDictionary(from user: HulaUser) -> NSMutableDictionary {
+        return SessionWritePolicy.identityDictionary(from: user)
+    }
+
+    class func sessionStringValue(_ value: String?) -> String {
+        return SessionWritePolicy.stringValue(value)
+    }
+
+    class func plistCoordinates(_ location: CLLocation?) -> [CGFloat] {
+        return UserCoordinatePolicy.plistCoordinates(location)
+    }
+
     /// Restore optional credentials from plist/API payloads (including alternate key names).
     class func applyUserSessionCredentials(to user: HulaUser, from dict: NSDictionary) {
         if let zip = dict.object(forKey: "zip") as? String {
@@ -888,19 +901,8 @@ class HLDataManager: NSObject {
         //saving values
         
         let user = HulaUser.sharedInstance
-        
-        dict.setObject(user.token, forKey: "token" as NSCopying)
-        dict.setObject(user.userId, forKey: "userId" as NSCopying)
-        dict.setObject(user.userNick, forKey: "userNick" as NSCopying)
-        dict.setObject(user.userName, forKey: "userName" as NSCopying)
-        dict.setObject(user.userEmail, forKey: "userEmail" as NSCopying)
-        dict.setObject(user.maxTrades, forKey: "max_trades" as NSCopying)
-        dict.setObject(user.userLocationName, forKey: "userLocationName" as NSCopying)
+        SessionWritePolicy.applyIdentity(from: user, to: dict)
         dict.setObject(self.onboardingTutorials, forKey: "onboardingTutorials" as NSCopying)
-        dict.setObject([CGFloat(user.location.coordinate.latitude), CGFloat(user.location.coordinate.longitude)] as [CGFloat], forKey: "userLocation" as NSCopying)
-        dict.setObject(user.userPhotoURL, forKey: "userPhotoURL" as NSCopying)
-        dict.setObject(user.userBio, forKey: "userBio" as NSCopying)
-        dict.setObject(user.numProducts, forKey: "numProducts" as NSCopying)
         // Persist optional credentials so cold start / welcome push PUTs do not wipe
         // server-side zip, social tokens, or push device id (see getPostString omission).
         let credentials = HLDataManager.userSessionCredentialSnapshot(from: user)

@@ -236,6 +236,12 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
         return ProductListingPolicy.imageURL(image)
     }
 
+    /// Inventory PUT used `location.coordinate` on a `CLLocation!`. Nil GPS
+    /// must send 0,0 (omitted by the form helper) instead of crashing save.
+    class func formCoordinates(_ location: CLLocation?) -> (latitude: Double, longitude: Double) {
+        return UserCoordinatePolicy.coordinates(location) ?? (latitude: 0, longitude: 0)
+    }
+
     /// Locate a product by id so Complete Profile Done updates the edited row, not always the last row.
     class func indexOfProduct(withId productId: String, in products: [HulaProduct]) -> Int? {
         guard productId.count > 0 else { return nil }
@@ -518,10 +524,11 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
     }
 
     func updateProductDataString(for product: HulaProduct) -> String {
+        let coords = HLMyProductsViewController.formCoordinates(HulaUser.sharedInstance.location)
         return HLMyProductsViewController.productFormPostString(
             for: product,
-            latitude: HulaUser.sharedInstance.location.coordinate.latitude,
-            longitude: HulaUser.sharedInstance.location.coordinate.longitude
+            latitude: coords.latitude,
+            longitude: coords.longitude
         )
     }
 

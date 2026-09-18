@@ -124,6 +124,15 @@ class HulaUser: NSObject {
         return isLoggedIn
     }
 
+    /// Profile PUT used `location.coordinate` on a `CLLocation!`.
+    class func usableCoordinates(_ location: CLLocation?) -> (latitude: Double, longitude: Double)? {
+        return UserCoordinatePolicy.usableCoordinates(location)
+    }
+
+    class func sessionStringValue(_ value: String?) -> String {
+        return SessionWritePolicy.stringValue(value)
+    }
+
     /// Profile PUT. Blank userId must not hit `users/`.
     class func updateURL(apiBase: String, userId: String?) -> String? {
         return CommonUtils.userResourceURL(apiBase: apiBase, userId: userId)
@@ -179,29 +188,39 @@ class HulaUser: NSObject {
         // Sending empty twtoken/litoken/fbtoken/push_device_id/zip/image on a full-object PUT
         // wipes server-side social verification, push delivery, avatar, and zip after cold start
         // (those fields are not always present in local session state).
-        var str = "email=" + CommonUtils.formEncodedValue(self.userEmail) + "&name=" + CommonUtils.formEncodedValue(self.userName) + "&bio=" + CommonUtils.formEncodedValue(self.userBio)
-        str = str + "&nick=" + CommonUtils.formEncodedValue(self.userNick) + "&max_trades=" + String(self.maxTrades)
-        if self.userPhotoURL.count > 0 {
-            str = str + "&image=" + CommonUtils.formEncodedValue(self.userPhotoURL)
+        let email = HulaUser.sessionStringValue(self.userEmail)
+        let name = HulaUser.sessionStringValue(self.userName)
+        let bio = HulaUser.sessionStringValue(self.userBio)
+        let nick = HulaUser.sessionStringValue(self.userNick)
+        var str = "email=" + CommonUtils.formEncodedValue(email) + "&name=" + CommonUtils.formEncodedValue(name) + "&bio=" + CommonUtils.formEncodedValue(bio)
+        str = str + "&nick=" + CommonUtils.formEncodedValue(nick) + "&max_trades=" + String(self.maxTrades)
+        let photo = HulaUser.sessionStringValue(self.userPhotoURL)
+        if photo.count > 0 {
+            str = str + "&image=" + CommonUtils.formEncodedValue(photo)
         }
-        if self.twToken.count > 0 {
-            str = str + "&twtoken=" + CommonUtils.formEncodedValue(self.twToken)
+        let twToken = HulaUser.sessionStringValue(self.twToken)
+        if twToken.count > 0 {
+            str = str + "&twtoken=" + CommonUtils.formEncodedValue(twToken)
         }
-        if self.liToken.count > 0 {
-            str = str + "&litoken=" + CommonUtils.formEncodedValue(self.liToken)
+        let liToken = HulaUser.sessionStringValue(self.liToken)
+        if liToken.count > 0 {
+            str = str + "&litoken=" + CommonUtils.formEncodedValue(liToken)
         }
-        if self.fbToken.count > 0 {
-            str = str + "&fbtoken=" + CommonUtils.formEncodedValue(self.fbToken)
+        let fbToken = HulaUser.sessionStringValue(self.fbToken)
+        if fbToken.count > 0 {
+            str = str + "&fbtoken=" + CommonUtils.formEncodedValue(fbToken)
         }
-        if self.deviceId.count > 0 {
-            str = str + "&push_device_id=" + CommonUtils.formEncodedValue(self.deviceId)
+        let deviceId = HulaUser.sessionStringValue(self.deviceId)
+        if deviceId.count > 0 {
+            str = str + "&push_device_id=" + CommonUtils.formEncodedValue(deviceId)
         }
-        if self.zip.count > 0 {
-            str = str + "&zip=" + CommonUtils.formEncodedValue(self.zip)
+        let zip = HulaUser.sessionStringValue(self.zip)
+        if zip.count > 0 {
+            str = str + "&zip=" + CommonUtils.formEncodedValue(zip)
         }
-        
-        if (self.location.coordinate.latitude != 0 && self.location.coordinate.longitude != 0){
-           str = str + "&lat=\(self.location.coordinate.latitude)&lng=\(self.location.coordinate.longitude)&location_name=" + CommonUtils.formEncodedValue(self.userLocationName)
+
+        if let coords = HulaUser.usableCoordinates(self.location) {
+            str = str + "&lat=\(coords.latitude)&lng=\(coords.longitude)&location_name=" + CommonUtils.formEncodedValue(HulaUser.sessionStringValue(self.userLocationName))
         }
         return str
     }
