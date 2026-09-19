@@ -6429,6 +6429,132 @@ class HulaTests: XCTestCase {
         XCTAssertFalse(body.contains("&image="), body)
     }
 
+    // MARK: - Beyond #159: IUO identity string length / login / HTTP token
+
+    /// Login, HTTP, inventory, and profile used IUO `.count` / `==`.
+    /// Nil must count as empty instead of crashing a partial session restore.
+    func testUserIdentityPolicyTreatsNilAsEmpty() {
+        XCTAssertEqual(UserIdentityPolicy.characterCount(nil), 0)
+        XCTAssertEqual(UserIdentityPolicy.characterCount(""), 0)
+        XCTAssertEqual(UserIdentityPolicy.characterCount("ab"), 2)
+        XCTAssertFalse(UserIdentityPolicy.hasNonEmptyValue(nil))
+        XCTAssertFalse(UserIdentityPolicy.hasUserId(nil))
+        XCTAssertFalse(HulaUser.hasUserId(""))
+        XCTAssertTrue(HLMyProductsViewController.hasUserId("u1"))
+        XCTAssertTrue(HLBarterScreenViewController.hasUserId("u1"))
+        XCTAssertTrue(HLPastTradeViewController.hasUserId("u1"))
+        XCTAssertTrue(HLProductDetailViewController.hasUserId("u1"))
+        XCTAssertTrue(HLSellerInfoViewController.hasUserId("u1"))
+        XCTAssertTrue(HLDataManager.hasUserId("u1"))
+    }
+
+    /// `isUserLoggedIn` required both IUO userId and token `.count > 0`.
+    func testUserIdentityPolicyLoginRequiresBothNonEmptyFields() {
+        XCTAssertFalse(UserIdentityPolicy.isLoggedIn(userId: nil, token: nil))
+        XCTAssertFalse(HulaUser.isLoggedIn(userId: nil, token: "token"))
+        XCTAssertFalse(UserIdentityPolicy.isLoggedIn(userId: "u1", token: nil))
+        XCTAssertFalse(HulaUser.isLoggedIn(userId: "", token: "token"))
+        XCTAssertFalse(UserIdentityPolicy.isLoggedIn(userId: "u1", token: ""))
+        XCTAssertTrue(HulaUser.isLoggedIn(userId: "u1", token: "t"))
+
+        let user = HulaUser()
+        user.userId = nil
+        user.token = nil
+        XCTAssertFalse(user.isUserLoggedIn())
+        user.userId = "u1"
+        user.token = nil
+        XCTAssertFalse(user.isUserLoggedIn())
+        user.token = "t"
+        XCTAssertTrue(user.isUserLoggedIn())
+    }
+
+    /// HTTP and identification used `token.count > 10`. Tab login uses `>= 10`.
+    /// A 10-char token must stay on identification and skip the auth header.
+    func testAccessTokenGateIsStrictlyLongerThanTen() {
+        let nine = String(repeating: Character("a"), count: 9)
+        let ten = String(repeating: Character("a"), count: 10)
+        let eleven = String(repeating: Character("a"), count: 11)
+
+        XCTAssertFalse(UserIdentityPolicy.hasAccessToken(nil))
+        XCTAssertFalse(UserIdentityPolicy.hasAccessToken(""))
+        XCTAssertFalse(UserIdentityPolicy.hasAccessToken(nine))
+        XCTAssertFalse(UserIdentityPolicy.hasAccessToken(ten))
+        XCTAssertTrue(UserIdentityPolicy.hasAccessToken(eleven))
+
+        XCTAssertFalse(TabLoginPolicy.isLoggedIn(token: nine))
+        XCTAssertTrue(TabLoginPolicy.isLoggedIn(token: ten))
+        XCTAssertTrue(TabLoginPolicy.isLoggedIn(token: eleven))
+
+        XCTAssertNil(UserIdentityPolicy.accessTokenHeaderValue(nil))
+        XCTAssertNil(HLDataManager.accessTokenHeaderValue(ten))
+        XCTAssertEqual(HLDataManager.accessTokenHeaderValue(eleven), eleven)
+
+        XCTAssertFalse(HLIdentificationViewController.shouldSkipIdentification(token: nil))
+        XCTAssertFalse(HLIdentificationViewController.shouldSkipIdentification(token: ten))
+        XCTAssertTrue(HLIdentificationViewController.shouldSkipIdentification(token: eleven))
+    }
+
+    /// Settings/seller used `.count>1`. One-character fields stay placeholders.
+    func testUserIdentityDisplayAndSocialGates() {
+        XCTAssertFalse(UserIdentityPolicy.hasDisplayValue(nil))
+        XCTAssertFalse(HLSettingViewController.hasDisplayValue(""))
+        XCTAssertFalse(HLSellerInfoViewController.hasDisplayValue("A"))
+        XCTAssertFalse(HLSellerHorizontalViewController.hasDisplayValue("B"))
+        XCTAssertTrue(HulaUser.hasDisplayValue("AB"))
+        XCTAssertTrue(HLSettingViewController.hasDisplayValue("Ada"))
+
+        XCTAssertTrue(UserIdentityPolicy.isSocialTokenMissing(nil))
+        XCTAssertTrue(HLProfileViewController.isSocialTokenMissing(""))
+        XCTAssertFalse(HulaUser.isSocialTokenMissing("tok"))
+
+        XCTAssertFalse(UserIdentityPolicy.isEmailVerified(nil))
+        XCTAssertFalse(HLProfileViewController.isEmailVerified(""))
+        XCTAssertFalse(HLSellerInfoViewController.isEmailVerified("pending"))
+        XCTAssertTrue(HulaUser.isEmailVerified("verified"))
+        XCTAssertTrue(HLSellerHorizontalViewController.isEmailVerified("verified"))
+    }
+
+    /// Complete-profile compared IUO fields to `""`. Nil must be incomplete.
+    func testIncompleteProfileTreatsNilFieldsAsIncomplete() {
+        XCTAssertTrue(UserIdentityPolicy.isIncompleteProfile(
+            name: nil,
+            nick: "ada",
+            bio: "bio",
+            photoURL: "https://hula.trading/a.jpg"
+        ))
+        XCTAssertTrue(HulaUser.isIncompleteProfile(
+            name: "Ada",
+            nick: nil,
+            bio: "bio",
+            photoURL: "https://hula.trading/a.jpg"
+        ))
+        XCTAssertTrue(UserIdentityPolicy.isIncompleteProfile(
+            name: "Ada",
+            nick: "ada",
+            bio: nil,
+            photoURL: "https://hula.trading/a.jpg"
+        ))
+        XCTAssertTrue(HulaUser.isIncompleteProfile(
+            name: "Ada",
+            nick: "ada",
+            bio: "bio",
+            photoURL: nil
+        ))
+        XCTAssertFalse(UserIdentityPolicy.isIncompleteProfile(
+            name: "Ada",
+            nick: "ada",
+            bio: "bio",
+            photoURL: "https://hula.trading/a.jpg"
+        ))
+
+        let user = HulaUser()
+        user.userName = nil
+        user.userNick = "ada"
+        user.userBio = "bio"
+        user.userPhotoURL = "https://hula.trading/a.jpg"
+        XCTAssertTrue(user.isIncompleteProfile())
+    }
+
     private func tradeReadyFixture(
         ownerId: String,
         otherId: String,
