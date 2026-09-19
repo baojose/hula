@@ -215,6 +215,10 @@ class HLProductDetailViewController: BaseViewController, UIScrollViewDelegate, U
         return CommonUtils.apiCollectionURL(apiBase: apiBase, resource: "trades", trailingSlash: true)
     }
 
+    class func hasUserId(_ userId: String?) -> Bool {
+        return UserIdentityPolicy.hasUserId(userId)
+    }
+
     /// Photo paging used `Int(offset / width)`. A zero-width frame before
     /// layout must not convert Inf to Int.
     class func galleryPageIndex(offset: CGFloat, pageWidth: CGFloat) -> Int {
@@ -529,7 +533,7 @@ extension HLProductDetailViewController: AlertDelegate{
                     if HLDataManager.sharedInstance.amIOfferedToTradeWith(otherId ?? "") {
                         return
                     }
-                    if (HulaUser.sharedInstance.userId.count>0){
+                    if HLProductDetailViewController.hasUserId(HulaUser.sharedInstance.userId){
                         // user is loggedin
                         guard let dataString = StartTradeUIPolicy.postString(productId: productId, otherId: otherId) else {
                             return

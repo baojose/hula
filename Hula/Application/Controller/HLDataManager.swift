@@ -262,6 +262,15 @@ class HLDataManager: NSObject {
         return SessionWritePolicy.stringValue(value)
     }
 
+    /// HTTP `x-access-token` used `token.count>10` on a `String!`.
+    class func accessTokenHeaderValue(_ token: String?) -> String? {
+        return UserIdentityPolicy.accessTokenHeaderValue(token)
+    }
+
+    class func hasUserId(_ userId: String?) -> Bool {
+        return UserIdentityPolicy.hasUserId(userId)
+    }
+
     class func plistCoordinates(_ location: CLLocation?) -> [CGFloat] {
         return UserCoordinatePolicy.plistCoordinates(location)
     }
@@ -680,8 +689,8 @@ class HLDataManager: NSObject {
         
         let user = HulaUser.sharedInstance
         //print(user.token)
-        if (user.token.count>10){
-            request.setValue(user.token, forHTTPHeaderField: "x-access-token")
+        if let token = HLDataManager.accessTokenHeaderValue(user.token) {
+            request.setValue(token, forHTTPHeaderField: "x-access-token")
         }
         request.httpMethod = "GET"
         let task = URLSession.shared.dataTask(with: request) { data, response, error in
@@ -723,8 +732,8 @@ class HLDataManager: NSObject {
         request.addValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Content-Type") //Optional
         request.httpBody = postString.data(using: .utf8)
         let user = HulaUser.sharedInstance
-        if (user.token.count>10){
-            request.addValue(user.token, forHTTPHeaderField: "x-access-token")
+        if let token = HLDataManager.accessTokenHeaderValue(user.token) {
+            request.addValue(token, forHTTPHeaderField: "x-access-token")
         }
         //print(request.httpBody!)
         //print(request.httpMethod!)
@@ -768,8 +777,8 @@ class HLDataManager: NSObject {
             request.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
             
             let user = HulaUser.sharedInstance
-            if (user.token.count>10){
-                request.setValue(user.token, forHTTPHeaderField: "x-access-token")
+            if let token = HLDataManager.accessTokenHeaderValue(user.token) {
+                request.setValue(token, forHTTPHeaderField: "x-access-token")
             }
             let body = createBody(parameters: ["position": "\(itemPosition)"],
                                   boundary: boundary,
@@ -825,8 +834,8 @@ class HLDataManager: NSObject {
             request.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
             
             let user = HulaUser.sharedInstance
-            if (user.token.count>10){
-                request.setValue(user.token, forHTTPHeaderField: "x-access-token")
+            if let token = HLDataManager.accessTokenHeaderValue(user.token) {
+                request.setValue(token, forHTTPHeaderField: "x-access-token")
             }
             let body = createBody(parameters: ["product_id": "\(productId)", "trade_id": "\(tradeId)"],
                                   boundary: boundary,

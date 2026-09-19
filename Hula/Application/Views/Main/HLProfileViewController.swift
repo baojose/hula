@@ -157,14 +157,14 @@ class HLProfileViewController: BaseViewController {
                                        message: nil,
                                        preferredStyle: .actionSheet)
         
-        if HulaUser.sharedInstance.fbToken.count == 0 {
+        if HLProfileViewController.isSocialTokenMissing(HulaUser.sharedInstance.fbToken) {
             let facebookAction = UIAlertAction(title: "Facebook", style: .default, handler: { action -> Void in
                 self.facebookValidate()
             })
             alert.addAction(facebookAction)
         }
         
-        if HulaUser.sharedInstance.liToken.count == 0 {
+        if HLProfileViewController.isSocialTokenMissing(HulaUser.sharedInstance.liToken) {
             let linkedinAction = UIAlertAction(title: "Linkedin", style: .default, handler: { action -> Void in
                 self.linkedinValidate()
             })
@@ -172,7 +172,7 @@ class HLProfileViewController: BaseViewController {
         }
         
         
-        if HulaUser.sharedInstance.twToken.count == 0 {
+        if HLProfileViewController.isSocialTokenMissing(HulaUser.sharedInstance.twToken) {
             let twitterAction = UIAlertAction(title: "Twitter", style: .default, handler: { action -> Void in
                 self.twitterValidate()
             })
@@ -180,7 +180,7 @@ class HLProfileViewController: BaseViewController {
         }
         
         
-        if HulaUser.sharedInstance.status != "verified" {
+        if !HLProfileViewController.isEmailVerified(HulaUser.sharedInstance.status) {
             let emailAction = UIAlertAction(title: "Email", style: .default, handler: { action -> Void in
                 self.emailValidate()
             })
@@ -288,6 +288,15 @@ class HLProfileViewController: BaseViewController {
         return LoadedImagePolicy.imageForPresentation(image)
     }
 
+    /// Social sheet used IUO `.count == 0`. Nil tokens must still offer connect.
+    class func isSocialTokenMissing(_ token: String?) -> Bool {
+        return UserIdentityPolicy.isSocialTokenMissing(token)
+    }
+
+    class func isEmailVerified(_ status: String?) -> Bool {
+        return UserIdentityPolicy.isEmailVerified(status)
+    }
+
     func getUserProfile() {
         
         //print("Getting user info...")
@@ -307,19 +316,19 @@ class HLProfileViewController: BaseViewController {
                 if ui.applyPayload, let user = userPayload {
                     HulaUser.sharedInstance.populate(with: user as NSDictionary)
 
-                    if (HulaUser.sharedInstance.fbToken != ""){
+                    if !HLProfileViewController.isSocialTokenMissing(HulaUser.sharedInstance.fbToken) {
                         self.verFacebookIcon.image = UIImage(named: "icon_facebook_on")
                         self.verFacebookIcon.bouncer()
                     }
-                    if (HulaUser.sharedInstance.liToken != ""){
+                    if !HLProfileViewController.isSocialTokenMissing(HulaUser.sharedInstance.liToken) {
                         self.verLinkedinIcon.image = UIImage(named: "icon_linkedin_on")
                         self.verLinkedinIcon.bouncer()
                     }
-                    if (HulaUser.sharedInstance.twToken != ""){
+                    if !HLProfileViewController.isSocialTokenMissing(HulaUser.sharedInstance.twToken) {
                         self.verTwitterIcon.image = UIImage(named: "icon_twitter_on")
                         self.verTwitterIcon.bouncer()
                     }
-                    if (HulaUser.sharedInstance.status == "verified"){
+                    if HLProfileViewController.isEmailVerified(HulaUser.sharedInstance.status) {
                         self.verMailIcon.image = UIImage(named: "icon_mail_on")
                         self.verMailIcon.bouncer()
                     }
@@ -327,7 +336,7 @@ class HLProfileViewController: BaseViewController {
                     self.userFeedbackLabel.text = HulaUser.sharedInstance.getFeedback()
                     self.userFullNameLabel.text = HulaUser.sharedInstance.userName
                     self.current_image_url = HulaUser.sharedInstance.userPhotoURL
-                    if (self.current_image_url != "") {
+                    if UserIdentityPolicy.hasNonEmptyValue(self.current_image_url) {
                         self.profileImageView.loadImageFromURL(urlString: HulaUser.sharedInstance.userPhotoURL)
                     } else {
                         self.profileImageView.image = UIImage(named: "profile_placeholder")
