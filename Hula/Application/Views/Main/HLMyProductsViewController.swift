@@ -258,6 +258,10 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
         return CommonUtils.productsForUserURL(apiBase: apiBase, userId: userId)
     }
 
+    class func hasUserId(_ userId: String?) -> Bool {
+        return UserIdentityPolicy.hasUserId(userId)
+    }
+
     /// Inventory title height used `cell.productDescription.text!`.
     class func productTitleHeight(width: CGFloat, font: UIFont?, text: String?) -> CGFloat {
         return LabelMetricsPolicy.layoutHeight(width: width, font: font, text: text, extra: 0)
@@ -391,7 +395,7 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
     
     func getUserProducts() {
         //print("Getting product info...")
-        if (HulaUser.sharedInstance.userId.count>0){
+        if HLMyProductsViewController.hasUserId(HulaUser.sharedInstance.userId){
             guard let queryURL = HLMyProductsViewController.userProductsURL(
                 apiBase: HulaConstants.apiURL,
                 userId: HulaUser.sharedInstance.userId
@@ -438,7 +442,7 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
     }
     func uploadProduct(for product: HulaProduct, progress: ProductCreateUploadProgress) {
         //print("Saving product...")
-        if (HulaUser.sharedInstance.userId.count>0){
+        if HLMyProductsViewController.hasUserId(HulaUser.sharedInstance.userId){
             guard let queryURL = HLMyProductsViewController.productsCreateURL(apiBase: HulaConstants.apiURL) else {
                 return
             }
@@ -535,7 +539,7 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
     func uploadImages(for product: HulaProduct, progress: ProductCreateUploadProgress) {
         product.arrProductPhotoLink = ProductCreateSession.preparedPhotoSlots()
         //print(product.arrProductPhotos)
-        if (HulaUser.sharedInstance.userId.count>0){
+        if HLMyProductsViewController.hasUserId(HulaUser.sharedInstance.userId){
             // user is logged in
             for i in 0 ..< 4{
                 if let image = CommonUtils.uiImage(at: i, in: product.arrProductPhotos) {

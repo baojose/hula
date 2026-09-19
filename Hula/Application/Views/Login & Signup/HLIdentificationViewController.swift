@@ -29,8 +29,8 @@ class HLIdentificationViewController: UserBaseViewController {
     override func viewDidAppear(_ animated: Bool) {
         
         let user = HulaUser.sharedInstance
-        if (user.token.count > 10){
-            // user not logged in
+        if HLIdentificationViewController.shouldSkipIdentification(token: user.token) {
+            // user already logged in
             self.closeIdentification()
         }
         HLDataManager.sharedInstance.ga("identification")
@@ -70,6 +70,13 @@ class HLIdentificationViewController: UserBaseViewController {
     /// Facebook login posts a Bool success flag. Missing/wrong-type payloads must not force-cast crash.
     class func authNotificationSucceeded(_ object: Any?) -> Bool {
         return CommonUtils.boolFromJSON(object) ?? false
+    }
+
+    /// Auto-close used `token.count > 10`. Nil IUO must stay on identification;
+    /// a 10-char token still matches historical HTTP/identification (strict >),
+    /// not TabLoginPolicy `>= 10`.
+    class func shouldSkipIdentification(token: String?) -> Bool {
+        return UserIdentityPolicy.hasAccessToken(token)
     }
 
     /// Terms link. Blank/malformed URLs must not crash via `URL(string:)!`.

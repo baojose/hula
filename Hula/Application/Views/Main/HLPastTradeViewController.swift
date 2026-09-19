@@ -32,6 +32,10 @@ class HLPastTradeViewController: UIViewController, UICollectionViewDelegate, UIC
         return CommonUtils.productResourceURL(apiBase: apiBase, productId: productId)
     }
 
+    class func hasUserId(_ userId: String?) -> Bool {
+        return UserIdentityPolicy.hasUserId(userId)
+    }
+
     /// Opening a completed deal used `currTrade!`. A missing snapshot (lobby
     /// navigation before assignment, or a dropped room) crashed Past Trades.
     class func tradeSnapshot(_ raw: NSDictionary?) -> NSDictionary? {
@@ -230,7 +234,7 @@ class HLPastTradeViewController: UIViewController, UICollectionViewDelegate, UIC
     
     func getProduct(productId: String, taskCallback: @escaping (HulaProduct) -> ()) {
         //print("Getting user info...")
-        if (HulaUser.sharedInstance.userId.count>0){
+        if HLPastTradeViewController.hasUserId(HulaUser.sharedInstance.userId){
             let product: HulaProduct = HulaProduct()
             guard let queryURL = HLPastTradeViewController.productURL(
                 apiBase: HulaConstants.apiURL,

@@ -36,6 +36,15 @@ class HLSellerHorizontalViewController: BaseViewController {
     var userProducts: NSArray = []
     var userFeedback: NSArray = []
     var initialTradeFrame: CGRect!
+
+    /// Seller social/bio used IUO `.count>1`.
+    class func hasDisplayValue(_ value: String?) -> Bool {
+        return UserIdentityPolicy.hasDisplayValue(value)
+    }
+
+    class func isEmailVerified(_ status: String?) -> Bool {
+        return UserIdentityPolicy.isEmailVerified(status)
+    }
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -58,19 +67,19 @@ class HLSellerHorizontalViewController: BaseViewController {
         sellerNameLabel.text = user.userNick
         sellerLocationLabel.text = user.userLocationName
         
-        if (user.twToken.count>1){
+        if HLSellerHorizontalViewController.hasDisplayValue(user.twToken){
             twIcon.image = UIImage(named: "icon_twitter_on")
         }
-        if (user.fbToken.count>1){
+        if HLSellerHorizontalViewController.hasDisplayValue(user.fbToken){
             fbIcon.image = UIImage(named: "icon_facebook_on")
         }
-        if (user.liToken.count>1){
+        if HLSellerHorizontalViewController.hasDisplayValue(user.liToken){
             liIcon.image = UIImage(named: "icon_linkedin_on")
         }
-        if (user.status == "verified"){
+        if HLSellerHorizontalViewController.isEmailVerified(user.status){
             emIcon.image = UIImage(named: "icon_mail_on")
         }
-        if (user.userBio.count>1){
+        if HLSellerHorizontalViewController.hasDisplayValue(user.userBio){
             sellerBioTextView.text = user.userBio
         } else {
             sellerBioTextView.text = "..."

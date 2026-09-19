@@ -2069,3 +2069,64 @@ struct UTF8DataPolicy {
         return string.data(using: String.Encoding.utf8, allowLossyConversion: false)
     }
 }
+
+/// IUO identity strings (`userId`, `token`, social tokens, profile fields)
+/// used `.count` / `==` and crashed after a partial restore. Nil must count
+/// as empty. HTTP/identification historically used `token.count > 10` (strict),
+/// which is not TabLoginPolicy's `>= 10` tab-bar gate.
+struct UserIdentityPolicy {
+    static func characterCount(_ value: String?) -> Int {
+        return SessionWritePolicy.stringValue(value).characters.count
+    }
+
+    static func hasNonEmptyValue(_ value: String?) -> Bool {
+        return characterCount(value) > 0
+    }
+
+    /// `HulaUser.isUserLoggedIn`: both userId and token non-empty (any length).
+    static func isLoggedIn(userId: String?, token: String?) -> Bool {
+        return hasUserId(userId) && hasNonEmptyValue(token)
+    }
+
+    /// Inventory/barter/seller/start-trade used `userId.count>0`.
+    static func hasUserId(_ userId: String?) -> Bool {
+        return hasNonEmptyValue(userId)
+    }
+
+    /// HTTP `x-access-token` and identification auto-close used `token.count > 10`.
+    /// A 10-char token stays logged in on the tab bar (`>= 10`) but must not
+    /// attach an auth header or skip identification.
+    static func hasAccessToken(_ token: String?) -> Bool {
+        return characterCount(token) > TabLoginPolicy.minimumTokenLength
+    }
+
+    static func accessTokenHeaderValue(_ token: String?) -> String? {
+        if !hasAccessToken(token) {
+            return nil
+        }
+        return SessionWritePolicy.stringValue(token)
+    }
+
+    /// Settings/seller display used `.count>1`. One-character fields stay placeholders.
+    static func hasDisplayValue(_ value: String?) -> Bool {
+        return characterCount(value) > 1
+    }
+
+    /// Profile social sheet used `.count == 0` to offer Facebook/Twitter/LinkedIn.
+    static func isSocialTokenMissing(_ token: String?) -> Bool {
+        return characterCount(token) == 0
+    }
+
+    static func isEmailVerified(_ status: String?) -> Bool {
+        return SessionWritePolicy.stringValue(status) == "verified"
+    }
+
+    /// Complete-profile used `== ""` on IUO name/nick/bio/photo. Nil must be
+    /// incomplete instead of crashing or looking complete.
+    static func isIncompleteProfile(name: String?, nick: String?, bio: String?, photoURL: String?) -> Bool {
+        return characterCount(name) == 0
+            || characterCount(nick) == 0
+            || characterCount(bio) == 0
+            || characterCount(photoURL) == 0
+    }
+}

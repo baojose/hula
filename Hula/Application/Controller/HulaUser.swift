@@ -70,24 +70,18 @@ class HulaUser: NSObject {
         self.numProducts = 0
     }
     
+    /// Complete-profile used `== ""` on IUO name/nick/bio/photo.
+    class func isIncompleteProfile(name: String?, nick: String?, bio: String?, photoURL: String?) -> Bool {
+        return UserIdentityPolicy.isIncompleteProfile(name: name, nick: nick, bio: bio, photoURL: photoURL)
+    }
+
     func isIncompleteProfile() -> Bool{
-        var isIncomplete = false
-        if (self.userName==""){
-            isIncomplete = true
-        }
-        if (self.userNick==""){
-            isIncomplete = true
-        }
-        if (self.userName==""){
-            isIncomplete = true
-        }
-        if (self.userBio==""){
-            isIncomplete = true
-        }
-        if (self.userPhotoURL==""){
-            isIncomplete = true
-        }
-        return isIncomplete
+        return HulaUser.isIncompleteProfile(
+            name: self.userName,
+            nick: self.userNick,
+            bio: self.userBio,
+            photoURL: self.userPhotoURL
+        )
     }
     func logout() {
         self.userId = ""
@@ -116,12 +110,29 @@ class HulaUser: NSObject {
         self.numProducts = 0
     }
     
+    /// Login gate used IUO `userId.count` / `token.count`.
+    class func isLoggedIn(userId: String?, token: String?) -> Bool {
+        return UserIdentityPolicy.isLoggedIn(userId: userId, token: token)
+    }
+
+    class func hasUserId(_ userId: String?) -> Bool {
+        return UserIdentityPolicy.hasUserId(userId)
+    }
+
+    class func hasDisplayValue(_ value: String?) -> Bool {
+        return UserIdentityPolicy.hasDisplayValue(value)
+    }
+
+    class func isSocialTokenMissing(_ token: String?) -> Bool {
+        return UserIdentityPolicy.isSocialTokenMissing(token)
+    }
+
+    class func isEmailVerified(_ status: String?) -> Bool {
+        return UserIdentityPolicy.isEmailVerified(status)
+    }
+
     func isUserLoggedIn() -> Bool{
-        var isLoggedIn = false;
-        if (self.userId.count > 0) && (self.token.count > 0) {
-            isLoggedIn = true;
-        }
-        return isLoggedIn
+        return HulaUser.isLoggedIn(userId: self.userId, token: self.token)
     }
 
     /// Profile PUT used `location.coordinate` on a `CLLocation!`.

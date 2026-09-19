@@ -97,6 +97,10 @@ class HLBarterScreenViewController: BaseViewController {
         return CommonUtils.productsForUserURL(apiBase: apiBase, userId: userId)
     }
 
+    class func hasUserId(_ userId: String?) -> Bool {
+        return UserIdentityPolicy.hasUserId(userId)
+    }
+
     /// Missing `image_url` falls back to the product image endpoint. Do not force-unwrap
     /// the optional after the fallback; empty strings are kept as in the original path.
     class func resolvedProductImage(from productData: [String: Any], productId: String) -> String {
@@ -1031,7 +1035,7 @@ class HLBarterScreenViewController: BaseViewController {
     
     func getUserProducts(user: String, taskCallback: @escaping (Bool, [HulaProduct]) -> ()) {
         //print("Getting user info...")
-        if (HulaUser.sharedInstance.userId.count>0){
+        if HLBarterScreenViewController.hasUserId(HulaUser.sharedInstance.userId){
             guard let queryURL = HLBarterScreenViewController.userProductsURL(
                 apiBase: HulaConstants.apiURL,
                 userId: user
@@ -1096,6 +1100,8 @@ class HLBarterScreenViewController: BaseViewController {
                     }
                 }
             })
+        } else {
+            taskCallback(false, [])
         }
     }
     

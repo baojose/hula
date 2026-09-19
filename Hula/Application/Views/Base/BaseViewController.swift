@@ -57,12 +57,7 @@ class BaseViewController: UIViewController {
 //        present(modalViewController, animated: true, completion: nil)
     }
     func checkUserLogin() -> Bool{
-        let user = HulaUser.sharedInstance
-        if (user.token.count < 10){
-            isUserLoggedIn = false
-        } else {
-            isUserLoggedIn = true
-        }
+        isUserLoggedIn = TabLoginPolicy.isLoggedIn(token: HulaUser.sharedInstance.token)
         return isUserLoggedIn
     }
 }

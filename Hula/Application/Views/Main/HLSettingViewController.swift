@@ -53,6 +53,11 @@ class HLSettingViewController: BaseViewController {
     class func fullscreenImage(_ image: UIImage?) -> UIImage? {
         return LoadedImagePolicy.imageForPresentation(image)
     }
+
+    /// Settings labels used IUO `.count>1`. Nil/one-character fields stay placeholders.
+    class func hasDisplayValue(_ value: String?) -> Bool {
+        return UserIdentityPolicy.hasDisplayValue(value)
+    }
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -77,7 +82,7 @@ class HLSettingViewController: BaseViewController {
         commonUtils.circleImageView(profileImageView)
         mainScrollView.contentSize = CGSize(width: 0, height: 650)
         //print(userData.userPhotoURL)
-        if (userData.userPhotoURL.count>1){
+        if HLSettingViewController.hasDisplayValue(userData.userPhotoURL){
             self.removeAlertIcon(fromView: self.pictureView)
             self.smallProfileImage.loadImageFromURL(urlString: HulaUser.sharedInstance.userPhotoURL)
         } else {
@@ -85,7 +90,7 @@ class HLSettingViewController: BaseViewController {
         }
         
         
-        if (userData.userNick.count>1){
+        if HLSettingViewController.hasDisplayValue(userData.userNick){
             userNameLabel.text = userData.userNick
             self.removeAlertIcon(fromView: self.nameView)
         } else {
@@ -93,18 +98,18 @@ class HLSettingViewController: BaseViewController {
             self.addAlertIcon(toView: self.nameView)
         }
         
-        if (userData.userEmail.count>1){
+        if HLSettingViewController.hasDisplayValue(userData.userEmail){
             userEmailLabel.text = userData.userEmail
         }
         
-        if (userData.userName.count>1){
+        if HLSettingViewController.hasDisplayValue(userData.userName){
             userFullNameLabel.text = userData.userName
             self.removeAlertIcon(fromView: self.fullNameView)
         } else {
             userFullNameLabel.text = NSLocalizedString("Full name", comment: "")
             self.addAlertIcon(toView: self.fullNameView)
         }
-        if (userData.userBio.count>1){
+        if HLSettingViewController.hasDisplayValue(userData.userBio){
             userBioLabel.text = userData.userBio
             self.removeAlertIcon(fromView: self.bioView)
         } else {
@@ -112,7 +117,7 @@ class HLSettingViewController: BaseViewController {
             self.addAlertIcon(toView: self.bioView)
         }
         
-        if (userData.userLocationName.count>1){
+        if HLSettingViewController.hasDisplayValue(userData.userLocationName){
             locationLabel.text = userData.userLocationName
             self.removeAlertIcon(fromView: self.locationView)
         } else {
