@@ -12,6 +12,12 @@ class HLFeedbackHistoryViewController: BaseViewController, UITableViewDelegate, 
     
     var feedbackList: NSArray = []
 
+    /// Feedback history used `feedbackList[indexPath.row]` after a background
+    /// reload. Stale rows must skip instead of crashing the rating list.
+    class func feedbackDictionary(at index: Int, in rows: NSArray?) -> NSDictionary? {
+        return DictionaryRowPolicy.dictionary(at: index, in: rows)
+    }
+
     /// Star scores are POSTed as integers (`val=1…5`) and often arrive as Int/NSNumber.
     /// `as? CGFloat` fails for those bridges and left the % label blank.
     class func feedbackScorePercent(from val: Any?) -> String? {
@@ -63,7 +69,7 @@ class HLFeedbackHistoryViewController: BaseViewController, UITableViewDelegate, 
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         
         let cell = tableView.dequeueReusableCell(withIdentifier: "feedbackHistoryCell") as! HLFeedbackHistoryTableViewCell
-        if let this_fb = feedbackList[indexPath.row] as? NSDictionary{
+        if let this_fb = HLFeedbackHistoryViewController.feedbackDictionary(at: indexPath.row, in: feedbackList) {
             print(this_fb)
             if let label = HLFeedbackHistoryViewController.feedbackScorePercent(from: this_fb["val"]) {
                 cell.feedbackPercentage.text = label
