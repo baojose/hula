@@ -173,18 +173,11 @@ class HLProductDetailViewController: BaseViewController, UIScrollViewDelegate, U
     /// Soft-read seller inventory rows. Tapping used `as! NSDictionary` after cellForRow
     /// already used `as?`, so a string/number row crashed on select.
     class func sellerProductDictionary(at index: Int, in products: NSArray?) -> NSDictionary? {
-        guard let products = products, index >= 0, index < products.count else {
-            return nil
-        }
-        let item = products.object(at: index)
-        if let dict = item as? NSDictionary {
-            return dict
-        }
-        return nil
+        return DictionaryRowPolicy.dictionary(at: index, in: products)
     }
 
     class func shouldOpenSellerProduct(_ product: HulaProduct) -> Bool {
-        return product.productStatus != "traded"
+        return !HulaProduct.isTraded(product.productStatus)
     }
 
     /// Empty productId must not force-unwrap or GET `products/report/`.

@@ -243,10 +243,10 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
     }
 
     /// Locate a product by id so Complete Profile Done updates the edited row, not always the last row.
-    class func indexOfProduct(withId productId: String, in products: [HulaProduct]) -> Int? {
-        guard productId.count > 0 else { return nil }
+    class func indexOfProduct(withId productId: String?, in products: [HulaProduct]) -> Int? {
+        guard ProductIdentityPolicy.hasIdentifier(productId) else { return nil }
         for (idx, product) in products.enumerated() {
-            if product.productId == productId {
+            if ProductIdentityPolicy.identifiersMatch(product.productId, productId) {
                 return idx
             }
         }
@@ -304,7 +304,7 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
 
     /// Create flow posts product + uploads images in parallel. Attach images only once both sides are ready.
     class func shouldAttachUploadedImages(productId: String?, imagesToUpload: Int, imagesAlreadyUploaded: Int) -> Bool {
-        guard let productId = productId, productId.count > 0 else {
+        guard ProductIdentityPolicy.hasIdentifier(productId) else {
             return false
         }
         if imagesToUpload <= 0 {
@@ -321,7 +321,7 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
             // just if we are coming back from product creation
             let newProduct = HLDataManager.sharedInstance.newProduct
             var existingIndex = self.arrayProducts.index(where: { $0 === newProduct })
-            if existingIndex == nil && newProduct.productId.count > 0 {
+            if existingIndex == nil && HulaProduct.hasProductId(newProduct.productId) {
                 // After getUserProducts refresh, instances differ but productId matches.
                 existingIndex = HLMyProductsViewController.indexOfProduct(
                     withId: newProduct.productId,
@@ -333,12 +333,12 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
                 // Already tracking this create/update — never start a second create.
                 // Complete-profile "Done" re-enters here while productId may still be empty.
                 self.arrayProducts[idx] = newProduct
-                if newProduct.productId.count > 0 {
+                if HulaProduct.hasProductId(newProduct.productId) {
                     updateProduct(for: newProduct)
                 }
                 productTableView.reloadData()
                 productTableView.setContentOffset(CGPoint(x: 0.0, y: 0.0), animated: false)
-            } else if newProduct.productId.count > 0 {
+            } else if HulaProduct.hasProductId(newProduct.productId) {
                 // Known product id with no matching row: do not clobber the last inventory slot.
                 // Keep local list intact and persist via updateProduct only.
                 updateProduct(for: newProduct)
@@ -482,7 +482,7 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
     }
     func updateProduct(for product: HulaProduct) {
         //print("Updating product...")
-        if (product.productId.count>0){
+        if HulaProduct.hasProductId(product.productId) {
             guard let queryURL = HulaProduct.updateURL(apiBase: HulaConstants.apiURL, productId: product.productId) else {
                 return
             }
@@ -514,14 +514,12 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
     }
 
     class func productFormPostString(for product: HulaProduct, latitude: Double, longitude: Double) -> String {
-        let product_images_array = (product.arrProductPhotoLink ?? []).joined(separator: ",")
-        // urlHostAllowed leaves &=+ unescaped and corrupts adjacent form fields.
         return CommonUtils.productFormPostString(
-            title: product.productName ?? "",
-            description: product.productDescription ?? "",
-            condition: product.productCondition ?? "",
-            categoryId: product.productCategoryId ?? "",
-            imagesCSV: product_images_array,
+            title: SessionWritePolicy.stringValue(product.productName),
+            description: SessionWritePolicy.stringValue(product.productDescription),
+            condition: SessionWritePolicy.stringValue(product.productCondition),
+            categoryId: SessionWritePolicy.stringValue(product.productCategoryId),
+            imagesCSV: ProductIdentityPolicy.photoLinksCSV(product.arrProductPhotoLink),
             latitude: latitude,
             longitude: longitude
         )

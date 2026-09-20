@@ -6555,6 +6555,172 @@ class HulaTests: XCTestCase {
         XCTAssertTrue(user.isIncompleteProfile())
     }
 
+    // MARK: - Beyond #160: IUO product/trade form fields and seller rows
+
+    /// Product/trade PUT used `formEncodedValue` on IUO strings and `.joined`
+    /// on a nil photo array. Nil must encode as empty instead of crashing save.
+    func testFormFieldPolicyEncodesNilAsEmpty() {
+        XCTAssertEqual(FormFieldPolicy.encoded(nil), "")
+        XCTAssertEqual(FormFieldPolicy.encoded(""), "")
+        XCTAssertEqual(FormFieldPolicy.joined(nil), "")
+        XCTAssertEqual(FormFieldPolicy.csv(nil), "")
+        XCTAssertEqual(FormFieldPolicy.csv(["p1", "p2"]), "p1,p2")
+        XCTAssertEqual(FormFieldPolicy.joined(["a&b"]), "a%26b")
+        XCTAssertEqual(ProductIdentityPolicy.photoLinksCSV(nil), "")
+        XCTAssertEqual(ProductIdentityPolicy.photoLinksCSV(["a.jpg", "b.jpg"]), "a.jpg,b.jpg")
+    }
+
+    /// Listing edit PUT crashed on nil IUO title/owner/photos after a partial populate.
+    func testProductPostStringSurvivesNilIUOFields() {
+        let product = HulaProduct()
+        product.productName = nil
+        product.productDescription = nil
+        product.productCondition = nil
+        product.productCategory = nil
+        product.productCategoryId = nil
+        product.productImage = nil
+        product.productOwner = nil
+        product.arrProductPhotoLink = nil
+        product.productLocation = nil
+
+        let body = product.getPostString()
+        XCTAssertTrue(body.contains("title="), body)
+        XCTAssertTrue(body.contains("&owner_id="), body)
+        XCTAssertTrue(body.contains("&images="), body)
+        XCTAssertFalse(body.contains("&lat="), "Nil GPS must omit lat; got \(body)")
+        XCTAssertFalse(body.contains("&lng="), "Nil GPS must omit lng; got \(body)")
+
+        let inventory = HLMyProductsViewController.productFormPostString(
+            for: product,
+            latitude: 0,
+            longitude: 0
+        )
+        XCTAssertTrue(inventory.contains("title="), inventory)
+        XCTAssertTrue(inventory.contains("&images="), inventory)
+    }
+
+    /// Trade PUT crashed on nil IUO product_id/status and tradeId.count.
+    func testTradePostStringSurvivesNilIUOFields() {
+        XCTAssertFalse(ProductIdentityPolicy.hasIdentifier(nil))
+        XCTAssertFalse(HulaTrade.hasTradeId(nil))
+        XCTAssertFalse(HulaTrade.hasTradeId(""))
+        XCTAssertTrue(HulaTrade.hasTradeId("t1"))
+        XCTAssertFalse(HulaProduct.hasProductId(nil))
+        XCTAssertTrue(HulaProduct.hasProductId("p1"))
+
+        let trade = HulaTrade()
+        trade.tradeId = nil
+        trade.product_id = nil
+        trade.owner_id = nil
+        trade.other_id = nil
+        trade.next_bid = nil
+        trade.status = nil
+        trade.turn_user_id = nil
+
+        XCTAssertFalse(HulaTrade.hasTradeId(trade.tradeId))
+        let body = trade.get_post_string()
+        XCTAssertTrue(body.contains("product_id="), body)
+        XCTAssertTrue(body.contains("&status="), body)
+        XCTAssertTrue(body.contains("&owner_products="), body)
+        XCTAssertTrue(body.contains("&other_products="), body)
+    }
+
+    /// Camera slot upload used IUO `arrProductPhotoLink.count` / `productImage.isEmpty`.
+    func testApplyUploadedImageSurvivesNilPhotoArray() {
+        let product = HulaProduct()
+        product.arrProductPhotoLink = nil
+        product.productImage = nil
+        product.applyUploadedImage(path: "c.jpg", pos: 3)
+        XCTAssertEqual(product.arrProductPhotoLink, ["", "", "c.jpg"])
+        XCTAssertTrue(ProductIdentityPolicy.featuredImageIsEmpty(product.productImage))
+
+        product.applyUploadedImage(path: "a.jpg", pos: 1)
+        XCTAssertEqual(product.arrProductPhotoLink, ["a.jpg", "", "c.jpg"])
+        XCTAssertEqual(product.productImage, "a.jpg")
+
+        let stale = HulaProduct()
+        stale.arrProductPhotoLink = nil
+        stale.productImage = "old.jpg"
+        stale.syncFeaturedImageFromPhotos()
+        XCTAssertEqual(stale.productImage, "")
+    }
+
+    /// Seller inventory and feedback history used unbounded `array[indexPath.row]`.
+    func testDictionaryRowPolicyBoundsAndSoftCast() {
+        let rows: NSArray = [
+            ["_id": "p1", "title": "Bike"],
+            "broken",
+            NSNull()
+        ]
+        XCTAssertEqual(
+            DictionaryRowPolicy.dictionary(at: 0, in: rows)?["_id"] as? String,
+            "p1"
+        )
+        XCTAssertEqual(
+            HLSellerInfoViewController.productDictionary(at: 0, in: rows)?["title"] as? String,
+            "Bike"
+        )
+        XCTAssertNil(HLSellerInfoViewController.productDictionary(at: 1, in: rows))
+        XCTAssertNil(HLFeedbackHistoryViewController.feedbackDictionary(at: 2, in: rows))
+        XCTAssertNil(HLFeedbackHistoryViewController.feedbackDictionary(at: -1, in: rows))
+        XCTAssertNil(HLProductDetailViewController.sellerProductDictionary(at: 99, in: rows))
+        XCTAssertNil(DictionaryRowPolicy.dictionary(at: 0, in: nil))
+    }
+
+    /// Product detail treated nil IUO status as not traded; seller tap must stay open.
+    func testShouldOpenSellerProductTreatsNilStatusAsAvailable() {
+        XCTAssertFalse(HulaProduct.isTraded(nil))
+        XCTAssertFalse(HulaProduct.isDeleted(nil))
+        XCTAssertTrue(HulaProduct.isTraded("traded"))
+        XCTAssertTrue(HulaProduct.isDeleted("deleted"))
+
+        let unset = HulaProduct()
+        unset.productStatus = nil
+        XCTAssertTrue(HLProductDetailViewController.shouldOpenSellerProduct(unset))
+    }
+
+    /// Accept/live_barter id lists used IUO `!= "xmoney"` / `!= "deleted"` then
+    /// appended productId. Nil must not crash; cash chips and deleted stay out.
+    func testLivePublishIdsSkipCashChipDeletedAndNilSafeIds() {
+        XCTAssertTrue(ProductIdentityPolicy.isCashChip("xmoney"))
+        XCTAssertFalse(ProductIdentityPolicy.isCashChip(nil))
+        XCTAssertTrue(ProductIdentityPolicy.identifiersMatch(nil, ""))
+        XCTAssertFalse(ProductIdentityPolicy.identifiersMatch(nil, "a"))
+
+        let cash = HulaProduct()
+        cash.productId = "xmoney"
+        let deleted = HulaProduct()
+        deleted.productId = "gone"
+        deleted.productStatus = "deleted"
+        let nilId = HulaProduct()
+        nilId.productId = nil
+        nilId.productStatus = nil
+        let keep = HulaProduct()
+        keep.productId = "keep-1"
+
+        XCTAssertEqual(
+            HLBarterScreenViewController.livePublishIds(from: [cash, deleted, nilId, keep]),
+            ["", "keep-1"]
+        )
+        let vc = HLBarterScreenViewController()
+        XCTAssertEqual(vc.generateProductArray(from: [cash, keep]), ["keep-1"])
+    }
+
+    /// Inventory lookup compared IUO productId after a partial create.
+    func testIndexOfProductMatchesNilSafeIdentifiers() {
+        let missing = HulaProduct()
+        missing.productId = nil
+        let listed = HulaProduct(id: "a", name: "A", image: "")
+        XCTAssertNil(HLMyProductsViewController.indexOfProduct(withId: nil, in: [listed, missing]))
+        XCTAssertNil(HLMyProductsViewController.indexOfProduct(withId: "a", in: [missing]))
+        XCTAssertEqual(HLMyProductsViewController.indexOfProduct(withId: "a", in: [missing, listed]), 1)
+        XCTAssertFalse(HLMyProductsViewController.shouldAttachUploadedImages(
+            productId: nil,
+            imagesToUpload: 1,
+            imagesAlreadyUploaded: 1
+        ))
+    }
+
     private func tradeReadyFixture(
         ownerId: String,
         otherId: String,

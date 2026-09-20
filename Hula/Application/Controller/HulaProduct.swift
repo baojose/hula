@@ -179,15 +179,28 @@ class HulaProduct: NSObject {
             })
         }
     }
+    /// Product PUT used IUO `formEncodedValue(self.productName)` / `.joined`.
+    class func hasProductId(_ productId: String?) -> Bool {
+        return ProductIdentityPolicy.hasIdentifier(productId)
+    }
+
+    class func isTraded(_ status: String?) -> Bool {
+        return ProductIdentityPolicy.isTraded(status)
+    }
+
+    class func isDeleted(_ status: String?) -> Bool {
+        return ProductIdentityPolicy.isDeleted(status)
+    }
+
     func getPostString() -> String {
-        var str = "title=" + CommonUtils.formEncodedValue(self.productName) +
-            "&description=" + CommonUtils.formEncodedValue(self.productDescription) +
-            "&condition=" + CommonUtils.formEncodedValue(self.productCondition)
-        str = str + "&category_name=" + CommonUtils.formEncodedValue(self.productCategory) +
-            "&category_id=" + CommonUtils.formEncodedValue(self.productCategoryId) +
-            "&image_url=" + CommonUtils.formEncodedValue(self.productImage)
-        str = str + "&owner_id=" + CommonUtils.formEncodedValue(self.productOwner) +
-            "&images=" + CommonUtils.formEncodedValue(self.arrProductPhotoLink.joined(separator: ","))
+        var str = "title=" + FormFieldPolicy.encoded(self.productName) +
+            "&description=" + FormFieldPolicy.encoded(self.productDescription) +
+            "&condition=" + FormFieldPolicy.encoded(self.productCondition)
+        str = str + "&category_name=" + FormFieldPolicy.encoded(self.productCategory) +
+            "&category_id=" + FormFieldPolicy.encoded(self.productCategoryId) +
+            "&image_url=" + FormFieldPolicy.encoded(self.productImage)
+        str = str + "&owner_id=" + FormFieldPolicy.encoded(self.productOwner) +
+            "&images=" + FormFieldPolicy.joined(self.arrProductPhotoLink)
         // Persist the product's own coordinates on edit. Using the user's live GPS
         // silently relocated listings whenever any field was updated.
         if let location = self.productLocation,
@@ -202,7 +215,7 @@ class HulaProduct: NSObject {
     /// Keep featured `image_url` aligned with the first photo; clear when the album is empty
     /// so a deleted last photo is not re-posted as the featured image.
     func syncFeaturedImageFromPhotos() {
-        if let first = arrProductPhotoLink.first, first.count > 0 {
+        if let first = (arrProductPhotoLink ?? []).first, UserIdentityPolicy.hasNonEmptyValue(first) {
             productImage = first
         } else {
             productImage = ""
@@ -210,19 +223,23 @@ class HulaProduct: NSObject {
     }
 
     /// Apply a uploaded image URL into a 1-based camera slot without corrupting earlier empties.
+    /// Nil IUO `arrProductPhotoLink` / `productImage` must pad from [] instead of crashing.
     func applyUploadedImage(path: String, pos: Int) {
         guard pos >= 1 else { return }
         let index = pos - 1
-        while arrProductPhotoLink.count <= index {
-            arrProductPhotoLink.append("")
+        var links = arrProductPhotoLink ?? []
+        while links.count <= index {
+            links.append("")
         }
-        arrProductPhotoLink[index] = path
-        while let last = arrProductPhotoLink.last, last.isEmpty {
-            arrProductPhotoLink.removeLast()
+        links[index] = path
+        while let last = links.last, last.isEmpty {
+            links.removeLast()
         }
+        arrProductPhotoLink = links
         if pos == 1 {
             productImage = path
-        } else if productImage.isEmpty, let first = arrProductPhotoLink.first, !first.isEmpty {
+        } else if ProductIdentityPolicy.featuredImageIsEmpty(productImage),
+                  let first = links.first, !first.isEmpty {
             productImage = first
         }
     }
@@ -245,7 +262,7 @@ struct ProductCreateSession {
     }
 
     static func applyCreatedProductId(_ productId: String, to product: HulaProduct) {
-        if productId.count > 0 {
+        if ProductIdentityPolicy.hasIdentifier(productId) {
             product.productId = productId
         }
     }

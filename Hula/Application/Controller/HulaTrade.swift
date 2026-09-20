@@ -90,18 +90,23 @@ class HulaTrade: NSObject {
         })
     }
     
+    /// Trade PUT used IUO `tradeId.count` / `formEncodedValue(self.product_id)`.
+    class func hasTradeId(_ tradeId: String?) -> Bool {
+        return ProductIdentityPolicy.hasIdentifier(tradeId)
+    }
+
     func get_post_string() -> String {
-        let ownerProducts = CommonUtils.formEncodedValue(self.owner_products.joined(separator: ","))
-        let otherProducts = CommonUtils.formEncodedValue(self.other_products.joined(separator: ","))
-        return "product_id=" + CommonUtils.formEncodedValue(self.product_id)
-            + "&owner_id=" + CommonUtils.formEncodedValue(self.owner_id)
-            + "&other_id=" + CommonUtils.formEncodedValue(self.other_id)
-            + "&date=" + CommonUtils.formEncodedValue(self.date.iso8601)
+        let ownerProducts = FormFieldPolicy.joined(self.owner_products)
+        let otherProducts = FormFieldPolicy.joined(self.other_products)
+        return "product_id=" + FormFieldPolicy.encoded(self.product_id)
+            + "&owner_id=" + FormFieldPolicy.encoded(self.owner_id)
+            + "&other_id=" + FormFieldPolicy.encoded(self.other_id)
+            + "&date=" + FormFieldPolicy.encoded(self.date.iso8601)
             + "&owner_products=" + ownerProducts
             + "&other_products=" + otherProducts
-            + "&next_bid=" + CommonUtils.formEncodedValue(self.next_bid)
-            + "&status=" + CommonUtils.formEncodedValue(self.status)
-            + "&turn_user_id=" + CommonUtils.formEncodedValue(self.turn_user_id)
+            + "&next_bid=" + FormFieldPolicy.encoded(self.next_bid)
+            + "&status=" + FormFieldPolicy.encoded(self.status)
+            + "&turn_user_id=" + FormFieldPolicy.encoded(self.turn_user_id)
             + "&owner_money=\(self.owner_money)&other_money=\(self.other_money)"
     }
 
@@ -233,7 +238,7 @@ class HulaTrade: NSObject {
 
     func updateServerData(){
         //print("Updating trade...")
-        if(tradeId.count > 0){
+        if HulaTrade.hasTradeId(self.tradeId) {
             guard let queryURL = HulaTrade.resourceURL(apiBase: HulaConstants.apiURL, tradeId: self.tradeId) else {
                 return
             }

@@ -75,6 +75,12 @@ class HLSellerInfoViewController: BaseViewController, UITableViewDelegate, UITab
         return UserIdentityPolicy.hasUserId(userId)
     }
 
+    /// Seller "other items" used `userProducts[indexPath.row]` after a background
+    /// reload. Stale rows must skip instead of crashing the seller sheet.
+    class func productDictionary(at index: Int, in products: NSArray?) -> NSDictionary? {
+        return DictionaryRowPolicy.dictionary(at: index, in: products)
+    }
+
     override func viewDidLoad() {
         super.viewDidLoad()
         self.initData()
@@ -196,7 +202,7 @@ class HLSellerInfoViewController: BaseViewController, UITableViewDelegate, UITab
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         
         let cell = tableView.dequeueReusableCell(withIdentifier: "sellerProductCell") as! HLProductTableViewCell
-        if let pr = userProducts[indexPath.row] as? [String:Any] as NSDictionary?{
+        if let pr = HLSellerInfoViewController.productDictionary(at: indexPath.row, in: userProducts) {
             
             cell.productName.text = pr.object(forKey: "title") as? String
             
@@ -212,7 +218,7 @@ class HLSellerInfoViewController: BaseViewController, UITableViewDelegate, UITab
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath){
         let viewController = self.storyboard?.instantiateViewController(withIdentifier: "productDetailPage") as! HLProductDetailViewController
         
-        if let product = userProducts[indexPath.row] as? [String:Any] as NSDictionary?{
+        if let product = HLSellerInfoViewController.productDictionary(at: indexPath.row, in: userProducts) {
             let hproduct = HulaProduct();
             hproduct.populate(with: product)
             viewController.productData = hproduct

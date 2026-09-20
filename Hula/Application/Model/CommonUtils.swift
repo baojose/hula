@@ -2130,3 +2130,86 @@ struct UserIdentityPolicy {
             || characterCount(photoURL) == 0
     }
 }
+
+/// Product/trade IUO form fields used `formEncodedValue(self.productName)` and
+/// `arrProductPhotoLink.joined`. A partial JSON populate with nil IUOs crashed
+/// listing/trade PUT instead of encoding empty values.
+struct FormFieldPolicy {
+    static func encoded(_ value: String?) -> String {
+        return CommonUtils.formEncodedValue(SessionWritePolicy.stringValue(value))
+    }
+
+    static func joined(_ values: [String]?, separator: String = ",") -> String {
+        return encoded(csv(values, separator: separator))
+    }
+
+    static func csv(_ values: [String]?, separator: String = ",") -> String {
+        return (values ?? []).joined(separator: separator)
+    }
+}
+
+/// Product/trade IUO identifiers and status. `tradeId.count`, `productId.count`,
+/// `productImage.isEmpty`, and `productStatus != "traded"` crashed after a
+/// partial populate instead of treating nil as empty.
+struct ProductIdentityPolicy {
+    static func hasIdentifier(_ value: String?) -> Bool {
+        return UserIdentityPolicy.hasNonEmptyValue(value)
+    }
+
+    static func statusValue(_ status: String?) -> String {
+        return SessionWritePolicy.stringValue(status)
+    }
+
+    static func isTraded(_ status: String?) -> Bool {
+        return statusValue(status) == "traded"
+    }
+
+    static func isDeleted(_ status: String?) -> Bool {
+        return statusValue(status) == "deleted"
+    }
+
+    static func isCashChip(_ productId: String?) -> Bool {
+        return statusValue(productId) == "xmoney"
+    }
+
+    static func identifiersMatch(_ lhs: String?, _ rhs: String?) -> Bool {
+        return statusValue(lhs) == statusValue(rhs)
+    }
+
+    static func featuredImageIsEmpty(_ image: String?) -> Bool {
+        return statusValue(image).isEmpty
+    }
+
+    /// Unencoded `images=` CSV. Callers that already percent-encode the form
+    /// body must use this rather than `FormFieldPolicy.joined`.
+    static func photoLinksCSV(_ links: [String]?) -> String {
+        return FormFieldPolicy.csv(links)
+    }
+
+    /// Accept/live_barter product ids. Historical `generateProductArray`
+    /// skipped `xmoney` and `deleted` then appended `productId`. Nil IUO id
+    /// becomes `""` so empty stubs still publish; nil status is not deleted.
+    static func livePublishIds(from products: [HulaProduct]) -> [String] {
+        var ids: [String] = []
+        for product in products {
+            if isCashChip(product.productId) || isDeleted(product.productStatus) {
+                continue
+            }
+            ids.append(statusValue(product.productId))
+        }
+        return ids
+    }
+}
+
+/// Seller inventory and feedback history listed `array[indexPath.row]` without
+/// a bounds check. A reload that shrinks the list while a stale row is still
+/// on screen crashed the seller sheet instead of skipping the cell or tap.
+/// Product detail already soft-read NSDictionary rows; seller info did not.
+struct DictionaryRowPolicy {
+    static func dictionary(at index: Int, in rows: NSArray?) -> NSDictionary? {
+        guard let rows = rows, index >= 0, index < rows.count else {
+            return nil
+        }
+        return rows.object(at: index) as? NSDictionary
+    }
+}

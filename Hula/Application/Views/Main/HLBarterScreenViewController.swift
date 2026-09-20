@@ -101,6 +101,11 @@ class HLBarterScreenViewController: BaseViewController {
         return UserIdentityPolicy.hasUserId(userId)
     }
 
+    /// Accept/live_barter ids used IUO `productId != "xmoney"` / `productStatus != "deleted"`.
+    class func livePublishIds(from products: [HulaProduct]) -> [String] {
+        return ProductIdentityPolicy.livePublishIds(from: products)
+    }
+
     /// Missing `image_url` falls back to the product image endpoint. Do not force-unwrap
     /// the optional after the fallback; empty strings are kept as in the original path.
     class func resolvedProductImage(from productData: [String: Any], productId: String) -> String {
@@ -631,7 +636,7 @@ class HLBarterScreenViewController: BaseViewController {
             var counter = 0
             if (type == "owner"){
                 for p in self.myTradedProducts {
-                    if p.productStatus == "deleted" {
+                    if HulaProduct.isDeleted(p.productStatus) {
                         let indexPath = IndexPath(row: counter, section: 0)
                         let cell = self.mySelectedProductsCollection.cellForItem(at: indexPath)
                         UIView.animate(withDuration: 0.9, delay: 1, options: [], animations: {
@@ -648,7 +653,7 @@ class HLBarterScreenViewController: BaseViewController {
                 }
             } else {
                 for p in self.otherTradedProducts {
-                    if p.productStatus == "deleted" {
+                    if HulaProduct.isDeleted(p.productStatus) {
                         let indexPath = IndexPath(row: counter, section: 0)
                         let cell = self.otherSelectedProductsCollection.cellForItem(at: indexPath)
                         UIView.animate(withDuration: 0.9, delay: 0.5, options: [], animations: {
@@ -913,7 +918,7 @@ class HLBarterScreenViewController: BaseViewController {
         var newArr: [HulaProduct] = []
         for i in 0 ..< self.myTradedProducts.count {
             let p = self.myTradedProducts[i]
-            if p.productStatus != "deleted" {
+            if !HulaProduct.isDeleted(p.productStatus) {
                 newArr.append(p)
             }
         }
@@ -924,7 +929,7 @@ class HLBarterScreenViewController: BaseViewController {
         var newArr: [HulaProduct] = []
         for i in 0 ..< self.otherTradedProducts.count {
             let p = self.otherTradedProducts[i]
-            if p.productStatus != "deleted" {
+            if !HulaProduct.isDeleted(p.productStatus) {
                 newArr.append(p)
             }
         }
@@ -1106,15 +1111,7 @@ class HLBarterScreenViewController: BaseViewController {
     }
     
     func generateProductArray(from:[HulaProduct]) -> [String]{
-        var final_arr = [String]();
-        
-        for prod in from {
-            if (prod.productId != "xmoney") && (prod.productStatus != "deleted"){
-                final_arr.append(prod.productId)
-            }
-        }
-        //print(final_arr)
-        return final_arr
+        return HLBarterScreenViewController.livePublishIds(from: from)
     }
     
     func updateProductsFromTrade(){
@@ -1124,7 +1121,7 @@ class HLBarterScreenViewController: BaseViewController {
             var ctr = 0;
             for tr_prod in self.myTradedProducts {
                 for my_prod in result {
-                    if tr_prod.productId == my_prod.productId {
+                    if ProductIdentityPolicy.identifiersMatch(tr_prod.productId, my_prod.productId) {
                         self.myTradedProducts[ctr].video_requested = my_prod.video_requested
                         self.myTradedProducts[ctr].video_url = my_prod.video_url
                     }
@@ -1137,7 +1134,7 @@ class HLBarterScreenViewController: BaseViewController {
             var ctr = 0;
             for tr_prod in self.otherTradedProducts {
                 for other_prod in result {
-                    if tr_prod.productId == other_prod.productId {
+                    if ProductIdentityPolicy.identifiersMatch(tr_prod.productId, other_prod.productId) {
                         self.otherTradedProducts[ctr].video_requested = other_prod.video_requested
                         self.otherTradedProducts[ctr].video_url = other_prod.video_url
                     }
@@ -1212,7 +1209,7 @@ extension HLBarterScreenViewController: KDDragAndDropCollectionViewDataSource, U
         }
         //print(product)
         
-        if (product.productId == "xmoney"){
+        if ProductIdentityPolicy.isCashChip(product.productId) {
             if collectionView.tag == 2 {
                 addMonewToOwner("")
             } else {
@@ -1304,7 +1301,7 @@ extension HLBarterScreenViewController: KDDragAndDropCollectionViewDataSource, U
         }
         
         
-        if (product.productStatus == "deleted"){
+        if HulaProduct.isDeleted(product.productStatus) {
             cell.statusImage.image = UIImage(named: "icon-product-removed")
             cell.statusImage.isHidden = false
         }
@@ -1388,7 +1385,7 @@ extension HLBarterScreenViewController: KDDragAndDropCollectionViewDataSource, U
         ownerMoney: Float,
         otherMoney: Float
     ) -> (ownerMoney: Float, otherMoney: Float) {
-        guard productId == "xmoney" else {
+        guard ProductIdentityPolicy.isCashChip(productId) else {
             return (ownerMoney, otherMoney)
         }
         if trayIsMySide {
@@ -1682,7 +1679,7 @@ extension HLBarterScreenViewController: CalculatorDelegate{
     func removeMoneyProduct(fromProducts:[HulaProduct]) -> [HulaProduct]{
         var newArr:[HulaProduct] = []
         for prod in fromProducts{
-            if prod.productId != "xmoney" {
+            if !ProductIdentityPolicy.isCashChip(prod.productId) {
                 newArr.append(prod)
             }
         }
