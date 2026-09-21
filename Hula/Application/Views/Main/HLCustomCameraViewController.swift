@@ -118,20 +118,22 @@ class HLCustomCameraViewController: BaseViewController, UIImagePickerControllerD
         imageView2.image = nil
         imageView3.image = nil
         imageView4.image = nil
-        
-        if dataManager.newProduct.arrProductPhotos.count > 0 {
-            for i in 0 ..< dataManager.newProduct.arrProductPhotos.count{
+
+        let photos = dataManager.newProduct.arrProductPhotos
+        let photoCount = HLCustomCameraViewController.localPhotoCount(photos)
+        if photoCount > 0 {
+            for i in 0 ..< photoCount {
                 if i == 0 {
-                    imageView1.image = dataManager.newProduct.arrProductPhotos.object(at: i) as? UIImage
+                    imageView1.image = HLCustomCameraViewController.localPhoto(at: i, in: photos)
                 }
                 if i == 1 {
-                    imageView2.image = dataManager.newProduct.arrProductPhotos.object(at: i) as? UIImage
+                    imageView2.image = HLCustomCameraViewController.localPhoto(at: i, in: photos)
                 }
                 if i == 2 {
-                    imageView3.image = dataManager.newProduct.arrProductPhotos.object(at: i) as? UIImage
+                    imageView3.image = HLCustomCameraViewController.localPhoto(at: i, in: photos)
                 }
                 if i == 3 {
-                    imageView4.image = dataManager.newProduct.arrProductPhotos.object(at: i) as? UIImage
+                    imageView4.image = HLCustomCameraViewController.localPhoto(at: i, in: photos)
                 }
             }
         }
@@ -147,11 +149,11 @@ class HLCustomCameraViewController: BaseViewController, UIImagePickerControllerD
             return
         }
         //print(dataManager.newProduct.arrProductPhotos)
-        if (dataManager.newProduct.arrProductPhotos.count > tappedIndex){
-            print(dataManager.newProduct.arrProductPhotos[tappedIndex])
-            if let imageView = dataManager.newProduct.arrProductPhotos[tappedIndex] as? UIImage {
-                fullScreenImage(image:imageView, index: tappedIndex)
-            }
+        if let imageView = HLCustomCameraViewController.localPhoto(
+            at: tappedIndex,
+            in: dataManager.newProduct.arrProductPhotos
+        ) {
+            fullScreenImage(image:imageView, index: tappedIndex)
         }
     }
     func fullScreenImage(image: UIImage, index: Int) {
@@ -451,6 +453,15 @@ class HLCustomCameraViewController: BaseViewController, UIImagePickerControllerD
     /// must be skipped so listing photos stay a dense array of loaded images.
     class func loadedCapturePhotos(_ images: [UIImage?]) -> [UIImage] {
         return LoadedImagePolicy.loadedPhotos(images)
+    }
+
+    /// Camera thumbs used IUO `arrProductPhotos.count`. Nil is an empty album.
+    class func localPhotoCount(_ photos: NSArray?) -> Int {
+        return LocalPhotoAlbumPolicy.count(photos)
+    }
+
+    class func localPhoto(at index: Int, in photos: NSArray?) -> UIImage? {
+        return LocalPhotoAlbumPolicy.image(at: index, in: photos)
     }
     //
     func showImages(_ image: UIImage){

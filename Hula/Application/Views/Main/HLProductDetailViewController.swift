@@ -217,6 +217,16 @@ class HLProductDetailViewController: BaseViewController, UIScrollViewDelegate, U
     class func galleryPageIndex(offset: CGFloat, pageWidth: CGFloat) -> Int {
         return ScrollPagePolicy.truncatedPageIndex(offset: offset, pageWidth: pageWidth)
     }
+
+    /// Gallery setup used `if let arrProductPhotoLink` then `[i]`. Keep the
+    /// optional bind via PhotoGalleryPolicy so a nil IUO is zero slots.
+    class func galleryPhotoLinks(_ links: [String]?) -> [String] {
+        return PhotoGalleryPolicy.links(links)
+    }
+
+    class func galleryPhotoURL(at index: Int, in links: [String]?) -> String? {
+        return PhotoGalleryPolicy.nonEmptyURL(at: index, in: links)
+    }
     
     //#MARK: - TableViewDelegate
     
@@ -302,22 +312,19 @@ class HLProductDetailViewController: BaseViewController, UIScrollViewDelegate, U
     
     func setUpProductImagesScrollView() {
         var num_images: CGFloat = 0;
-        if let img_arr = currentProduct.arrProductPhotoLink {
-            //print(img_arr)
-            for i in 0 ..< img_arr.count {
-                let img_url = img_arr[i]
-                if (img_url.count > 0){
-                    let imageFrame = CGRect(x: (CGFloat)(i) * productsScrollView.frame.size.width, y: 0, width: productsScrollView.frame.size.width, height: productsScrollView.frame.size.height)
-                    let imgView: UIImageView! = UIImageView.init(frame: imageFrame)
-                    //commonUtils.loadImageOnView(imageView: imgView, withURL: img_url)
-                    imgView.loadImageFromURL(urlString: img_url)
-                    //imgView.image = UIImage(named: "temp_product")
-                    imgView.contentMode = .scaleAspectFill
-                    imgView.clipsToBounds = true
-                    productsScrollView.addSubview(imgView)
-                    num_images += 1
-                }
-                
+        let img_arr = HLProductDetailViewController.galleryPhotoLinks(currentProduct.arrProductPhotoLink)
+        //print(img_arr)
+        for i in 0 ..< img_arr.count {
+            if let img_url = HLProductDetailViewController.galleryPhotoURL(at: i, in: img_arr) {
+                let imageFrame = CGRect(x: (CGFloat)(i) * productsScrollView.frame.size.width, y: 0, width: productsScrollView.frame.size.width, height: productsScrollView.frame.size.height)
+                let imgView: UIImageView! = UIImageView.init(frame: imageFrame)
+                //commonUtils.loadImageOnView(imageView: imgView, withURL: img_url)
+                imgView.loadImageFromURL(urlString: img_url)
+                //imgView.image = UIImage(named: "temp_product")
+                imgView.contentMode = .scaleAspectFill
+                imgView.clipsToBounds = true
+                productsScrollView.addSubview(imgView)
+                num_images += 1
             }
         }
         productsScrollView.contentSize = CGSize(width: num_images * productsScrollView.frame.size.width, height: 0.0)

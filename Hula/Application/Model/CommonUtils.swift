@@ -1855,13 +1855,15 @@ struct LocationUpdatePolicy {
 /// `arrProductPhotoLink[0]`. A stale editor index after a delete must no-op.
 /// Barter add/remove animations used `arrProductPhotoLink[0]` behind a disabled
 /// flag; firstURL stays safe if that path is re-enabled.
+/// Promote/remove used IUO photo arrays; a nil album after a partial populate
+/// must no-op instead of crashing the editor or create-flow camera.
 struct FeaturedPhotoPolicy {
     static func canPromote(index: Int, count: Int) -> Bool {
         return index > 0 && index < count
     }
 
-    static func swappedLinks(_ links: [String], promoting index: Int) -> [String]? {
-        guard canPromote(index: index, count: links.count) else {
+    static func swappedLinks(_ links: [String]?, promoting index: Int) -> [String]? {
+        guard let links = links, canPromote(index: index, count: links.count) else {
             return nil
         }
         var copy = links
@@ -1871,8 +1873,8 @@ struct FeaturedPhotoPolicy {
         return copy
     }
 
-    static func promoteObject(in array: NSMutableArray, at index: Int) -> Bool {
-        guard canPromote(index: index, count: array.count) else {
+    static func promoteObject(in array: NSMutableArray?, at index: Int) -> Bool {
+        guard let array = array, canPromote(index: index, count: array.count) else {
             return false
         }
         let featured = array.object(at: 0)
@@ -1882,16 +1884,16 @@ struct FeaturedPhotoPolicy {
         return true
     }
 
-    static func removeObject(in array: NSMutableArray, at index: Int) -> Bool {
-        guard index >= 0 && index < array.count else {
+    static func removeObject(in array: NSMutableArray?, at index: Int) -> Bool {
+        guard let array = array, index >= 0 && index < array.count else {
             return false
         }
         array.removeObject(at: index)
         return true
     }
 
-    static func removingLink(_ links: [String], at index: Int) -> [String]? {
-        guard index >= 0 && index < links.count else {
+    static func removingLink(_ links: [String]?, at index: Int) -> [String]? {
+        guard let links = links, index >= 0 && index < links.count else {
             return nil
         }
         var copy = links
@@ -1904,6 +1906,63 @@ struct FeaturedPhotoPolicy {
             return nil
         }
         return CommonUtils.nonEmptyTrimmed(links[0])
+    }
+}
+
+/// Edit-product and the barter product modal used IUO
+/// `arrProductPhotoLink.count` / `[i]`. A partial JSON populate with a nil
+/// gallery must show zero slots instead of crashing the pager or picture count.
+struct PhotoGalleryPolicy {
+    static let lastEditorSlotIndex = 3
+
+    static func links(_ links: [String]?) -> [String] {
+        return links ?? []
+    }
+
+    static func count(_ links: [String]?) -> Int {
+        return self.links(links).count
+    }
+
+    static func url(at index: Int, in links: [String]?) -> String? {
+        let list = self.links(links)
+        guard index >= 0 && index < list.count else {
+            return nil
+        }
+        return list[index]
+    }
+
+    static func nonEmptyURL(at index: Int, in links: [String]?) -> String? {
+        guard let url = url(at: index, in: links), UserIdentityPolicy.hasNonEmptyValue(url) else {
+            return nil
+        }
+        return url
+    }
+
+    static func pictureCountText(_ links: [String]?) -> String {
+        return "\(count(links))"
+    }
+
+    /// The 4th editor slot is the add-camera chip until four photos exist.
+    /// `currentEditingIndex == 3 && arrProductPhotoLink.count < 4` crashed when
+    /// the IUO array was nil; nil counts as 0 and still opens the camera.
+    static func shouldOpenCameraForLastSlot(slotIndex: Int, linkCount: Int) -> Bool {
+        return slotIndex == lastEditorSlotIndex && linkCount < (lastEditorSlotIndex + 1)
+    }
+}
+
+/// Create-flow / camera / inventory thumbs used IUO `arrProductPhotos.count`.
+/// A nil capture album must look empty instead of crashing slot layout.
+struct LocalPhotoAlbumPolicy {
+    static func count(_ photos: NSArray?) -> Int {
+        return photos?.count ?? 0
+    }
+
+    static func hasPhotos(_ photos: NSArray?) -> Bool {
+        return count(photos) > 0
+    }
+
+    static func image(at index: Int, in photos: NSArray?) -> UIImage? {
+        return CommonUtils.uiImage(at: index, in: photos)
     }
 }
 

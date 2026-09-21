@@ -73,6 +73,15 @@ class HLPostProductViewController: BaseViewController {
     class func publishTitle(_ raw: String?) -> String {
         return LabelMetricsPolicy.text(raw)
     }
+
+    /// Create-flow slots used IUO `arrProductPhotos.count`. Nil is an empty album.
+    class func localPhotoCount(_ photos: NSArray?) -> Int {
+        return LocalPhotoAlbumPolicy.count(photos)
+    }
+
+    class func localPhoto(at index: Int, in photos: NSArray?) -> UIImage? {
+        return LocalPhotoAlbumPolicy.image(at: index, in: photos)
+    }
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -138,9 +147,11 @@ class HLPostProductViewController: BaseViewController {
         secondImage.image = nil;
         thirdImage.image = nil;
         forthImage.image = nil;
-        
-        if dataManager.newProduct.arrProductPhotos.count > 0 {
-            for i in 0 ..< dataManager.newProduct.arrProductPhotos.count{
+
+        let photos = dataManager.newProduct.arrProductPhotos
+        let photoCount = HLPostProductViewController.localPhotoCount(photos)
+        if photoCount > 0 {
+            for i in 0 ..< photoCount {
                 guard let slot = HLPostProductViewController.photoSlotViews(
                     at: i,
                     images: arrImageViews,
@@ -164,7 +175,7 @@ class HLPostProductViewController: BaseViewController {
                 } else {
                     frameView.backgroundColor = .white
                 }
-                if let selectedImage = dataManager.newProduct.arrProductPhotos.object(at: i) as? UIImage {
+                if let selectedImage = HLPostProductViewController.localPhoto(at: i, in: photos) {
                     imgView.image = selectedImage
                     buttonView.isHidden = true;
                     deleteButtonView.isHidden = false
@@ -200,11 +211,11 @@ class HLPostProductViewController: BaseViewController {
             return
         }
         
-        if (dataManager.newProduct.arrProductPhotos.count > tappedIndex ){
-            print(dataManager.newProduct.arrProductPhotos[tappedIndex])
-            if let imageView = dataManager.newProduct.arrProductPhotos[tappedIndex] as? UIImage {
-                fullScreenImage(image:imageView, index: tappedIndex)
-            }
+        if let imageView = HLPostProductViewController.localPhoto(
+            at: tappedIndex,
+            in: dataManager.newProduct.arrProductPhotos
+        ) {
+            fullScreenImage(image:imageView, index: tappedIndex)
         }
     }
     
@@ -313,7 +324,7 @@ class HLPostProductViewController: BaseViewController {
         guard let tag = HLPostProductViewController.controlTag(from: sender) else {
             return
         }
-        if (self.dataManager.newProduct.arrProductPhotos.count > tag){
+        if HLPostProductViewController.localPhotoCount(self.dataManager.newProduct.arrProductPhotos) > tag {
             _ = FeaturedPhotoPolicy.removeObject(in: self.dataManager.newProduct.arrProductPhotos, at: tag)
             self.setupImagesBoxes()
         }
@@ -354,7 +365,7 @@ class HLPostProductViewController: BaseViewController {
         self.presentingViewController?.presentingViewController?.dismiss(animated: true, completion: nil)
     }
     @IBAction func publishNewProduct(_ sender: Any) {
-        guard dataManager.newProduct.arrProductPhotos.firstObject as? UIImage != nil else {
+        guard HLPostProductViewController.localPhoto(at: 0, in: dataManager.newProduct.arrProductPhotos) != nil else {
             let alert = UIAlertController(
                 title: NSLocalizedString("Add a photo", comment: ""),
                 message: NSLocalizedString("Please add at least one photo before publishing.", comment: ""),
@@ -404,7 +415,7 @@ extension HLPostProductViewController: UITableViewDelegate, UITableViewDataSourc
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         // Publishing with zero photos creates an orphan listing then crashes when
         // the complete-profile sheet force-casts arrProductPhotos[0].
-        guard dataManager.newProduct.arrProductPhotos.firstObject as? UIImage != nil else {
+        guard HLPostProductViewController.localPhoto(at: 0, in: dataManager.newProduct.arrProductPhotos) != nil else {
             let alert = UIAlertController(
                 title: NSLocalizedString("Add a photo", comment: ""),
                 message: NSLocalizedString("Please add at least one photo before publishing.", comment: ""),

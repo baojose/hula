@@ -126,12 +126,8 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
             cell.isMultipleTrades.isHidden = true
         }
         if (HLMyProductsViewController.listingImageURL(product.productImage).count == 0){
-            if (dataManager.newProduct.arrProductPhotos.count>0){
-                if let img = dataManager.newProduct.arrProductPhotos.object(at: 0) as? UIImage {
-                    cell.productImage.image = img
-                } else {
-                    cell.productImage.loadImageFromURL(urlString: HulaConstants.noProductThumb)
-                }
+            if let img = HLMyProductsViewController.localPhoto(at: 0, in: dataManager.newProduct.arrProductPhotos) {
+                cell.productImage.image = img
             } else {
                 cell.productImage.loadImageFromURL(urlString: HulaConstants.noProductThumb)
             }
@@ -234,6 +230,11 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
 
     class func listingImageURL(_ image: String?) -> String {
         return ProductListingPolicy.imageURL(image)
+    }
+
+    /// Inventory thumbs used IUO `arrProductPhotos.count` when image_url was blank.
+    class func localPhoto(at index: Int, in photos: NSArray?) -> UIImage? {
+        return LocalPhotoAlbumPolicy.image(at: index, in: photos)
     }
 
     /// Inventory PUT used `location.coordinate` on a `CLLocation!`. Nil GPS
