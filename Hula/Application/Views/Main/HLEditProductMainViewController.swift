@@ -47,8 +47,21 @@ class HLEditProductMainViewController: BaseViewController, ProductPictureDelegat
     }
 
     /// "Set as featured" used unbounded `arrProductPhotoLink[0]` / `[index]`.
-    class func swappedFeaturedLinks(_ links: [String], promoting index: Int) -> [String]? {
+    class func swappedFeaturedLinks(_ links: [String]?, promoting index: Int) -> [String]? {
         return FeaturedPhotoPolicy.swappedLinks(links, promoting: index)
+    }
+
+    /// Picture count used IUO `arrProductPhotoLink.count`. Nil is "0".
+    class func pictureCountText(_ links: [String]?) -> String {
+        return PhotoGalleryPolicy.pictureCountText(links)
+    }
+
+    class func photoURL(at index: Int, in links: [String]?) -> String? {
+        return PhotoGalleryPolicy.nonEmptyURL(at: index, in: links)
+    }
+
+    class func shouldOpenCameraForLastSlot(slotIndex: Int, linkCount: Int) -> Bool {
+        return PhotoGalleryPolicy.shouldOpenCameraForLastSlot(slotIndex: slotIndex, linkCount: linkCount)
     }
 
     override func viewDidLoad() {
@@ -71,7 +84,7 @@ class HLEditProductMainViewController: BaseViewController, ProductPictureDelegat
         productTitle.text = product.productName
         productTitleLabel.text = product.productName
         categoryNameLabel.text = product.productCategory
-        numPicturesLabel.text = "\(product.arrProductPhotoLink.count)"
+        numPicturesLabel.text = HLEditProductMainViewController.pictureCountText(product.arrProductPhotoLink)
         productConditionLabel.text = product.productCondition
         productDescriptionLabel.text = product.productDescription
         redrawProductImages()
@@ -132,7 +145,10 @@ class HLEditProductMainViewController: BaseViewController, ProductPictureDelegat
             im = nil
         }
         
-        if currentEditingIndex == 3 && product.arrProductPhotoLink.count < 4 {
+        if HLEditProductMainViewController.shouldOpenCameraForLastSlot(
+            slotIndex: currentEditingIndex,
+            linkCount: PhotoGalleryPolicy.count(product.arrProductPhotoLink)
+        ) {
             im = nil
         }
         if let image = HLEditProductMainViewController.fullscreenImage(im) {
@@ -206,17 +222,17 @@ class HLEditProductMainViewController: BaseViewController, ProductPictureDelegat
         prodImg4.image = UIImage(named: "icon_camera_small")
         prodImg4.contentMode = .center
         
-        if product.arrProductPhotoLink.count > 0 && product.arrProductPhotoLink[0].count > 0 {
-            prodImg1.loadImageFromURL(urlString: product.arrProductPhotoLink[0])
+        if let url = HLEditProductMainViewController.photoURL(at: 0, in: product.arrProductPhotoLink) {
+            prodImg1.loadImageFromURL(urlString: url)
         }
-        if product.arrProductPhotoLink.count > 1 && product.arrProductPhotoLink[1].count > 0 {
-            prodImg2.loadImageFromURL(urlString: product.arrProductPhotoLink[1])
+        if let url = HLEditProductMainViewController.photoURL(at: 1, in: product.arrProductPhotoLink) {
+            prodImg2.loadImageFromURL(urlString: url)
         }
-        if product.arrProductPhotoLink.count > 2 && product.arrProductPhotoLink[2].count > 0 {
-            prodImg3.loadImageFromURL(urlString: product.arrProductPhotoLink[2])
+        if let url = HLEditProductMainViewController.photoURL(at: 2, in: product.arrProductPhotoLink) {
+            prodImg3.loadImageFromURL(urlString: url)
         }
-        if product.arrProductPhotoLink.count > 3 && product.arrProductPhotoLink[3].count > 0 {
-            prodImg4.loadImageFromURL(urlString: product.arrProductPhotoLink[3])
+        if let url = HLEditProductMainViewController.photoURL(at: 3, in: product.arrProductPhotoLink) {
+            prodImg4.loadImageFromURL(urlString: url)
             prodImg4.contentMode = .scaleAspectFill
         }
         
@@ -228,7 +244,7 @@ class HLEditProductMainViewController: BaseViewController, ProductPictureDelegat
             // Featured image_url cleared when the last photo is deleted.
             productImage.loadImageFromURL(urlString: HulaConstants.noProductThumb)
         }
-        numPicturesLabel.text = "\(product.arrProductPhotoLink.count)"
+        numPicturesLabel.text = HLEditProductMainViewController.pictureCountText(product.arrProductPhotoLink)
     }
     
     func imageUploaded(path: String, pos: Int){

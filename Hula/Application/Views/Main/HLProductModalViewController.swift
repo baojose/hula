@@ -84,6 +84,15 @@ class HLProductModalViewController: UIViewController, UIImagePickerControllerDel
         return ScrollPagePolicy.roundedPageIndex(offset: offset, pageWidth: pageWidth)
     }
 
+    /// Gallery setup used IUO `arrProductPhotoLink.count`. Nil must be zero slots.
+    class func galleryPhotoLinks(_ links: [String]?) -> [String] {
+        return PhotoGalleryPolicy.links(links)
+    }
+
+    class func galleryPhotoURL(at index: Int, in links: [String]?) -> String? {
+        return PhotoGalleryPolicy.nonEmptyURL(at: index, in: links)
+    }
+
     override func viewDidLoad() {
         super.viewDidLoad()
 
@@ -171,10 +180,10 @@ class HLProductModalViewController: UIViewController, UIImagePickerControllerDel
         var num_images: CGFloat = 0;
         
         productsScrollView.subviews.forEach({ $0.removeFromSuperview() })
-        
-        for i in 0 ..< product.arrProductPhotoLink.count {
-            let img_url = product.arrProductPhotoLink[i]
-            if (img_url.count > 0){
+
+        let photoLinks = HLProductModalViewController.galleryPhotoLinks(product.arrProductPhotoLink)
+        for i in 0 ..< photoLinks.count {
+            if let img_url = HLProductModalViewController.galleryPhotoURL(at: i, in: photoLinks) {
                 let imageFrame = CGRect(x: (CGFloat)(i) * productsScrollView.frame.size.width, y: 0, width: productsScrollView.frame.size.width, height: productsScrollView.frame.size.height)
                 let imgView: UIImageView! = UIImageView.init(frame: imageFrame)
                 //commonUtils.loadImageOnView(imageView: imgView, withURL: img_url)

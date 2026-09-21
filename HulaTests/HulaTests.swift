@@ -6721,6 +6721,95 @@ class HulaTests: XCTestCase {
         ))
     }
 
+    // MARK: - Beyond #161: IUO photo gallery slots and capture album count
+
+    /// Edit-product and the barter modal used IUO `arrProductPhotoLink.count`.
+    /// Nil must be an empty gallery instead of crashing picture count / paging.
+    func testPhotoGalleryPolicyTreatsNilLinksAsEmpty() {
+        XCTAssertEqual(PhotoGalleryPolicy.count(nil), 0)
+        XCTAssertEqual(PhotoGalleryPolicy.links(nil).count, 0)
+        XCTAssertEqual(PhotoGalleryPolicy.pictureCountText(nil), "0")
+        XCTAssertNil(PhotoGalleryPolicy.url(at: 0, in: nil))
+        XCTAssertNil(PhotoGalleryPolicy.nonEmptyURL(at: 0, in: nil))
+        XCTAssertNil(PhotoGalleryPolicy.nonEmptyURL(at: 0, in: [""]))
+        XCTAssertNil(PhotoGalleryPolicy.nonEmptyURL(at: 1, in: ["a.jpg"]))
+        XCTAssertEqual(
+            PhotoGalleryPolicy.nonEmptyURL(at: 1, in: ["a.jpg", "b.jpg"]),
+            "b.jpg"
+        )
+
+        let product = HulaProduct()
+        product.arrProductPhotoLink = nil
+        XCTAssertEqual(HLEditProductMainViewController.pictureCountText(product.arrProductPhotoLink), "0")
+        XCTAssertNil(HLEditProductMainViewController.photoURL(at: 0, in: product.arrProductPhotoLink))
+        XCTAssertEqual(HLProductModalViewController.galleryPhotoLinks(product.arrProductPhotoLink).count, 0)
+        XCTAssertNil(HLProductModalViewController.galleryPhotoURL(at: 0, in: product.arrProductPhotoLink))
+        XCTAssertEqual(HLProductDetailViewController.galleryPhotoLinks(nil).count, 0)
+        XCTAssertNil(HLProductDetailViewController.galleryPhotoURL(at: 0, in: ["", "ok.jpg"]))
+        XCTAssertEqual(
+            HLProductDetailViewController.galleryPhotoURL(at: 1, in: ["", "ok.jpg"]),
+            "ok.jpg"
+        )
+    }
+
+    /// The 4th editor slot is the add-camera chip until four photos exist.
+    func testLastEditorSlotOpensCameraWhenGalleryIsShort() {
+        XCTAssertTrue(PhotoGalleryPolicy.shouldOpenCameraForLastSlot(slotIndex: 3, linkCount: 0))
+        XCTAssertTrue(HLEditProductMainViewController.shouldOpenCameraForLastSlot(slotIndex: 3, linkCount: 3))
+        XCTAssertFalse(PhotoGalleryPolicy.shouldOpenCameraForLastSlot(slotIndex: 3, linkCount: 4))
+        XCTAssertFalse(PhotoGalleryPolicy.shouldOpenCameraForLastSlot(slotIndex: 2, linkCount: 0))
+        XCTAssertTrue(
+            HLEditProductMainViewController.shouldOpenCameraForLastSlot(
+                slotIndex: 3,
+                linkCount: PhotoGalleryPolicy.count(nil)
+            )
+        )
+    }
+
+    /// Set-as-featured / delete used IUO photo arrays. Nil must no-op.
+    func testFeaturedPhotoPolicySurvivesNilPhotoArrays() {
+        XCTAssertNil(FeaturedPhotoPolicy.swappedLinks(nil, promoting: 1))
+        XCTAssertNil(HLEditProductMainViewController.swappedFeaturedLinks(nil, promoting: 1))
+        XCTAssertNil(FeaturedPhotoPolicy.removingLink(nil, at: 0))
+        XCTAssertFalse(FeaturedPhotoPolicy.promoteObject(in: nil, at: 1))
+        XCTAssertFalse(FeaturedPhotoPolicy.removeObject(in: nil, at: 0))
+
+        let product = HulaProduct()
+        product.arrProductPhotoLink = nil
+        product.arrProductPhotos = nil
+        XCTAssertNil(FeaturedPhotoPolicy.swappedLinks(product.arrProductPhotoLink, promoting: 1))
+        XCTAssertFalse(FeaturedPhotoPolicy.removeObject(in: product.arrProductPhotos, at: 0))
+        XCTAssertNil(FeaturedPhotoPolicy.removingLink(product.arrProductPhotoLink, at: 0))
+    }
+
+    /// Create-flow / camera / inventory used IUO `arrProductPhotos.count`.
+    func testLocalPhotoAlbumPolicyTreatsNilAlbumAsEmpty() {
+        XCTAssertEqual(LocalPhotoAlbumPolicy.count(nil), 0)
+        XCTAssertFalse(LocalPhotoAlbumPolicy.hasPhotos(nil))
+        XCTAssertNil(LocalPhotoAlbumPolicy.image(at: 0, in: nil))
+        XCTAssertEqual(HLPostProductViewController.localPhotoCount(nil), 0)
+        XCTAssertNil(HLPostProductViewController.localPhoto(at: 0, in: nil))
+        XCTAssertEqual(HLCustomCameraViewController.localPhotoCount(nil), 0)
+        XCTAssertNil(HLMyProductsViewController.localPhoto(at: 0, in: nil))
+
+        let product = HulaProduct()
+        product.arrProductPhotos = nil
+        XCTAssertEqual(HLPostProductViewController.localPhotoCount(product.arrProductPhotos), 0)
+        XCTAssertNil(HLCustomCameraViewController.localPhoto(at: 0, in: product.arrProductPhotos))
+
+        let photos = NSMutableArray()
+        photos.add(UIImage())
+        photos.add(NSNull())
+        XCTAssertEqual(LocalPhotoAlbumPolicy.count(photos), 2)
+        XCTAssertTrue(LocalPhotoAlbumPolicy.hasPhotos(photos))
+        XCTAssertNotNil(LocalPhotoAlbumPolicy.image(at: 0, in: photos))
+        XCTAssertNil(LocalPhotoAlbumPolicy.image(at: 1, in: photos))
+        XCTAssertNil(LocalPhotoAlbumPolicy.image(at: 2, in: photos))
+        let onlyNull = NSMutableArray()
+        onlyNull.add(NSNull())
+        XCTAssertNil(HLPostProductViewController.localPhoto(at: 0, in: onlyNull))
+    }
+
     private func tradeReadyFixture(
         ownerId: String,
         otherId: String,
