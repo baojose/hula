@@ -117,14 +117,14 @@ class HLDashboardViewController: BaseViewController {
         if let vc = self.parent as? HLSwappPageViewController {
             swappPageVC = vc
             if (HLDataManager.sharedInstance.tradeMode == "current"){
-                if (HLDataManager.sharedInstance.arrCurrentTrades.count > 0){
-                    swappPageVC?.arrTrades = HLDataManager.sharedInstance.arrCurrentTrades as [NSDictionary]
+                if SessionListPolicy.hasItems(HLDataManager.sharedInstance.arrCurrentTrades) {
+                    swappPageVC?.arrTrades = SessionListPolicy.trades(HLDataManager.sharedInstance.arrCurrentTrades)
                 } else {
                     swappPageVC?.arrTrades = []
                 }
             } else {
-                if (HLDataManager.sharedInstance.arrPastTrades.count > 0){
-                    swappPageVC?.arrTrades = HLDataManager.sharedInstance.arrPastTrades as [NSDictionary]
+                if SessionListPolicy.hasItems(HLDataManager.sharedInstance.arrPastTrades) {
+                    swappPageVC?.arrTrades = SessionListPolicy.trades(HLDataManager.sharedInstance.arrPastTrades)
                 } else {
                     swappPageVC?.arrTrades = []
                 }
@@ -142,9 +142,9 @@ class HLDashboardViewController: BaseViewController {
                         //print("Trades ok")
                         DispatchQueue.main.async {
                             if (HLDataManager.sharedInstance.tradeMode == "current"){
-                                self.swappPageVC?.arrTrades = HLDataManager.sharedInstance.arrCurrentTrades as [NSDictionary]
+                                self.swappPageVC?.arrTrades = SessionListPolicy.trades(HLDataManager.sharedInstance.arrCurrentTrades)
                             } else {
-                                self.swappPageVC?.arrTrades = HLDataManager.sharedInstance.arrPastTrades as [NSDictionary]
+                                self.swappPageVC?.arrTrades = SessionListPolicy.trades(HLDataManager.sharedInstance.arrPastTrades)
                             }
                             self.mainCollectionView.reloadData()
                             self.mainCollectionView.scrollToItem(at: IndexPath(row: 0, section: 0) , at: .top, animated: true)

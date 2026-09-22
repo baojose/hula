@@ -92,7 +92,7 @@ class HLNotificationsViewController: BaseViewController, UITableViewDelegate, UI
             HLDataManager.sharedInstance.loadUserNotifications()
         }
         
-        if (dataManager.arrNotifications.count == 0){
+        if HLNotificationsViewController.isNotificationsEmpty(dataManager.arrNotifications) {
             notificationsView.isHidden = true
             noNotificatiosnFoundView.isHidden = false
         } else {
@@ -121,7 +121,9 @@ class HLNotificationsViewController: BaseViewController, UITableViewDelegate, UI
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         
-        return HLDataManager.sharedInstance.arrNotifications.count
+        return HLNotificationsViewController.notificationCount(
+            HLDataManager.sharedInstance.arrNotifications
+        )
         
     }
 
@@ -369,7 +371,7 @@ class HLNotificationsViewController: BaseViewController, UITableViewDelegate, UI
     func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
         var lastInitialDisplayableCell = false
         //change flag as soon as last displayable cell is being loaded (which will mean table has initially loaded)
-        if HLDataManager.sharedInstance.arrNotifications.count > 0 && !finishedLoadingInitialTableCells {
+        if HLNotificationsViewController.hasNotifications(HLDataManager.sharedInstance.arrNotifications) && !finishedLoadingInitialTableCells {
             if let indexPathsForVisibleRows = tableView.indexPathsForVisibleRows,
                 let lastIndexPath = indexPathsForVisibleRows.last, lastIndexPath.row == indexPath.row {
                 lastInitialDisplayableCell = true
@@ -409,7 +411,7 @@ class HLNotificationsViewController: BaseViewController, UITableViewDelegate, UI
             self.updateTabBarCounter()
             UIApplication.shared.applicationIconBadgeNumber = HLDataManager.sharedInstance.numNotificationsPending
             
-            if (dataManager.arrNotifications.count == 0){
+            if HLNotificationsViewController.isNotificationsEmpty(dataManager.arrNotifications) {
                 notificationsView.isHidden = true
                 noNotificatiosnFoundView.isHidden = false
             } else {
@@ -432,6 +434,21 @@ class HLNotificationsViewController: BaseViewController, UITableViewDelegate, UI
         } else {
             self.tabBarController?.tabBar.items?[1].badgeValue = nil
         }
+    }
+}
+
+extension HLNotificationsViewController {
+    /// Notifications list used IUO `arrNotifications.count` for empty state and rows.
+    class func notificationCount(_ notifications: NSArray?) -> Int {
+        return SessionListPolicy.count(notifications)
+    }
+
+    class func isNotificationsEmpty(_ notifications: NSArray?) -> Bool {
+        return SessionListPolicy.isEmpty(notifications)
+    }
+
+    class func hasNotifications(_ notifications: NSArray?) -> Bool {
+        return SessionListPolicy.hasItems(notifications)
     }
 }
 

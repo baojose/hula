@@ -2272,3 +2272,51 @@ struct DictionaryRowPolicy {
         return rows.object(at: index) as? NSDictionary
     }
 }
+
+/// Home/post/edit category tables, notifications list, and trade dashboard used
+/// IUO `arrCategories.count` / `arrNotifications.count` / `arrCurrentTrades.count`.
+/// A nil session array (cleared cache, partial init) must report 0 rows instead
+/// of trapping before the first category, offer, or lobby room is shown.
+struct SessionListPolicy {
+    static func count(_ array: NSArray?) -> Int {
+        return array?.count ?? 0
+    }
+
+    static func isEmpty(_ array: NSArray?) -> Bool {
+        return count(array) == 0
+    }
+
+    static func hasItems(_ array: NSArray?) -> Bool {
+        return count(array) > 0
+    }
+
+    static func count(_ trades: [NSDictionary]?) -> Int {
+        return trades?.count ?? 0
+    }
+
+    static func isEmpty(_ trades: [NSDictionary]?) -> Bool {
+        return count(trades) == 0
+    }
+
+    static func hasItems(_ trades: [NSDictionary]?) -> Bool {
+        return count(trades) > 0
+    }
+
+    static func trades(_ trades: [NSDictionary]?) -> [NSDictionary] {
+        return trades ?? []
+    }
+
+    /// Lobby room-cap used IUO `arrCurrentTrades.count >= maxTrades`.
+    static func roomsFull(currentCount: Int, maxTrades: Int) -> Bool {
+        return currentCount >= maxTrades
+    }
+}
+
+/// Inventory blank-image thumbs read `dataManager.newProduct.arrProductPhotos`
+/// instead of the row's product. An in-flight create draft must not paint every
+/// listing with the draft camera roll (or crash on a nil draft album).
+struct InventoryListingThumbPolicy {
+    static func localFallbackPhoto(listingPhotos: NSArray?) -> UIImage? {
+        return LocalPhotoAlbumPolicy.image(at: 0, in: listingPhotos)
+    }
+}

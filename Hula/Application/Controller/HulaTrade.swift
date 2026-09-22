@@ -217,16 +217,37 @@ class HulaTrade: NSObject {
         //print(dict)
         self.last_bid_diff = []
         self.num_bids = 0
-        if let bids = dict["bids"] as? [Any] {
+        let bidsPayload = dict["bids"]
+        let bids: [Any]?
+        if let typed = bidsPayload as? [Any] {
+            bids = typed
+        } else if let array = bidsPayload as? NSArray {
+            var items: [Any] = []
+            for item in array {
+                items.append(item)
+            }
+            bids = items
+        } else {
+            bids = nil
+        }
+        if let bids = bids {
             self.num_bids = bids.count
-            if let last_bid = bids.last as? [String:Any]{
-                //print(last_bid)
-                if let lb_owner = CommonUtils.stringArrayFromJSON(last_bid["owner_diff"]) {
+            if let last_bid = CommonUtils.dictionaryPairs(bids.last) {
+                var ownerDiff: Any?
+                var otherDiff: Any?
+                for (key, val) in last_bid {
+                    if key == "owner_diff" {
+                        ownerDiff = val
+                    } else if key == "other_diff" {
+                        otherDiff = val
+                    }
+                }
+                if let lb_owner = CommonUtils.stringArrayFromJSON(ownerDiff) {
                     for item in lb_owner {
                         self.last_bid_diff.append(item)
                     }
                 }
-                if let lb_other = CommonUtils.stringArrayFromJSON(last_bid["other_diff"]) {
+                if let lb_other = CommonUtils.stringArrayFromJSON(otherDiff) {
                     for item in lb_other {
                         self.last_bid_diff.append(item)
                     }

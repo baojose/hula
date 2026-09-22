@@ -126,7 +126,7 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
             cell.isMultipleTrades.isHidden = true
         }
         if (HLMyProductsViewController.listingImageURL(product.productImage).count == 0){
-            if let img = HLMyProductsViewController.localPhoto(at: 0, in: dataManager.newProduct.arrProductPhotos) {
+            if let img = HLMyProductsViewController.localFallbackPhoto(listingPhotos: product.arrProductPhotos) {
                 cell.productImage.image = img
             } else {
                 cell.productImage.loadImageFromURL(urlString: HulaConstants.noProductThumb)
@@ -235,6 +235,12 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
     /// Inventory thumbs used IUO `arrProductPhotos.count` when image_url was blank.
     class func localPhoto(at index: Int, in photos: NSArray?) -> UIImage? {
         return LocalPhotoAlbumPolicy.image(at: index, in: photos)
+    }
+
+    /// Blank-image inventory rows must use the listing's capture album, not the
+    /// shared create-flow draft (`dataManager.newProduct`).
+    class func localFallbackPhoto(listingPhotos: NSArray?) -> UIImage? {
+        return InventoryListingThumbPolicy.localFallbackPhoto(listingPhotos: listingPhotos)
     }
 
     /// Inventory PUT used `location.coordinate` on a `CLLocation!`. Nil GPS

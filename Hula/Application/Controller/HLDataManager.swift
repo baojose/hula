@@ -507,14 +507,12 @@ class HLDataManager: NSObject {
     }
     
     func amITradingWith(_ user_id: String) -> Bool{
-        for tr in arrCurrentTrades{
-            if let trade = tr as? [String:Any] {
-                if let owner = trade["owner_id"] as? String, owner == user_id {
-                    return true
-                }
-                if let other = trade["other_id"] as? String, other == user_id {
-                    return true
-                }
+        for tr in SessionListPolicy.trades(arrCurrentTrades) {
+            if let owner = tr.object(forKey: "owner_id") as? String, owner == user_id {
+                return true
+            }
+            if let other = tr.object(forKey: "other_id") as? String, other == user_id {
+                return true
             }
         }
         return false
@@ -542,10 +540,10 @@ class HLDataManager: NSObject {
     }
 
     func myRoomsFull() -> Bool{
-        if (arrCurrentTrades.count >= HulaUser.sharedInstance.maxTrades){
-            return true
-        }
-        return false
+        return SessionListPolicy.roomsFull(
+            currentCount: SessionListPolicy.count(arrCurrentTrades),
+            maxTrades: HulaUser.sharedInstance.maxTrades
+        )
     }
     
     func signupUser(email:String, nick: String, pass:String) {
@@ -1052,9 +1050,11 @@ class HLDataManager: NSObject {
     
     /// Bounds-safe notification lookup for Accept/Reject and row actions.
     /// Stale cell tags after a background refresh must not NSRangeException.
+    /// A nil IUO `arrNotifications` must also skip instead of trapping on `.count`.
     func notification(at index: Int) -> NSDictionary? {
-        guard index >= 0 && index < arrNotifications.count else { return nil }
-        return arrNotifications.object(at: index) as? NSDictionary
+        guard let notifications = arrNotifications else { return nil }
+        guard index >= 0 && index < SessionListPolicy.count(notifications) else { return nil }
+        return notifications.object(at: index) as? NSDictionary
     }
 
     /// Build notification list + unread badge count without mutating shared state.
