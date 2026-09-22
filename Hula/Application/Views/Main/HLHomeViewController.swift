@@ -217,6 +217,11 @@ class HLHomeViewController: BaseViewController, UIScrollViewDelegate, UITextFiel
         return array.object(at: index) as? NSDictionary
     }
 
+    /// Category tables used IUO `arrCategories.count` before getCategories published.
+    class func categoryCount(_ categories: NSArray?) -> Int {
+        return SessionListPolicy.count(categories)
+    }
+
     // Custom functions for ViewController
     func getNearProducts() {
         
@@ -302,7 +307,7 @@ class HLHomeViewController: BaseViewController, UIScrollViewDelegate, UITextFiel
             if self.isNearYou == true {
                 return productArray.count
             } else {
-                return dataManager.arrCategories.count
+                return HLHomeViewController.categoryCount(dataManager.arrCategories)
             }
         }
     }

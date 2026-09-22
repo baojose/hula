@@ -162,7 +162,7 @@ extension HLProductEditTextViewController: UITableViewDelegate, UITableViewDataS
         return 60.0
     }
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return dataManager.arrCategories.count
+        return HLHomeViewController.categoryCount(dataManager.arrCategories)
     }
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         

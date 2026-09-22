@@ -962,17 +962,10 @@ class HLSwappViewController: UIViewController {
     }
     
     func tradeCanBeClosed(_ trade:NSDictionary) -> Bool{
-        if let bids = trade.object(forKey: "bids") as? NSArray{
-            //print(bids.count)
-            
-            if let isMutated = barterDelegate?.isTradeMutated(){
-                
-                if (bids.count > 1) && (!isMutated) {
-                    return true
-                }
-            }
-        }
-        return false
+        return TradeCloseEligibilityPolicy.canClose(
+            trade: trade,
+            isMutated: barterDelegate?.isTradeMutated()
+        )
     }
     
     @IBAction func showCurrentTrades(_ sender: Any) {
@@ -1191,6 +1184,35 @@ extension HLSwappViewController: AlertDelegate{
                 }
             })
         }
+    }
+}
+
+/// Close Deal after multiple bids required `bids as? NSArray` plus a non-nil
+/// `isTradeMutated()` answer. Missing bids, a Swift-array payload, or a nil
+/// mutation flag must keep Close Deal off instead of offering a bad path.
+struct TradeCloseEligibilityPolicy {
+    static func bidCount(from trade: NSDictionary?) -> Int {
+        guard let trade = trade else {
+            return 0
+        }
+        if let bids = trade.object(forKey: "bids") as? NSArray {
+            return bids.count
+        }
+        if let bids = trade.object(forKey: "bids") as? [Any] {
+            return bids.count
+        }
+        return 0
+    }
+
+    static func canClose(bidCount: Int, isMutated: Bool?) -> Bool {
+        guard let isMutated = isMutated else {
+            return false
+        }
+        return bidCount > 1 && !isMutated
+    }
+
+    static func canClose(trade: NSDictionary?, isMutated: Bool?) -> Bool {
+        return canClose(bidCount: bidCount(from: trade), isMutated: isMutated)
     }
 }
 
