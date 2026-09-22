@@ -6810,6 +6810,150 @@ class HulaTests: XCTestCase {
         XCTAssertNil(HLPostProductViewController.localPhoto(at: 0, in: onlyNull))
     }
 
+    // MARK: - Beyond #162: IUO session lists, inventory thumbs, Close Deal bids
+
+    /// Home/post/edit category tables used IUO `arrCategories.count`.
+    /// Nil must be zero rows instead of crashing before categories load.
+    func testSessionListPolicyTreatsNilCategoryArrayAsEmpty() {
+        XCTAssertEqual(SessionListPolicy.count(nil as NSArray?), 0)
+        XCTAssertTrue(SessionListPolicy.isEmpty(nil as NSArray?))
+        XCTAssertFalse(SessionListPolicy.hasItems(nil as NSArray?))
+        XCTAssertEqual(HLHomeViewController.categoryCount(nil), 0)
+
+        let categories: NSArray = [
+            ["name": "SERVICES", "icon": "icon_cat_service"],
+            ["name": "SPORTS", "icon": "icon_cat_sport"]
+        ]
+        XCTAssertEqual(SessionListPolicy.count(categories), 2)
+        XCTAssertEqual(HLHomeViewController.categoryCount(categories), 2)
+        XCTAssertFalse(SessionListPolicy.isEmpty(categories))
+    }
+
+    /// Notifications empty-state and row count used IUO `arrNotifications.count`.
+    /// Nil must look empty and skip Accept/Decline lookup.
+    func testSessionListPolicyTreatsNilNotificationsAsEmpty() {
+        XCTAssertEqual(HLNotificationsViewController.notificationCount(nil), 0)
+        XCTAssertTrue(HLNotificationsViewController.isNotificationsEmpty(nil))
+        XCTAssertFalse(HLNotificationsViewController.hasNotifications(nil))
+
+        let dm = HLDataManager.sharedInstance
+        let previous = dm.arrNotifications
+        defer { dm.arrNotifications = previous }
+
+        dm.arrNotifications = nil
+        XCTAssertNil(dm.notification(at: 0))
+        XCTAssertEqual(HLNotificationsViewController.notificationCount(dm.arrNotifications), 0)
+
+        let items = NSMutableArray()
+        items.add(["_id": "n1", "status": "active", "is_read": 0])
+        dm.arrNotifications = items
+        XCTAssertEqual(HLNotificationsViewController.notificationCount(dm.arrNotifications), 1)
+        XCTAssertEqual(dm.notification(at: 0)?["_id"] as? String, "n1")
+        XCTAssertNil(dm.notification(at: 1))
+    }
+
+    /// Dashboard lobby and room-cap used IUO `arrCurrentTrades.count`.
+    /// Nil must be an empty roster and never count as rooms-full by itself.
+    func testSessionListPolicyTreatsNilTradeRosterAsEmpty() {
+        XCTAssertEqual(SessionListPolicy.count(nil as [NSDictionary]?), 0)
+        XCTAssertTrue(SessionListPolicy.isEmpty(nil as [NSDictionary]?))
+        XCTAssertEqual(SessionListPolicy.trades(nil).count, 0)
+        XCTAssertFalse(SessionListPolicy.roomsFull(currentCount: 0, maxTrades: 2))
+        XCTAssertTrue(SessionListPolicy.roomsFull(currentCount: 2, maxTrades: 2))
+
+        let dm = HLDataManager.sharedInstance
+        let user = HulaUser.sharedInstance
+        let previousCurrent = dm.arrCurrentTrades
+        let previousMax = user.maxTrades
+        defer {
+            dm.arrCurrentTrades = previousCurrent
+            user.maxTrades = previousMax
+        }
+
+        user.maxTrades = 2
+        dm.arrCurrentTrades = nil
+        XCTAssertFalse(dm.myRoomsFull())
+        XCTAssertFalse(dm.amITradingWith("peer"))
+
+        dm.arrCurrentTrades = [
+            ["_id": "r1", "owner_id": "peer", "other_id": "me"]
+        ]
+        XCTAssertTrue(dm.amITradingWith("peer"))
+        XCTAssertFalse(dm.myRoomsFull())
+        dm.arrCurrentTrades = [
+            ["_id": "r1", "owner_id": "a", "other_id": "me"],
+            ["_id": "r2", "owner_id": "me", "other_id": "b"]
+        ]
+        XCTAssertTrue(dm.myRoomsFull())
+    }
+
+    /// Inventory blank-image thumbs read the create-flow draft album.
+    /// Each row must use its own listing photos instead.
+    func testInventoryListingThumbUsesListingPhotosNotDraft() {
+        XCTAssertNil(InventoryListingThumbPolicy.localFallbackPhoto(listingPhotos: nil))
+        XCTAssertNil(HLMyProductsViewController.localFallbackPhoto(listingPhotos: nil))
+
+        let listingPhotos = NSMutableArray()
+        listingPhotos.add(UIImage())
+        let draftPhotos = NSMutableArray()
+        draftPhotos.add(NSNull())
+
+        let listingThumb = HLMyProductsViewController.localFallbackPhoto(listingPhotos: listingPhotos)
+        XCTAssertNotNil(listingThumb)
+        XCTAssertNil(HLMyProductsViewController.localPhoto(at: 0, in: draftPhotos))
+        XCTAssertTrue(
+            listingThumb === InventoryListingThumbPolicy.localFallbackPhoto(listingPhotos: listingPhotos)
+        )
+    }
+
+    /// Close Deal after multiple bids required NSArray bids and a non-nil
+    /// mutation flag. Missing bids or a nil flag must keep Close Deal off.
+    func testTradeCloseEligibilityRequiresMultipleBidsAndUnmutatedTray() {
+        XCTAssertEqual(TradeCloseEligibilityPolicy.bidCount(from: nil), 0)
+        XCTAssertFalse(TradeCloseEligibilityPolicy.canClose(bidCount: 2, isMutated: nil))
+        XCTAssertFalse(TradeCloseEligibilityPolicy.canClose(bidCount: 1, isMutated: false))
+        XCTAssertFalse(TradeCloseEligibilityPolicy.canClose(bidCount: 2, isMutated: true))
+        XCTAssertTrue(TradeCloseEligibilityPolicy.canClose(bidCount: 2, isMutated: false))
+
+        let trade: NSDictionary = [
+            "bids": [
+                ["owner_diff": ["a"]],
+                ["owner_diff": ["b"]]
+            ]
+        ]
+        XCTAssertEqual(TradeCloseEligibilityPolicy.bidCount(from: trade), 2)
+        XCTAssertTrue(TradeCloseEligibilityPolicy.canClose(trade: trade, isMutated: false))
+        XCTAssertFalse(TradeCloseEligibilityPolicy.canClose(trade: trade, isMutated: true))
+
+        let nsBids = NSMutableArray()
+        nsBids.add(["owner_diff": ["a"]])
+        nsBids.add(["owner_diff": ["b"]])
+        nsBids.add(["owner_diff": ["c"]])
+        let nsTrade: NSDictionary = ["bids": nsBids]
+        XCTAssertEqual(TradeCloseEligibilityPolicy.bidCount(from: nsTrade), 3)
+
+        let vc = HLSwappViewController()
+        XCTAssertFalse(vc.tradeCanBeClosed(["bids": [] as [Any]]))
+        XCTAssertFalse(vc.tradeCanBeClosed(trade))
+    }
+
+    /// Last-bid diffs arrived as NSDictionary; `as? [String:Any]` dropped them
+    /// and left Close Deal / renegotiation UI without the latest changes.
+    func testTradeLoadFromAcceptsNSDictionaryLastBid() {
+        let trade = HulaTrade()
+        let lastBid = NSMutableDictionary()
+        lastBid.setObject(["owner-x"], forKey: "owner_diff" as NSString)
+        lastBid.setObject(["other-y"], forKey: "other_diff" as NSString)
+        let bids = NSMutableArray()
+        bids.add(["owner_diff": ["old"], "other_diff": ["old"]])
+        bids.add(lastBid)
+
+        trade.loadFrom(dict: ["bids": bids])
+
+        XCTAssertEqual(trade.num_bids, 2)
+        XCTAssertEqual(trade.last_bid_diff, ["owner-x", "other-y"])
+    }
+
     private func tradeReadyFixture(
         ownerId: String,
         otherId: String,
