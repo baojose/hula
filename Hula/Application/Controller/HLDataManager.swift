@@ -897,6 +897,19 @@ class HLDataManager: NSObject {
     }
     
     
+    /// Finish-tip used `onboardingTutorials.setObject` on an IUO dictionary.
+    /// Nil becomes the placeholder map plus `"done"` instead of trapping.
+    func applyCompletedTutorial(_ name: String) {
+        self.onboardingTutorials = OnboardingTutorialPolicy.markingComplete(
+            named: name,
+            in: self.onboardingTutorials
+        )
+    }
+
+    class func persistableOnboardingTutorials(_ tutorials: NSDictionary?) -> NSMutableDictionary {
+        return OnboardingTutorialPolicy.persistableDictionary(tutorials)
+    }
+
     func writeUserData(){
         guard let path = CommonUtils.sessionFilePath(
             fileName: HulaConstants.userFile + ".plist"
@@ -909,7 +922,10 @@ class HLDataManager: NSObject {
         
         let user = HulaUser.sharedInstance
         SessionWritePolicy.applyIdentity(from: user, to: dict)
-        dict.setObject(self.onboardingTutorials, forKey: "onboardingTutorials" as NSCopying)
+        dict.setObject(
+            HLDataManager.persistableOnboardingTutorials(self.onboardingTutorials),
+            forKey: "onboardingTutorials" as NSCopying
+        )
         // Persist optional credentials so cold start / welcome push PUTs do not wipe
         // server-side zip, social tokens, or push device id (see getPostString omission).
         let credentials = HLDataManager.userSessionCredentialSnapshot(from: user)
@@ -984,7 +1000,7 @@ class HLDataManager: NSObject {
                 let tmpMutable:NSMutableDictionary = NSMutableDictionary(dictionary: tmp)
                 self.onboardingTutorials = tmpMutable
             } else {
-                self.onboardingTutorials = ["XInitializerItem": "DoNotEverChangeMe"]
+                self.onboardingTutorials = OnboardingTutorialPolicy.persistableDictionary(nil)
             }
             
             self.loadUserNotifications()

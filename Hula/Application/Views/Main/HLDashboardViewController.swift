@@ -44,6 +44,12 @@ class HLDashboardViewController: BaseViewController {
         return CatalogFontPolicy.font(named: HulaConstants.regular_font, size: 10.0)
     }
 
+    /// First-trade tips used IUO `onboardingTutorials.object(forKey:)`.
+    /// A session that has not loaded UserData.plist must still show the tip.
+    class func shouldShowDashboardMixTutorial(_ tutorials: NSDictionary?) -> Bool {
+        return OnboardingTutorialPolicy.shouldShow(named: "dashboard_mix", in: tutorials)
+    }
+
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -155,7 +161,7 @@ class HLDashboardViewController: BaseViewController {
                             //print(HLDataManager.sharedInstance.tradeMode)
                             //print(HLDataManager.sharedInstance.arrCurrentTrades.count)
                             if (HLDataManager.sharedInstance.tradeMode == "current"){
-                                if HLDataManager.sharedInstance.onboardingTutorials.object(forKey: "dashboard_mix") as? String == nil {
+                                if HLDashboardViewController.shouldShowDashboardMixTutorial(HLDataManager.sharedInstance.onboardingTutorials) {
                                     CommonUtils.sharedInstance.showTutorial(arrayTips: [
                                         HulaTip(delay: 0.5, view: self.fakeFirstTradeView, text: NSLocalizedString("Welcome to your first trade! Get some advice. Click on the Trade Room you used.", comment: "")),
                                         HulaTip(delay: 0.5, view: self.fakeAddTradeView, text: NSLocalizedString("Need more trading rooms? tap here to add more spaces!", comment: ""))

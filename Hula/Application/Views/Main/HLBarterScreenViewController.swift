@@ -106,6 +106,12 @@ class HLBarterScreenViewController: BaseViewController {
         return ProductIdentityPolicy.livePublishIds(from: products)
     }
 
+    /// Barter coach marks used IUO `onboardingTutorials.object(forKey:)`.
+    /// Nil must still show the tips instead of trapping when the room opens.
+    class func shouldShowBarterTutorial(_ tutorials: NSDictionary?) -> Bool {
+        return OnboardingTutorialPolicy.shouldShow(named: "barter_any_turn", in: tutorials)
+    }
+
     /// Missing `image_url` falls back to the product image endpoint. Do not force-unwrap
     /// the optional after the fallback; empty strings are kept as in the original path.
     class func resolvedProductImage(from productData: [String: Any], productId: String) -> String {
@@ -388,7 +394,7 @@ class HLBarterScreenViewController: BaseViewController {
             // TUTORIAL
             
             
-            if HLDataManager.sharedInstance.onboardingTutorials.object(forKey: "barter_any_turn") as? String == nil{
+            if HLBarterScreenViewController.shouldShowBarterTutorial(HLDataManager.sharedInstance.onboardingTutorials) {
                 CommonUtils.sharedInstance.showTutorial(arrayTips: [
                     HulaTip(delay: 0.4, view: self.otherProductsCollection, text: NSLocalizedString("Here is their stuff.", comment: "")),
                     HulaTip(delay: 0.2, view: self.otherSelectedProductsCollection, text: NSLocalizedString("Drag & drop here what you want.", comment: "")),

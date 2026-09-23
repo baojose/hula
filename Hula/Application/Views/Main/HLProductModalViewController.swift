@@ -93,6 +93,12 @@ class HLProductModalViewController: UIViewController, UIImagePickerControllerDel
         return PhotoGalleryPolicy.nonEmptyURL(at: index, in: links)
     }
 
+    /// Video-proof tip used IUO `onboardingTutorials.object(forKey:)`.
+    /// Nil must still show the tip instead of trapping in viewDidAppear.
+    class func shouldShowProductModalTutorial(_ tutorials: NSDictionary?) -> Bool {
+        return OnboardingTutorialPolicy.shouldShow(named: "product_modal", in: tutorials)
+    }
+
     override func viewDidLoad() {
         super.viewDidLoad()
 
@@ -144,7 +150,7 @@ class HLProductModalViewController: UIViewController, UIImagePickerControllerDel
         
         HLDataManager.sharedInstance.ga("product_detail_barter")
         
-        if HLDataManager.sharedInstance.onboardingTutorials.object(forKey: "product_modal") as? String == nil{
+        if HLProductModalViewController.shouldShowProductModalTutorial(HLDataManager.sharedInstance.onboardingTutorials) {
             CommonUtils.sharedInstance.showTutorial(arrayTips: [
                 HulaTip(delay: 2, view: self.videoBtn, text: NSLocalizedString("You can request a video-proof for this product.", comment: ""))
                 ], named: "product_modal")
