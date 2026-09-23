@@ -230,7 +230,7 @@ class CommonUtils: NSObject, EasyTipViewDelegate, UIGestureRecognizerDelegate {
                     self.bgViewToRemove.removeFromSuperview()
                     self.currentTip = -1
                     
-                    HLDataManager.sharedInstance.onboardingTutorials.setObject("done", forKey: self.tutorialToComplete as NSCopying)
+                    HLDataManager.sharedInstance.applyCompletedTutorial(self.tutorialToComplete)
                     HLDataManager.sharedInstance.writeUserData()
                 }
             }
@@ -245,7 +245,7 @@ class CommonUtils: NSObject, EasyTipViewDelegate, UIGestureRecognizerDelegate {
                 self.bgViewToRemove.removeFromSuperview()
             })
             
-            HLDataManager.sharedInstance.onboardingTutorials.setObject("done", forKey: self.tutorialToComplete as NSCopying)
+            HLDataManager.sharedInstance.applyCompletedTutorial(self.tutorialToComplete)
             HLDataManager.sharedInstance.writeUserData()
         }
     }
@@ -2318,5 +2318,45 @@ struct SessionListPolicy {
 struct InventoryListingThumbPolicy {
     static func localFallbackPhoto(listingPhotos: NSArray?) -> UIImage? {
         return LocalPhotoAlbumPolicy.image(at: 0, in: listingPhotos)
+    }
+}
+
+/// Dashboard, product modal, and barter asked
+/// `onboardingTutorials.object(forKey:) as? String == nil` before the first tip.
+/// That dictionary is an IUO filled only after UserData.plist loads, so a cold
+/// start trapped on `.object(forKey:)`. Finishing a tip also `setObject`ed
+/// `"done"` on the IUO, and `writeUserData` inserted it into the plist.
+struct OnboardingTutorialPolicy {
+    static let placeholderKey = "XInitializerItem"
+    static let placeholderValue = "DoNotEverChangeMe"
+    static let completedMarker = "done"
+
+    /// Historical gate: show the tip when the stored value is not a String.
+    /// A nil map, a missing key, NSNull, and numbers still show the tip.
+    /// Any String, including `""` and `"done"`, counts as already recorded.
+    static func shouldShow(named key: String, in tutorials: NSDictionary?) -> Bool {
+        guard let tutorials = tutorials else {
+            return true
+        }
+        return (tutorials.object(forKey: key) as? String) == nil
+    }
+
+    /// Plist write must never insert a nil object. A missing map becomes the
+    /// same placeholder `loadUserData` uses when the key is absent.
+    static func persistableDictionary(_ tutorials: NSDictionary?) -> NSMutableDictionary {
+        if let tutorials = tutorials {
+            return NSMutableDictionary(dictionary: tutorials)
+        }
+        let placeholder = NSMutableDictionary()
+        placeholder.setObject(placeholderValue, forKey: placeholderKey as NSCopying)
+        return placeholder
+    }
+
+    /// Record `"done"` without trapping on a nil dictionary. The input map is
+    /// copied so an in-flight reader does not see a half-updated object.
+    static func markingComplete(named key: String, in tutorials: NSDictionary?) -> NSMutableDictionary {
+        let updated = persistableDictionary(tutorials)
+        updated.setObject(completedMarker, forKey: key as NSCopying)
+        return updated
     }
 }

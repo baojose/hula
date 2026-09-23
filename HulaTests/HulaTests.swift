@@ -6954,6 +6954,82 @@ class HulaTests: XCTestCase {
         XCTAssertEqual(trade.last_bid_diff, ["owner-x", "other-y"])
     }
 
+    // MARK: - Beyond #163: IUO onboarding tutorial maps
+
+    /// Dashboard, product modal, and barter asked `onboardingTutorials.object(forKey:)`
+    /// on an IUO dictionary. Nil must still show the tip and persist a placeholder.
+    func testOnboardingTutorialPolicyTreatsNilMapAsUnseen() {
+        XCTAssertTrue(OnboardingTutorialPolicy.shouldShow(named: "dashboard_mix", in: nil))
+        XCTAssertTrue(HLDashboardViewController.shouldShowDashboardMixTutorial(nil))
+        XCTAssertTrue(HLProductModalViewController.shouldShowProductModalTutorial(nil))
+        XCTAssertTrue(HLBarterScreenViewController.shouldShowBarterTutorial(nil))
+
+        let persisted = HLDataManager.persistableOnboardingTutorials(nil)
+        XCTAssertEqual(
+            persisted.object(forKey: OnboardingTutorialPolicy.placeholderKey) as? String,
+            OnboardingTutorialPolicy.placeholderValue
+        )
+        XCTAssertTrue(HLDashboardViewController.shouldShowDashboardMixTutorial(persisted))
+        XCTAssertTrue(HLProductModalViewController.shouldShowProductModalTutorial(persisted))
+        XCTAssertTrue(HLBarterScreenViewController.shouldShowBarterTutorial(persisted))
+
+        let plist = NSMutableDictionary()
+        plist.setObject(persisted, forKey: "onboardingTutorials" as NSCopying)
+        let stored = plist.object(forKey: "onboardingTutorials") as? NSDictionary
+        XCTAssertEqual(
+            stored?.object(forKey: "XInitializerItem") as? String,
+            "DoNotEverChangeMe"
+        )
+    }
+
+    /// The historical gate was `as? String == nil`. Numbers and NSNull still
+    /// show the tip. Any string, including empty, counts as already recorded.
+    func testOnboardingTutorialPolicyShowsOnlyWhenValueIsNotAString() {
+        let tutorials = NSMutableDictionary()
+        tutorials.setObject(NSNull(), forKey: "dashboard_mix" as NSCopying)
+        tutorials.setObject(1, forKey: "product_modal" as NSCopying)
+        tutorials.setObject("done", forKey: "barter_any_turn" as NSCopying)
+        tutorials.setObject("", forKey: "other_tip" as NSCopying)
+
+        XCTAssertTrue(HLDashboardViewController.shouldShowDashboardMixTutorial(tutorials))
+        XCTAssertTrue(HLProductModalViewController.shouldShowProductModalTutorial(tutorials))
+        XCTAssertFalse(HLBarterScreenViewController.shouldShowBarterTutorial(tutorials))
+        XCTAssertFalse(OnboardingTutorialPolicy.shouldShow(named: "other_tip", in: tutorials))
+        XCTAssertTrue(OnboardingTutorialPolicy.shouldShow(named: "missing_tip", in: tutorials))
+    }
+
+    /// Finishing a tip `setObject`ed `"done"` on a possibly nil map. The prior
+    /// dictionary must stay unchanged, and a second completion must keep the first.
+    func testApplyCompletedTutorialSurvivesNilOnboardingMap() {
+        let original = NSMutableDictionary()
+        original.setObject("keep", forKey: "other" as NSCopying)
+        let updated = OnboardingTutorialPolicy.markingComplete(named: "dashboard_mix", in: original)
+        XCTAssertNil(original.object(forKey: "dashboard_mix"))
+        XCTAssertEqual(updated.object(forKey: "dashboard_mix") as? String, "done")
+        XCTAssertEqual(updated.object(forKey: "other") as? String, "keep")
+        updated.setObject("mutated", forKey: "other" as NSCopying)
+        XCTAssertEqual(original.object(forKey: "other") as? String, "keep")
+
+        let dm = HLDataManager.sharedInstance
+        let previous = dm.onboardingTutorials
+        defer { dm.onboardingTutorials = previous }
+
+        dm.onboardingTutorials = nil
+        dm.applyCompletedTutorial("dashboard_mix")
+        XCTAssertEqual(dm.onboardingTutorials.object(forKey: "dashboard_mix") as? String, "done")
+        XCTAssertEqual(
+            dm.onboardingTutorials.object(forKey: "XInitializerItem") as? String,
+            "DoNotEverChangeMe"
+        )
+        XCTAssertFalse(HLDashboardViewController.shouldShowDashboardMixTutorial(dm.onboardingTutorials))
+        XCTAssertTrue(HLBarterScreenViewController.shouldShowBarterTutorial(dm.onboardingTutorials))
+
+        dm.applyCompletedTutorial("barter_any_turn")
+        XCTAssertEqual(dm.onboardingTutorials.object(forKey: "dashboard_mix") as? String, "done")
+        XCTAssertEqual(dm.onboardingTutorials.object(forKey: "barter_any_turn") as? String, "done")
+        XCTAssertFalse(HLBarterScreenViewController.shouldShowBarterTutorial(dm.onboardingTutorials))
+    }
+
     private func tradeReadyFixture(
         ownerId: String,
         otherId: String,
