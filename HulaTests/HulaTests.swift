@@ -7030,6 +7030,238 @@ class HulaTests: XCTestCase {
         XCTAssertFalse(HLBarterScreenViewController.shouldShowBarterTutorial(dm.onboardingTutorials))
     }
 
+    // MARK: - Beyond #164: send-offer donation gate and review status
+
+    /// An empty product side, including Close Deal, must hit the donation gate.
+    /// A full tray only confirms when the button is Close Deal.
+    func testOfferSendRouteKeepsEmptyTraysOutOfCloseDeal() {
+        let vc = HLSwappViewController()
+        XCTAssertEqual(
+            HLSwappViewController.offerSendRoute(
+                ownerProductCount: 0,
+                otherProductCount: 1,
+                buttonTag: vc.kTagCloseDeal,
+                closeDealTag: vc.kTagCloseDeal
+            ),
+            OfferSubmissionPolicy.needsDonationCheck
+        )
+        XCTAssertEqual(
+            OfferSubmissionPolicy.sendOfferRoute(
+                ownerProductCount: 2,
+                otherProductCount: 0,
+                buttonTag: vc.kTagProductsReceived,
+                closeDealTag: vc.kTagCloseDeal
+            ),
+            OfferSubmissionPolicy.needsDonationCheck
+        )
+        XCTAssertEqual(
+            HLSwappViewController.offerSendRoute(
+                ownerProductCount: 1,
+                otherProductCount: 1,
+                buttonTag: vc.kTagCloseDeal,
+                closeDealTag: vc.kTagCloseDeal
+            ),
+            OfferSubmissionPolicy.confirmClose
+        )
+        XCTAssertEqual(
+            HLSwappViewController.offerSendRoute(
+                ownerProductCount: 1,
+                otherProductCount: 1,
+                buttonTag: vc.kTagJustAccept,
+                closeDealTag: vc.kTagCloseDeal
+            ),
+            OfferSubmissionPolicy.proceed
+        )
+        XCTAssertEqual(
+            HLSwappViewController.offerSendRoute(
+                ownerProductCount: 1,
+                otherProductCount: 1,
+                buttonTag: vc.kTagProductsReceived,
+                closeDealTag: vc.kTagCloseDeal
+            ),
+            OfferSubmissionPolicy.proceed
+        )
+    }
+
+    /// Cash on the empty side is a real offer. Cash on both sides with zero
+    /// products is still blocked. A free giveaway must be confirmed.
+    func testOfferDonationDecisionTreatsCashAndEmptySidesSeparately() {
+        XCTAssertEqual(
+            HLSwappViewController.offerDonationDecision(
+                ownerProductCount: 0,
+                otherProductCount: 0,
+                ownerMoney: 10,
+                otherMoney: 10,
+                ownerId: "me",
+                viewerId: "me"
+            ),
+            OfferSubmissionPolicy.blockNoItems
+        )
+        XCTAssertEqual(
+            OfferSubmissionPolicy.donationDecision(
+                ownerProductCount: 0,
+                otherProductCount: 2,
+                ownerMoney: 0,
+                otherMoney: 0,
+                ownerId: "me",
+                viewerId: "me"
+            ),
+            OfferSubmissionPolicy.blockViewerEmpty
+        )
+        XCTAssertEqual(
+            HLSwappViewController.offerDonationDecision(
+                ownerProductCount: 0,
+                otherProductCount: 2,
+                ownerMoney: 5,
+                otherMoney: 0,
+                ownerId: "me",
+                viewerId: "me"
+            ),
+            OfferSubmissionPolicy.proceed
+        )
+        XCTAssertEqual(
+            HLSwappViewController.offerDonationDecision(
+                ownerProductCount: 1,
+                otherProductCount: 0,
+                ownerMoney: 0,
+                otherMoney: 0,
+                ownerId: "me",
+                viewerId: "me"
+            ),
+            OfferSubmissionPolicy.confirmGiveaway
+        )
+        XCTAssertEqual(
+            HLSwappViewController.offerDonationDecision(
+                ownerProductCount: 1,
+                otherProductCount: 0,
+                ownerMoney: 0,
+                otherMoney: Float(0.01),
+                ownerId: "me",
+                viewerId: "me"
+            ),
+            OfferSubmissionPolicy.proceed
+        )
+        XCTAssertEqual(
+            HLSwappViewController.offerDonationDecision(
+                ownerProductCount: 2,
+                otherProductCount: 0,
+                ownerMoney: 0,
+                otherMoney: 0,
+                ownerId: "owner",
+                viewerId: "peer"
+            ),
+            OfferSubmissionPolicy.blockViewerEmpty
+        )
+        XCTAssertEqual(
+            HLSwappViewController.offerDonationDecision(
+                ownerProductCount: 0,
+                otherProductCount: 1,
+                ownerMoney: 0,
+                otherMoney: 4,
+                ownerId: "owner",
+                viewerId: "peer"
+            ),
+            OfferSubmissionPolicy.confirmGiveaway
+        )
+        XCTAssertEqual(
+            HLSwappViewController.offerDonationDecision(
+                ownerProductCount: 0,
+                otherProductCount: 1,
+                ownerMoney: 3,
+                otherMoney: 0,
+                ownerId: "owner",
+                viewerId: "peer"
+            ),
+            OfferSubmissionPolicy.proceed
+        )
+        XCTAssertFalse(OfferSubmissionPolicy.viewerIsOwner(ownerId: nil, viewerId: "me"))
+        XCTAssertFalse(OfferSubmissionPolicy.viewerIsOwner(ownerId: "me", viewerId: nil))
+        XCTAssertTrue(OfferSubmissionPolicy.viewerIsOwner(ownerId: "", viewerId: ""))
+        XCTAssertEqual(
+            HLSwappViewController.offerDonationDecision(
+                ownerProductCount: 1,
+                otherProductCount: 0,
+                ownerMoney: 0,
+                otherMoney: 0,
+                ownerId: nil,
+                viewerId: "me"
+            ),
+            OfferSubmissionPolicy.blockViewerEmpty
+        )
+    }
+
+    /// Accept stays offer_sent. Close Deal is review without accepted.
+    /// Products Received is review and accepted.
+    func testOfferSubmittedFieldsMapButtonTagsToStatus() {
+        let vc = HLSwappViewController()
+        let accept = HLSwappViewController.offerSubmittedFields(
+            buttonTag: vc.kTagJustAccept,
+            closeDealTag: vc.kTagCloseDeal,
+            productsReceivedTag: vc.kTagProductsReceived
+        )
+        XCTAssertEqual(accept.status, HulaConstants.sent_status)
+        XCTAssertFalse(accept.accepted)
+
+        let close = OfferSubmissionPolicy.submittedFields(
+            buttonTag: vc.kTagCloseDeal,
+            closeDealTag: vc.kTagCloseDeal,
+            productsReceivedTag: vc.kTagProductsReceived
+        )
+        XCTAssertEqual(close.status, HulaConstants.review_status)
+        XCTAssertFalse(close.accepted)
+
+        let received = HLSwappViewController.offerSubmittedFields(
+            buttonTag: vc.kTagProductsReceived,
+            closeDealTag: vc.kTagCloseDeal,
+            productsReceivedTag: vc.kTagProductsReceived
+        )
+        XCTAssertEqual(received.status, HulaConstants.review_status)
+        XCTAssertTrue(received.accepted)
+
+        let unknown = HLSwappViewController.offerSubmittedFields(
+            buttonTag: 0,
+            closeDealTag: vc.kTagCloseDeal,
+            productsReceivedTag: vc.kTagProductsReceived
+        )
+        XCTAssertEqual(unknown.status, HulaConstants.sent_status)
+        XCTAssertFalse(unknown.accepted)
+    }
+
+    /// Feedback is filed against the other person. A nil id must not crash.
+    func testOfferCounterpartyIdUsesTheOtherParticipant() {
+        XCTAssertEqual(
+            HLSwappViewController.offerCounterpartyId(ownerId: "me", otherId: "peer", viewerId: "me"),
+            "peer"
+        )
+        XCTAssertEqual(
+            OfferSubmissionPolicy.counterpartyId(ownerId: "owner", otherId: "peer", viewerId: "peer"),
+            "owner"
+        )
+        XCTAssertEqual(
+            HLSwappViewController.offerCounterpartyId(ownerId: "", otherId: "peer", viewerId: ""),
+            "peer"
+        )
+        XCTAssertEqual(
+            HLSwappViewController.offerCounterpartyId(ownerId: nil, otherId: "peer", viewerId: "me"),
+            ""
+        )
+        XCTAssertEqual(
+            HLSwappViewController.offerCounterpartyId(ownerId: "owner", otherId: nil, viewerId: "owner"),
+            ""
+        )
+    }
+
+    func testGiveawayAlertMessageDiffersForOwnerAndPeer() {
+        XCTAssertEqual(
+            HLSwappViewController.giveawayAlertMessage(viewerIsOwner: true),
+            "Are you giving your stuff away for free? If not, choose the item you want to exchange it with."
+        )
+        XCTAssertEqual(
+            HLSwappViewController.giveawayAlertMessage(viewerIsOwner: false),
+            "Are you giving your stuff away for free? If not, choose something you want to exchange it with."
+        )
+    }
+
     private func tradeReadyFixture(
         ownerId: String,
         otherId: String,
