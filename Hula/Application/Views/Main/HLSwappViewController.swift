@@ -74,6 +74,72 @@ class HLSwappViewController: UIViewController {
         return maxTrades < 50
     }
 
+    /// Send-offer routing. An empty product side still goes through the donation
+    /// gate, including Close Deal, so a one-sided tray cannot skip the warning.
+    class func offerSendRoute(
+        ownerProductCount: Int,
+        otherProductCount: Int,
+        buttonTag: Int,
+        closeDealTag: Int
+    ) -> String {
+        return OfferSubmissionPolicy.sendOfferRoute(
+            ownerProductCount: ownerProductCount,
+            otherProductCount: otherProductCount,
+            buttonTag: buttonTag,
+            closeDealTag: closeDealTag
+        )
+    }
+
+    /// Donation / empty-tray gate. Nil owner or viewer ids must not unwrap.
+    class func offerDonationDecision(
+        ownerProductCount: Int,
+        otherProductCount: Int,
+        ownerMoney: Float,
+        otherMoney: Float,
+        ownerId: String?,
+        viewerId: String?
+    ) -> String {
+        return OfferSubmissionPolicy.donationDecision(
+            ownerProductCount: ownerProductCount,
+            otherProductCount: otherProductCount,
+            ownerMoney: ownerMoney,
+            otherMoney: otherMoney,
+            ownerId: ownerId,
+            viewerId: viewerId
+        )
+    }
+
+    /// PUT body for Accept vs Close Deal vs Products Received.
+    class func offerSubmittedFields(
+        buttonTag: Int,
+        closeDealTag: Int,
+        productsReceivedTag: Int
+    ) -> (status: String, accepted: Bool) {
+        return OfferSubmissionPolicy.submittedFields(
+            buttonTag: buttonTag,
+            closeDealTag: closeDealTag,
+            productsReceivedTag: productsReceivedTag
+        )
+    }
+
+    /// Feedback target after an offer write. The owner records the peer; everyone
+    /// else records the owner. A nil id becomes an empty string instead of crashing.
+    class func offerCounterpartyId(ownerId: String?, otherId: String?, viewerId: String?) -> String {
+        return OfferSubmissionPolicy.counterpartyId(
+            ownerId: ownerId,
+            otherId: otherId,
+            viewerId: viewerId
+        )
+    }
+
+    /// Giveaway confirmation copy differs by role. Keep both historical strings.
+    class func giveawayAlertMessage(viewerIsOwner: Bool) -> String {
+        if viewerIsOwner {
+            return NSLocalizedString("Are you giving your stuff away for free? If not, choose the item you want to exchange it with.", comment: "")
+        }
+        return NSLocalizedString("Are you giving your stuff away for free? If not, choose something you want to exchange it with.", comment: "")
+    }
+
     /// Facebook app-invite placeholders used `URL(string:)!`.
     class func facebookAppInviteURLs() -> (appLink: URL, previewImageURL: URL?)? {
         return FacebookInvitePolicy.inviteURLs()
@@ -489,17 +555,22 @@ class HLSwappViewController: UIViewController {
                 return
             }
             self.tempTag = tag
-            
-            if (tradeStatus.owner_products.count == 0 || tradeStatus.other_products.count == 0)   {
+
+            let route = HLSwappViewController.offerSendRoute(
+                ownerProductCount: tradeStatus.owner_products.count,
+                otherProductCount: tradeStatus.other_products.count,
+                buttonTag: self.tempTag,
+                closeDealTag: self.kTagCloseDeal
+            )
+            if route == OfferSubmissionPolicy.needsDonationCheck {
                 manageDonationMessages(tradeStatus: tradeStatus, okStatus:"donation")
                 return
             }
-            
-            if self.tempTag == kTagCloseDeal {
+            if route == OfferSubmissionPolicy.confirmClose {
                 manageConfirmation(tradeStatus: tradeStatus, okStatus:"doit")
                 return
             }
-            
+
             executeOfferOptions(tradeStatus, buttonTag: self.tempTag)
             
         } else {
@@ -508,35 +579,36 @@ class HLSwappViewController: UIViewController {
     }
     
     func manageDonationMessages(tradeStatus:HulaTrade, okStatus:String){
-        
-        if (tradeStatus.owner_products.count == 0) && (tradeStatus.other_products.count == 0){
+        let decision = HLSwappViewController.offerDonationDecision(
+            ownerProductCount: tradeStatus.owner_products.count,
+            otherProductCount: tradeStatus.other_products.count,
+            ownerMoney: tradeStatus.owner_money,
+            otherMoney: tradeStatus.other_money,
+            ownerId: tradeStatus.owner_id,
+            viewerId: HulaUser.sharedInstance.userId
+        )
+        if decision == OfferSubmissionPolicy.blockNoItems {
             showAlert(message:NSLocalizedString("Sorry, drag at least one item to send your offer.", comment: ""), trigger:"notrade", cancelVisible:false, okText:"Ok")
             return
         }
-        if tradeStatus.owner_id == HulaUser.sharedInstance.userId {
-            
-            // i am the owner
-            if tradeStatus.owner_products.count == 0 && tradeStatus.owner_money == 0 {
-                showAlert(message:NSLocalizedString("No offer without an item from your side. Unless you wanna offer cash...", comment: ""), trigger:"notrade", cancelVisible:false, okText:NSLocalizedString("OK", comment: ""))
-            } else {
-                if tradeStatus.other_products.count == 0 && tradeStatus.other_money == 0 {
-                    showAlert(message:NSLocalizedString("Are you giving your stuff away for free? If not, choose the item you want to exchange it with.", comment: ""), trigger:okStatus, cancelVisible:true, okText:NSLocalizedString("OK!", comment: ""))
-                } else {
-                    executeOfferOptions(tradeStatus, buttonTag: self.tempTag)
-                }
-            }
-        } else {
-            // i am the other
-            if tradeStatus.other_products.count == 0 && tradeStatus.other_money == 0 {
-                showAlert(message:NSLocalizedString("No offer without an item from your side. Unless you wanna offer cash...", comment: ""), trigger:"notrade", cancelVisible:false, okText: NSLocalizedString("OK", comment: ""))
-            } else {
-                if tradeStatus.owner_products.count == 0 && tradeStatus.owner_money == 0 {
-                    showAlert(message:NSLocalizedString("Are you giving your stuff away for free? If not, choose something you want to exchange it with.", comment: ""), trigger:okStatus, cancelVisible:true, okText:NSLocalizedString("OK!", comment: ""))
-                } else {
-                    executeOfferOptions(tradeStatus, buttonTag: self.tempTag)
-                }
-            }
+        if decision == OfferSubmissionPolicy.blockViewerEmpty {
+            showAlert(message:NSLocalizedString("No offer without an item from your side. Unless you wanna offer cash...", comment: ""), trigger:"notrade", cancelVisible:false, okText:NSLocalizedString("OK", comment: ""))
+            return
         }
+        if decision == OfferSubmissionPolicy.confirmGiveaway {
+            let viewerIsOwner = OfferSubmissionPolicy.viewerIsOwner(
+                ownerId: tradeStatus.owner_id,
+                viewerId: HulaUser.sharedInstance.userId
+            )
+            showAlert(
+                message: HLSwappViewController.giveawayAlertMessage(viewerIsOwner: viewerIsOwner),
+                trigger: okStatus,
+                cancelVisible: true,
+                okText: NSLocalizedString("OK!", comment: "")
+            )
+            return
+        }
+        executeOfferOptions(tradeStatus, buttonTag: self.tempTag)
     }
     
     func manageConfirmation(tradeStatus:HulaTrade, okStatus:String){
@@ -563,11 +635,11 @@ class HLSwappViewController: UIViewController {
         }
         let turn_id = tradeStatus.turn_user_id
         self.trade_id_closed = tradeId
-        if (tradeStatus.owner_id != HulaUser.sharedInstance.userId){
-            self.user_id_closed = tradeStatus.owner_id
-        } else {
-            self.user_id_closed = tradeStatus.other_id
-        }
+        self.user_id_closed = HLSwappViewController.offerCounterpartyId(
+            ownerId: tradeStatus.owner_id,
+            otherId: tradeStatus.other_id,
+            viewerId: HulaUser.sharedInstance.userId
+        )
         
         //print(tradeStatus.owner_products)
         if (turn_id != HulaUser.sharedInstance.userId) && buttonTag != kTagProductsReceived && false{
@@ -584,15 +656,13 @@ class HLSwappViewController: UIViewController {
                     guard let queryURL2 = HLSwappViewController.offerUpdateURL(apiBase: HulaConstants.apiURL, tradeId: tradeId) else {
                         return
                     }
-                    var status = HulaConstants.sent_status
-                    var acceptedTrade = false
-                    if buttonTag == self.kTagCloseDeal || buttonTag == self.kTagProductsReceived {
-                        // offer sent or product received
-                        status = HulaConstants.review_status
-                    }
-                    if buttonTag == self.kTagProductsReceived {
-                        acceptedTrade = true
-                    }
+                    let submitted = HLSwappViewController.offerSubmittedFields(
+                        buttonTag: buttonTag,
+                        closeDealTag: self.kTagCloseDeal,
+                        productsReceivedTag: self.kTagProductsReceived
+                    )
+                    let status = submitted.status
+                    let acceptedTrade = submitted.accepted
                     let dataString = HLSwappViewController.offerPostString(
                         status: status,
                         ownerProducts: tradeStatus.owner_products,
@@ -1271,5 +1341,96 @@ struct TradeReadyPolicy {
             otherReady: trade.other_ready,
             viewerId: viewerId
         )
+    }
+}
+
+/// Send-offer used `owner_id == userId` on IUO strings and then chose
+/// `offer_sent` vs `review` from the button tag. A nil id crashed before the
+/// PUT. Empty trays, cash-only sides, Close Deal, and Products Received must
+/// keep their historical route and status.
+struct OfferSubmissionPolicy {
+    static let needsDonationCheck = "needs_donation_check"
+    static let confirmClose = "confirm_close"
+    static let proceed = "proceed"
+    static let blockNoItems = "block_no_items"
+    static let blockViewerEmpty = "block_viewer_empty"
+    static let confirmGiveaway = "confirm_giveaway"
+
+    /// Nil ids are not the owner. Empty strings still match, matching other
+    /// trade identity checks.
+    static func viewerIsOwner(ownerId: String?, viewerId: String?) -> Bool {
+        guard let viewerId = viewerId, let ownerId = ownerId else {
+            return false
+        }
+        return ownerId == viewerId
+    }
+
+    static func sendOfferRoute(
+        ownerProductCount: Int,
+        otherProductCount: Int,
+        buttonTag: Int,
+        closeDealTag: Int
+    ) -> String {
+        if ownerProductCount == 0 || otherProductCount == 0 {
+            return needsDonationCheck
+        }
+        if buttonTag == closeDealTag {
+            return confirmClose
+        }
+        return proceed
+    }
+
+    static func donationDecision(
+        ownerProductCount: Int,
+        otherProductCount: Int,
+        ownerMoney: Float,
+        otherMoney: Float,
+        ownerId: String?,
+        viewerId: String?
+    ) -> String {
+        if ownerProductCount == 0 && otherProductCount == 0 {
+            return blockNoItems
+        }
+        if viewerIsOwner(ownerId: ownerId, viewerId: viewerId) {
+            if ownerProductCount == 0 && ownerMoney == 0 {
+                return blockViewerEmpty
+            }
+            if otherProductCount == 0 && otherMoney == 0 {
+                return confirmGiveaway
+            }
+            return proceed
+        }
+        if otherProductCount == 0 && otherMoney == 0 {
+            return blockViewerEmpty
+        }
+        if ownerProductCount == 0 && ownerMoney == 0 {
+            return confirmGiveaway
+        }
+        return proceed
+    }
+
+    /// Accept stays `offer_sent`. Close Deal becomes `review` without the
+    /// accepted flag. Products Received is `review` and accepted.
+    static func submittedFields(
+        buttonTag: Int,
+        closeDealTag: Int,
+        productsReceivedTag: Int
+    ) -> (status: String, accepted: Bool) {
+        var status = HulaConstants.sent_status
+        var accepted = false
+        if buttonTag == closeDealTag || buttonTag == productsReceivedTag {
+            status = HulaConstants.review_status
+        }
+        if buttonTag == productsReceivedTag {
+            accepted = true
+        }
+        return (status, accepted)
+    }
+
+    static func counterpartyId(ownerId: String?, otherId: String?, viewerId: String?) -> String {
+        if viewerIsOwner(ownerId: ownerId, viewerId: viewerId) {
+            return otherId ?? ""
+        }
+        return ownerId ?? ""
     }
 }
