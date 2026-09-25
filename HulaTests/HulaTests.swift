@@ -7262,6 +7262,136 @@ class HulaTests: XCTestCase {
         )
     }
 
+    // MARK: - Beyond #165: calculator cash writes the matching offer field
+
+    /// Confirming a cash amount must update only the tray's field. The other
+    /// side's cash stays, and a non-"owner" side string is the peer tray.
+    func testMoneyAfterSelectingAmountWritesOnlyTheMatchingSide() {
+        let ownerMine = HLBarterScreenViewController.moneyAfterSelectingAmount(
+            amount: 12,
+            side: "owner",
+            amITradeOwner: true,
+            ownerMoney: 25,
+            otherMoney: 10
+        )
+        XCTAssertEqual(ownerMine.ownerMoney, 12)
+        XCTAssertEqual(ownerMine.otherMoney, 10)
+
+        let ownerPeer = HLBarterScreenViewController.moneyAfterSelectingAmount(
+            amount: 7,
+            side: "other",
+            amITradeOwner: true,
+            ownerMoney: 25,
+            otherMoney: 10
+        )
+        XCTAssertEqual(ownerPeer.ownerMoney, 25)
+        XCTAssertEqual(ownerPeer.otherMoney, 7)
+
+        let otherMine = HLBarterScreenViewController.moneyAfterSelectingAmount(
+            amount: 4,
+            side: "owner",
+            amITradeOwner: false,
+            ownerMoney: 25,
+            otherMoney: 10
+        )
+        XCTAssertEqual(otherMine.ownerMoney, 25)
+        XCTAssertEqual(otherMine.otherMoney, 4)
+
+        let otherPeer = HLBarterScreenViewController.moneyAfterSelectingAmount(
+            amount: 9,
+            side: "other",
+            amITradeOwner: false,
+            ownerMoney: 25,
+            otherMoney: 10
+        )
+        XCTAssertEqual(otherPeer.ownerMoney, 9)
+        XCTAssertEqual(otherPeer.otherMoney, 10)
+
+        let unknownSide = HLBarterScreenViewController.moneyAfterSelectingAmount(
+            amount: 3,
+            side: "peer",
+            amITradeOwner: true,
+            ownerMoney: 25,
+            otherMoney: 10
+        )
+        XCTAssertEqual(unknownSide.ownerMoney, 25)
+        XCTAssertEqual(unknownSide.otherMoney, 3)
+    }
+
+    /// Zero and negative calculator values clear that field. They must not
+    /// zero the other side or treat a negative as cash.
+    func testMoneyAfterSelectingAmountClearsOnZeroOrNegative() {
+        let zero = HLBarterScreenViewController.moneyAfterSelectingAmount(
+            amount: 0,
+            side: "owner",
+            amITradeOwner: true,
+            ownerMoney: 25,
+            otherMoney: 10
+        )
+        XCTAssertEqual(zero.ownerMoney, 0)
+        XCTAssertEqual(zero.otherMoney, 10)
+
+        let negative = HLBarterScreenViewController.moneyAfterSelectingAmount(
+            amount: -1,
+            side: "other",
+            amITradeOwner: false,
+            ownerMoney: 25,
+            otherMoney: 10
+        )
+        XCTAssertEqual(negative.ownerMoney, 0)
+        XCTAssertEqual(negative.otherMoney, 10)
+    }
+
+    /// The calculator opens on the same field OK will write. Fractional cash
+    /// truncates toward zero so 10.9 is shown as 10, not rounded to 11.
+    func testCalculatorSeedAmountMatchesTheFieldThatWillBeWritten() {
+        XCTAssertEqual(
+            HLBarterScreenViewController.calculatorSeedAmount(
+                side: "owner",
+                amITradeOwner: true,
+                ownerMoney: 10.9,
+                otherMoney: 4.2
+            ),
+            10
+        )
+        XCTAssertEqual(
+            HLBarterScreenViewController.calculatorSeedAmount(
+                side: "owner",
+                amITradeOwner: false,
+                ownerMoney: 10.9,
+                otherMoney: 4.2
+            ),
+            4
+        )
+        XCTAssertEqual(
+            HLBarterScreenViewController.calculatorSeedAmount(
+                side: "other",
+                amITradeOwner: true,
+                ownerMoney: 10.9,
+                otherMoney: 4.2
+            ),
+            4
+        )
+        XCTAssertEqual(
+            HLBarterScreenViewController.calculatorSeedAmount(
+                side: "other",
+                amITradeOwner: false,
+                ownerMoney: 10.9,
+                otherMoney: 4.2
+            ),
+            10
+        )
+        XCTAssertEqual(
+            HLBarterScreenViewController.calculatorSeedAmount(
+                side: "",
+                amITradeOwner: true,
+                ownerMoney: 8,
+                otherMoney: 2
+            ),
+            2
+        )
+    }
+
     private func tradeReadyFixture(
         ownerId: String,
         otherId: String,

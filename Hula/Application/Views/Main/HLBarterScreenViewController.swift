@@ -1155,11 +1155,12 @@ class HLBarterScreenViewController: BaseViewController {
         
         viewController.calculatorDelegate = self
         viewController.side = "other"
-        if thisTrade.owner_id == HulaUser.sharedInstance.userId{
-            viewController.amount = Int(thisTrade.other_money)
-        } else {
-            viewController.amount = Int(thisTrade.owner_money)
-        }
+        viewController.amount = HLBarterScreenViewController.calculatorSeedAmount(
+            side: "other",
+            amITradeOwner: thisTrade.owner_id == HulaUser.sharedInstance.userId,
+            ownerMoney: thisTrade.owner_money,
+            otherMoney: thisTrade.other_money
+        )
         self.present(viewController, animated: true)
         self.didTradeMutate = true
         self.mainSwapViewHolder?.controlSetupBottomBar(index: myTradeIndex + 1)
@@ -1170,11 +1171,12 @@ class HLBarterScreenViewController: BaseViewController {
         
         viewController.calculatorDelegate = self
         viewController.side = "owner"
-        if thisTrade.owner_id == HulaUser.sharedInstance.userId{
-            viewController.amount = Int(thisTrade.owner_money)
-        } else {
-            viewController.amount = Int(thisTrade.other_money)
-        }
+        viewController.amount = HLBarterScreenViewController.calculatorSeedAmount(
+            side: "owner",
+            amITradeOwner: thisTrade.owner_id == HulaUser.sharedInstance.userId,
+            ownerMoney: thisTrade.owner_money,
+            otherMoney: thisTrade.other_money
+        )
         self.present(viewController, animated: true)
         self.didTradeMutate = true
         self.mainSwapViewHolder?.controlSetupBottomBar(index: myTradeIndex + 1)
@@ -1406,6 +1408,43 @@ extension HLBarterScreenViewController: KDDragAndDropCollectionViewDataSource, U
         return (0, otherMoney)
     }
 
+    /// Calculator OK writes one cash field and must leave the other alone.
+    /// Side `"owner"` is the viewer's tray. Any other side string is the peer
+    /// tray. Amounts `<= 0` clear that field, matching the branch that also
+    /// drops the `xmoney` chip. Opening the calculator uses `Int` truncation
+    /// (10.9 stays 10); the chip label rounds, this seed does not.
+    static func moneyAfterSelectingAmount(
+        amount: Int,
+        side: String,
+        amITradeOwner: Bool,
+        ownerMoney: Float,
+        otherMoney: Float
+    ) -> (ownerMoney: Float, otherMoney: Float) {
+        let value: Float = amount > 0 ? Float(amount) : 0
+        if side == "owner" {
+            if amITradeOwner {
+                return (value, otherMoney)
+            }
+            return (ownerMoney, value)
+        }
+        if amITradeOwner {
+            return (ownerMoney, value)
+        }
+        return (value, otherMoney)
+    }
+
+    static func calculatorSeedAmount(
+        side: String,
+        amITradeOwner: Bool,
+        ownerMoney: Float,
+        otherMoney: Float
+    ) -> Int {
+        if side == "owner" {
+            return Int(amITradeOwner ? ownerMoney : otherMoney)
+        }
+        return Int(amITradeOwner ? otherMoney : ownerMoney)
+    }
+
     /// Drag lookups used `index(of: item)!` after a custom `==` match. Pointer
     /// equality and Equatable can disagree; enumerate the same `==` used to match.
     class func indexOfMatchingProduct(_ product: HulaProduct, in products: [HulaProduct]) -> Int? {
@@ -1635,26 +1674,24 @@ extension HLBarterScreenViewController: CalculatorDelegate{
     
     func amountSelected(amount:Int, side:String){
         print("Calculator amount: \(amount)")
+        let updated = HLBarterScreenViewController.moneyAfterSelectingAmount(
+            amount: amount,
+            side: side,
+            amITradeOwner: thisTrade.owner_id == HulaUser.sharedInstance.userId,
+            ownerMoney: thisTrade.owner_money,
+            otherMoney: thisTrade.other_money
+        )
+        thisTrade.owner_money = updated.ownerMoney
+        thisTrade.other_money = updated.otherMoney
         if (amount > 0){
             // amount valid
             let final_amount = Float(amount)
             let moneyProd = HulaProduct(id: "xmoney", name: "+$\( Int(round(final_amount)) )", image: HulaConstants.transparentImg)
             if (side == "owner"){
-                if (thisTrade.owner_id == HulaUser.sharedInstance.userId){
-                    thisTrade.owner_money = final_amount
-                    
-                } else {
-                    thisTrade.other_money = final_amount
-                }
                 self.myTradedProducts = removeMoneyProduct(fromProducts:self.myTradedProducts)
                 self.myTradedProducts.append(moneyProd)
                 self.mySelectedProductsCollection.reloadData()
             } else {
-                if (thisTrade.owner_id == HulaUser.sharedInstance.userId){
-                    thisTrade.other_money = final_amount
-                } else {
-                    thisTrade.owner_money = final_amount
-                }
                 self.otherTradedProducts = removeMoneyProduct(fromProducts:self.otherTradedProducts)
                 self.otherTradedProducts.append(moneyProd)
                 self.otherSelectedProductsCollection.reloadData()
@@ -1663,19 +1700,9 @@ extension HLBarterScreenViewController: CalculatorDelegate{
             // if value is 0 then remove all money
             if (side == "owner"){
                 self.myTradedProducts = removeMoneyProduct(fromProducts:self.myTradedProducts)
-                if (thisTrade.owner_id == HulaUser.sharedInstance.userId){
-                    thisTrade.owner_money = 0
-                } else {
-                    thisTrade.other_money = 0
-                }
                 self.mySelectedProductsCollection.reloadData()
             } else {
                 self.otherTradedProducts = removeMoneyProduct(fromProducts:self.otherTradedProducts)
-                if (thisTrade.owner_id == HulaUser.sharedInstance.userId){
-                    thisTrade.other_money = 0
-                } else {
-                    thisTrade.owner_money = 0
-                }
                 self.otherSelectedProductsCollection.reloadData()
             }
         }
