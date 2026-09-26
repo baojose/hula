@@ -757,129 +757,172 @@ class HLDataManager: NSObject {
         task.resume()
     }
     
+    /// JPEG encoding and on-disk video bytes can both be nil. Those paths used
+    /// to return without `taskCallback`, so product-create never finished and
+    /// the trade-room button stayed on "Uploading". A callback that does arrive
+    /// is success only when `ok` and the JSON `path` is a string (including "").
+    /// Failed requests and missing/non-string paths must not mark the proof playable.
+    struct MediaUploadPolicy {
+        static let showUploaded = "uploaded"
+        static let showRecord = "record"
+
+        static func shouldReportMissingPayload(dataAvailable: Bool) -> Bool {
+            return !dataAvailable
+        }
+
+        static func uploadPath(from json: Any?) -> String? {
+            if let dict = json as? [String: Any] {
+                return dict["path"] as? String
+            }
+            if let dict = json as? NSDictionary {
+                return dict.object(forKey: "path") as? String
+            }
+            return nil
+        }
+
+        static func isSuccessfulUpload(ok: Bool, path: String?) -> Bool {
+            return ok && path != nil
+        }
+
+        static func videoButtonState(ok: Bool, path: String?) -> String {
+            if isSuccessfulUpload(ok: ok, path: path) {
+                return showUploaded
+            }
+            return showRecord
+        }
+    }
+
     func uploadImage(_ image: UIImage, itemPosition: Int, taskCallback: @escaping (Bool, Any?) -> ()){
         let imageData = UIImageJPEGRepresentation(image,0.7)
-        
-        if imageData != nil{
-            guard let url = HLDataManager.uploadRequestURL(apiBase: HulaConstants.apiURL, resource: "image") else {
+        if MediaUploadPolicy.shouldReportMissingPayload(dataAvailable: imageData != nil) {
+            taskCallback(false, nil)
+            return
+        }
+        guard let imageData = imageData else {
+            taskCallback(false, nil)
+            return
+        }
+        guard let url = HLDataManager.uploadRequestURL(apiBase: HulaConstants.apiURL, resource: "image") else {
+            taskCallback(false, nil)
+            return
+        }
+        var request = URLRequest(url: url)
+        let session:URLSession = URLSession.shared
+
+        request.httpMethod = "POST"
+
+
+        let boundary = "Boundary-\(UUID().uuidString)"
+        request.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
+
+        let user = HulaUser.sharedInstance
+        if let token = HLDataManager.accessTokenHeaderValue(user.token) {
+            request.setValue(token, forHTTPHeaderField: "x-access-token")
+        }
+        let body = createBody(parameters: ["position": "\(itemPosition)"],
+                              boundary: boundary,
+                              data: imageData,
+                              mimeType: "image/jpeg",
+                              filename: "image1.jpg")
+
+
+        request.httpBody = body as Data
+
+
+        let task = session.dataTask(with: request) { data, response, error in
+            guard let data = data, error == nil else {                                                 // check for fundamental networking error
+                if let error = error {
+                    print(error)
+                }
                 taskCallback(false, nil)
                 return
             }
-            var request = URLRequest(url: url)
-            let session:URLSession = URLSession.shared
-            
-            request.httpMethod = "POST"
-            
-            
-            let boundary = "Boundary-\(UUID().uuidString)"
-            request.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
-            
-            let user = HulaUser.sharedInstance
-            if let token = HLDataManager.accessTokenHeaderValue(user.token) {
-                request.setValue(token, forHTTPHeaderField: "x-access-token")
-            }
-            let body = createBody(parameters: ["position": "\(itemPosition)"],
-                                  boundary: boundary,
-                                  data: imageData!,
-                                  mimeType: "image/jpeg",
-                                  filename: "image1.jpg")
-            
-            
-            request.httpBody = body as Data
-            
-            
-            let task = session.dataTask(with: request) { data, response, error in
-                guard let data = data, error == nil else {                                                 // check for fundamental networking error
-                    if let error = error {
-                        print(error)
-                    }
+
+            if let httpStatus = response as? HTTPURLResponse, httpStatus.statusCode != 200 {           // check for http errors
+                print("statusCode should be 200, but is \(httpStatus.statusCode)")
+                print(response ?? "No response")
+                taskCallback(false, nil)
+            } else {
+                guard let json = HLDataManager.jsonObject(from: data) else {
                     taskCallback(false, nil)
                     return
                 }
-                
-                if let httpStatus = response as? HTTPURLResponse, httpStatus.statusCode != 200 {           // check for http errors
-                    print("statusCode should be 200, but is \(httpStatus.statusCode)")
-                    print(response ?? "No response")
-                    taskCallback(false, nil)
-                } else {
-                    guard let json = HLDataManager.jsonObject(from: data) else {
-                        taskCallback(false, nil)
-                        return
-                    }
-                    taskCallback(true, json as AnyObject?)
-                }
+                taskCallback(true, json as AnyObject?)
             }
-            task.resume()
-            
         }
+        task.resume()
     }
-    
+
     func uploadVideo(_ videoPath: String, productId:String, tradeId:String, taskCallback: @escaping (Bool, Any?) -> ()){
         let videoData = NSData(contentsOfFile: videoPath)
-        
-        if videoData != nil{
-            guard let url = HLDataManager.uploadRequestURL(apiBase: HulaConstants.apiURL, resource: "video") else {
+        if MediaUploadPolicy.shouldReportMissingPayload(dataAvailable: videoData != nil) {
+            taskCallback(false, nil)
+            return
+        }
+        guard let videoData = videoData else {
+            taskCallback(false, nil)
+            return
+        }
+        guard let url = HLDataManager.uploadRequestURL(apiBase: HulaConstants.apiURL, resource: "video") else {
+            taskCallback(false, nil)
+            return
+        }
+        var request = URLRequest(url: url)
+        let session:URLSession = URLSession.shared
+
+        request.httpMethod = "POST"
+
+
+        let boundary = "Boundary-\(UUID().uuidString)"
+        request.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
+
+        let user = HulaUser.sharedInstance
+        if let token = HLDataManager.accessTokenHeaderValue(user.token) {
+            request.setValue(token, forHTTPHeaderField: "x-access-token")
+        }
+        let body = createBody(parameters: ["product_id": "\(productId)", "trade_id": "\(tradeId)"],
+                              boundary: boundary,
+                              data: videoData as Data,
+                              mimeType: "video/mp4",
+                              filename: "video.mp4")
+
+
+        request.httpBody = body as Data
+
+
+        let task = session.dataTask(with: request) { data, response, error in
+            guard let data = data, error == nil else {                                                 // check for fundamental networking error
+                if let error = error {
+                    print(error)
+                }
                 taskCallback(false, nil)
                 return
             }
-            var request = URLRequest(url: url)
-            let session:URLSession = URLSession.shared
-            
-            request.httpMethod = "POST"
-            
-            
-            let boundary = "Boundary-\(UUID().uuidString)"
-            request.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
-            
-            let user = HulaUser.sharedInstance
-            if let token = HLDataManager.accessTokenHeaderValue(user.token) {
-                request.setValue(token, forHTTPHeaderField: "x-access-token")
-            }
-            let body = createBody(parameters: ["product_id": "\(productId)", "trade_id": "\(tradeId)"],
-                                  boundary: boundary,
-                                  data: videoData! as Data,
-                                  mimeType: "video/mp4",
-                                  filename: "video.mp4")
-            
-            
-            request.httpBody = body as Data
-            
-            
-            let task = session.dataTask(with: request) { data, response, error in
-                guard let data = data, error == nil else {                                                 // check for fundamental networking error
-                    if let error = error {
-                        print(error)
-                    }
+
+            if let httpStatus = response as? HTTPURLResponse, httpStatus.statusCode != 200 {           // check for http errors
+                print("statusCode should be 200, but is \(httpStatus.statusCode)")
+                print(response ?? "No response")
+                taskCallback(false, nil)
+            } else {
+                guard let json = HLDataManager.jsonObject(from: data) else {
                     taskCallback(false, nil)
                     return
                 }
-                
-                if let httpStatus = response as? HTTPURLResponse, httpStatus.statusCode != 200 {           // check for http errors
-                    print("statusCode should be 200, but is \(httpStatus.statusCode)")
-                    print(response ?? "No response")
-                    taskCallback(false, nil)
-                } else {
-                    guard let json = HLDataManager.jsonObject(from: data) else {
-                        taskCallback(false, nil)
-                        return
-                    }
-                    taskCallback(true, json as AnyObject?)
-                }
+                taskCallback(true, json as AnyObject?)
             }
-            task.resume()
-            
         }
+        task.resume()
     }
-    
+
     func createBody(parameters: [String: String],
                     boundary: String,
                     data: Data,
                     mimeType: String,
                     filename: String) -> Data {
         let body = NSMutableData()
-        
+
         let boundaryPrefix = "--\(boundary)\r\n"
-        
+
         for (key, value) in parameters {
             body.appendString(boundaryPrefix)
             body.appendString("Content-Disposition: form-data; name=\"\(key)\"\r\n\r\n")
