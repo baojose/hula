@@ -7392,6 +7392,62 @@ class HulaTests: XCTestCase {
         )
     }
 
+    // MARK: - Beyond #166: media upload must finish when bytes are missing
+
+    /// Nil JPEG or video-file bytes used to skip the callback. An empty but
+    /// present payload still uploads; only a missing payload reports failure.
+    func testMediaUploadReportsFailureWhenPayloadIsMissing() {
+        XCTAssertTrue(HLDataManager.MediaUploadPolicy.shouldReportMissingPayload(dataAvailable: false))
+        XCTAssertFalse(HLDataManager.MediaUploadPolicy.shouldReportMissingPayload(dataAvailable: true))
+    }
+
+    /// Success is an ok response with a string path, including "". Numbers,
+    /// null, and a failed request must not mark the proof playable.
+    func testMediaUploadSuccessRequiresStringPath() {
+        let uploaded = ["path": "proofs/a.mp4"] as [String: Any]
+        XCTAssertEqual(HLDataManager.MediaUploadPolicy.uploadPath(from: uploaded), "proofs/a.mp4")
+        XCTAssertTrue(HLDataManager.MediaUploadPolicy.isSuccessfulUpload(ok: true, path: "proofs/a.mp4"))
+        XCTAssertEqual(
+            HLDataManager.MediaUploadPolicy.videoButtonState(ok: true, path: "proofs/a.mp4"),
+            HLDataManager.MediaUploadPolicy.showUploaded
+        )
+
+        let emptyPath = ["path": ""] as [String: Any]
+        XCTAssertEqual(HLDataManager.MediaUploadPolicy.uploadPath(from: emptyPath), "")
+        XCTAssertTrue(HLDataManager.MediaUploadPolicy.isSuccessfulUpload(ok: true, path: ""))
+        XCTAssertEqual(
+            HLDataManager.MediaUploadPolicy.videoButtonState(ok: true, path: ""),
+            HLDataManager.MediaUploadPolicy.showUploaded
+        )
+
+        let numericPath = ["path": 12] as [String: Any]
+        XCTAssertNil(HLDataManager.MediaUploadPolicy.uploadPath(from: numericPath))
+        XCTAssertFalse(HLDataManager.MediaUploadPolicy.isSuccessfulUpload(ok: true, path: nil))
+        XCTAssertEqual(
+            HLDataManager.MediaUploadPolicy.videoButtonState(ok: true, path: nil),
+            HLDataManager.MediaUploadPolicy.showRecord
+        )
+
+        let nullPath = ["path": NSNull()] as NSDictionary
+        XCTAssertNil(HLDataManager.MediaUploadPolicy.uploadPath(from: nullPath))
+
+        let bridged = ["path": "proofs/b.mp4"] as NSDictionary
+        XCTAssertEqual(HLDataManager.MediaUploadPolicy.uploadPath(from: bridged), "proofs/b.mp4")
+
+        let blankPath = ["path": " "] as [String: Any]
+        XCTAssertEqual(HLDataManager.MediaUploadPolicy.uploadPath(from: blankPath), " ")
+        XCTAssertTrue(HLDataManager.MediaUploadPolicy.isSuccessfulUpload(ok: true, path: " "))
+
+        XCTAssertNil(HLDataManager.MediaUploadPolicy.uploadPath(from: nil))
+        XCTAssertNil(HLDataManager.MediaUploadPolicy.uploadPath(from: "proofs/a.mp4"))
+        XCTAssertNil(HLDataManager.MediaUploadPolicy.uploadPath(from: ["other": "x"] as [String: Any]))
+        XCTAssertFalse(HLDataManager.MediaUploadPolicy.isSuccessfulUpload(ok: false, path: "proofs/a.mp4"))
+        XCTAssertEqual(
+            HLDataManager.MediaUploadPolicy.videoButtonState(ok: false, path: "proofs/a.mp4"),
+            HLDataManager.MediaUploadPolicy.showRecord
+        )
+    }
+
     private func tradeReadyFixture(
         ownerId: String,
         otherId: String,

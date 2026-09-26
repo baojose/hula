@@ -427,19 +427,21 @@ class HLProductModalViewController: UIViewController, UIImagePickerControllerDel
             videoBtn.setTitle(NSLocalizedString(" Uploading", comment: ""), for: .normal)
             
             HLDataManager.sharedInstance.uploadVideo(path, productId: product.productId, tradeId: self.currentTradeId, taskCallback: { (success, json) in
-                print("Uploaded")
                 DispatchQueue.main.async {
-                    if let dict = json as? [String: Any] {
-                        if let vp = dict["path"] as? String{
-                            self.product.video_requested[self.currentTradeId] = true
-                            self.product.video_url[self.currentTradeId] = HulaConstants.staticServerURL + vp
-                        }
+                    let uploadPath = HLDataManager.MediaUploadPolicy.uploadPath(from: json)
+                    let state = HLDataManager.MediaUploadPolicy.videoButtonState(ok: success, path: uploadPath)
+                    if state == HLDataManager.MediaUploadPolicy.showUploaded, let vp = uploadPath {
+                        self.product.video_requested[self.currentTradeId] = true
+                        self.product.video_url[self.currentTradeId] = HulaConstants.staticServerURL + vp
+                        self.videoBtn.setTitle(NSLocalizedString(" Video uploaded", comment: ""), for: .normal)
+                        self.videoBtn.setImage(UIImage(named: "video-player-icon-red"), for: .normal)
+                        self.videoBtn.tag = 43909
+                        self.notify(NSLocalizedString("Video uploaded!", comment: ""))
+                        self.refreshProduct()
+                    } else {
+                        self.videoBtn.setTitle(NSLocalizedString(" Record video proof", comment: ""), for: .normal)
+                        self.notify(NSLocalizedString("Could not upload video. Please try again.", comment: ""))
                     }
-                    self.videoBtn.setTitle(NSLocalizedString(" Video uploaded", comment: ""), for: .normal)
-                    self.videoBtn.setImage(UIImage(named: "video-player-icon-red"), for: .normal)
-                    self.videoBtn.tag = 43909
-                    self.notify(NSLocalizedString("Video uploaded!", comment: ""))
-                    self.refreshProduct()
                 }
                 
             })
