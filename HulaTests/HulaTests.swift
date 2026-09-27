@@ -7448,6 +7448,119 @@ class HulaTests: XCTestCase {
         )
     }
 
+    // MARK: - Beyond #167: create-image count and Twitter login nil error
+
+    /// `uploaded` advances only for an ok body with a string path and an in-range
+    /// slot. Empty and blank paths still count. Failure, a numeric path, NSNull,
+    /// a missing position, and an out-of-range slot must not.
+    func testProductImageUploadCountAdvancesOnlyForUsableSuccess() {
+        let ok = ["path": "img/a.jpg", "position": 0] as [String: Any]
+        let counted = ProductImageUploadCountPolicy.countableUpload(ok: true, json: ok)
+        XCTAssertEqual(counted?.path, "img/a.jpg")
+        XCTAssertEqual(counted?.slot, 0)
+
+        let emptyPath = ["path": "", "position": "1"] as [String: Any]
+        XCTAssertEqual(ProductImageUploadCountPolicy.countableUpload(ok: true, json: emptyPath)?.path, "")
+        XCTAssertEqual(ProductImageUploadCountPolicy.countableUpload(ok: true, json: emptyPath)?.slot, 1)
+
+        let blankPath = ["path": " ", "position": 2] as [String: Any]
+        XCTAssertEqual(ProductImageUploadCountPolicy.countableUpload(ok: true, json: blankPath)?.path, " ")
+        XCTAssertEqual(ProductImageUploadCountPolicy.countableUpload(ok: true, json: blankPath)?.slot, 2)
+
+        XCTAssertNil(ProductImageUploadCountPolicy.countableUpload(ok: false, json: ok))
+        XCTAssertNil(ProductImageUploadCountPolicy.countableUpload(ok: true, json: nil))
+        XCTAssertNil(ProductImageUploadCountPolicy.countableUpload(ok: true, json: "img/a.jpg"))
+        XCTAssertNil(ProductImageUploadCountPolicy.countableUpload(
+            ok: true,
+            json: ["path": 3, "position": 0] as [String: Any]
+        ))
+        XCTAssertNil(ProductImageUploadCountPolicy.countableUpload(
+            ok: true,
+            json: ["path": NSNull(), "position": 0] as [String: Any]
+        ))
+        XCTAssertNil(ProductImageUploadCountPolicy.countableUpload(
+            ok: true,
+            json: ["position": 0] as [String: Any]
+        ))
+        XCTAssertNil(ProductImageUploadCountPolicy.countableUpload(
+            ok: true,
+            json: ["path": "img/a.jpg"] as [String: Any]
+        ))
+        XCTAssertNil(ProductImageUploadCountPolicy.countableUpload(
+            ok: true,
+            json: ["path": "img/a.jpg", "position": 4] as [String: Any]
+        ))
+        XCTAssertNil(ProductImageUploadCountPolicy.countableUpload(
+            ok: true,
+            json: ["path": "img/a.jpg", "position": -1] as [String: Any]
+        ))
+        XCTAssertNil(ProductImageUploadCountPolicy.countableUpload(
+            ok: true,
+            json: ["path": "img/a.jpg", "position": true] as [String: Any]
+        ))
+    }
+
+    /// One failed image in a two-image create must not reach `toUpload`, so the
+    /// listing is not PUT with a partial album. The second success still attaches.
+    func testFailedImageUploadLeavesAttachBlockedUntilEveryImageCounts() {
+        let progress = ProductCreateUploadProgress()
+        progress.toUpload = 2
+        if ProductImageUploadCountPolicy.countableUpload(
+            ok: true,
+            json: ["path": "a.jpg", "position": 0] as [String: Any]
+        ) != nil {
+            progress.uploaded += 1
+        }
+        if ProductImageUploadCountPolicy.countableUpload(ok: false, json: nil) != nil {
+            progress.uploaded += 1
+        }
+        XCTAssertEqual(progress.uploaded, 1)
+        XCTAssertFalse(HLMyProductsViewController.shouldAttachUploadedImages(
+            productId: "pid",
+            imagesToUpload: progress.toUpload,
+            imagesAlreadyUploaded: progress.uploaded
+        ))
+        XCTAssertFalse(HLMyProductsViewController.shouldAttachUploadedImages(
+            productId: "",
+            imagesToUpload: 1,
+            imagesAlreadyUploaded: 1
+        ))
+
+        if ProductImageUploadCountPolicy.countableUpload(
+            ok: true,
+            json: ["path": "b.jpg", "position": "1"] as [String: Any]
+        ) != nil {
+            progress.uploaded += 1
+        }
+        XCTAssertEqual(progress.uploaded, 2)
+        XCTAssertTrue(HLMyProductsViewController.shouldAttachUploadedImages(
+            productId: "pid",
+            imagesToUpload: progress.toUpload,
+            imagesAlreadyUploaded: progress.uploaded
+        ))
+    }
+
+    /// A nil Twitter error used to trap on `error!`. A present session stores its
+    /// token, including "" and whitespace; a nil authToken stores "" instead of
+    /// crashing. No session stores nothing, and a nil error has nothing to log.
+    func testTwitterLoginNilErrorDoesNotStoreTokenOrCrash() {
+        XCTAssertEqual(TwitterLoginPolicy.tokenToStore(hasSession: true, authToken: "tw-1"), "tw-1")
+        XCTAssertEqual(TwitterLoginPolicy.tokenToStore(hasSession: true, authToken: ""), "")
+        XCTAssertEqual(TwitterLoginPolicy.tokenToStore(hasSession: true, authToken: "  "), "  ")
+        XCTAssertEqual(TwitterLoginPolicy.tokenToStore(hasSession: true, authToken: nil), "")
+        XCTAssertNil(TwitterLoginPolicy.tokenToStore(hasSession: false, authToken: "tw-1"))
+        XCTAssertNil(TwitterLoginPolicy.tokenToStore(hasSession: false, authToken: nil))
+
+        XCTAssertNil(TwitterLoginPolicy.failureMessage(hasSession: true, errorDescription: "nope"))
+        XCTAssertNil(TwitterLoginPolicy.failureMessage(hasSession: true, errorDescription: nil))
+        XCTAssertEqual(
+            TwitterLoginPolicy.failureMessage(hasSession: false, errorDescription: "cancelled"),
+            "cancelled"
+        )
+        XCTAssertEqual(TwitterLoginPolicy.failureMessage(hasSession: false, errorDescription: ""), "")
+        XCTAssertNil(TwitterLoginPolicy.failureMessage(hasSession: false, errorDescription: nil))
+    }
+
     private func tradeReadyFixture(
         ownerId: String,
         otherId: String,
