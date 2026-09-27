@@ -552,25 +552,21 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
                         dataManager.uploadImage(image, itemPosition:i, taskCallback: { (ok, json) in
                             if (ok){
                                 DispatchQueue.main.async {
-                                    if let dictionary = json as? [String: Any] {
-                                        if let filePath:String = dictionary["path"] as? String {
-                                            if let slot = HLMyProductsViewController.uploadSlotIndex(
-                                                from: dictionary["position"]
-                                            ) {
-                                                progress.uploaded += 1
-                                                let url = HulaConstants.staticServerURL + filePath
-                                                _ = ProductCreateSession.applyPhotoLink(url, at: slot, to: product)
-                                                // Only PUT when create has assigned productId; otherwise uploadProduct will attach.
-                                                if HLMyProductsViewController.shouldAttachUploadedImages(
-                                                    productId: product.productId,
-                                                    imagesToUpload: progress.toUpload,
-                                                    imagesAlreadyUploaded: progress.uploaded
-                                                ) {
-                                                    self.updateProduct(for: product)
-                                                }
-                                                self.notify("Uploaded image \(progress.uploaded) of \(progress.toUpload).")
-                                            }
+                                    // A missing path or bad slot must not advance `uploaded`.
+                                    // One failed image then stays short of `toUpload` and blocks attach.
+                                    if let counted = ProductImageUploadCountPolicy.countableUpload(ok: ok, json: json) {
+                                        progress.uploaded += 1
+                                        let url = HulaConstants.staticServerURL + counted.path
+                                        _ = ProductCreateSession.applyPhotoLink(url, at: counted.slot, to: product)
+                                        // Only PUT when create has assigned productId; otherwise uploadProduct will attach.
+                                        if HLMyProductsViewController.shouldAttachUploadedImages(
+                                            productId: product.productId,
+                                            imagesToUpload: progress.toUpload,
+                                            imagesAlreadyUploaded: progress.uploaded
+                                        ) {
+                                            self.updateProduct(for: product)
                                         }
+                                        self.notify("Uploaded image \(progress.uploaded) of \(progress.toUpload).")
                                     }
                                 }
                             } else {
@@ -599,4 +595,26 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
         self.navigationController?.pushViewController(viewController, animated: true)
     }
     
+}
+
+/// Product-create image callbacks used nested casts before `uploaded += 1`.
+/// Only an ok body with a string `path` (including "") and an in-range `position`
+/// advances the count. Network failure, a numeric/null path, or a bad slot must
+/// leave `uploaded` short of `toUpload`, so `shouldAttachUploadedImages` stays false.
+struct ProductImageUploadCountPolicy {
+    static func countableUpload(ok: Bool, json: Any?) -> (path: String, slot: Int)? {
+        if !ok {
+            return nil
+        }
+        guard let dictionary = json as? [String: Any] else {
+            return nil
+        }
+        guard let filePath = dictionary["path"] as? String else {
+            return nil
+        }
+        guard let slot = HLMyProductsViewController.uploadSlotIndex(from: dictionary["position"]) else {
+            return nil
+        }
+        return (path: filePath, slot: slot)
+    }
 }

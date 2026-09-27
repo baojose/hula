@@ -225,15 +225,16 @@ class HLProfileViewController: BaseViewController {
         TWTRTwitter.sharedInstance().logIn(completion: { (session, error) in
             //print("Session open!")
             //print(session)
-            if let unwrappedSession = session {
+            // Cancel and some SDK completions pass a nil session and a nil error.
+            // `error!` crashed that path; a missing token must not trap on `as String`.
+            if let token = TwitterLoginPolicy.tokenToStore(hasSession: session != nil, authToken: session?.authToken) {
                 //print("Twitter ok!")
-                //print(unwrappedSession);
                 self.verTwitterIcon.image = UIImage(named: "icon_twitter_on")
                 self.verTwitterIcon.bouncer()
-                HulaUser.sharedInstance.twToken = unwrappedSession.authToken as String
+                HulaUser.sharedInstance.twToken = token
                 HulaUser.sharedInstance.updateServerData()
-            } else {
-                NSLog("Login error: %@", error!.localizedDescription);
+            } else if let message = TwitterLoginPolicy.failureMessage(hasSession: session != nil, errorDescription: error?.localizedDescription) {
+                NSLog("Login error: %@", message);
             }
         })
         
@@ -485,5 +486,26 @@ class HLProfileViewController: BaseViewController {
         alertController.addAction(cancelButton)
         
         self.present(alertController, animated: true)
+    }
+}
+
+/// Twitter login stored `authToken as String` and logged `error!` when the
+/// session was missing. A nil error must not crash, and a nil token on a
+/// present session must store "" instead of trapping. Whitespace is kept.
+struct TwitterLoginPolicy {
+    static func tokenToStore(hasSession: Bool, authToken: String?) -> String? {
+        if !hasSession {
+            return nil
+        }
+        return authToken ?? ""
+    }
+
+    /// Log text only for a missing session when the SDK provided an error.
+    /// Nil means there is nothing to log (including a nil NSError).
+    static func failureMessage(hasSession: Bool, errorDescription: String?) -> String? {
+        if hasSession {
+            return nil
+        }
+        return errorDescription
     }
 }
