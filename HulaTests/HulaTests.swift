@@ -7561,6 +7561,215 @@ class HulaTests: XCTestCase {
         XCTAssertNil(TwitterLoginPolicy.failureMessage(hasSession: false, errorDescription: nil))
     }
 
+    /// Accept compared IUO turn and viewer ids before `&& false`, so a nil turn
+    /// crashed even though the gate never blocks. Nil does not match. Empty
+    /// strings still do. Products Received stays exempt if the gate is enabled.
+    func testTradeTurnNilIdsDoNotCrashAndGateStaysOff() {
+        let vc = HLSwappViewController()
+        let trade = HulaTrade()
+        trade.turn_user_id = nil
+
+        XCTAssertFalse(TradeTurnPolicy.idsMatch(nil, nil))
+        XCTAssertFalse(TradeTurnPolicy.idsMatch(nil, "me"))
+        XCTAssertFalse(TradeTurnPolicy.idsMatch("me", nil))
+        XCTAssertTrue(TradeTurnPolicy.idsMatch("", ""))
+        XCTAssertFalse(TradeTurnPolicy.idsMatch(" me", "me"))
+        XCTAssertTrue(TradeTurnPolicy.isViewersTurn(turnUserId: "me", viewerId: "me"))
+        XCTAssertFalse(TradeTurnPolicy.isViewersTurn(turnUserId: trade.turn_user_id, viewerId: nil))
+
+        XCTAssertFalse(TradeTurnPolicy.shouldBlockOffer(
+            turnUserId: trade.turn_user_id,
+            viewerId: nil,
+            buttonTag: vc.kTagJustAccept,
+            productsReceivedTag: vc.kTagProductsReceived,
+            turnGateEnabled: false
+        ))
+        XCTAssertFalse(TradeTurnPolicy.shouldBlockOffer(
+            turnUserId: "peer",
+            viewerId: "me",
+            buttonTag: vc.kTagCloseDeal,
+            productsReceivedTag: vc.kTagProductsReceived,
+            turnGateEnabled: false
+        ))
+        XCTAssertTrue(TradeTurnPolicy.shouldBlockOffer(
+            turnUserId: "peer",
+            viewerId: "me",
+            buttonTag: vc.kTagCloseDeal,
+            productsReceivedTag: vc.kTagProductsReceived,
+            turnGateEnabled: true
+        ))
+        XCTAssertTrue(TradeTurnPolicy.shouldBlockOffer(
+            turnUserId: nil,
+            viewerId: "me",
+            buttonTag: vc.kTagJustAccept,
+            productsReceivedTag: vc.kTagProductsReceived,
+            turnGateEnabled: true
+        ))
+        XCTAssertFalse(TradeTurnPolicy.shouldBlockOffer(
+            turnUserId: "me",
+            viewerId: "me",
+            buttonTag: vc.kTagJustAccept,
+            productsReceivedTag: vc.kTagProductsReceived,
+            turnGateEnabled: true
+        ))
+        XCTAssertFalse(TradeTurnPolicy.shouldBlockOffer(
+            turnUserId: "",
+            viewerId: "",
+            buttonTag: vc.kTagJustAccept,
+            productsReceivedTag: vc.kTagProductsReceived,
+            turnGateEnabled: true
+        ))
+        XCTAssertFalse(TradeTurnPolicy.shouldBlockOffer(
+            turnUserId: "peer",
+            viewerId: "me",
+            buttonTag: vc.kTagProductsReceived,
+            productsReceivedTag: vc.kTagProductsReceived,
+            turnGateEnabled: true
+        ))
+    }
+
+    /// Review hides both lobby arrows only when turn_user_id is a string.
+    /// A missing, numeric, or NSNull turn stays "my turn", including review.
+    /// End/cancel rooms are list status "past" and do not pick a badge.
+    func testLobbyTurnBadgeKeepsMissingTurnOnMyTurn() {
+        XCTAssertNil(TradeTurnPolicy.lobbyBadge(
+            listStatus: "past",
+            tradeStatus: HulaConstants.review_status,
+            turnValue: "me",
+            viewerId: "me"
+        ))
+        XCTAssertEqual(
+            TradeTurnPolicy.lobbyBadge(
+                listStatus: "current",
+                tradeStatus: HulaConstants.review_status,
+                turnValue: "peer",
+                viewerId: "me"
+            ),
+            TradeTurnPolicy.badgeInReview
+        )
+        XCTAssertEqual(
+            TradeTurnPolicy.lobbyBadge(
+                listStatus: "current",
+                tradeStatus: HulaConstants.review_status,
+                turnValue: nil,
+                viewerId: "me"
+            ),
+            TradeTurnPolicy.badgeMyTurn
+        )
+        XCTAssertEqual(
+            TradeTurnPolicy.lobbyBadge(
+                listStatus: "current",
+                tradeStatus: HulaConstants.review_status,
+                turnValue: NSNull(),
+                viewerId: "me"
+            ),
+            TradeTurnPolicy.badgeMyTurn
+        )
+        XCTAssertEqual(
+            TradeTurnPolicy.lobbyBadge(
+                listStatus: "current",
+                tradeStatus: "pending",
+                turnValue: NSNumber(value: 1),
+                viewerId: "me"
+            ),
+            TradeTurnPolicy.badgeMyTurn
+        )
+        XCTAssertEqual(
+            TradeTurnPolicy.lobbyBadge(
+                listStatus: "current",
+                tradeStatus: "pending",
+                turnValue: "me",
+                viewerId: "me"
+            ),
+            TradeTurnPolicy.badgeMyTurn
+        )
+        XCTAssertEqual(
+            TradeTurnPolicy.lobbyBadge(
+                listStatus: "current",
+                tradeStatus: "pending",
+                turnValue: "",
+                viewerId: ""
+            ),
+            TradeTurnPolicy.badgeMyTurn
+        )
+        XCTAssertEqual(
+            TradeTurnPolicy.lobbyBadge(
+                listStatus: "current",
+                tradeStatus: "pending",
+                turnValue: "peer",
+                viewerId: "me"
+            ),
+            TradeTurnPolicy.badgeOtherTurn
+        )
+        XCTAssertEqual(
+            TradeTurnPolicy.lobbyBadge(
+                listStatus: "current",
+                tradeStatus: "pending",
+                turnValue: "me",
+                viewerId: nil
+            ),
+            TradeTurnPolicy.badgeOtherTurn
+        )
+    }
+
+    /// The first bid dims chat only when that turn id matches the viewer.
+    /// A missing bids payload must not change alpha, and a nil viewer must not crash.
+    func testFirstBidChatAlphaSkipsMissingBidsAndNilViewer() {
+        XCTAssertNil(TradeTurnPolicy.chatButtonAlpha(bids: nil, turnValue: "me", viewerId: "me"))
+        XCTAssertNil(TradeTurnPolicy.chatButtonAlpha(bids: "nope", turnValue: "me", viewerId: "me"))
+        XCTAssertNil(TradeTurnPolicy.chatButtonAlpha(bids: NSNull(), turnValue: "me", viewerId: "me"))
+        XCTAssertNil(TradeTurnPolicy.chatButtonAlpha(bids: NSNumber(value: 1), turnValue: "me", viewerId: "me"))
+
+        let dimmed = TradeTurnPolicy.chatButtonAlpha(
+            bids: ["only"] as [Any],
+            turnValue: "me",
+            viewerId: "me"
+        )
+        XCTAssertEqual(Double(dimmed ?? -1), Double(TradeTurnPolicy.chatDimmedAlpha), accuracy: 0.0001)
+
+        let emptyIds = TradeTurnPolicy.chatButtonAlpha(
+            bids: ["only"] as [Any],
+            turnValue: "",
+            viewerId: ""
+        )
+        XCTAssertEqual(Double(emptyIds ?? -1), Double(TradeTurnPolicy.chatDimmedAlpha), accuracy: 0.0001)
+
+        let otherTurn = TradeTurnPolicy.chatButtonAlpha(
+            bids: ["only"] as [Any],
+            turnValue: "peer",
+            viewerId: "me"
+        )
+        XCTAssertEqual(Double(otherTurn ?? -1), Double(TradeTurnPolicy.chatFullAlpha), accuracy: 0.0001)
+
+        let nilTurn = TradeTurnPolicy.chatButtonAlpha(
+            bids: ["only"] as [Any],
+            turnValue: nil,
+            viewerId: "me"
+        )
+        XCTAssertEqual(Double(nilTurn ?? -1), Double(TradeTurnPolicy.chatFullAlpha), accuracy: 0.0001)
+
+        let nilViewer = TradeTurnPolicy.chatButtonAlpha(
+            bids: ["only"] as [Any],
+            turnValue: "me",
+            viewerId: nil
+        )
+        XCTAssertEqual(Double(nilViewer ?? -1), Double(TradeTurnPolicy.chatFullAlpha), accuracy: 0.0001)
+
+        let laterBid = TradeTurnPolicy.chatButtonAlpha(
+            bids: ["a", "b"] as [Any],
+            turnValue: "me",
+            viewerId: "me"
+        )
+        XCTAssertEqual(Double(laterBid ?? -1), Double(TradeTurnPolicy.chatFullAlpha), accuracy: 0.0001)
+
+        let noBids = TradeTurnPolicy.chatButtonAlpha(
+            bids: [] as [Any],
+            turnValue: "me",
+            viewerId: "me"
+        )
+        XCTAssertEqual(Double(noBids ?? -1), Double(TradeTurnPolicy.chatFullAlpha), accuracy: 0.0001)
+    }
+
     private func tradeReadyFixture(
         ownerId: String,
         otherId: String,

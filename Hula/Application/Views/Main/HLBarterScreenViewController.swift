@@ -407,7 +407,10 @@ class HLBarterScreenViewController: BaseViewController {
                     ], named: "barter_any_turn")
                 //print(HLDataManager.sharedInstance.onboardingTutorials)
             }
-            if self.thisTrade.turn_user_id == HulaUser.sharedInstance.userId{
+            if TradeTurnPolicy.isViewersTurn(
+                turnUserId: self.thisTrade.turn_user_id,
+                viewerId: HulaUser.sharedInstance.userId
+            ) {
                 // my turn
             } else {
                 // other's turn
