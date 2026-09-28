@@ -642,8 +642,15 @@ class HLSwappViewController: UIViewController {
         )
         
         //print(tradeStatus.owner_products)
-        if (turn_id != HulaUser.sharedInstance.userId) && buttonTag != kTagProductsReceived && false{
-            // always my turn
+        // `turn_user_id != userId` unwrapped both IUOs before `&& false`, so a nil
+        // turn still crashed Accept. The gate stays off: not-your-turn does not block.
+        if TradeTurnPolicy.shouldBlockOffer(
+            turnUserId: turn_id,
+            viewerId: HulaUser.sharedInstance.userId,
+            buttonTag: buttonTag,
+            productsReceivedTag: kTagProductsReceived,
+            turnGateEnabled: false
+        ) {
             print("This is not your turn!!!")
         } else {
             
@@ -910,14 +917,12 @@ class HLSwappViewController: UIViewController {
                         self.chatCountLbl.isHidden = true
                     }
                     
-                    if let bids = thisTrade.object(forKey: "bids") as? [Any] {
-                        //print("Bids: \(bids.count)")
-                        if (bids.count == 1 && thisTrade.object(forKey: "turn_user_id") as? String == HulaUser.sharedInstance.userId ){
-                            // first turn
-                            self.chatButton.alpha = 0.3
-                        } else {
-                            self.chatButton.alpha = 1
-                        }
+                    if let alpha = TradeTurnPolicy.chatButtonAlpha(
+                        bids: thisTrade.object(forKey: "bids"),
+                        turnValue: thisTrade.object(forKey: "turn_user_id"),
+                        viewerId: HulaUser.sharedInstance.userId
+                    ) {
+                        self.chatButton.alpha = alpha
                     }
                     
                     
@@ -1432,5 +1437,83 @@ struct OfferSubmissionPolicy {
             return otherId ?? ""
         }
         return ownerId ?? ""
+    }
+}
+
+/// Turn checks compared IUO `turn_user_id` / `userId` with `!=` and `==`.
+/// A nil id crashed Accept (the `&& false` gate is evaluated after that compare),
+/// the barter room's empty turn branch, and the first-bid chat dim.
+/// Nil does not match anyone, including another nil. Empty strings still match.
+/// The Accept gate stays disabled until product turns it on.
+struct TradeTurnPolicy {
+    static let badgeMyTurn = "my_turn"
+    static let badgeOtherTurn = "other_turn"
+    static let badgeInReview = "in_review"
+    static let chatDimmedAlpha: CGFloat = 0.3
+    static let chatFullAlpha: CGFloat = 1
+
+    static func idsMatch(_ lhs: String?, _ rhs: String?) -> Bool {
+        guard let lhs = lhs, let rhs = rhs else {
+            return false
+        }
+        return lhs == rhs
+    }
+
+    static func isViewersTurn(turnUserId: String?, viewerId: String?) -> Bool {
+        return idsMatch(turnUserId, viewerId)
+    }
+
+    /// Historical `executeOfferOptions` never blocks (`turnGateEnabled == false`).
+    /// Products Received stays exempt if the gate is enabled. Any other tag,
+    /// including Close Deal, blocks only when the turn id is not the viewer.
+    static func shouldBlockOffer(
+        turnUserId: String?,
+        viewerId: String?,
+        buttonTag: Int,
+        productsReceivedTag: Int,
+        turnGateEnabled: Bool
+    ) -> Bool {
+        if !turnGateEnabled || buttonTag == productsReceivedTag {
+            return false
+        }
+        return !isViewersTurn(turnUserId: turnUserId, viewerId: viewerId)
+    }
+
+    /// Dashboard current-room chrome. End/cancel rooms pass list status "past"
+    /// and must not change the arrows. A missing or non-string turn is my turn,
+    /// including review trades that never stored `turn_user_id`. Review with a
+    /// string turn hides both arrows and shows the closed label.
+    static func lobbyBadge(
+        listStatus: String?,
+        tradeStatus: String?,
+        turnValue: Any?,
+        viewerId: String?
+    ) -> String? {
+        guard listStatus == "current" else {
+            return nil
+        }
+        guard let turnUserId = turnValue as? String else {
+            return badgeMyTurn
+        }
+        if tradeStatus == HulaConstants.review_status {
+            return badgeInReview
+        }
+        if isViewersTurn(turnUserId: turnUserId, viewerId: viewerId) {
+            return badgeMyTurn
+        }
+        return badgeOtherTurn
+    }
+
+    /// First bid on the viewer's turn dims chat to 0.3. Any other countable
+    /// bid list is full alpha. A missing or non-array `bids` value leaves the
+    /// button alone (nil).
+    static func chatButtonAlpha(bids: Any?, turnValue: Any?, viewerId: String?) -> CGFloat? {
+        guard let bids = bids as? [Any] else {
+            return nil
+        }
+        if bids.count == 1 && isViewersTurn(turnUserId: turnValue as? String, viewerId: viewerId) {
+            return chatDimmedAlpha
+        }
+        return chatFullAlpha
     }
 }

@@ -329,7 +329,7 @@ extension HLDashboardViewController: UICollectionViewDelegate, UICollectionViewD
             cell.tradeId = tradeId
 
             var otherUserId = thisTrade.object(forKey: "other_id") as? String
-            if otherUserId == HulaUser.sharedInstance.userId {
+            if TradeTurnPolicy.idsMatch(otherUserId, HulaUser.sharedInstance.userId) {
                 otherUserId = thisTrade.object(forKey: "owner_id") as? String
             }
             if let otherUserId = otherUserId {
@@ -349,7 +349,10 @@ extension HLDashboardViewController: UICollectionViewDelegate, UICollectionViewD
                 other_money = tmp
             }
             
-            if (HulaUser.sharedInstance.userId == thisTrade.object(forKey: "other_id") as? String ){
+            if TradeTurnPolicy.idsMatch(
+                HulaUser.sharedInstance.userId,
+                thisTrade.object(forKey: "other_id") as? String
+            ) {
                 // i am the other of the trade
                 if let other_products_arr = CommonUtils.stringArrayFromJSON(thisTrade.object(forKey: "other_products")) {
                     drawProducts(inCell: cell, fromArr: other_products_arr, money: other_money, side: "left")
@@ -386,23 +389,23 @@ extension HLDashboardViewController: UICollectionViewDelegate, UICollectionViewD
             cell.dealClosedLbl.isHidden = true
             if status == "current"{
                 // current trades
-                if let turnUser = thisTrade.object(forKey: "turn_user_id") as? String{
-                    if trade_status == HulaConstants.review_status {
+                if let badge = TradeTurnPolicy.lobbyBadge(
+                    listStatus: status,
+                    tradeStatus: trade_status,
+                    turnValue: thisTrade.object(forKey: "turn_user_id"),
+                    viewerId: HulaUser.sharedInstance.userId
+                ) {
+                    if badge == TradeTurnPolicy.badgeInReview {
                         cell.dealClosedLbl.isHidden = false
                         cell.myTurnView.isHidden = true
                         cell.otherTurnView.isHidden = true
+                    } else if badge == TradeTurnPolicy.badgeOtherTurn {
+                        cell.myTurnView.isHidden = true
+                        cell.otherTurnView.isHidden = false
                     } else {
-                        if turnUser != HulaUser.sharedInstance.userId {
-                            cell.myTurnView.isHidden = true
-                            cell.otherTurnView.isHidden = false
-                        } else {
-                            cell.myTurnView.isHidden = false
-                            cell.otherTurnView.isHidden = true
-                        }
+                        cell.myTurnView.isHidden = false
+                        cell.otherTurnView.isHidden = true
                     }
-                } else {
-                    cell.myTurnView.isHidden = false
-                    cell.otherTurnView.isHidden = true
                 }
                 cell.boxView.layer.shadowColor = UIColor.black.cgColor
                 cell.boxView.layer.shadowOffset = CGSize(width: 0, height: 0)
