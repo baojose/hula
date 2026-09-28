@@ -29,8 +29,7 @@ class HLIntroViewController: UserBaseViewController, UIScrollViewDelegate {
     var initialFrame:CGRect = CGRect(x:0, y:0, width: 191, height: 108)
     var rotating:Bool = false
     
-    weak var player1:AVPlayer?
-    weak var playerLayer1: AVPlayerLayer!
+    let media = OnboardingPlayerStore()
     
     var jump_just_once : Bool = true
     //var scene: [HulaVideoTransp] = []
@@ -81,13 +80,9 @@ class HLIntroViewController: UserBaseViewController, UIScrollViewDelegate {
             debugPrint("Video file not found")
             return
         }
-        player1 = AVPlayer(url: URL(fileURLWithPath: path1))
-        playerLayer1 = AVPlayerLayer(player: player1)
-        playerLayer1.frame = introView1.bounds
-        //introView1.layer.addSublayer(playerLayer1)
-        introView1.layer.insertSublayer(playerLayer1, at: 1)
-
-        player1!.play()
+        _ = media.replace(url: URL(fileURLWithPath: path1), frame: introView1.bounds)
+        media.insert(into: introView1.layer, at: 1)
+        media.play()
         
         /*
         guard let path2 = Bundle.main.path(forResource: "slide 2", ofType:"mp4") else {
@@ -226,7 +221,7 @@ class HLIntroViewController: UserBaseViewController, UIScrollViewDelegate {
         
         if (mainScrollView.contentOffset.x > 3.0 * mainScrollView.frame.size.width) {
             if (jump_just_once){
-                playerLayer1.removeFromSuperlayer()
+                media.stop()
                 jump_just_once = false;
                 self.navToMainView()
             }
@@ -256,34 +251,27 @@ class HLIntroViewController: UserBaseViewController, UIScrollViewDelegate {
     }
     func playVideo(_ num: Int){
         
-        player1?.pause()
-        player1 = nil
-        playerLayer1.removeFromSuperlayer()
-        
-       
-        
         guard let path = Bundle.main.path(forResource: "slide \(num)", ofType:"mp4") else {
             debugPrint("Video file not found")
+            media.stop()
             return
         }
         //print("Loading video \(path)")
-        player1 = AVPlayer(url: URL(fileURLWithPath: path))
-        playerLayer1 = AVPlayerLayer(player: player1)
-        playerLayer1.frame = introView1.bounds
+        _ = media.replace(url: URL(fileURLWithPath: path), frame: introView1.bounds)
         
         if num == 1 {
             //print("Moving video to 1")
-            introView1.layer.insertSublayer(playerLayer1, at: 1)
+            media.insert(into: introView1.layer, at: 1)
         }
         if num == 2 {
             //print("Moving video to 2")
-            introView2.layer.insertSublayer(playerLayer1, at: 1)
+            media.insert(into: introView2.layer, at: 1)
         }
         if num == 3 {
             //print("Moving video to 3")
-            introView3.layer.insertSublayer(playerLayer1, at: 1)
+            media.insert(into: introView3.layer, at: 1)
         }
         //print("Playing video \(path)")
-        player1?.play()
+        media.play()
     }
 }
