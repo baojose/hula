@@ -11,8 +11,7 @@ import AVKit
 import AVFoundation
 
 class HLMainViewController: UserBaseViewController {
-    weak var player : AVPlayer?
-    weak var playerLayer : AVPlayerLayer!
+    let media = OnboardingPlayerStore()
     override func viewDidLoad() {
         super.viewDidLoad()
     }
@@ -25,11 +24,7 @@ class HLMainViewController: UserBaseViewController {
     }
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
-        if player != nil {
-            player!.pause();
-            player = nil
-        }
-        playerLayer?.removeFromSuperlayer()
+        media.stop()
     }
     override var preferredStatusBarStyle: UIStatusBarStyle {
         return .lightContent
@@ -50,12 +45,10 @@ class HLMainViewController: UserBaseViewController {
                 debugPrint("splash_intro.mp4 file not found")
                 return
             }
-            player = AVPlayer(url: URL(fileURLWithPath: path))
-            playerLayer = AVPlayerLayer(player: player!)
-            playerLayer.frame = self.view.bounds
-            self.view.layer.addSublayer(playerLayer)
-            NotificationCenter.default.addObserver(self, selector: #selector(HLMainViewController.playerEnded(notification:)), name:NSNotification.Name.AVPlayerItemDidPlayToEndTime, object: player!.currentItem)
-            player!.play()
+            let item = media.replace(url: URL(fileURLWithPath: path), frame: self.view.bounds)
+            media.add(to: self.view.layer)
+            NotificationCenter.default.addObserver(self, selector: #selector(HLMainViewController.playerEnded(notification:)), name:NSNotification.Name.AVPlayerItemDidPlayToEndTime, object: item)
+            media.play()
         }
     }
     
@@ -75,5 +68,55 @@ class HLMainViewController: UserBaseViewController {
             self.navigationController?.view.layer.add(transition, forKey: nil)
             self.navigationController?.pushViewController(introViewController, animated: false)
         }
+    }
+}
+
+/// Owns the splash and intro AVPlayer. Those screens used to keep the player
+/// and its layer in weak properties, so ARC released them before play().
+final class OnboardingPlayerStore {
+    private var player: AVPlayer?
+    private var layer: AVPlayerLayer?
+
+    var hasRetainedPlayer: Bool {
+        guard let player = player, let layer = layer else { return false }
+        if let attached = layer.player {
+            return attached === player
+        }
+        return false
+    }
+
+    @discardableResult
+    func replace(url: URL, frame: CGRect) -> AVPlayerItem? {
+        player?.pause()
+        layer?.removeFromSuperlayer()
+        let nextPlayer = AVPlayer(url: url)
+        let nextLayer = AVPlayerLayer(player: nextPlayer)
+        nextLayer.frame = frame
+        player = nextPlayer
+        layer = nextLayer
+        return nextPlayer.currentItem
+    }
+
+    func add(to host: CALayer) {
+        if let layer = layer {
+            host.addSublayer(layer)
+        }
+    }
+
+    func insert(into host: CALayer, at index: UInt32) {
+        if let layer = layer {
+            host.insertSublayer(layer, at: index)
+        }
+    }
+
+    func play() {
+        player?.play()
+    }
+
+    func stop() {
+        player?.pause()
+        layer?.removeFromSuperlayer()
+        player = nil
+        layer = nil
     }
 }
