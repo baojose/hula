@@ -303,17 +303,15 @@ class HLSellerInfoViewController: BaseViewController, UITableViewDelegate, UITab
                 return
             }
             HLDataManager.sharedInstance.httpGet(urlstr: queryURL, taskCallback: { (ok, json) in
-                if (ok){
-                    print(json!)
-                    if (json as? [String: Any]) != nil {
-                        // httpGet completes off the main thread; present Trade Rooms on main.
-                        DispatchQueue.main.async {
-                            if let pnc = self.navigationController?.navigationController as? HulaPortraitNavigationController {
-                                pnc.openSwapView()
-                            }
-                        }
+                // `(true, nil)` used to trap on `print(json!)` before the object check.
+                guard TradeAgreeNavigationPolicy.shouldOpenTradeRooms(ok: ok, json: json) else {
+                    return
+                }
+                // httpGet completes off the main thread; present Trade Rooms on main.
+                DispatchQueue.main.async {
+                    if let pnc = self.navigationController?.navigationController as? HulaPortraitNavigationController {
+                        pnc.openSwapView()
                     }
-                    //NotificationCenter.default.post(name: self.signupRecieved, object: signupSuccess)
                 }
             })
         }
@@ -430,5 +428,19 @@ extension HLSellerInfoViewController: AlertDelegate{
         if trigger == "noproduct" && response == "cancel" {
             self.tabBarController?.selectedIndex = 2
         }
+    }
+}
+
+/// Seller Accept printed `json!` and only then tested `as? [String: Any]`.
+/// A success callback with a nil body crashed and never opened Trade Rooms.
+/// Open only when the request succeeded and the body is a JSON object,
+/// including `NSDictionary` (what `JSONSerialization` actually returns).
+/// Nil, NSNull, arrays, strings, and numbers stay on the seller screen.
+struct TradeAgreeNavigationPolicy {
+    static func shouldOpenTradeRooms(ok: Bool, json: Any?) -> Bool {
+        guard ok else {
+            return false
+        }
+        return CommonUtils.dictionaryPairs(json) != nil
     }
 }

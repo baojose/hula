@@ -1233,32 +1233,48 @@ extension HLSwappViewController: AlertDelegate{
     
     func feedback_sent(response:String){
         print("Feedback received. \(response)")
-        
-        if response != "ok" && response != "cancel"{
-            guard CommonUtils.nonEmptyTrimmed(self.trade_id_closed) != nil else {
-                return
-            }
-            guard let queryURL = HLSwappViewController.feedbackURL(apiBase: HulaConstants.apiURL) else {
-                return
-            }
-            let comments = NSLocalizedString("Deal closed. Thank you", comment: "")
-            let dataString = CommonUtils.feedbackPostString(
-                tradeId: self.trade_id_closed,
-                userId: self.user_id_closed,
-                comments: comments,
-                val: response
-            )
-            //print(dataString)
-            HLDataManager.sharedInstance.httpPost(urlstr: queryURL, postString: dataString, isPut: false, taskCallback: { (ok, json) in
-                if (ok){
-                    print(json!)
-                    DispatchQueue.main.async {
-                        
-                        
-                    }
-                }
-            })
+
+        // "ok" / "cancel" acknowledge the alert. They must not POST another row.
+        guard FeedbackSubmitPolicy.shouldPost(response: response) else {
+            return
         }
+        guard CommonUtils.nonEmptyTrimmed(self.trade_id_closed) != nil else {
+            return
+        }
+        guard let queryURL = HLSwappViewController.feedbackURL(apiBase: HulaConstants.apiURL) else {
+            return
+        }
+        let comments = NSLocalizedString("Deal closed. Thank you", comment: "")
+        let dataString = CommonUtils.feedbackPostString(
+            tradeId: self.trade_id_closed,
+            userId: self.user_id_closed,
+            comments: comments,
+            val: response
+        )
+        //print(dataString)
+        HLDataManager.sharedInstance.httpPost(urlstr: queryURL, postString: dataString, isPut: false, taskCallback: { (ok, json) in
+            if let text = FeedbackSubmitPolicy.successLogText(ok: ok, json: json) {
+                print(text)
+                DispatchQueue.main.async {
+                }
+            }
+        })
+    }
+}
+
+/// Trade-room alert feedback posts only when the response is neither the ack
+/// "ok" nor "cancel". The compare is exact: do not trim or case-fold.
+/// The success callback used `print(json!)`, which trapped on `(true, nil)`.
+struct FeedbackSubmitPolicy {
+    static func shouldPost(response: String) -> Bool {
+        return response != "ok" && response != "cancel"
+    }
+
+    static func successLogText(ok: Bool, json: Any?) -> String? {
+        guard ok, let json = json else {
+            return nil
+        }
+        return String(describing: json)
     }
 }
 

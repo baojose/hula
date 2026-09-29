@@ -7770,6 +7770,55 @@ class HulaTests: XCTestCase {
         XCTAssertEqual(Double(noBids ?? -1), Double(TradeTurnPolicy.chatFullAlpha), accuracy: 0.0001)
     }
 
+    /// Seller Accept force-unwrapped a nil success body, then required an object
+    /// before opening Trade Rooms. NSDictionary is a JSON object; NSNull is not.
+    func testSellerAgreeDoesNotOpenTradeRoomsForNilOrNonObjectBody() {
+        XCTAssertFalse(TradeAgreeNavigationPolicy.shouldOpenTradeRooms(
+            ok: false,
+            json: ["status": "ok"] as [String: Any]
+        ))
+        XCTAssertFalse(TradeAgreeNavigationPolicy.shouldOpenTradeRooms(ok: true, json: nil))
+        XCTAssertFalse(TradeAgreeNavigationPolicy.shouldOpenTradeRooms(ok: true, json: NSNull()))
+        XCTAssertFalse(TradeAgreeNavigationPolicy.shouldOpenTradeRooms(ok: true, json: "ok"))
+        XCTAssertFalse(TradeAgreeNavigationPolicy.shouldOpenTradeRooms(ok: true, json: [1, 2] as [Any]))
+        XCTAssertFalse(TradeAgreeNavigationPolicy.shouldOpenTradeRooms(ok: true, json: NSNumber(value: 1)))
+        XCTAssertTrue(TradeAgreeNavigationPolicy.shouldOpenTradeRooms(ok: true, json: [:] as [String: Any]))
+        XCTAssertTrue(TradeAgreeNavigationPolicy.shouldOpenTradeRooms(
+            ok: true,
+            json: ["status": "ok"] as [String: Any]
+        ))
+
+        let nsBody = NSMutableDictionary()
+        nsBody.setObject("ok", forKey: "status" as NSString)
+        XCTAssertTrue(TradeAgreeNavigationPolicy.shouldOpenTradeRooms(ok: true, json: nsBody))
+        XCTAssertFalse(TradeAgreeNavigationPolicy.shouldOpenTradeRooms(ok: false, json: nsBody))
+    }
+
+    /// Alert ack "ok" and "cancel" must not POST feedback. A nil success body
+    /// must not be force-unwrapped. "OK" and padded "ok" still post.
+    func testQuickFeedbackSkipsAckAndNilSuccessBody() {
+        XCTAssertFalse(FeedbackSubmitPolicy.shouldPost(response: "ok"))
+        XCTAssertFalse(FeedbackSubmitPolicy.shouldPost(response: "cancel"))
+        XCTAssertTrue(FeedbackSubmitPolicy.shouldPost(response: "5"))
+        XCTAssertTrue(FeedbackSubmitPolicy.shouldPost(response: ""))
+        XCTAssertTrue(FeedbackSubmitPolicy.shouldPost(response: "OK"))
+        XCTAssertTrue(FeedbackSubmitPolicy.shouldPost(response: "ok "))
+        XCTAssertTrue(FeedbackSubmitPolicy.shouldPost(response: " cancel"))
+
+        XCTAssertNil(FeedbackSubmitPolicy.successLogText(ok: true, json: nil))
+        XCTAssertNil(FeedbackSubmitPolicy.successLogText(ok: false, json: nil))
+        XCTAssertNil(FeedbackSubmitPolicy.successLogText(
+            ok: false,
+            json: ["saved": true] as [String: Any]
+        ))
+        XCTAssertEqual(FeedbackSubmitPolicy.successLogText(ok: true, json: "saved"), "saved")
+        XCTAssertNotNil(FeedbackSubmitPolicy.successLogText(ok: true, json: NSNull()))
+        XCTAssertNotNil(FeedbackSubmitPolicy.successLogText(
+            ok: true,
+            json: ["saved": true] as [String: Any]
+        ))
+    }
+
     private func tradeReadyFixture(
         ownerId: String,
         otherId: String,
