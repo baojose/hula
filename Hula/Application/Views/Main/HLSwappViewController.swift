@@ -845,8 +845,14 @@ class HLSwappViewController: UIViewController {
                             
                             if let current_user_turn = thisTrade.object(forKey: "turn_user_id") as? String {
                                 
-                                if current_user_turn != HulaUser.sharedInstance.userId && false {
-                                    // added "false" in order to avoid this case
+                                // `turn_user_id != userId` unwrapped the viewer IUO before
+                                // `&& false`, so a nil viewer crashed this bar. Waiting
+                                // chrome stays off until product enables it.
+                                if TradeTurnPolicy.showsWaitingForReply(
+                                    turnUserId: current_user_turn,
+                                    viewerId: HulaUser.sharedInstance.userId,
+                                    waitingTurnEnabled: false
+                                ) {
                                     
                                     // other user turn
                                     
@@ -1458,9 +1464,10 @@ struct OfferSubmissionPolicy {
 
 /// Turn checks compared IUO `turn_user_id` / `userId` with `!=` and `==`.
 /// A nil id crashed Accept (the `&& false` gate is evaluated after that compare),
-/// the barter room's empty turn branch, and the first-bid chat dim.
+/// the bartering remaining-time bar, the barter room's empty turn branch, and
+/// the first-bid chat dim.
 /// Nil does not match anyone, including another nil. Empty strings still match.
-/// The Accept gate stays disabled until product turns it on.
+/// The Accept gate and the waiting-turn label stay disabled until product turns them on.
 struct TradeTurnPolicy {
     static let badgeMyTurn = "my_turn"
     static let badgeOtherTurn = "other_turn"
@@ -1490,6 +1497,21 @@ struct TradeTurnPolicy {
         turnGateEnabled: Bool
     ) -> Bool {
         if !turnGateEnabled || buttonTag == productsReceivedTag {
+            return false
+        }
+        return !isViewersTurn(turnUserId: turnUserId, viewerId: viewerId)
+    }
+
+    /// Bartering bottom bar used `turn != userId && false`. The compare ran
+    /// first, so a nil viewer crashed even though waiting chrome never shows.
+    /// While the gate is off the ids are not compared. When it is on, waiting
+    /// shows only when the turn is not the viewer. Do not trim.
+    static func showsWaitingForReply(
+        turnUserId: String?,
+        viewerId: String?,
+        waitingTurnEnabled: Bool
+    ) -> Bool {
+        if !waitingTurnEnabled {
             return false
         }
         return !isViewersTurn(turnUserId: turnUserId, viewerId: viewerId)

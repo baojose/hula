@@ -381,8 +381,8 @@ extension ChatViewController: UITableViewDelegate, UITableViewDataSource{
             cell.userNameLabel.text = NSLocalizedString("You", comment: "")
             let message = data.object(forKey: "message") as? String ?? ""
             cell.messageText.text = message
-            let user_id = data.object(forKey: "user_id") as? String ?? ""
-            if (user_id == HulaUser.sharedInstance.userId){
+            let user_id = ChatMessageOwnershipPolicy.authorId(data.object(forKey: "user_id"))
+            if ChatMessageOwnershipPolicy.isOwnMessage(authorId: user_id, viewerId: HulaUser.sharedInstance.userId) {
                 // my message
                 cell.userNameLabel.text = HulaUser.sharedInstance.userNick
                 cell.userNameLabel.textAlignment = .left
@@ -413,5 +413,19 @@ extension ChatViewController: UITableViewDelegate, UITableViewDataSource{
             }
         }
         return cell
+    }
+}
+
+/// Chat rows compared `user_id == userId`. A nil viewer id force-unwrapped on
+/// every visible message. Missing and non-string authors stay "" so they still
+/// match an empty viewer id. A nil viewer matches nobody, including "".
+/// Do not trim.
+struct ChatMessageOwnershipPolicy {
+    static func authorId(_ authorValue: Any?) -> String {
+        return authorValue as? String ?? ""
+    }
+
+    static func isOwnMessage(authorId: String?, viewerId: String?) -> Bool {
+        return TradeTurnPolicy.idsMatch(authorId, viewerId)
     }
 }
