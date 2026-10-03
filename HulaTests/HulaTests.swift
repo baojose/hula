@@ -7819,6 +7819,88 @@ class HulaTests: XCTestCase {
         ))
     }
 
+    /// The bartering bar compared `turn != userId` before `&& false`. A nil
+    /// viewer crashed even though waiting chrome never shows. The gate stays
+    /// off. Empty strings still match when it is enabled. Do not trim.
+    func testWaitingTurnLabelStaysOffForNilViewer() {
+        let trade = HulaTrade()
+        trade.turn_user_id = nil
+        let viewer = HulaUser()
+        viewer.userId = nil
+
+        XCTAssertFalse(TradeTurnPolicy.showsWaitingForReply(
+            turnUserId: trade.turn_user_id,
+            viewerId: viewer.userId,
+            waitingTurnEnabled: false
+        ))
+        XCTAssertFalse(TradeTurnPolicy.showsWaitingForReply(
+            turnUserId: "peer",
+            viewerId: "me",
+            waitingTurnEnabled: false
+        ))
+        XCTAssertFalse(TradeTurnPolicy.showsWaitingForReply(
+            turnUserId: " me",
+            viewerId: "me",
+            waitingTurnEnabled: false
+        ))
+        XCTAssertFalse(TradeTurnPolicy.showsWaitingForReply(
+            turnUserId: "me",
+            viewerId: "me",
+            waitingTurnEnabled: true
+        ))
+        XCTAssertFalse(TradeTurnPolicy.showsWaitingForReply(
+            turnUserId: "",
+            viewerId: "",
+            waitingTurnEnabled: true
+        ))
+        XCTAssertTrue(TradeTurnPolicy.showsWaitingForReply(
+            turnUserId: "peer",
+            viewerId: "me",
+            waitingTurnEnabled: true
+        ))
+        XCTAssertTrue(TradeTurnPolicy.showsWaitingForReply(
+            turnUserId: "peer",
+            viewerId: nil,
+            waitingTurnEnabled: true
+        ))
+        XCTAssertTrue(TradeTurnPolicy.showsWaitingForReply(
+            turnUserId: " me",
+            viewerId: "me",
+            waitingTurnEnabled: true
+        ))
+        XCTAssertTrue(TradeTurnPolicy.showsWaitingForReply(
+            turnUserId: nil,
+            viewerId: "me",
+            waitingTurnEnabled: true
+        ))
+    }
+
+    /// Chat cells compared `user_id == userId`. A nil viewer crashed on every
+    /// row. Missing authors stay "" and still match an empty viewer. A nil
+    /// viewer is not the author of that empty id. Do not trim.
+    func testChatRowOwnershipSkipsNilViewer() {
+        let viewer = HulaUser()
+        viewer.userId = nil
+
+        XCTAssertEqual(ChatMessageOwnershipPolicy.authorId(nil), "")
+        XCTAssertEqual(ChatMessageOwnershipPolicy.authorId(NSNull()), "")
+        XCTAssertEqual(ChatMessageOwnershipPolicy.authorId(NSNumber(value: 4)), "")
+        XCTAssertEqual(ChatMessageOwnershipPolicy.authorId("me"), "me")
+        XCTAssertEqual(ChatMessageOwnershipPolicy.authorId(" "), " ")
+
+        XCTAssertFalse(ChatMessageOwnershipPolicy.isOwnMessage(authorId: "", viewerId: viewer.userId))
+        XCTAssertFalse(ChatMessageOwnershipPolicy.isOwnMessage(authorId: "me", viewerId: nil))
+        XCTAssertFalse(ChatMessageOwnershipPolicy.isOwnMessage(authorId: nil, viewerId: nil))
+        XCTAssertTrue(ChatMessageOwnershipPolicy.isOwnMessage(authorId: "", viewerId: ""))
+        XCTAssertTrue(ChatMessageOwnershipPolicy.isOwnMessage(authorId: "me", viewerId: "me"))
+        XCTAssertFalse(ChatMessageOwnershipPolicy.isOwnMessage(authorId: " me", viewerId: "me"))
+        XCTAssertFalse(ChatMessageOwnershipPolicy.isOwnMessage(authorId: "peer", viewerId: "me"))
+        XCTAssertTrue(ChatMessageOwnershipPolicy.isOwnMessage(
+            authorId: ChatMessageOwnershipPolicy.authorId(NSNull()),
+            viewerId: ""
+        ))
+    }
+
     private func tradeReadyFixture(
         ownerId: String,
         otherId: String,
