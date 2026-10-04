@@ -7901,6 +7901,207 @@ class HulaTests: XCTestCase {
         ))
     }
 
+    /// Live barter publish, calculator cash, and chip removal compared IUO
+    /// `owner_id` with `userId`. Nil is not the owner, including nil == nil, so
+    /// the viewer's tray publishes as the other side and both cash writers
+    /// update `other_money`. Empty strings still match. Do not trim.
+    func testNilViewerDoesNotPublishOrCashAsTradeOwner() {
+        let trade = HulaTrade()
+        trade.owner_id = nil
+        let viewer = HulaUser()
+        viewer.userId = nil
+
+        XCTAssertFalse(TradeViewerSidePolicy.viewerIsOwner(ownerId: trade.owner_id, viewerId: viewer.userId))
+        XCTAssertFalse(TradeViewerSidePolicy.viewerIsOwner(ownerId: nil, viewerId: "me"))
+        XCTAssertFalse(TradeViewerSidePolicy.viewerIsOwner(ownerId: "me", viewerId: nil))
+        XCTAssertFalse(TradeViewerSidePolicy.viewerIsOwner(ownerId: " me", viewerId: "me"))
+        XCTAssertTrue(TradeViewerSidePolicy.viewerIsOwner(ownerId: "", viewerId: ""))
+        XCTAssertTrue(TradeViewerSidePolicy.viewerIsOwner(ownerId: "me", viewerId: "me"))
+        XCTAssertTrue(TradeViewerSidePolicy.viewerIsOwner(ownerId: " ", viewerId: " "))
+
+        let swapped = TradeViewerSidePolicy.livePublishSides(
+            viewerIsOwner: TradeViewerSidePolicy.viewerIsOwner(ownerId: nil, viewerId: nil),
+            myProductIds: ["mine"],
+            peerProductIds: ["peer"],
+            myFetchSucceeded: true,
+            peerFetchSucceeded: false
+        )
+        XCTAssertEqual(swapped.ownerProductIds, ["peer"])
+        XCTAssertEqual(swapped.otherProductIds, ["mine"])
+        XCTAssertFalse(swapped.ownerFetchSucceeded)
+        XCTAssertTrue(swapped.peerFetchSucceeded)
+
+        let kept = TradeViewerSidePolicy.livePublishSides(
+            viewerIsOwner: true,
+            myProductIds: ["mine"],
+            peerProductIds: ["peer"],
+            myFetchSucceeded: true,
+            peerFetchSucceeded: false
+        )
+        XCTAssertEqual(kept.ownerProductIds, ["mine"])
+        XCTAssertEqual(kept.otherProductIds, ["peer"])
+        XCTAssertTrue(kept.ownerFetchSucceeded)
+        XCTAssertFalse(kept.peerFetchSucceeded)
+
+        let owns = TradeViewerSidePolicy.viewerIsOwner(ownerId: nil, viewerId: nil)
+        let selected = HLBarterScreenViewController.moneyAfterSelectingAmount(
+            amount: 12,
+            side: "owner",
+            amITradeOwner: owns,
+            ownerMoney: 3,
+            otherMoney: 4
+        )
+        XCTAssertEqual(selected.ownerMoney, 3)
+        XCTAssertEqual(selected.otherMoney, 12)
+        let removed = HLBarterScreenViewController.moneyAfterRemovingCashChip(
+            productId: "xmoney",
+            trayIsMySide: true,
+            amITradeOwner: owns,
+            ownerMoney: 3,
+            otherMoney: 4
+        )
+        XCTAssertEqual(removed.ownerMoney, 3)
+        XCTAssertEqual(removed.otherMoney, 0)
+        XCTAssertEqual(HLBarterScreenViewController.calculatorSeedAmount(
+            side: "owner",
+            amITradeOwner: owns,
+            ownerMoney: 10.9,
+            otherMoney: 4.2
+        ), 4)
+
+        let ownerSelected = HLBarterScreenViewController.moneyAfterSelectingAmount(
+            amount: 12,
+            side: "owner",
+            amITradeOwner: true,
+            ownerMoney: 3,
+            otherMoney: 4
+        )
+        XCTAssertEqual(ownerSelected.ownerMoney, 12)
+        XCTAssertEqual(ownerSelected.otherMoney, 4)
+        let ownerRemoved = HLBarterScreenViewController.moneyAfterRemovingCashChip(
+            productId: "xmoney",
+            trayIsMySide: true,
+            amITradeOwner: true,
+            ownerMoney: 3,
+            otherMoney: 4
+        )
+        XCTAssertEqual(ownerRemoved.ownerMoney, 0)
+        XCTAssertEqual(ownerRemoved.otherMoney, 4)
+    }
+
+    /// Past Trades assigned trays and closed checkmarks with IUO `owner_id == userId`.
+    /// A nil viewer is the other party: their products are `other_products`, the
+    /// counterparty id is the owner (or ""), and the owner's check is on the other side.
+    func testPastTradeSidesSkipNilOwner() {
+        let ownerView = TradeViewerSidePolicy.viewerTrays(
+            ownerId: "owner",
+            otherId: "peer",
+            ownerProducts: ["o"],
+            otherProducts: ["p"],
+            viewerId: "owner"
+        )
+        XCTAssertEqual(ownerView.myProductIds, ["o"])
+        XCTAssertEqual(ownerView.otherProductIds, ["p"])
+        XCTAssertEqual(ownerView.counterpartyId, "peer")
+
+        let peerView = TradeViewerSidePolicy.viewerTrays(
+            ownerId: "owner",
+            otherId: "peer",
+            ownerProducts: ["o"],
+            otherProducts: ["p"],
+            viewerId: "peer"
+        )
+        XCTAssertEqual(peerView.myProductIds, ["p"])
+        XCTAssertEqual(peerView.otherProductIds, ["o"])
+        XCTAssertEqual(peerView.counterpartyId, "owner")
+
+        let nilBoth = TradeViewerSidePolicy.viewerTrays(
+            ownerId: nil,
+            otherId: "peer",
+            ownerProducts: ["o"],
+            otherProducts: ["p"],
+            viewerId: nil
+        )
+        XCTAssertEqual(nilBoth.myProductIds, ["p"])
+        XCTAssertEqual(nilBoth.otherProductIds, ["o"])
+        XCTAssertEqual(nilBoth.counterpartyId, "")
+
+        let nilViewer = TradeViewerSidePolicy.viewerTrays(
+            ownerId: "owner",
+            otherId: nil,
+            ownerProducts: ["o"],
+            otherProducts: ["p"],
+            viewerId: nil
+        )
+        XCTAssertEqual(nilViewer.myProductIds, ["p"])
+        XCTAssertEqual(nilViewer.counterpartyId, "owner")
+
+        let emptyIds = TradeViewerSidePolicy.viewerTrays(
+            ownerId: "",
+            otherId: "peer",
+            ownerProducts: ["o"],
+            otherProducts: ["p"],
+            viewerId: ""
+        )
+        XCTAssertEqual(emptyIds.myProductIds, ["o"])
+        XCTAssertEqual(emptyIds.counterpartyId, "peer")
+
+        let ownerMarks = TradeViewerSidePolicy.pastTradeClosedMarks(
+            ownerId: "owner",
+            viewerId: "owner",
+            ownerAccepted: true,
+            otherAccepted: false
+        )
+        XCTAssertTrue(ownerMarks.showMine)
+        XCTAssertFalse(ownerMarks.showOther)
+
+        let peerMarks = TradeViewerSidePolicy.pastTradeClosedMarks(
+            ownerId: "owner",
+            viewerId: "peer",
+            ownerAccepted: true,
+            otherAccepted: false
+        )
+        XCTAssertFalse(peerMarks.showMine)
+        XCTAssertTrue(peerMarks.showOther)
+
+        let nilMarks = TradeViewerSidePolicy.pastTradeClosedMarks(
+            ownerId: nil,
+            viewerId: nil,
+            ownerAccepted: true,
+            otherAccepted: false
+        )
+        XCTAssertFalse(nilMarks.showMine)
+        XCTAssertTrue(nilMarks.showOther)
+    }
+
+    /// Product detail and the modal compared IUO `productOwner` with `userId`.
+    /// Nil is not the viewer's listing, so Add to Trade stays available, start-trade
+    /// confirm stays open, and video chrome stays on the request path. Empty
+    /// strings still match. A blank owner still does not POST.
+    func testNilProductOwnerIsNotTheViewer() {
+        let product = HulaProduct()
+        product.productOwner = nil
+        let viewer = HulaUser()
+        viewer.userId = nil
+
+        XCTAssertFalse(TradeViewerSidePolicy.isViewersProduct(
+            productOwnerId: product.productOwner,
+            viewerId: viewer.userId
+        ))
+        XCTAssertFalse(TradeViewerSidePolicy.isViewersProduct(productOwnerId: "owner", viewerId: nil))
+        XCTAssertFalse(TradeViewerSidePolicy.isViewersProduct(productOwnerId: nil, viewerId: "me"))
+        XCTAssertFalse(TradeViewerSidePolicy.isViewersProduct(productOwnerId: " me", viewerId: "me"))
+        XCTAssertTrue(TradeViewerSidePolicy.isViewersProduct(productOwnerId: "", viewerId: ""))
+        XCTAssertTrue(TradeViewerSidePolicy.isViewersProduct(productOwnerId: "me", viewerId: "me"))
+        XCTAssertTrue(TradeViewerSidePolicy.isViewersProduct(productOwnerId: " ", viewerId: " "))
+
+        XCTAssertTrue(TradeViewerSidePolicy.canConfirmStartTrade(productOwnerId: nil, viewerId: nil))
+        XCTAssertTrue(TradeViewerSidePolicy.canConfirmStartTrade(productOwnerId: "owner", viewerId: "me"))
+        XCTAssertFalse(TradeViewerSidePolicy.canConfirmStartTrade(productOwnerId: "me", viewerId: "me"))
+        XCTAssertFalse(TradeViewerSidePolicy.canConfirmStartTrade(productOwnerId: "", viewerId: ""))
+        XCTAssertNil(StartTradeUIPolicy.postString(productId: "pid", otherId: nil))
+    }
+
     private func tradeReadyFixture(
         ownerId: String,
         otherId: String,
