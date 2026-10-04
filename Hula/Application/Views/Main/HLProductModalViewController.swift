@@ -221,7 +221,10 @@ class HLProductModalViewController: UIViewController, UIImagePickerControllerDel
             videoBtnHolder.isHidden = false
             var vreq : Bool = HulaProduct.isVideoRequested(product.video_requested, forTradeId: currentTradeId)
             var vurl : String = HulaProduct.videoURL(product.video_url, forTradeId: currentTradeId)
-            if (product.productOwner != HulaUser.sharedInstance.userId){
+            if !TradeViewerSidePolicy.isViewersProduct(
+                productOwnerId: product.productOwner,
+                viewerId: HulaUser.sharedInstance.userId
+            ) {
                 // not my product
                 if (vreq || vurl.count  > 0) {
                     // video has been requested
@@ -279,7 +282,10 @@ class HLProductModalViewController: UIViewController, UIImagePickerControllerDel
             return
         }
             if (tag == 43904){
-                if product.productOwner == HulaUser.sharedInstance.userId {
+                if TradeViewerSidePolicy.isViewersProduct(
+                    productOwnerId: product.productOwner,
+                    viewerId: HulaUser.sharedInstance.userId
+                ) {
                     recordVideo()
                 }
             } else {

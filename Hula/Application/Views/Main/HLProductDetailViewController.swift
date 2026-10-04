@@ -162,7 +162,10 @@ class HLProductDetailViewController: BaseViewController, UIScrollViewDelegate, U
         })
         
         // button visible only on other users
-        if (currentProduct.productOwner == HulaUser.sharedInstance.userId){
+        if TradeViewerSidePolicy.isViewersProduct(
+            productOwnerId: currentProduct.productOwner,
+            viewerId: HulaUser.sharedInstance.userId
+        ) {
             // this is my own product, so i cannot swapp it with me
             addToTradeViewContainer.isHidden = true
         } else {
@@ -523,7 +526,10 @@ extension HLProductDetailViewController: AlertDelegate{
             return
         }
         if response == "ok" {
-            if (currentProduct.productOwner != HulaUser.sharedInstance.userId) {
+            if TradeViewerSidePolicy.canConfirmStartTrade(
+                productOwnerId: currentProduct.productOwner,
+                viewerId: HulaUser.sharedInstance.userId
+            ) {
                 
                 if let productId = currentProduct.productId {
                     //print(productId)

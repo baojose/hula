@@ -78,27 +78,14 @@ class HLPastTradeViewController: UIViewController, UICollectionViewDelegate, UIC
         }
         mainLabel.text = tradeStatus
         
-        // hide both check views
-        myClosedView.isHidden = true
-        otherClosedView.isHidden = true
-        
-        if (thisTrade.owner_id == HulaUser.sharedInstance.userId){
-            // i am the trade owner
-            if thisTrade.owner_accepted {
-                myClosedView.isHidden = false
-            }
-            if thisTrade.other_accepted {
-                otherClosedView.isHidden = false
-            }
-        } else {
-            // i am NOT the trade owner
-            if thisTrade.owner_accepted {
-                otherClosedView.isHidden = false
-            }
-            if thisTrade.other_accepted {
-                myClosedView.isHidden = false
-            }
-        }
+        let marks = TradeViewerSidePolicy.pastTradeClosedMarks(
+            ownerId: thisTrade.owner_id,
+            viewerId: HulaUser.sharedInstance.userId,
+            ownerAccepted: thisTrade.owner_accepted,
+            otherAccepted: thisTrade.other_accepted
+        )
+        myClosedView.isHidden = !marks.showMine
+        otherClosedView.isHidden = !marks.showOther
         
         
         
@@ -174,18 +161,16 @@ class HLPastTradeViewController: UIViewController, UICollectionViewDelegate, UIC
             return
         }
         thisTrade.loadFrom(dict: tradeDict)
-        if (thisTrade.owner_id == HulaUser.sharedInstance.userId){
-            // I am the owner
-            mtp = thisTrade.owner_products
-            otp = thisTrade.other_products
-            otherUserId = thisTrade.other_id
-            
-        } else {
-            // I am the other
-            otp = thisTrade.owner_products
-            mtp = thisTrade.other_products
-            otherUserId = thisTrade.owner_id
-        }
+        let trays = TradeViewerSidePolicy.viewerTrays(
+            ownerId: thisTrade.owner_id,
+            otherId: thisTrade.other_id,
+            ownerProducts: thisTrade.owner_products,
+            otherProducts: thisTrade.other_products,
+            viewerId: HulaUser.sharedInstance.userId
+        )
+        mtp = trays.myProductIds
+        otp = trays.otherProductIds
+        otherUserId = trays.counterpartyId
         
         self.myTradedProducts = []
         self.otherTradedProducts = []
@@ -214,7 +199,10 @@ class HLPastTradeViewController: UIViewController, UICollectionViewDelegate, UIC
         
         // Mirror barter-room mapping: UI "owner"/my side vs "other" side depends on
         // whether the current user is the trade owner.
-        let iAmOwner = (thisTrade.owner_id == HulaUser.sharedInstance.userId)
+        let iAmOwner = TradeViewerSidePolicy.viewerIsOwner(
+            ownerId: thisTrade.owner_id,
+            viewerId: HulaUser.sharedInstance.userId
+        )
         let money = thisTrade.money(forSide: type, viewerIsOwner: iAmOwner)
         if money > 0 {
             let moneyProd = HulaProduct(id: "xmoney", name: "+$\(Int(round(money)))", image: HulaConstants.transparentImg)

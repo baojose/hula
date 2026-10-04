@@ -304,18 +304,16 @@ class HLBarterScreenViewController: BaseViewController {
             liveBarterWriteGeneration = 0
             liveBarterInFlightPublishes = 0
             liveBarterPublishStartedAt = nil
-            if (thisTrade.owner_id == HulaUser.sharedInstance.userId){
-                // I am the owner
-                mtp = thisTrade.owner_products
-                otp = thisTrade.other_products
-                otherUserId = thisTrade.other_id
-                
-            } else {
-                // I am the other
-                otp = thisTrade.owner_products
-                mtp = thisTrade.other_products
-                otherUserId = thisTrade.owner_id
-            }
+            let trays = TradeViewerSidePolicy.viewerTrays(
+                ownerId: thisTrade.owner_id,
+                otherId: thisTrade.other_id,
+                ownerProducts: thisTrade.owner_products,
+                otherProducts: thisTrade.other_products,
+                viewerId: HulaUser.sharedInstance.userId
+            )
+            mtp = trays.myProductIds
+            otp = trays.otherProductIds
+            otherUserId = trays.counterpartyId
 
             // Keep money actions disabled until inventories finish loading so a cash
             // edit cannot POST empty product lists via updateLiveBarter.
@@ -546,32 +544,19 @@ class HLBarterScreenViewController: BaseViewController {
         )
         
         
+        let viewerIsOwner = TradeViewerSidePolicy.viewerIsOwner(
+            ownerId: thisTrade.owner_id,
+            viewerId: HulaUser.sharedInstance.userId
+        )
+        let trayMoney = thisTrade.money(forSide: type, viewerIsOwner: viewerIsOwner)
+        if trayMoney > 0 {
+            let moneyProd = HulaProduct(id: "xmoney", name: "+$\(Int(round(trayMoney)))", image: HulaConstants.transparentImg)
+            final_arr.append(moneyProd)
+        }
         switch type {
         case "other":
-            if (thisTrade.owner_id == HulaUser.sharedInstance.userId){
-                if thisTrade.other_money > 0 {
-                    let moneyProd = HulaProduct(id: "xmoney", name: "+$\(Int(round(thisTrade.other_money)))", image: HulaConstants.transparentImg)
-                    final_arr.append(moneyProd)
-                }
-            } else {
-                if thisTrade.owner_money > 0 {
-                    let moneyProd = HulaProduct(id: "xmoney", name: "+$\(Int(round(thisTrade.owner_money)))", image: HulaConstants.transparentImg)
-                    final_arr.append(moneyProd)
-                }
-            }
             otherTradedProducts = final_arr
         default:
-            if (thisTrade.owner_id == HulaUser.sharedInstance.userId){
-                if thisTrade.owner_money > 0 {
-                    let moneyProd = HulaProduct(id: "xmoney", name: "+$\(Int(round(thisTrade.owner_money)))", image: HulaConstants.transparentImg)
-                    final_arr.append(moneyProd)
-                }
-            } else {
-                if thisTrade.other_money > 0 {
-                    let moneyProd = HulaProduct(id: "xmoney", name: "+$\(Int(round(thisTrade.other_money)))", image: HulaConstants.transparentImg)
-                    final_arr.append(moneyProd)
-                }
-            }
             myTradedProducts = final_arr
         }
         
@@ -686,6 +671,19 @@ class HLBarterScreenViewController: BaseViewController {
         liveTimer = Timer.scheduledTimer(timeInterval: 2, target: self, selector: #selector(self.getLiveBarter), userInfo: nil, repeats: true);
         productsTimer = Timer.scheduledTimer(timeInterval: 5, target: self, selector: #selector(self.refreshProductsArrays), userInfo: nil, repeats: true);
     }
+    func mappedLivePublishSides() -> (ownerProductIds: [String], otherProductIds: [String], ownerFetchSucceeded: Bool, peerFetchSucceeded: Bool) {
+        return TradeViewerSidePolicy.livePublishSides(
+            viewerIsOwner: TradeViewerSidePolicy.viewerIsOwner(
+                ownerId: thisTrade.owner_id,
+                viewerId: HulaUser.sharedInstance.userId
+            ),
+            myProductIds: generateProductArray(from: myTradedProducts),
+            peerProductIds: generateProductArray(from: otherTradedProducts),
+            myFetchSucceeded: myInventoryFetchSucceeded,
+            peerFetchSucceeded: otherInventoryFetchSucceeded
+        )
+    }
+
     func updateLiveBarter(){
         // Never POST empty local arrays before inventories finish loading — that wipes the trade.
         guard HLBarterScreenViewController.canPublishLiveBarter(
@@ -703,11 +701,12 @@ class HLBarterScreenViewController: BaseViewController {
             return
         }
 
-        let localOwnerIds = generateProductArray(from: (thisTrade.owner_id == HulaUser.sharedInstance.userId) ? self.myTradedProducts : self.otherTradedProducts)
-        let localOtherIds = generateProductArray(from: (thisTrade.owner_id == HulaUser.sharedInstance.userId) ? self.otherTradedProducts : self.myTradedProducts)
+        let sides = mappedLivePublishSides()
+        let localOwnerIds = sides.ownerProductIds
+        let localOtherIds = sides.otherProductIds
         // If a side's inventory fetch failed, fall back to the trade's last known product IDs.
-        let ownerFetchOk = (thisTrade.owner_id == HulaUser.sharedInstance.userId) ? myInventoryFetchSucceeded : otherInventoryFetchSucceeded
-        let otherFetchOk = (thisTrade.owner_id == HulaUser.sharedInstance.userId) ? otherInventoryFetchSucceeded : myInventoryFetchSucceeded
+        let ownerFetchOk = sides.ownerFetchSucceeded
+        let otherFetchOk = sides.peerFetchSucceeded
         let ownerIds = HLBarterScreenViewController.productIdsForLivePublish(
             fetchSucceeded: ownerFetchOk,
             localProductIds: localOwnerIds,
@@ -885,17 +884,15 @@ class HLBarterScreenViewController: BaseViewController {
             
             
             self.thisTrade = newTrade;
-            var mtp:[String] = []
-            var otp:[String] = []
-            if (thisTrade.owner_id == HulaUser.sharedInstance.userId){
-                // I am the owner
-                mtp = thisTrade.owner_products
-                otp = thisTrade.other_products
-            } else {
-                // I am the other
-                otp = thisTrade.owner_products
-                mtp = thisTrade.other_products
-            }
+            let trays = TradeViewerSidePolicy.viewerTrays(
+                ownerId: thisTrade.owner_id,
+                otherId: thisTrade.other_id,
+                ownerProducts: thisTrade.owner_products,
+                otherProducts: thisTrade.other_products,
+                viewerId: HulaUser.sharedInstance.userId
+            )
+            let mtp = trays.myProductIds
+            let otp = trays.otherProductIds
             self.otherProducts = self.otherInitialProducts;
             self.myProducts = self.myInitialProducts;
             print("otp");
@@ -1160,7 +1157,10 @@ class HLBarterScreenViewController: BaseViewController {
         viewController.side = "other"
         viewController.amount = HLBarterScreenViewController.calculatorSeedAmount(
             side: "other",
-            amITradeOwner: thisTrade.owner_id == HulaUser.sharedInstance.userId,
+            amITradeOwner: TradeViewerSidePolicy.viewerIsOwner(
+                ownerId: thisTrade.owner_id,
+                viewerId: HulaUser.sharedInstance.userId
+            ),
             ownerMoney: thisTrade.owner_money,
             otherMoney: thisTrade.other_money
         )
@@ -1176,7 +1176,10 @@ class HLBarterScreenViewController: BaseViewController {
         viewController.side = "owner"
         viewController.amount = HLBarterScreenViewController.calculatorSeedAmount(
             side: "owner",
-            amITradeOwner: thisTrade.owner_id == HulaUser.sharedInstance.userId,
+            amITradeOwner: TradeViewerSidePolicy.viewerIsOwner(
+                ownerId: thisTrade.owner_id,
+                viewerId: HulaUser.sharedInstance.userId
+            ),
             ownerMoney: thisTrade.owner_money,
             otherMoney: thisTrade.other_money
         )
@@ -1505,7 +1508,10 @@ extension HLBarterScreenViewController: KDDragAndDropCollectionViewDataSource, U
             guard indexPath.item < myTradedProducts.count else { break }
             let removed = myTradedProducts[indexPath.item]
             myTradedProducts.remove( at: indexPath.item)
-            let amIOwner = thisTrade.owner_id == HulaUser.sharedInstance.userId
+            let amIOwner = TradeViewerSidePolicy.viewerIsOwner(
+                ownerId: thisTrade.owner_id,
+                viewerId: HulaUser.sharedInstance.userId
+            )
             let updated = HLBarterScreenViewController.moneyAfterRemovingCashChip(
                 productId: removed.productId,
                 trayIsMySide: true,
@@ -1520,7 +1526,10 @@ extension HLBarterScreenViewController: KDDragAndDropCollectionViewDataSource, U
             guard indexPath.item < otherTradedProducts.count else { break }
             let removed = otherTradedProducts[indexPath.item]
             otherTradedProducts.remove( at: indexPath.item)
-            let amIOwner = thisTrade.owner_id == HulaUser.sharedInstance.userId
+            let amIOwner = TradeViewerSidePolicy.viewerIsOwner(
+                ownerId: thisTrade.owner_id,
+                viewerId: HulaUser.sharedInstance.userId
+            )
             let updated = HLBarterScreenViewController.moneyAfterRemovingCashChip(
                 productId: removed.productId,
                 trayIsMySide: false,
@@ -1632,10 +1641,11 @@ extension HLBarterScreenViewController: HLBarterScreenDelegate{
             ownerFetchFinished: myInventoryFetchFinished,
             otherFetchFinished: otherInventoryFetchFinished
         ) {
-            let localOwnerIds = generateProductArray(from: (thisTrade.owner_id == HulaUser.sharedInstance.userId) ? myTradedProducts : otherTradedProducts)
-            let localOtherIds = generateProductArray(from: (thisTrade.owner_id == HulaUser.sharedInstance.userId) ? otherTradedProducts : myTradedProducts)
-            let ownerFetchOk = (thisTrade.owner_id == HulaUser.sharedInstance.userId) ? myInventoryFetchSucceeded : otherInventoryFetchSucceeded
-            let otherFetchOk = (thisTrade.owner_id == HulaUser.sharedInstance.userId) ? otherInventoryFetchSucceeded : myInventoryFetchSucceeded
+            let sides = mappedLivePublishSides()
+            let localOwnerIds = sides.ownerProductIds
+            let localOtherIds = sides.otherProductIds
+            let ownerFetchOk = sides.ownerFetchSucceeded
+            let otherFetchOk = sides.peerFetchSucceeded
             trade.owner_products = HLBarterScreenViewController.productIdsForLivePublish(
                 fetchSucceeded: ownerFetchOk,
                 localProductIds: localOwnerIds,
@@ -1680,7 +1690,10 @@ extension HLBarterScreenViewController: CalculatorDelegate{
         let updated = HLBarterScreenViewController.moneyAfterSelectingAmount(
             amount: amount,
             side: side,
-            amITradeOwner: thisTrade.owner_id == HulaUser.sharedInstance.userId,
+            amITradeOwner: TradeViewerSidePolicy.viewerIsOwner(
+                ownerId: thisTrade.owner_id,
+                viewerId: HulaUser.sharedInstance.userId
+            ),
             ownerMoney: thisTrade.owner_money,
             otherMoney: thisTrade.other_money
         )
@@ -1829,5 +1842,74 @@ struct BarterAnimationPolicy {
 
     static func removedProductFrame(cellFrame: CGRect?) -> CGRect? {
         return cellFrame
+    }
+}
+
+/// Live barter publish, past trades, product detail, and the product modal
+/// compared IUO `owner_id` / `productOwner` with `userId`. A nil owner or nil
+/// viewer crashed before trays, cash, checkmarks, or the trade button updated.
+/// Nil is not the owner, including nil == nil. Empty strings still match.
+/// Do not trim. Calculator seed, calculator OK, and cash-chip removal must all
+/// use `viewerIsOwner` so they keep writing the same field.
+struct TradeViewerSidePolicy {
+    static func viewerIsOwner(ownerId: String?, viewerId: String?) -> Bool {
+        return OfferSubmissionPolicy.viewerIsOwner(ownerId: ownerId, viewerId: viewerId)
+    }
+
+    static func isViewersProduct(productOwnerId: String?, viewerId: String?) -> Bool {
+        return viewerIsOwner(ownerId: productOwnerId, viewerId: viewerId)
+    }
+
+    /// Start-trade confirm continues only for someone else's listing. A nil
+    /// owner is not the viewer, so the confirm path stays open; the POST body
+    /// still rejects a blank `other_id`.
+    static func canConfirmStartTrade(productOwnerId: String?, viewerId: String?) -> Bool {
+        return !isViewersProduct(productOwnerId: productOwnerId, viewerId: viewerId)
+    }
+
+    /// Viewer's tray is `owner_*` only when they are the owner. Otherwise it is
+    /// the other side, including when either id is nil. Counterparty is "" when
+    /// that id is nil so the assignment does not unwrap.
+    static func viewerTrays(
+        ownerId: String?,
+        otherId: String?,
+        ownerProducts: [String],
+        otherProducts: [String],
+        viewerId: String?
+    ) -> (myProductIds: [String], otherProductIds: [String], counterpartyId: String) {
+        if viewerIsOwner(ownerId: ownerId, viewerId: viewerId) {
+            return (ownerProducts, otherProducts, otherId ?? "")
+        }
+        return (otherProducts, ownerProducts, ownerId ?? "")
+    }
+
+    /// Owner acceptance shows on the viewer's check only when the viewer is the
+    /// owner. A nil viewer sees the owner's check on the other side.
+    static func pastTradeClosedMarks(
+        ownerId: String?,
+        viewerId: String?,
+        ownerAccepted: Bool,
+        otherAccepted: Bool
+    ) -> (showMine: Bool, showOther: Bool) {
+        if viewerIsOwner(ownerId: ownerId, viewerId: viewerId) {
+            return (ownerAccepted, otherAccepted)
+        }
+        return (otherAccepted, ownerAccepted)
+    }
+
+    /// Live_barter POST and Accept both map the viewer's tray onto owner products
+    /// only when the viewer is the owner. A nil id must not publish the viewer's
+    /// items as `owner_products`. Fetch success follows the same swap.
+    static func livePublishSides(
+        viewerIsOwner: Bool,
+        myProductIds: [String],
+        peerProductIds: [String],
+        myFetchSucceeded: Bool,
+        peerFetchSucceeded: Bool
+    ) -> (ownerProductIds: [String], otherProductIds: [String], ownerFetchSucceeded: Bool, peerFetchSucceeded: Bool) {
+        if viewerIsOwner {
+            return (myProductIds, peerProductIds, myFetchSucceeded, peerFetchSucceeded)
+        }
+        return (peerProductIds, myProductIds, peerFetchSucceeded, myFetchSucceeded)
     }
 }
