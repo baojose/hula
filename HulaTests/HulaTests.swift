@@ -8102,6 +8102,41 @@ class HulaTests: XCTestCase {
         XCTAssertNil(StartTradeUIPolicy.postString(productId: "pid", otherId: nil))
     }
 
+    /// Seller profile hid the trade bar and skipped start-trade with IUO
+    /// `userId ==` / `!=`. Nil is not the seller, including nil compared with
+    /// nil, so the bar stays up and the confirm path stays open. Empty strings
+    /// still match. A blank profile id still does not POST.
+    func testNilSellerProfileIsNotTheViewer() {
+        let seller = HulaUser()
+        seller.userId = nil
+        let viewer = HulaUser()
+        viewer.userId = nil
+
+        XCTAssertFalse(SellerProfileTradePolicy.hidesTradeButtons(
+            profileId: seller.userId,
+            viewerId: viewer.userId
+        ))
+        XCTAssertFalse(SellerProfileTradePolicy.hidesTradeButtons(profileId: "seller", viewerId: nil))
+        XCTAssertFalse(SellerProfileTradePolicy.hidesTradeButtons(profileId: nil, viewerId: "me"))
+        XCTAssertFalse(SellerProfileTradePolicy.hidesTradeButtons(profileId: " me", viewerId: "me"))
+        XCTAssertTrue(SellerProfileTradePolicy.hidesTradeButtons(profileId: "", viewerId: ""))
+        XCTAssertTrue(SellerProfileTradePolicy.hidesTradeButtons(profileId: "me", viewerId: "me"))
+        XCTAssertTrue(SellerProfileTradePolicy.hidesTradeButtons(profileId: " ", viewerId: " "))
+
+        XCTAssertTrue(SellerProfileTradePolicy.shouldAttemptStartTrade(profileId: nil, viewerId: nil))
+        XCTAssertTrue(SellerProfileTradePolicy.shouldAttemptStartTrade(profileId: "seller", viewerId: "me"))
+        XCTAssertTrue(SellerProfileTradePolicy.shouldAttemptStartTrade(
+            profileId: seller.userId,
+            viewerId: "me"
+        ))
+        XCTAssertFalse(SellerProfileTradePolicy.shouldAttemptStartTrade(profileId: "me", viewerId: "me"))
+        XCTAssertFalse(SellerProfileTradePolicy.shouldAttemptStartTrade(profileId: "", viewerId: ""))
+        XCTAssertFalse(SellerProfileTradePolicy.shouldAttemptStartTrade(profileId: " ", viewerId: " "))
+        XCTAssertNil(StartTradeUIPolicy.postString(productId: "", otherId: nil))
+        XCTAssertNil(StartTradeUIPolicy.postString(productId: "", otherId: ""))
+        XCTAssertNil(StartTradeUIPolicy.postString(productId: "", otherId: " "))
+    }
+
     private func tradeReadyFixture(
         ownerId: String,
         otherId: String,
