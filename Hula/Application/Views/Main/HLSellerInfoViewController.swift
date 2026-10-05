@@ -168,7 +168,10 @@ class HLSellerInfoViewController: BaseViewController, UITableViewDelegate, UITab
         tradesClosedLabel.text = "\(Int(user.trades_closed))"
         tradesEndedLabel.text = "\(Int(user.trades_finished))"
         
-        if user.userId == HulaUser.sharedInstance.userId {
+        if SellerProfileTradePolicy.hidesTradeButtons(
+            profileId: user.userId,
+            viewerId: HulaUser.sharedInstance.userId
+        ) {
             self.tradeButtonsHolder.isHidden = true
         }
     }
@@ -397,7 +400,10 @@ extension HLSellerInfoViewController: AlertDelegate{
             if HLDataManager.sharedInstance.amIOfferedToTradeWith(otherId ?? "") {
                 return
             }
-            if(HulaUser.sharedInstance.userId != otherId){
+            if SellerProfileTradePolicy.shouldAttemptStartTrade(
+                profileId: otherId,
+                viewerId: HulaUser.sharedInstance.userId
+            ) {
                 if HLSellerInfoViewController.hasUserId(HulaUser.sharedInstance.userId){
                     // user is loggedin
                     guard let dataString = StartTradeUIPolicy.postString(productId: "", otherId: otherId) else {
@@ -442,5 +448,21 @@ struct TradeAgreeNavigationPolicy {
             return false
         }
         return CommonUtils.dictionaryPairs(json) != nil
+    }
+}
+
+/// Seller profile compared IUO `user.userId` with `HulaUser.userId` using `==`
+/// and `!=`. A nil profile id or nil viewer crashed while hiding the trade bar
+/// and again before the start-trade POST. Nil is not the seller, including nil
+/// compared with nil, so the bar stays visible and the confirm path stays open.
+/// Empty strings still match. Do not trim. A blank `other_id` still does not
+/// POST (`StartTradeUIPolicy.postString`).
+struct SellerProfileTradePolicy {
+    static func hidesTradeButtons(profileId: String?, viewerId: String?) -> Bool {
+        return OfferSubmissionPolicy.viewerIsOwner(ownerId: profileId, viewerId: viewerId)
+    }
+
+    static func shouldAttemptStartTrade(profileId: String?, viewerId: String?) -> Bool {
+        return !hidesTradeButtons(profileId: profileId, viewerId: viewerId)
     }
 }
