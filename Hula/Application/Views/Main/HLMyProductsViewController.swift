@@ -42,8 +42,11 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         
-        if last_logged_user != HulaUser.sharedInstance.userId {
-            last_logged_user = HulaUser.sharedInstance.userId
+        if LoggedUserSwitchPolicy.shouldReload(
+            lastLoggedUser: last_logged_user,
+            userId: HulaUser.sharedInstance.userId
+        ) {
+            last_logged_user = LoggedUserSwitchPolicy.storedId(HulaUser.sharedInstance.userId)
             setupView()
         }
         

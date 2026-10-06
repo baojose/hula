@@ -87,8 +87,11 @@ class HLNotificationsViewController: BaseViewController, UITableViewDelegate, UI
         timer.invalidate()
         timer = Timer.scheduledTimer(timeInterval: 15, target: self, selector: #selector(self.refreshNotifications), userInfo: nil, repeats: true)
         
-        if last_logged_user != HulaUser.sharedInstance.userId {
-            last_logged_user = HulaUser.sharedInstance.userId
+        if LoggedUserSwitchPolicy.shouldReload(
+            lastLoggedUser: last_logged_user,
+            userId: HulaUser.sharedInstance.userId
+        ) {
+            last_logged_user = LoggedUserSwitchPolicy.storedId(HulaUser.sharedInstance.userId)
             HLDataManager.sharedInstance.loadUserNotifications()
         }
         

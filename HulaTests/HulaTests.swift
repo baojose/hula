@@ -8137,6 +8137,37 @@ class HulaTests: XCTestCase {
         XCTAssertNil(StartTradeUIPolicy.postString(productId: "", otherId: " "))
     }
 
+    /// Profile, My Products, and Notifications compared `last_logged_user`
+    /// (String, default "") with IUO `userId` and assigned it back. A nil
+    /// viewer crashed both. Nil becomes "" so it matches the initial stored
+    /// id and does not reload. `idsMatch` would treat that nil as a switch.
+    /// Empty strings still match. Whitespace is kept.
+    func testNilViewerDoesNotReloadLastLoggedUser() {
+        let viewer = HulaUser()
+        viewer.userId = nil
+
+        XCTAssertEqual(LoggedUserSwitchPolicy.storedId(viewer.userId), "")
+        XCTAssertEqual(LoggedUserSwitchPolicy.storedId(nil), "")
+        XCTAssertEqual(LoggedUserSwitchPolicy.storedId(" "), " ")
+        XCTAssertEqual(LoggedUserSwitchPolicy.storedId(" me"), " me")
+        XCTAssertEqual(SessionWritePolicy.stringValue(nil), LoggedUserSwitchPolicy.storedId(nil))
+
+        XCTAssertFalse(LoggedUserSwitchPolicy.shouldReload(lastLoggedUser: "", userId: nil))
+        XCTAssertFalse(LoggedUserSwitchPolicy.shouldReload(lastLoggedUser: "", userId: viewer.userId))
+        XCTAssertFalse(LoggedUserSwitchPolicy.shouldReload(lastLoggedUser: "", userId: ""))
+        XCTAssertFalse(LoggedUserSwitchPolicy.shouldReload(lastLoggedUser: "me", userId: "me"))
+        XCTAssertFalse(LoggedUserSwitchPolicy.shouldReload(lastLoggedUser: " ", userId: " "))
+
+        XCTAssertTrue(LoggedUserSwitchPolicy.shouldReload(lastLoggedUser: "", userId: "me"))
+        XCTAssertTrue(LoggedUserSwitchPolicy.shouldReload(lastLoggedUser: "me", userId: nil))
+        XCTAssertTrue(LoggedUserSwitchPolicy.shouldReload(lastLoggedUser: "me", userId: ""))
+        XCTAssertTrue(LoggedUserSwitchPolicy.shouldReload(lastLoggedUser: "me", userId: " me"))
+        XCTAssertTrue(LoggedUserSwitchPolicy.shouldReload(lastLoggedUser: " me", userId: "me"))
+
+        XCTAssertFalse(TradeTurnPolicy.idsMatch("", nil))
+        XCTAssertFalse(TradeTurnPolicy.idsMatch(nil, nil))
+    }
+
     private func tradeReadyFixture(
         ownerId: String,
         otherId: String,
