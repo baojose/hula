@@ -65,7 +65,10 @@ class HLProfileViewController: BaseViewController {
         if !HulaUser.sharedInstance.isUserLoggedIn() {
             self.tabBarController?.selectedIndex = 0
         } else {
-            if last_logged_user != HulaUser.sharedInstance.userId {
+            if LoggedUserSwitchPolicy.shouldReload(
+                lastLoggedUser: last_logged_user,
+                userId: HulaUser.sharedInstance.userId
+            ) {
                 setupView()
             }
             self.profileImageView.loadImageFromURL(urlString: HulaUser.sharedInstance.userPhotoURL)
@@ -112,7 +115,7 @@ class HLProfileViewController: BaseViewController {
         self.initView()
         
         self.getUserProfile()
-        last_logged_user = HulaUser.sharedInstance.userId
+        last_logged_user = LoggedUserSwitchPolicy.storedId(HulaUser.sharedInstance.userId)
         
         
     }

@@ -2121,6 +2121,22 @@ struct SessionWritePolicy {
     }
 }
 
+/// Profile, My Products, and Notifications store `last_logged_user` as a
+/// non-optional String (default ""). They compared it with IUO `userId` and
+/// assigned that id back. A nil viewer crashed the compare and the write.
+/// Nil becomes "" so it matches the initial stored id and does not reload.
+/// Do not use `TradeTurnPolicy.idsMatch` (nil must not look like a switch
+/// against ""). Do not trim. Do not write nil into the String.
+struct LoggedUserSwitchPolicy {
+    static func storedId(_ userId: String?) -> String {
+        return SessionWritePolicy.stringValue(userId)
+    }
+
+    static func shouldReload(lastLoggedUser: String, userId: String?) -> Bool {
+        return lastLoggedUser != storedId(userId)
+    }
+}
+
 /// Multipart `appendString` used `string.data(using: .utf8)!`. A failed
 /// conversion must skip the chunk instead of crashing photo/video upload.
 struct UTF8DataPolicy {
