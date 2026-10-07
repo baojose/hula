@@ -71,7 +71,7 @@ class HLProfileViewController: BaseViewController {
             ) {
                 setupView()
             }
-            self.profileImageView.loadImageFromURL(urlString: HulaUser.sharedInstance.userPhotoURL)
+            self.profileImageView.loadImageFromURL(urlString: ProfilePhotoPolicy.loadURL(HulaUser.sharedInstance.userPhotoURL))
         }
         
     }
@@ -79,13 +79,13 @@ class HLProfileViewController: BaseViewController {
         
         if (HulaUser.sharedInstance.isUserLoggedIn()){
             
-            if (HulaUser.sharedInstance.userPhotoURL != ""){
-                if (current_image_url != HulaUser.sharedInstance.userPhotoURL) {
+            if ProfilePhotoPolicy.showsRemotePhoto(HulaUser.sharedInstance.userPhotoURL) {
+                if ProfilePhotoPolicy.shouldRefresh(currentURL: current_image_url, photoURL: HulaUser.sharedInstance.userPhotoURL) {
                     //print("Changing image")
                     //print(HulaUser.sharedInstance.userPhotoURL)
-                    let thumb = commonUtils.getThumbFor(url: HulaUser.sharedInstance.userPhotoURL)
+                    let thumb = ProfilePhotoPolicy.thumbURL(HulaUser.sharedInstance.userPhotoURL)
                     self.profileImageView.loadImageFromURL(urlString: thumb)
-                    self.current_image_url = HulaUser.sharedInstance.userPhotoURL
+                    self.current_image_url = ProfilePhotoPolicy.storedURL(HulaUser.sharedInstance.userPhotoURL)
                 }
             } else {
                 self.profileImageView.image = UIImage(named: "profile_placeholder")
@@ -339,9 +339,9 @@ class HLProfileViewController: BaseViewController {
 
                     self.userFeedbackLabel.text = HulaUser.sharedInstance.getFeedback()
                     self.userFullNameLabel.text = HulaUser.sharedInstance.userName
-                    self.current_image_url = HulaUser.sharedInstance.userPhotoURL
+                    self.current_image_url = ProfilePhotoPolicy.storedURL(HulaUser.sharedInstance.userPhotoURL)
                     if UserIdentityPolicy.hasNonEmptyValue(self.current_image_url) {
-                        self.profileImageView.loadImageFromURL(urlString: HulaUser.sharedInstance.userPhotoURL)
+                        self.profileImageView.loadImageFromURL(urlString: ProfilePhotoPolicy.loadURL(HulaUser.sharedInstance.userPhotoURL))
                     } else {
                         self.profileImageView.image = UIImage(named: "profile_placeholder")
                     }
@@ -416,7 +416,7 @@ class HLProfileViewController: BaseViewController {
         newImageView.isUserInteractionEnabled = true
         
         
-        newImageView.loadImageFromURL(urlString: HulaUser.sharedInstance.userPhotoURL)
+        newImageView.loadImageFromURL(urlString: ProfilePhotoPolicy.loadURL(HulaUser.sharedInstance.userPhotoURL))
         
         
         let tap = UITapGestureRecognizer(target: self, action: #selector(optionsFullscreenImage))

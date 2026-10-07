@@ -84,7 +84,7 @@ class HLSettingViewController: BaseViewController {
         //print(userData.userPhotoURL)
         if HLSettingViewController.hasDisplayValue(userData.userPhotoURL){
             self.removeAlertIcon(fromView: self.pictureView)
-            self.smallProfileImage.loadImageFromURL(urlString: HulaUser.sharedInstance.userPhotoURL)
+            self.smallProfileImage.loadImageFromURL(urlString: ProfilePhotoPolicy.loadURL(HulaUser.sharedInstance.userPhotoURL))
         } else {
             self.addAlertIcon(toView: self.pictureView)
         }
@@ -289,7 +289,7 @@ extension HLSettingViewController{
         newImageView.isUserInteractionEnabled = true
         
         
-        newImageView.loadImageFromURL(urlString: HulaUser.sharedInstance.userPhotoURL)
+        newImageView.loadImageFromURL(urlString: ProfilePhotoPolicy.loadURL(HulaUser.sharedInstance.userPhotoURL))
         
         
         let tap = UITapGestureRecognizer(target: self, action: #selector(optionsFullscreenImage))
