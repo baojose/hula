@@ -247,8 +247,8 @@ class HLPictureSelectViewController: BaseViewController, UIImagePickerController
 
                     HulaUser.sharedInstance.updateServerData()
                     HLDataManager.sharedInstance.writeUserData()
-                    self.originalSettingsVC?.smallProfileImage.loadImageFromURL(urlString: HulaUser.sharedInstance.userPhotoURL)
-                    self.originalProfileVC?.profileImageView.loadImageFromURL(urlString: HulaUser.sharedInstance.userPhotoURL)
+                    self.originalSettingsVC?.smallProfileImage.loadImageFromURL(urlString: ProfilePhotoPolicy.loadURL(HulaUser.sharedInstance.userPhotoURL))
+                    self.originalProfileVC?.profileImageView.loadImageFromURL(urlString: ProfilePhotoPolicy.loadURL(HulaUser.sharedInstance.userPhotoURL))
                     applied = true
                     if shouldDismiss {
                         self.dismissToPreviousPage(self.resultingImage)

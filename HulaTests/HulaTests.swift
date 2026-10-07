@@ -8168,6 +8168,68 @@ class HulaTests: XCTestCase {
         XCTAssertFalse(TradeTurnPolicy.idsMatch(nil, nil))
     }
 
+    /// Profile stores `current_image_url` as String default "". viewWillAppear,
+    /// viewDidAppear, the /me payload, settings, and fullscreen compared or
+    /// passed IUO `userPhotoURL` into String. A nil photo crashed before the
+    /// image load. Nil becomes "" so it matches the initial stored url and
+    /// shows the placeholder instead of looking like a photo change.
+    /// Whitespace is kept. Settings still uses the >1 display gate.
+    func testNilProfilePhotoDoesNotLookLikeAChange() {
+        let user = HulaUser()
+        user.userPhotoURL = nil
+
+        XCTAssertEqual(ProfilePhotoPolicy.storedURL(user.userPhotoURL), "")
+        XCTAssertEqual(ProfilePhotoPolicy.storedURL(nil), "")
+        XCTAssertEqual(ProfilePhotoPolicy.storedURL(" "), " ")
+        XCTAssertEqual(ProfilePhotoPolicy.storedURL(" https://hula.trading/a.jpg "), " https://hula.trading/a.jpg ")
+        XCTAssertEqual(SessionWritePolicy.stringValue(nil), ProfilePhotoPolicy.storedURL(nil))
+
+        XCTAssertFalse(ProfilePhotoPolicy.showsRemotePhoto(nil))
+        XCTAssertFalse(ProfilePhotoPolicy.showsRemotePhoto(user.userPhotoURL))
+        XCTAssertFalse(ProfilePhotoPolicy.showsRemotePhoto(""))
+        XCTAssertTrue(ProfilePhotoPolicy.showsRemotePhoto(" "))
+        XCTAssertTrue(ProfilePhotoPolicy.showsRemotePhoto("A"))
+        XCTAssertTrue(ProfilePhotoPolicy.showsRemotePhoto("https://hula.trading/a.jpg"))
+
+        XCTAssertFalse(ProfilePhotoPolicy.shouldRefresh(currentURL: "", photoURL: nil))
+        XCTAssertFalse(ProfilePhotoPolicy.shouldRefresh(currentURL: "", photoURL: user.userPhotoURL))
+        XCTAssertFalse(ProfilePhotoPolicy.shouldRefresh(currentURL: "", photoURL: ""))
+        XCTAssertFalse(ProfilePhotoPolicy.shouldRefresh(currentURL: "https://hula.trading/a.jpg", photoURL: "https://hula.trading/a.jpg"))
+        XCTAssertFalse(ProfilePhotoPolicy.shouldRefresh(currentURL: " ", photoURL: " "))
+        XCTAssertFalse(ProfilePhotoPolicy.shouldRefresh(currentURL: "https://hula.trading/a.jpg", photoURL: nil))
+        XCTAssertFalse(ProfilePhotoPolicy.shouldRefresh(currentURL: "https://hula.trading/a.jpg", photoURL: ""))
+
+        XCTAssertTrue(ProfilePhotoPolicy.shouldRefresh(currentURL: "", photoURL: "https://hula.trading/a.jpg"))
+        XCTAssertTrue(ProfilePhotoPolicy.shouldRefresh(currentURL: "https://hula.trading/a.jpg", photoURL: "https://hula.trading/b.jpg"))
+        XCTAssertTrue(ProfilePhotoPolicy.shouldRefresh(currentURL: "", photoURL: " "))
+        XCTAssertTrue(ProfilePhotoPolicy.shouldRefresh(currentURL: "https://hula.trading/a.jpg", photoURL: " https://hula.trading/a.jpg"))
+        XCTAssertTrue(ProfilePhotoPolicy.shouldRefresh(currentURL: " https://hula.trading/a.jpg", photoURL: "https://hula.trading/a.jpg"))
+
+        XCTAssertEqual(ProfilePhotoPolicy.loadURL(nil), "")
+        XCTAssertEqual(ProfilePhotoPolicy.loadURL(user.userPhotoURL), "")
+        XCTAssertEqual(ProfilePhotoPolicy.loadURL(""), "")
+        XCTAssertEqual(ProfilePhotoPolicy.loadURL(" "), " ")
+        XCTAssertEqual(ProfilePhotoPolicy.loadURL("https://hula.trading/a.jpg"), "https://hula.trading/a.jpg")
+
+        XCTAssertEqual(ProfilePhotoPolicy.thumbURL(nil), HulaConstants.noProductThumb)
+        XCTAssertEqual(ProfilePhotoPolicy.thumbURL(""), HulaConstants.noProductThumb)
+        XCTAssertEqual(ProfilePhotoPolicy.thumbURL(HulaConstants.transparentImg), HulaConstants.transparentImg)
+        XCTAssertEqual(
+            ProfilePhotoPolicy.thumbURL("https://hula.trading/files/user/ada.jpg"),
+            "https://hula.trading/files/user/tm_ada.jpg"
+        )
+        XCTAssertEqual(ProfilePhotoPolicy.thumbURL(" "), CommonUtils.sharedInstance.getThumbFor(url: " "))
+
+        XCTAssertFalse(HLSettingViewController.hasDisplayValue(nil))
+        XCTAssertFalse(HLSettingViewController.hasDisplayValue(user.userPhotoURL))
+        XCTAssertFalse(HLSettingViewController.hasDisplayValue(""))
+        XCTAssertFalse(HLSettingViewController.hasDisplayValue("A"))
+        XCTAssertTrue(HLSettingViewController.hasDisplayValue("AB"))
+        XCTAssertFalse(UserIdentityPolicy.hasNonEmptyValue(ProfilePhotoPolicy.storedURL(nil)))
+        XCTAssertTrue(UserIdentityPolicy.hasNonEmptyValue(ProfilePhotoPolicy.storedURL("A")))
+        XCTAssertTrue(UserIdentityPolicy.hasNonEmptyValue(ProfilePhotoPolicy.storedURL(" ")))
+    }
+
     private func tradeReadyFixture(
         ownerId: String,
         otherId: String,

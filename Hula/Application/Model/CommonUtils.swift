@@ -2137,6 +2137,43 @@ struct LoggedUserSwitchPolicy {
     }
 }
 
+/// Profile stores `current_image_url` as a non-optional String (default "").
+/// viewWillAppear, viewDidAppear, the /me payload, settings, and fullscreen
+/// compared or passed IUO `userPhotoURL` into `String` parameters
+/// (`loadImageFromURL`, `getThumbFor`, and the stored-url assignment).
+/// A nil photo crashed before the image load. Nil becomes "" so it matches
+/// the initial stored url and shows the placeholder instead of looking like
+/// a photo change. Do not trim. Settings keeps `hasDisplayValue` (>1);
+/// a one-character url is still a remote profile photo.
+struct ProfilePhotoPolicy {
+    static func storedURL(_ photoURL: String?) -> String {
+        return SessionWritePolicy.stringValue(photoURL)
+    }
+
+    /// viewDidAppear outer check. Empty and nil show the profile placeholder.
+    static func showsRemotePhoto(_ photoURL: String?) -> Bool {
+        return storedURL(photoURL) != ""
+    }
+
+    /// Reload the thumb only when the remote url is non-empty and differs.
+    /// A nil photo is not a change against the initial "".
+    static func shouldRefresh(currentURL: String, photoURL: String?) -> Bool {
+        let stored = storedURL(photoURL)
+        return stored != "" && currentURL != stored
+    }
+
+    /// viewWillAppear, fullscreen, settings, and the /me payload pass this
+    /// into `loadImageFromURL(urlString:)`.
+    static func loadURL(_ photoURL: String?) -> String {
+        return storedURL(photoURL)
+    }
+
+    /// viewDidAppear thumb. Nil and "" follow `getThumbFor` (placeholder thumb).
+    static func thumbURL(_ photoURL: String?) -> String {
+        return CommonUtils.sharedInstance.getThumbFor(url: storedURL(photoURL))
+    }
+}
+
 /// Multipart `appendString` used `string.data(using: .utf8)!`. A failed
 /// conversion must skip the chunk instead of crashing photo/video upload.
 struct UTF8DataPolicy {
