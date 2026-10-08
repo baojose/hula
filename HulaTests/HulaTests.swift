@@ -8230,6 +8230,64 @@ class HulaTests: XCTestCase {
         XCTAssertTrue(UserIdentityPolicy.hasNonEmptyValue(ProfilePhotoPolicy.storedURL(" ")))
     }
 
+    /// Seller info and the horizontal seller sheet passed IUO `userPhotoURL`
+    /// into `getThumbFor(url: String)`. A nil photo crashed before the image
+    /// load. Both screens reuse ProfilePhotoPolicy.thumbURL. Nil and "" become
+    /// the placeholder. Whitespace is kept. Transparent stays transparent.
+    func testNilSellerPhotoUsesPlaceholderThumb() {
+        let seller = HulaUser()
+        seller.userPhotoURL = nil
+
+        XCTAssertEqual(HLSellerInfoViewController.profileThumbURL(seller.userPhotoURL), HulaConstants.noProductThumb)
+        XCTAssertEqual(HLSellerHorizontalViewController.profileThumbURL(seller.userPhotoURL), HulaConstants.noProductThumb)
+        XCTAssertEqual(HLSellerInfoViewController.profileThumbURL(nil), HulaConstants.noProductThumb)
+        XCTAssertEqual(HLSellerHorizontalViewController.profileThumbURL(nil), HulaConstants.noProductThumb)
+        XCTAssertEqual(HLSellerInfoViewController.profileThumbURL(""), HulaConstants.noProductThumb)
+        XCTAssertEqual(HLSellerHorizontalViewController.profileThumbURL(""), HulaConstants.noProductThumb)
+
+        XCTAssertEqual(
+            HLSellerInfoViewController.profileThumbURL(HulaConstants.transparentImg),
+            HulaConstants.transparentImg
+        )
+        XCTAssertEqual(
+            HLSellerHorizontalViewController.profileThumbURL(HulaConstants.transparentImg),
+            HulaConstants.transparentImg
+        )
+
+        XCTAssertEqual(
+            HLSellerInfoViewController.profileThumbURL("https://hula.trading/files/user/ada.jpg"),
+            "https://hula.trading/files/user/tm_ada.jpg"
+        )
+        XCTAssertEqual(
+            HLSellerHorizontalViewController.profileThumbURL("https://hula.trading/files/user/ada.jpg"),
+            "https://hula.trading/files/user/tm_ada.jpg"
+        )
+        XCTAssertEqual(
+            HLSellerInfoViewController.profileThumbURL("https://hula.trading/files/user/ada.jpg"),
+            ProfilePhotoPolicy.thumbURL("https://hula.trading/files/user/ada.jpg")
+        )
+        XCTAssertEqual(
+            HLSellerHorizontalViewController.profileThumbURL(seller.userPhotoURL),
+            ProfilePhotoPolicy.thumbURL(nil)
+        )
+
+        XCTAssertEqual(HLSellerInfoViewController.profileThumbURL(" "), CommonUtils.sharedInstance.getThumbFor(url: " "))
+        XCTAssertEqual(
+            HLSellerHorizontalViewController.profileThumbURL(" "),
+            HLSellerInfoViewController.profileThumbURL(" ")
+        )
+        XCTAssertNotEqual(HLSellerInfoViewController.profileThumbURL(" "), HulaConstants.noProductThumb)
+        XCTAssertNotEqual(HLSellerInfoViewController.profileThumbURL(" "), "")
+        XCTAssertEqual(
+            HLSellerInfoViewController.profileThumbURL(" https://hula.trading/a.jpg "),
+            CommonUtils.sharedInstance.getThumbFor(url: " https://hula.trading/a.jpg ")
+        )
+        XCTAssertEqual(
+            HLSellerHorizontalViewController.profileThumbURL(" https://hula.trading/a.jpg "),
+            HLSellerInfoViewController.profileThumbURL(" https://hula.trading/a.jpg ")
+        )
+    }
+
     private func tradeReadyFixture(
         ownerId: String,
         otherId: String,

@@ -45,6 +45,13 @@ class HLSellerHorizontalViewController: BaseViewController {
     class func isEmailVerified(_ status: String?) -> Bool {
         return UserIdentityPolicy.isEmailVerified(status)
     }
+
+    /// The horizontal seller sheet passed IUO `userPhotoURL` into
+    /// `getThumbFor(url: String)`. A nil photo crashed before the image load.
+    /// Reuse the profile thumb helper so nil becomes the placeholder. Do not trim.
+    class func profileThumbURL(_ photoURL: String?) -> String {
+        return ProfilePhotoPolicy.thumbURL(photoURL)
+    }
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -62,7 +69,7 @@ class HLSellerHorizontalViewController: BaseViewController {
     }
     func initData(){
         
-        let thumb = CommonUtils.sharedInstance.getThumbFor(url: user.userPhotoURL)
+        let thumb = HLSellerHorizontalViewController.profileThumbURL(user.userPhotoURL)
         profileImage.loadImageFromURL(urlString: thumb)
         sellerNameLabel.text = user.userNick
         sellerLocationLabel.text = user.userLocationName

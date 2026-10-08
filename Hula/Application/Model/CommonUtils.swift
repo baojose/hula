@@ -2168,7 +2168,8 @@ struct ProfilePhotoPolicy {
         return storedURL(photoURL)
     }
 
-    /// viewDidAppear thumb. Nil and "" follow `getThumbFor` (placeholder thumb).
+    /// viewDidAppear thumb, plus seller info and the horizontal seller sheet.
+    /// Nil and "" follow `getThumbFor` (placeholder thumb). Do not trim.
     static func thumbURL(_ photoURL: String?) -> String {
         return CommonUtils.sharedInstance.getThumbFor(url: storedURL(photoURL))
     }
