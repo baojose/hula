@@ -75,6 +75,13 @@ class HLSellerInfoViewController: BaseViewController, UITableViewDelegate, UITab
         return UserIdentityPolicy.hasUserId(userId)
     }
 
+    /// Seller info passed IUO `userPhotoURL` into `getThumbFor(url: String)`.
+    /// A nil photo crashed before the image load. Reuse the profile thumb
+    /// helper so nil becomes the placeholder. Do not trim.
+    class func profileThumbURL(_ photoURL: String?) -> String {
+        return ProfilePhotoPolicy.thumbURL(photoURL)
+    }
+
     /// Seller "other items" used `userProducts[indexPath.row]` after a background
     /// reload. Stale rows must skip instead of crashing the seller sheet.
     class func productDictionary(at index: Int, in products: NSArray?) -> NSDictionary? {
@@ -109,7 +116,7 @@ class HLSellerInfoViewController: BaseViewController, UITableViewDelegate, UITab
     }
     func initData(){
         
-        let thumb = CommonUtils.sharedInstance.getThumbFor(url: user.userPhotoURL)
+        let thumb = HLSellerInfoViewController.profileThumbURL(user.userPhotoURL)
         profileImage.loadImageFromURL(urlString: thumb)
         sellerNameLabel.text = CommonUtils.displayNick(user.userNick)
         self.declineTradeBtn.isHidden = true
