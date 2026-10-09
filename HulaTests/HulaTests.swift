@@ -8288,6 +8288,142 @@ class HulaTests: XCTestCase {
         )
     }
 
+    /// Seller info and product detail passed IUO `user.userId` into
+    /// `amITradingWith`, `amIOfferedToTradeWith`, and `getTradeWith` (`String`).
+    /// A nil id crashed after the photo line and again on Trade, Accept, and
+    /// Decline. Nil becomes "" so an empty owner or other id still matches.
+    /// Whitespace is kept. `idsMatch` would treat that nil as nobody.
+    func testNilSellerIdMatchesEmptyTradeParticipant() {
+        let dm = HLDataManager.sharedInstance
+        let previousCurrent = dm.arrCurrentTrades
+        let previousAll = dm.arrTrades
+        let previousUserId = HulaUser.sharedInstance.userId
+        defer {
+            dm.arrCurrentTrades = previousCurrent
+            dm.arrTrades = previousAll
+            HulaUser.sharedInstance.userId = previousUserId
+        }
+
+        let seller = HulaUser()
+        seller.userId = nil
+
+        XCTAssertEqual(SellerTradeLookupPolicy.userId(seller.userId), "")
+        XCTAssertEqual(SellerTradeLookupPolicy.userId(nil), "")
+        XCTAssertEqual(SellerTradeLookupPolicy.userId(""), "")
+        XCTAssertEqual(SellerTradeLookupPolicy.userId(" "), " ")
+        XCTAssertEqual(SellerTradeLookupPolicy.userId(" me"), " me")
+        XCTAssertEqual(SessionWritePolicy.stringValue(nil), SellerTradeLookupPolicy.userId(nil))
+        XCTAssertFalse(TradeTurnPolicy.idsMatch(nil, ""))
+        XCTAssertFalse(TradeTurnPolicy.idsMatch(seller.userId, ""))
+        XCTAssertFalse(TradeTurnPolicy.idsMatch(nil, nil))
+
+        dm.arrTrades = []
+        dm.arrCurrentTrades = [
+            [
+                "_id": "empty-owner",
+                "owner_id": "",
+                "other_id": "peer",
+                "status": "active"
+            ] as NSDictionary,
+            [
+                "_id": "space-owner",
+                "owner_id": " ",
+                "other_id": "x",
+                "status": "active"
+            ] as NSDictionary,
+            [
+                "_id": "real",
+                "owner_id": "alice",
+                "other_id": "bob",
+                "status": "active"
+            ] as NSDictionary,
+            [
+                "_id": "null-owner",
+                "owner_id": NSNull(),
+                "other_id": NSNull(),
+                "status": "active"
+            ] as NSDictionary
+        ]
+
+        XCTAssertTrue(dm.amITradingWith(seller.userId))
+        XCTAssertTrue(dm.amITradingWith(nil))
+        XCTAssertTrue(dm.amITradingWith(""))
+        XCTAssertTrue(dm.amITradingWith(" "))
+        XCTAssertTrue(dm.amITradingWith("alice"))
+        XCTAssertTrue(dm.amITradingWith("bob"))
+        XCTAssertTrue(dm.amITradingWith("peer"))
+        XCTAssertFalse(dm.amITradingWith("dave"))
+        XCTAssertFalse(dm.amITradingWith(" me"))
+        XCTAssertFalse(dm.amITradingWith("alice "))
+
+        XCTAssertEqual(dm.getTradeWith(seller.userId), "empty-owner")
+        XCTAssertEqual(dm.getTradeWith(nil), "empty-owner")
+        XCTAssertEqual(dm.getTradeWith(""), "empty-owner")
+        XCTAssertEqual(dm.getTradeWith(" "), "space-owner")
+        XCTAssertEqual(dm.getTradeWith("alice"), "real")
+        XCTAssertEqual(dm.getTradeWith("bob"), "real")
+        XCTAssertEqual(dm.getTradeWith("dave"), "")
+        XCTAssertEqual(dm.getTradeWith(" me"), "")
+
+        dm.arrCurrentTrades = [
+            [
+                "_id": "pend-empty",
+                "owner_id": "me",
+                "other_id": "",
+                "status": "pending"
+            ] as NSDictionary,
+            [
+                "_id": "pend-space",
+                "owner_id": "me",
+                "other_id": " ",
+                "status": "pending"
+            ] as NSDictionary,
+            [
+                "_id": "pend-alice",
+                "owner_id": "me",
+                "other_id": "alice",
+                "status": "active"
+            ] as NSDictionary
+        ]
+        XCTAssertTrue(dm.amIOfferedToTradeWith(seller.userId))
+        XCTAssertTrue(dm.amIOfferedToTradeWith(nil))
+        XCTAssertTrue(dm.amIOfferedToTradeWith(""))
+        XCTAssertTrue(dm.amIOfferedToTradeWith(" "))
+        XCTAssertFalse(dm.amIOfferedToTradeWith("alice"))
+        XCTAssertFalse(dm.amIOfferedToTradeWith(" me"))
+        XCTAssertEqual(dm.getTradeWith(seller.userId), "pend-empty")
+        XCTAssertEqual(dm.getTradeWith(" "), "pend-space")
+        XCTAssertEqual(dm.getTradeWith("alice"), "pend-alice")
+
+        HulaUser.sharedInstance.userId = "me"
+        dm.arrCurrentTrades = []
+        dm.arrTrades = [
+            [
+                "_id": "incoming-empty",
+                "owner_id": "",
+                "other_id": "me",
+                "status": "pending",
+                "other_agree": false
+            ] as NSDictionary,
+            [
+                "_id": "incoming-alice",
+                "owner_id": "alice",
+                "other_id": "me",
+                "status": "pending",
+                "other_agree": false
+            ] as NSDictionary
+        ]
+        XCTAssertFalse(dm.amIOfferedToTradeWith(seller.userId))
+        XCTAssertFalse(dm.amIOfferedToTradeWith(nil))
+        XCTAssertFalse(dm.amIOfferedToTradeWith(""))
+        XCTAssertFalse(dm.amIOfferedToTradeWith(" "))
+        XCTAssertEqual(dm.getTradeWith(nil), "")
+        XCTAssertEqual(dm.getTradeWith(""), "")
+        XCTAssertTrue(dm.amIOfferedToTradeWith("alice"))
+        XCTAssertEqual(dm.getTradeWith("alice"), "incoming-alice")
+        XCTAssertFalse(dm.amIOfferedToTradeWith(" me"))
+    }
+
     private func tradeReadyFixture(
         ownerId: String,
         otherId: String,

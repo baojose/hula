@@ -17,6 +17,18 @@ extension NSMutableData {
     }
 }
 
+/// Seller info and product detail passed IUO `user.userId` into
+/// `amITradingWith`, `amIOfferedToTradeWith`, and `getTradeWith` (`String`).
+/// A nil id crashed `initData` after the photo line and again on Trade,
+/// Accept, and Decline. Nil becomes "" so an empty `owner_id` / `other_id`
+/// still matches. Do not trim. Do not use `TradeTurnPolicy.idsMatch`
+/// (nil must not match "").
+struct SellerTradeLookupPolicy {
+    static func userId(_ userId: String?) -> String {
+        return SessionWritePolicy.stringValue(userId)
+    }
+}
+
 class HLDataManager: NSObject {
     
     var currentUser: HulaUser!
@@ -506,28 +518,29 @@ class HLDataManager: NSObject {
         isInSwapVC = false
     }
     
-    func amITradingWith(_ user_id: String) -> Bool{
+    func amITradingWith(_ user_id: String?) -> Bool{
+        let lookupId = SellerTradeLookupPolicy.userId(user_id)
         for tr in SessionListPolicy.trades(arrCurrentTrades) {
-            if let owner = tr.object(forKey: "owner_id") as? String, owner == user_id {
+            if let owner = tr.object(forKey: "owner_id") as? String, owner == lookupId {
                 return true
             }
-            if let other = tr.object(forKey: "other_id") as? String, other == user_id {
+            if let other = tr.object(forKey: "other_id") as? String, other == lookupId {
                 return true
             }
         }
         return false
     }
     
-    func getTradeWith(_ user_id: String) -> String{
+    func getTradeWith(_ user_id: String?) -> String{
         return PendingOfferPolicy.tradeId(
-            withUser: user_id,
+            withUser: SellerTradeLookupPolicy.userId(user_id),
             currentUserId: HulaUser.sharedInstance.userId ?? "",
             currentTrades: arrCurrentTrades ?? [],
             allTrades: arrTrades ?? [])
     }
-    func amIOfferedToTradeWith(_ user_id: String) -> Bool{
+    func amIOfferedToTradeWith(_ user_id: String?) -> Bool{
         return PendingOfferPolicy.isOffered(
-            withUser: user_id,
+            withUser: SellerTradeLookupPolicy.userId(user_id),
             currentUserId: HulaUser.sharedInstance.userId ?? "",
             currentTrades: arrCurrentTrades ?? [],
             allTrades: arrTrades ?? [])
