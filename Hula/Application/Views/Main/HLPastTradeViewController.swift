@@ -47,6 +47,13 @@ class HLPastTradeViewController: UIViewController, UICollectionViewDelegate, UIC
     class func product(at index: Int, in products: [HulaProduct]) -> HulaProduct? {
         return HLBarterScreenViewController.product(at: index, in: products)
     }
+
+    /// Past Trades cells passed IUO `productImage` into `getThumbFor(url: String)`.
+    /// A nil image crashed before the thumb loaded. Reuse the profile thumb
+    /// helper so nil becomes the placeholder. Do not trim.
+    class func productThumbURL(_ image: String?) -> String {
+        return ProfilePhotoPolicy.thumbURL(image)
+    }
     
     
     override func viewDidLoad() {
@@ -145,7 +152,7 @@ class HLPastTradeViewController: UIViewController, UICollectionViewDelegate, UIC
         
         cell.label.text = product.productName
         
-        let thumb = CommonUtils.sharedInstance.getThumbFor(url: product.productImage)
+        let thumb = HLPastTradeViewController.productThumbURL(product.productImage)
         cell.image.loadImageFromURL(urlString: thumb)
         
         cell.isHidden = false
