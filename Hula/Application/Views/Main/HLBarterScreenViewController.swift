@@ -1288,7 +1288,7 @@ extension HLBarterScreenViewController: KDDragAndDropCollectionViewDataSource, U
         cell.label.text = product.productName
         //print(product.productImage)
         
-        let thumb = commonUtils.getThumbFor(url: product.productImage)
+        let thumb = HLBarterScreenViewController.productThumbURL(product.productImage)
         cell.image.loadImageFromURL(urlString: thumb)
         //print(product.tradeStatus)
         if (product.tradeStatus != 0){
@@ -1469,6 +1469,13 @@ extension HLBarterScreenViewController: KDDragAndDropCollectionViewDataSource, U
             return nil
         }
         return products[index]
+    }
+
+    /// Barter cells passed IUO `productImage` into `getThumbFor(url: String)`.
+    /// A nil image crashed before the thumb loaded. Reuse the profile thumb
+    /// helper so nil becomes the placeholder. Do not trim.
+    class func productThumbURL(_ image: String?) -> String {
+        return ProfilePhotoPolicy.thumbURL(image)
     }
 
     /// `insert(_:at:)` allows `0...count`. Drag can send a path past the end.

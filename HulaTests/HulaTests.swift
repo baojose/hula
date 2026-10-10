@@ -8424,6 +8424,67 @@ class HulaTests: XCTestCase {
         XCTAssertFalse(dm.amIOfferedToTradeWith(" me"))
     }
 
+    /// Barter cells and Past Trades passed IUO `productImage` into
+    /// `getThumbFor(url: String)`. A nil image crashed before the thumb loaded.
+    /// Both screens reuse ProfilePhotoPolicy.thumbURL. Nil and "" become the
+    /// placeholder. Whitespace is kept. Home, search, and My Products already
+    /// go through listingImageURL and are left alone.
+    func testNilProductImageUsesPlaceholderThumbOnBarterAndPastTrades() {
+        let product = HulaProduct()
+        product.productImage = nil
+
+        XCTAssertEqual(HLBarterScreenViewController.productThumbURL(product.productImage), HulaConstants.noProductThumb)
+        XCTAssertEqual(HLPastTradeViewController.productThumbURL(product.productImage), HulaConstants.noProductThumb)
+        XCTAssertEqual(HLBarterScreenViewController.productThumbURL(nil), HulaConstants.noProductThumb)
+        XCTAssertEqual(HLPastTradeViewController.productThumbURL(nil), HulaConstants.noProductThumb)
+        XCTAssertEqual(HLBarterScreenViewController.productThumbURL(""), HulaConstants.noProductThumb)
+        XCTAssertEqual(HLPastTradeViewController.productThumbURL(""), HulaConstants.noProductThumb)
+        XCTAssertEqual(
+            HLBarterScreenViewController.productThumbURL(HulaConstants.transparentImg),
+            HulaConstants.transparentImg
+        )
+        XCTAssertEqual(
+            HLPastTradeViewController.productThumbURL(HulaConstants.transparentImg),
+            HulaConstants.transparentImg
+        )
+        XCTAssertEqual(
+            HLBarterScreenViewController.productThumbURL("https://hula.trading/files/products/lamp.jpg"),
+            "https://hula.trading/files/products/tm_lamp.jpg"
+        )
+        XCTAssertEqual(
+            HLPastTradeViewController.productThumbURL("https://hula.trading/files/products/lamp.jpg"),
+            HLBarterScreenViewController.productThumbURL("https://hula.trading/files/products/lamp.jpg")
+        )
+        XCTAssertEqual(
+            HLBarterScreenViewController.productThumbURL("https://hula.trading/files/products/lamp.jpg"),
+            ProfilePhotoPolicy.thumbURL("https://hula.trading/files/products/lamp.jpg")
+        )
+        XCTAssertEqual(
+            HLPastTradeViewController.productThumbURL(product.productImage),
+            ProfilePhotoPolicy.thumbURL(nil)
+        )
+
+        XCTAssertEqual(HLBarterScreenViewController.productThumbURL(" "), CommonUtils.sharedInstance.getThumbFor(url: " "))
+        XCTAssertEqual(
+            HLPastTradeViewController.productThumbURL(" "),
+            HLBarterScreenViewController.productThumbURL(" ")
+        )
+        XCTAssertNotEqual(HLBarterScreenViewController.productThumbURL(" "), HulaConstants.noProductThumb)
+        XCTAssertNotEqual(HLBarterScreenViewController.productThumbURL(" "), "")
+        XCTAssertEqual(
+            HLBarterScreenViewController.productThumbURL(" https://hula.trading/a.jpg "),
+            CommonUtils.sharedInstance.getThumbFor(url: " https://hula.trading/a.jpg ")
+        )
+        XCTAssertEqual(
+            HLPastTradeViewController.productThumbURL(" https://hula.trading/a.jpg "),
+            HLBarterScreenViewController.productThumbURL(" https://hula.trading/a.jpg ")
+        )
+        XCTAssertEqual(
+            HLMyProductsViewController.listingImageURL(product.productImage),
+            ""
+        )
+    }
+
     private func tradeReadyFixture(
         ownerId: String,
         otherId: String,
