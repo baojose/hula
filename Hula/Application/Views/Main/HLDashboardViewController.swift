@@ -50,6 +50,13 @@ class HLDashboardViewController: BaseViewController {
         return OnboardingTutorialPolicy.shouldShow(named: "dashboard_mix", in: tutorials)
     }
 
+    /// Lobby cells passed IUO `HulaUser.userId` into `userImageURL(userId: String)`.
+    /// A nil viewer id crashed before `myImage` loaded. Reuse the instance
+    /// builder so nil becomes "". Do not trim.
+    class func viewerImageURL(_ userId: String?) -> String {
+        return CommonUtils.sharedInstance.userImageURL(userId: userId)
+    }
+
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -380,7 +387,7 @@ extension HLDashboardViewController: UICollectionViewDelegate, UICollectionViewD
                 }
             }
             
-            cell.myImage.loadImageFromURL(urlString: CommonUtils.sharedInstance.userImageURL(userId: HulaUser.sharedInstance.userId))
+            cell.myImage.loadImageFromURL(urlString: HLDashboardViewController.viewerImageURL(HulaUser.sharedInstance.userId))
             cell.myImage.isHidden = false
             cell.middleArrows.isHidden = false
             cell.tradeNumber.textColor = HulaConstants.appMainColor

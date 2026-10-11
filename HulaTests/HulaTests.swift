@@ -8485,6 +8485,51 @@ class HulaTests: XCTestCase {
         )
     }
 
+    /// Dashboard lobby cells passed IUO `HulaUser.userId` into
+    /// `userImageURL(userId: String)`. A nil viewer id crashed before `myImage`
+    /// loaded. The instance builder now takes `String?` and maps a missing id
+    /// to "". Whitespace-only ids stay empty because path encoding already
+    /// rejects them. Do not add a second trim. Chat still passes `authorId`.
+    func testNilViewerIdDoesNotCrashDashboardAvatarURL() {
+        let viewer = HulaUser()
+        viewer.userId = nil
+        let encoded = HulaConstants.apiURL + "users/u%261/image"
+
+        XCTAssertEqual(CommonUtils.sharedInstance.userImageURL(userId: nil), "")
+        XCTAssertEqual(CommonUtils.sharedInstance.userImageURL(userId: viewer.userId), "")
+        XCTAssertEqual(HLDashboardViewController.viewerImageURL(nil), "")
+        XCTAssertEqual(HLDashboardViewController.viewerImageURL(viewer.userId), "")
+        XCTAssertEqual(HLDashboardViewController.viewerImageURL(""), "")
+        XCTAssertEqual(HLDashboardViewController.viewerImageURL("   "), "")
+        XCTAssertEqual(
+            HLDashboardViewController.viewerImageURL("   "),
+            CommonUtils.sharedInstance.userImageURL(userId: "   ")
+        )
+        XCTAssertEqual(
+            CommonUtils.sharedInstance.userImageURL(userId: "   "),
+            CommonUtils.userImageURL(apiBase: HulaConstants.apiURL, userId: "   ") ?? ""
+        )
+
+        XCTAssertEqual(CommonUtils.sharedInstance.userImageURL(userId: "u&1"), encoded)
+        XCTAssertEqual(HLDashboardViewController.viewerImageURL("u&1"), encoded)
+        XCTAssertEqual(
+            HLDashboardViewController.viewerImageURL(" u&1 "),
+            CommonUtils.userImageURL(apiBase: HulaConstants.apiURL, userId: " u&1 ") ?? ""
+        )
+        XCTAssertEqual(
+            CommonUtils.sharedInstance.userImageURL(userId: " u&1 "),
+            HLDashboardViewController.viewerImageURL(" u&1 ")
+        )
+        XCTAssertNotEqual(HLDashboardViewController.viewerImageURL(" "), encoded)
+        XCTAssertEqual(HLDashboardViewController.viewerImageURL(" "), "")
+
+        XCTAssertEqual(
+            CommonUtils.sharedInstance.userImageURL(userId: ChatMessageOwnershipPolicy.authorId(nil)),
+            ""
+        )
+        XCTAssertEqual(ChatMessageOwnershipPolicy.authorId(NSNull()), "")
+    }
+
     private func tradeReadyFixture(
         ownerId: String,
         otherId: String,

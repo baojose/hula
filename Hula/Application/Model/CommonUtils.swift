@@ -163,7 +163,10 @@ class CommonUtils: NSObject, EasyTipViewDelegate, UIGestureRecognizerDelegate {
         return index
     }
 
-    func userImageURL(userId: String) -> String{
+    /// Lobby cells passed IUO `HulaUser.userId` into this method. A nil id
+    /// crashed before `myImage` loaded. The static builder already takes
+    /// `String?`; a missing id becomes "". Do not add a second trim.
+    func userImageURL(userId: String?) -> String{
         return CommonUtils.userImageURL(apiBase: HulaConstants.apiURL, userId: userId) ?? ""
     }
     func productImageURL(productId: String) -> String{
