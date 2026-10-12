@@ -8530,6 +8530,71 @@ class HulaTests: XCTestCase {
         XCTAssertEqual(ChatMessageOwnershipPolicy.authorId(NSNull()), "")
     }
 
+    /// Complete-profile loads the in-progress product image when the local
+    /// capture is nil. IUO `productImage` was passed into
+    /// `loadImageFromURL(urlString: String)` and crashed. The helper returns
+    /// the full URL. Nil and "" become "". Whitespace is kept. Do not route
+    /// through `getThumbFor` or `productThumbURL`. Home, search, and My
+    /// Products listing thumbs stay on listingImageURL. Instance
+    /// `productImageURL(productId:)` stays `String`.
+    func testNilProductImageUsesFullURLOnCompleteProfile() {
+        let product = HulaProduct()
+        product.productImage = nil
+        let full = "https://hula.trading/files/products/lamp.jpg"
+
+        XCTAssertEqual(HLCompleteProductProfileViewController.referenceImageURL(product.productImage), "")
+        XCTAssertEqual(HLCompleteProductProfileViewController.referenceImageURL(nil), "")
+        XCTAssertEqual(HLCompleteProductProfileViewController.referenceImageURL(""), "")
+        XCTAssertEqual(
+            UIImageView.resolvedImageURL(from: HLCompleteProductProfileViewController.referenceImageURL(nil))?.absoluteString,
+            HulaConstants.noProductThumb
+        )
+        XCTAssertEqual(
+            UIImageView.resolvedImageURL(from: HLCompleteProductProfileViewController.referenceImageURL(""))?.absoluteString,
+            HulaConstants.noProductThumb
+        )
+
+        XCTAssertEqual(HLCompleteProductProfileViewController.referenceImageURL(full), full)
+        XCTAssertNotEqual(
+            HLCompleteProductProfileViewController.referenceImageURL(full),
+            HLBarterScreenViewController.productThumbURL(full)
+        )
+        XCTAssertNotEqual(
+            HLCompleteProductProfileViewController.referenceImageURL(nil),
+            HLPastTradeViewController.productThumbURL(nil)
+        )
+        XCTAssertEqual(
+            HLCompleteProductProfileViewController.referenceImageURL(HulaConstants.transparentImg),
+            HulaConstants.transparentImg
+        )
+        XCTAssertEqual(HLCompleteProductProfileViewController.referenceImageURL(" "), " ")
+        XCTAssertNotEqual(HLCompleteProductProfileViewController.referenceImageURL(" "), "")
+        XCTAssertNotEqual(
+            HLCompleteProductProfileViewController.referenceImageURL(" "),
+            HulaConstants.noProductThumb
+        )
+        XCTAssertEqual(
+            HLCompleteProductProfileViewController.referenceImageURL(" https://hula.trading/a.jpg "),
+            " https://hula.trading/a.jpg "
+        )
+        XCTAssertNotEqual(
+            HLCompleteProductProfileViewController.referenceImageURL(" https://hula.trading/a.jpg "),
+            CommonUtils.sharedInstance.getThumbFor(url: " https://hula.trading/a.jpg ")
+        )
+
+        XCTAssertEqual(HLMyProductsViewController.listingImageURL(product.productImage), "")
+        XCTAssertEqual(HLHomeViewController.listingImageURL(nil), "")
+        XCTAssertEqual(HLSearchResultViewController.listingImageURL(" kept"), " kept")
+        XCTAssertEqual(
+            CommonUtils.sharedInstance.productImageURL(productId: "p1"),
+            CommonUtils.productImageURL(apiBase: HulaConstants.apiURL, productId: "p1") ?? ""
+        )
+        XCTAssertNotEqual(
+            CommonUtils.sharedInstance.productImageURL(productId: "p1"),
+            HLCompleteProductProfileViewController.referenceImageURL("p1")
+        )
+    }
+
     private func tradeReadyFixture(
         ownerId: String,
         otherId: String,

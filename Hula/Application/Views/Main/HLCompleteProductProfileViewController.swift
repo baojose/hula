@@ -49,7 +49,7 @@ class HLCompleteProductProfileViewController: BaseViewController, UIScrollViewDe
         if productImage != nil{
             productReferenceImage.image = productImage
         } else{
-            productReferenceImage.loadImageFromURL(urlString: HLDataManager.sharedInstance.newProduct.productImage)
+            productReferenceImage.loadImageFromURL(urlString: HLCompleteProductProfileViewController.referenceImageURL(HLDataManager.sharedInstance.newProduct.productImage))
         }
         pageTitleLabel.attributedText = commonUtils.attributedStringWithTextSpacing(pageTitleLabel.text, 2.33)
 
@@ -185,6 +185,15 @@ class HLCompleteProductProfileViewController: BaseViewController, UIScrollViewDe
 
         let description = trimmedDescription.count > 0 ? trimmedDescription : priorDescription
         return (title, description)
+    }
+
+    /// The local capture is a `UIImage!`. When it is nil, the screen loads
+    /// the in-progress product's `productImage` (`String!`) into
+    /// `loadImageFromURL(urlString: String)`. A nil image crashed before the
+    /// request. This is the full URL, not a thumb. Nil becomes "". Do not
+    /// trim. Do not route through `getThumbFor` or `productThumbURL`.
+    class func referenceImageURL(_ image: String?) -> String {
+        return image ?? ""
     }
 
     /// Description field. `UITextField.text!` crashes when the outlet text is nil.
