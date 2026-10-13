@@ -58,6 +58,15 @@ class HLSettingViewController: BaseViewController {
     class func hasDisplayValue(_ value: String?) -> Bool {
         return UserIdentityPolicy.hasDisplayValue(value)
     }
+
+    /// The profile editor assigned IUO nick, email, name, bio, and zip into
+    /// non-optional `previous` (`String`) before opening the field editor.
+    /// A nil field crashed before the editor opened. Nil becomes "". Do not
+    /// trim. `hasDisplayValue` stays count > 1. Empty previous already opens
+    /// the editor (zip uses `count == 0` to offer the current location).
+    class func editorPreviousValue(_ value: String?) -> String {
+        return SessionWritePolicy.stringValue(value)
+    }
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -156,35 +165,35 @@ class HLSettingViewController: BaseViewController {
         case 1:
             // Name
             title = NSLocalizedString("Change your nickname", comment: "")
-            previous = userData.userNick
+            previous = HLSettingViewController.editorPreviousValue(userData.userNick)
             label = NSLocalizedString("Nickname", comment: "")
             item_toUpdate = "userNick"
             remChar = 40
         case 2:
             // Full name
             title = NSLocalizedString("Validate your email", comment: "")
-            previous = userData.userEmail
+            previous = HLSettingViewController.editorPreviousValue(userData.userEmail)
             label = NSLocalizedString("Email", comment: "")
             item_toUpdate = "userEmail"
             remChar = 120
         case 25:
             // Full name
             title = NSLocalizedString("Change your full name", comment: "")
-            previous = userData.userName
+            previous = HLSettingViewController.editorPreviousValue(userData.userName)
             label = NSLocalizedString("Full name", comment: "")
             item_toUpdate = "userName"
             remChar = 120
         case 3:
             // Bio
             title = NSLocalizedString("Change your bio", comment: "")
-            previous = userData.userBio
+            previous = HLSettingViewController.editorPreviousValue(userData.userBio)
             label = NSLocalizedString("Bio", comment: "")
             item_toUpdate = "userBio"
             remChar = 200
         case 4:
             // Location
             title = NSLocalizedString("Change zip code", comment: "")
-            previous = userData.zip
+            previous = HLSettingViewController.editorPreviousValue(userData.zip)
             label = NSLocalizedString("Zip code", comment: "")
             item_toUpdate = "zip"
             remChar = 80
