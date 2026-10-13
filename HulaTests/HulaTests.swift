@@ -8595,6 +8595,53 @@ class HulaTests: XCTestCase {
         )
     }
 
+    /// Settings copies nick, email, full name, bio, and zip into the field
+    /// editor's non-optional previous value. Those fields are implicitly
+    /// unwrapped, so a nil value crashed before the editor opened. Nil and
+    /// "" become "". Whitespace is kept. A one-character field is still the
+    /// previous value, but `hasDisplayValue` stays false until count > 1.
+    func testNilSettingsFieldDoesNotCrashEditorPreviousValue() {
+        let user = HulaUser()
+        user.userNick = nil
+        user.userEmail = nil
+        user.userName = nil
+        user.userBio = nil
+        user.zip = nil
+
+        XCTAssertEqual(HLSettingViewController.editorPreviousValue(user.userNick), "")
+        XCTAssertEqual(HLSettingViewController.editorPreviousValue(user.userEmail), "")
+        XCTAssertEqual(HLSettingViewController.editorPreviousValue(user.userName), "")
+        XCTAssertEqual(HLSettingViewController.editorPreviousValue(user.userBio), "")
+        XCTAssertEqual(HLSettingViewController.editorPreviousValue(user.zip), "")
+        XCTAssertEqual(HLSettingViewController.editorPreviousValue(nil), "")
+        XCTAssertEqual(HLSettingViewController.editorPreviousValue(""), "")
+        XCTAssertEqual(
+            HLSettingViewController.editorPreviousValue(user.userNick),
+            SessionWritePolicy.stringValue(user.userNick)
+        )
+        XCTAssertEqual(HLSettingViewController.editorPreviousValue(nil).characters.count, 0)
+
+        XCTAssertEqual(HLSettingViewController.editorPreviousValue(" "), " ")
+        XCTAssertNotEqual(HLSettingViewController.editorPreviousValue(" "), "")
+        XCTAssertEqual(HLSettingViewController.editorPreviousValue(" ").characters.count, 1)
+        XCTAssertEqual(HLSettingViewController.editorPreviousValue(" 94107 "), " 94107 ")
+        XCTAssertEqual(HLSettingViewController.editorPreviousValue("  nick"), "  nick")
+        XCTAssertEqual(HLSettingViewController.editorPreviousValue("a"), "a")
+        XCTAssertFalse(HLSettingViewController.hasDisplayValue("a"))
+        XCTAssertFalse(HLSettingViewController.hasDisplayValue(nil))
+        XCTAssertFalse(HLSettingViewController.hasDisplayValue(""))
+        XCTAssertFalse(HLSettingViewController.hasDisplayValue(" "))
+        XCTAssertFalse(UserIdentityPolicy.hasDisplayValue("a"))
+        XCTAssertTrue(HLSettingViewController.hasDisplayValue("ab"))
+        XCTAssertTrue(HLSettingViewController.hasDisplayValue("ok"))
+
+        XCTAssertEqual(HLSettingViewController.editorPreviousValue("ada"), "ada")
+        XCTAssertEqual(HLSettingViewController.editorPreviousValue("ada@hula.trading"), "ada@hula.trading")
+        XCTAssertEqual(HLSettingViewController.editorPreviousValue("Ada Lovelace"), "Ada Lovelace")
+        XCTAssertEqual(HLSettingViewController.editorPreviousValue("trades plants"), "trades plants")
+        XCTAssertEqual(HLSettingViewController.editorPreviousValue("94107"), "94107")
+    }
+
     private func tradeReadyFixture(
         ownerId: String,
         otherId: String,
