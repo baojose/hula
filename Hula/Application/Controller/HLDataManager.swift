@@ -607,7 +607,14 @@ class HLDataManager: NSObject {
     }
     
     
-    func getUserProfile(userId:String, taskCallback: @escaping (HulaUser, NSArray, NSArray) -> ()) {
+    /// Product detail passed IUO `productOwner`, and search user rows passed
+    /// IUO `productId`, into `userId: String`. A nil id crashed before the
+    /// profile request. `userProfileURL` already returns nil for blank or
+    /// unencodable ids, and this method returns without the callback. Do not
+    /// invent a success callback for a skipped request. Do not trim. Do not
+    /// change `userResourceURL` encoding. Product modal `getProduct` stays
+    /// `String`.
+    func getUserProfile(userId: String?, taskCallback: @escaping (HulaUser, NSArray, NSArray) -> ()) {
         //print("Getting user info...")
         guard let queryURL = HLDataManager.userProfileURL(apiBase: HulaConstants.apiURL, userId: userId) else {
             return
