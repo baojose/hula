@@ -8642,6 +8642,88 @@ class HulaTests: XCTestCase {
         XCTAssertEqual(HLSettingViewController.editorPreviousValue("94107"), "94107")
     }
 
+    /// Product detail passed IUO `productOwner` and search user rows passed
+    /// IUO `productId` into `getUserProfile(userId: String)`. A nil id crashed
+    /// before the request. Nil, blank, and whitespace-only ids skip without a
+    /// callback. Path encoding is unchanged, including its existing trim.
+    /// Product modal `getProduct` stays `String`.
+    func testNilUserIdSkipsProfileRequestWithoutCallback() {
+        let detailProduct = HulaProduct()
+        detailProduct.productOwner = nil
+        let searchUser = HulaProduct()
+        searchUser.productId = nil
+        searchUser.productCategoryId = "xx_user"
+        let base = "https://hula.trading/api/"
+        var callbacks = 0
+        let manager = HLDataManager.sharedInstance
+
+        manager.getUserProfile(userId: detailProduct.productOwner) { _, _, _ in
+            callbacks += 1
+        }
+        manager.getUserProfile(userId: searchUser.productId) { _, _, _ in
+            callbacks += 1
+        }
+        manager.getUserProfile(userId: nil) { _, _, _ in
+            callbacks += 1
+        }
+        manager.getUserProfile(userId: "") { _, _, _ in
+            callbacks += 1
+        }
+        manager.getUserProfile(userId: "   ") { _, _, _ in
+            callbacks += 1
+        }
+        manager.getUserProfile(userId: "\n") { _, _, _ in
+            callbacks += 1
+        }
+        XCTAssertEqual(callbacks, 0)
+
+        XCTAssertNil(HLDataManager.userProfileURL(apiBase: base, userId: detailProduct.productOwner))
+        XCTAssertNil(HLDataManager.userProfileURL(apiBase: base, userId: searchUser.productId))
+        XCTAssertNil(HLDataManager.userProfileURL(apiBase: base, userId: nil))
+        XCTAssertNil(HLDataManager.userProfileURL(apiBase: base, userId: ""))
+        XCTAssertNil(HLDataManager.userProfileURL(apiBase: base, userId: "   "))
+        XCTAssertNil(HLDataManager.userProfileURL(apiBase: base, userId: "\n"))
+        XCTAssertNil(CommonUtils.userResourceURL(apiBase: base, userId: "   "))
+
+        XCTAssertEqual(
+            HLDataManager.userProfileURL(apiBase: base, userId: "u&1"),
+            "https://hula.trading/api/users/u%261"
+        )
+        XCTAssertEqual(
+            HLDataManager.userProfileURL(apiBase: base, userId: "u&1"),
+            CommonUtils.userResourceURL(apiBase: base, userId: "u&1")
+        )
+        XCTAssertEqual(
+            HLDataManager.userProfileURL(apiBase: base, userId: " u&1 "),
+            CommonUtils.userResourceURL(apiBase: base, userId: " u&1 ")
+        )
+        XCTAssertEqual(
+            HLDataManager.userProfileURL(apiBase: base, userId: " u&1 "),
+            "https://hula.trading/api/users/u%261"
+        )
+        XCTAssertNotEqual(
+            HLDataManager.userProfileURL(apiBase: base, userId: " u&1 "),
+            "https://hula.trading/api/users/%20u%261%20"
+        )
+
+        detailProduct.productOwner = "owner/1"
+        XCTAssertEqual(
+            HLDataManager.userProfileURL(apiBase: base, userId: detailProduct.productOwner),
+            "https://hula.trading/api/users/owner%2F1"
+        )
+        searchUser.productId = "user=9"
+        XCTAssertEqual(
+            HLDataManager.userProfileURL(apiBase: base, userId: searchUser.productId),
+            "https://hula.trading/api/users/user%3D9"
+        )
+
+        XCTAssertNil(HLDataManager.productURL(apiBase: base, productId: nil))
+        XCTAssertEqual(
+            HLDataManager.productURL(apiBase: base, productId: "p&1"),
+            "https://hula.trading/api/products/p%261"
+        )
+    }
+
     private func tradeReadyFixture(
         ownerId: String,
         otherId: String,
