@@ -612,8 +612,8 @@ class HLDataManager: NSObject {
     /// profile request. `userProfileURL` already returns nil for blank or
     /// unencodable ids, and this method returns without the callback. Do not
     /// invent a success callback for a skipped request. Do not trim. Do not
-    /// change `userResourceURL` encoding. Product modal `getProduct` stays
-    /// `String`.
+    /// change `userResourceURL` encoding. Product modal `getProduct` is also
+    /// `String?`. Past-trade `getProduct` stays `String`.
     func getUserProfile(userId: String?, taskCallback: @escaping (HulaUser, NSArray, NSArray) -> ()) {
         //print("Getting user info...")
         guard let queryURL = HLDataManager.userProfileURL(apiBase: HulaConstants.apiURL, userId: userId) else {
@@ -647,7 +647,14 @@ class HLDataManager: NSObject {
         })
     }
     
-    func getProduct(productId:String, taskCallback: @escaping (HulaProduct) -> ()) {
+    /// Product modal `refreshProduct` passed IUO `product.productId` into
+    /// `productId: String`. A nil id crashed before the product request.
+    /// `productURL` already returns nil for blank or unencodable ids, and this
+    /// method returns without the callback. Do not invent a success callback
+    /// for a skipped request. Do not trim. Do not change `productResourceURL`
+    /// encoding. Past-trade `getProduct` stays `String` and still callbacks an
+    /// empty product when the URL is missing.
+    func getProduct(productId: String?, taskCallback: @escaping (HulaProduct) -> ()) {
         //print("Getting user info...")
         guard let queryURL = HLDataManager.productURL(apiBase: HulaConstants.apiURL, productId: productId) else {
             return

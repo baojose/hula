@@ -8646,7 +8646,8 @@ class HulaTests: XCTestCase {
     /// IUO `productId` into `getUserProfile(userId: String)`. A nil id crashed
     /// before the request. Nil, blank, and whitespace-only ids skip without a
     /// callback. Path encoding is unchanged, including its existing trim.
-    /// Product modal `getProduct` stays `String`.
+    /// Product modal `getProduct` is also `String?`. Past-trade `getProduct`
+    /// stays `String`.
     func testNilUserIdSkipsProfileRequestWithoutCallback() {
         let detailProduct = HulaProduct()
         detailProduct.productOwner = nil
@@ -8722,6 +8723,119 @@ class HulaTests: XCTestCase {
             HLDataManager.productURL(apiBase: base, productId: "p&1"),
             "https://hula.trading/api/products/p%261"
         )
+    }
+
+    /// Product modal `refreshProduct` passed IUO `product.productId` into
+    /// `getProduct(productId: String)`. A nil id crashed before the request.
+    /// Nil, blank, and whitespace-only ids skip without a callback. Path
+    /// encoding is unchanged, including its existing trim. Past-trade
+    /// `getProduct` stays `String`: a missing URL still callbacks an empty
+    /// product when the viewer has an id, and stays silent when they do not.
+    func testNilProductIdSkipsProductRequestWithoutCallback() {
+        let modalProduct = HulaProduct()
+        modalProduct.productId = nil
+        let base = "https://hula.trading/api/"
+        var callbacks = 0
+        let manager = HLDataManager.sharedInstance
+
+        manager.getProduct(productId: modalProduct.productId) { _ in
+            callbacks += 1
+        }
+        manager.getProduct(productId: nil) { _ in
+            callbacks += 1
+        }
+        manager.getProduct(productId: "") { _ in
+            callbacks += 1
+        }
+        manager.getProduct(productId: "   ") { _ in
+            callbacks += 1
+        }
+        manager.getProduct(productId: "\n") { _ in
+            callbacks += 1
+        }
+        XCTAssertEqual(callbacks, 0)
+
+        XCTAssertNil(HLDataManager.productURL(apiBase: base, productId: modalProduct.productId))
+        XCTAssertNil(HLDataManager.productURL(apiBase: base, productId: nil))
+        XCTAssertNil(HLDataManager.productURL(apiBase: base, productId: ""))
+        XCTAssertNil(HLDataManager.productURL(apiBase: base, productId: "   "))
+        XCTAssertNil(HLDataManager.productURL(apiBase: base, productId: "\n"))
+        XCTAssertNil(CommonUtils.productResourceURL(apiBase: base, productId: "   "))
+        XCTAssertNil(CommonUtils.productResourceURL(apiBase: base, productId: modalProduct.productId))
+
+        XCTAssertEqual(
+            HLDataManager.productURL(apiBase: base, productId: "p&1"),
+            "https://hula.trading/api/products/p%261"
+        )
+        XCTAssertEqual(
+            HLDataManager.productURL(apiBase: base, productId: "p&1"),
+            CommonUtils.productResourceURL(apiBase: base, productId: "p&1")
+        )
+        XCTAssertEqual(
+            HLDataManager.productURL(apiBase: base, productId: " p&1 "),
+            CommonUtils.productResourceURL(apiBase: base, productId: " p&1 ")
+        )
+        XCTAssertEqual(
+            HLDataManager.productURL(apiBase: base, productId: " p&1 "),
+            "https://hula.trading/api/products/p%261"
+        )
+        XCTAssertNotEqual(
+            HLDataManager.productURL(apiBase: base, productId: " p&1 "),
+            "https://hula.trading/api/products/%20p%261%20"
+        )
+
+        modalProduct.productId = "prod/1"
+        XCTAssertEqual(
+            HLDataManager.productURL(apiBase: base, productId: modalProduct.productId),
+            "https://hula.trading/api/products/prod%2F1"
+        )
+        XCTAssertEqual(
+            HLDataManager.productURL(apiBase: base, productId: modalProduct.productId),
+            CommonUtils.productResourceURL(apiBase: base, productId: "prod/1")
+        )
+
+        XCTAssertNil(HLPastTradeViewController.productURL(apiBase: base, productId: nil))
+        XCTAssertNil(HLPastTradeViewController.productURL(apiBase: base, productId: ""))
+        XCTAssertNil(HLPastTradeViewController.productURL(apiBase: base, productId: "   "))
+        XCTAssertEqual(
+            HLPastTradeViewController.productURL(apiBase: base, productId: "p&1"),
+            "https://hula.trading/api/products/p%261"
+        )
+        XCTAssertEqual(
+            HLPastTradeViewController.productURL(apiBase: base, productId: "p&1"),
+            HLDataManager.productURL(apiBase: base, productId: "p&1")
+        )
+
+        let previousUserId = HulaUser.sharedInstance.userId
+        defer {
+            HulaUser.sharedInstance.userId = previousUserId
+        }
+        let past = HLPastTradeViewController()
+        var pastCallbacks = 0
+        HulaUser.sharedInstance.userId = nil
+        past.getProduct(productId: "") { _ in
+            pastCallbacks += 1
+        }
+        past.getProduct(productId: "   ") { _ in
+            pastCallbacks += 1
+        }
+        XCTAssertEqual(pastCallbacks, 0)
+
+        HulaUser.sharedInstance.userId = "viewer"
+        past.getProduct(productId: "") { product in
+            pastCallbacks += 1
+            XCTAssertEqual(product.productId, "")
+            XCTAssertEqual(product.productName, "")
+        }
+        past.getProduct(productId: "   ") { product in
+            pastCallbacks += 1
+            XCTAssertEqual(product.productId, "")
+        }
+        past.getProduct(productId: "\n") { product in
+            pastCallbacks += 1
+            XCTAssertEqual(product.productId, "")
+        }
+        XCTAssertEqual(pastCallbacks, 3)
     }
 
     private func tradeReadyFixture(
