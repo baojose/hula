@@ -8838,6 +8838,147 @@ class HulaTests: XCTestCase {
         XCTAssertEqual(pastCallbacks, 3)
     }
 
+    /// Product modal video upload passed IUO `product.productId` into
+    /// `uploadVideo(productId: String)`. A nil id was interpolated as the
+    /// literal "nil" in multipart `product_id`. Nil callbacks failure before
+    /// the body is built, including when the video file is present. Do not
+    /// trim. `""` and `" "` still upload as themselves and are not
+    /// percent-encoded. `requestVideoURL` still encodes its path. Product
+    /// fetch still skips nil with no callback. Past-trade `getProduct` stays
+    /// `String`.
+    func testNilProductIdFailsVideoUploadBeforeMultipartBody() {
+        let modalProduct = HulaProduct()
+        modalProduct.productId = nil
+        XCTAssertNil(HLDataManager.MediaUploadPolicy.productIdField(modalProduct.productId))
+        XCTAssertNil(HLDataManager.MediaUploadPolicy.productIdField(nil))
+        XCTAssertNil(HLDataManager.MediaUploadPolicy.videoFormFields(productId: nil, tradeId: "t1"))
+        XCTAssertNil(HLDataManager.MediaUploadPolicy.videoFormFields(productId: modalProduct.productId, tradeId: ""))
+
+        XCTAssertEqual(HLDataManager.MediaUploadPolicy.productIdField(""), "")
+        XCTAssertEqual(HLDataManager.MediaUploadPolicy.productIdField(" "), " ")
+        XCTAssertEqual(HLDataManager.MediaUploadPolicy.productIdField("   "), "   ")
+        XCTAssertEqual(HLDataManager.MediaUploadPolicy.productIdField("\n"), "\n")
+        XCTAssertEqual(HLDataManager.MediaUploadPolicy.productIdField(" p&1 "), " p&1 ")
+        XCTAssertEqual(HLDataManager.MediaUploadPolicy.productIdField("prod/1"), "prod/1")
+        XCTAssertNotEqual(HLDataManager.MediaUploadPolicy.productIdField(" p&1 "), "p&1")
+        XCTAssertNotEqual(HLDataManager.MediaUploadPolicy.productIdField(" p&1 "), "p%261")
+        XCTAssertNotEqual(HLDataManager.MediaUploadPolicy.productIdField("prod/1"), "prod_1")
+
+        let emptyFields = HLDataManager.MediaUploadPolicy.videoFormFields(productId: "", tradeId: "t1")
+        XCTAssertEqual(emptyFields?["product_id"], "")
+        XCTAssertEqual(emptyFields?["trade_id"], "t1")
+        let spaceFields = HLDataManager.MediaUploadPolicy.videoFormFields(productId: " ", tradeId: " ")
+        XCTAssertEqual(spaceFields?["product_id"], " ")
+        XCTAssertEqual(spaceFields?["trade_id"], " ")
+        let paddedFields = HLDataManager.MediaUploadPolicy.videoFormFields(productId: " p&1 ", tradeId: "t&2")
+        XCTAssertEqual(paddedFields?["product_id"], " p&1 ")
+        XCTAssertEqual(paddedFields?["trade_id"], "t&2")
+
+        XCTAssertEqual(
+            VideoProofUploadPolicy.fileName(productId: "prod/1", tradeId: "t:1"),
+            "videoproof_prod_1_t_1.mov"
+        )
+        XCTAssertNil(HLProductModalViewController.requestVideoURL(
+            apiBase: "https://hula.trading/api/",
+            productId: nil,
+            tradeId: "t1"
+        ))
+        XCTAssertEqual(
+            HLProductModalViewController.requestVideoURL(
+                apiBase: "https://hula.trading/api/",
+                productId: "p/1",
+                tradeId: "t&2"
+            ),
+            "https://hula.trading/api/products/p%2F1/requestvideo/t%262"
+        )
+
+        let manager = HLDataManager.sharedInstance
+        guard let fields = paddedFields else {
+            XCTFail("padded product id must still be posted")
+            return
+        }
+        let raw: [UInt8] = [0x01, 0x02]
+        let payload = NSData(bytes: raw, length: raw.count) as Data
+        let body = manager.createBody(
+            parameters: fields,
+            boundary: "BOUND",
+            data: payload,
+            mimeType: "video/mp4",
+            filename: "video.mp4"
+        )
+        guard let text = String(data: body, encoding: .utf8) else {
+            XCTFail("multipart body was not UTF-8")
+            return
+        }
+        XCTAssertTrue(text.contains("name=\"product_id\"\r\n\r\n p&1 \r\n"))
+        XCTAssertTrue(text.contains("name=\"trade_id\"\r\n\r\nt&2\r\n"))
+        XCTAssertFalse(text.contains("name=\"product_id\"\r\n\r\nnil\r\n"))
+        XCTAssertFalse(text.contains("name=\"product_id\"\r\n\r\np%261\r\n"))
+        XCTAssertFalse(text.contains("name=\"product_id\"\r\n\r\np&1\r\n"))
+
+        guard let empty = emptyFields else {
+            XCTFail("empty product id must still be posted")
+            return
+        }
+        let emptyBody = manager.createBody(
+            parameters: empty,
+            boundary: "BOUND",
+            data: payload,
+            mimeType: "video/mp4",
+            filename: "video.mp4"
+        )
+        guard let emptyText = String(data: emptyBody, encoding: .utf8) else {
+            XCTFail("empty multipart body was not UTF-8")
+            return
+        }
+        XCTAssertTrue(emptyText.contains("name=\"product_id\"\r\n\r\n\r\n"))
+        XCTAssertFalse(emptyText.contains("name=\"product_id\"\r\n\r\nnil\r\n"))
+
+        var productCallbacks = 0
+        manager.getProduct(productId: nil) { _ in
+            productCallbacks += 1
+        }
+        XCTAssertEqual(productCallbacks, 0)
+
+        var callbacks = 0
+        manager.uploadVideo("/no/such/hula-video-proof.mp4", productId: modalProduct.productId, tradeId: "t1") { ok, json in
+            callbacks += 1
+            XCTAssertFalse(ok)
+            XCTAssertNil(json)
+        }
+        manager.uploadVideo("/no/such/hula-video-proof.mp4", productId: "prod-1", tradeId: "t1") { ok, json in
+            callbacks += 1
+            XCTAssertFalse(ok)
+            XCTAssertNil(json)
+        }
+        XCTAssertEqual(callbacks, 2)
+
+        let path = (NSTemporaryDirectory() as NSString).appendingPathComponent("hula-nil-product-video-proof.mp4")
+        let fileBytes = NSData(bytes: raw, length: raw.count)
+        XCTAssertTrue(fileBytes.write(toFile: path, atomically: true))
+        defer {
+            if FileManager.default.fileExists(atPath: path) {
+                do {
+                    try FileManager.default.removeItem(atPath: path)
+                } catch {
+                    XCTFail("could not remove temp video")
+                }
+            }
+        }
+        var presentFileCallbacks = 0
+        manager.uploadVideo(path, productId: modalProduct.productId, tradeId: "trade-1") { ok, json in
+            presentFileCallbacks += 1
+            XCTAssertFalse(ok)
+            XCTAssertNil(json)
+        }
+        manager.uploadVideo(path, productId: nil, tradeId: "") { ok, json in
+            presentFileCallbacks += 1
+            XCTAssertFalse(ok)
+            XCTAssertNil(json)
+        }
+        XCTAssertEqual(presentFileCallbacks, 2)
+    }
+
     private func tradeReadyFixture(
         ownerId: String,
         otherId: String,
