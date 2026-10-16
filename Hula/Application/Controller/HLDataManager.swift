@@ -653,7 +653,8 @@ class HLDataManager: NSObject {
     /// method returns without the callback. Do not invent a success callback
     /// for a skipped request. Do not trim. Do not change `productResourceURL`
     /// encoding. Past-trade `getProduct` stays `String` and still callbacks an
-    /// empty product when the URL is missing.
+    /// empty product when the URL is missing. Video upload `productId` is also
+    /// `String?`, but a nil id there callbacks failure instead of staying silent.
     func getProduct(productId: String?, taskCallback: @escaping (HulaProduct) -> ()) {
         //print("Getting user info...")
         guard let queryURL = HLDataManager.productURL(apiBase: HulaConstants.apiURL, productId: productId) else {
@@ -817,6 +818,22 @@ class HLDataManager: NSObject {
             }
             return showRecord
         }
+
+        /// Multipart `product_id`. Product modal upload passed IUO
+        /// `product.productId` into `productId: String`, so a nil id was
+        /// interpolated as the literal "nil". Nil must fail before the body
+        /// is built. Do not trim. `""` and `" "` still upload as themselves.
+        /// Do not percent-encode; `requestVideoURL` already encodes its path.
+        static func productIdField(_ productId: String?) -> String? {
+            return productId
+        }
+
+        static func videoFormFields(productId: String?, tradeId: String) -> [String: String]? {
+            guard let productIdField = productIdField(productId) else {
+                return nil
+            }
+            return ["product_id": productIdField, "trade_id": tradeId]
+        }
     }
 
     func uploadImage(_ image: UIImage, itemPosition: Int, taskCallback: @escaping (Bool, Any?) -> ()){
@@ -880,13 +897,22 @@ class HLDataManager: NSObject {
         task.resume()
     }
 
-    func uploadVideo(_ videoPath: String, productId:String, tradeId:String, taskCallback: @escaping (Bool, Any?) -> ()){
+    /// Product modal video upload passed IUO `product.productId` into
+    /// `productId: String`. Interpolating that optional writes the literal
+    /// "nil" into multipart `product_id`. A nil id callbacks failure before
+    /// the body is built. Do not trim. `""` and `" "` still upload. Do not
+    /// change `requestVideoURL` or past-trade `getProduct`.
+    func uploadVideo(_ videoPath: String, productId: String?, tradeId: String, taskCallback: @escaping (Bool, Any?) -> ()){
         let videoData = NSData(contentsOfFile: videoPath)
         if MediaUploadPolicy.shouldReportMissingPayload(dataAvailable: videoData != nil) {
             taskCallback(false, nil)
             return
         }
         guard let videoData = videoData else {
+            taskCallback(false, nil)
+            return
+        }
+        guard let fields = MediaUploadPolicy.videoFormFields(productId: productId, tradeId: tradeId) else {
             taskCallback(false, nil)
             return
         }
@@ -907,7 +933,7 @@ class HLDataManager: NSObject {
         if let token = HLDataManager.accessTokenHeaderValue(user.token) {
             request.setValue(token, forHTTPHeaderField: "x-access-token")
         }
-        let body = createBody(parameters: ["product_id": "\(productId)", "trade_id": "\(tradeId)"],
+        let body = createBody(parameters: fields,
                               boundary: boundary,
                               data: videoData as Data,
                               mimeType: "video/mp4",
