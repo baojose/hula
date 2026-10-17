@@ -8979,6 +8979,97 @@ class HulaTests: XCTestCase {
         XCTAssertEqual(presentFileCallbacks, 2)
     }
 
+    /// Barter product selection assigned IUO `thisTrade.tradeId` (`String!`) to
+    /// `HLProductModalViewController.currentTradeId` (`String`, default "").
+    /// A nil trade id crashed before the modal was presented. Nil maps to "".
+    /// Do not trim. `liveBarterRequestURL` still skips a blank id.
+    /// `isVideoRequested` / `videoURL` still trim-reject blank. `uploadVideo`
+    /// still takes a non-optional trade id and posts it untrimmed.
+    /// `other_agree` / `isTradeAgreed` stay non-optional Bool defaults false.
+    func testNilTradeIdDoesNotCrashProductModalSelection() {
+        let trade = HulaTrade()
+        trade.tradeId = nil
+        XCTAssertFalse(trade.other_agree)
+
+        let modal = HLProductModalViewController()
+        XCTAssertEqual(modal.currentTradeId, "")
+        XCTAssertFalse(modal.isTradeAgreed)
+
+        modal.currentTradeId = HLBarterScreenViewController.modalTradeId(trade.tradeId)
+        modal.isTradeAgreed = trade.other_agree
+        XCTAssertEqual(modal.currentTradeId, "")
+        XCTAssertEqual(modal.currentTradeId.characters.count, 0)
+        XCTAssertFalse(modal.isTradeAgreed)
+
+        XCTAssertEqual(HLBarterScreenViewController.modalTradeId(nil), "")
+        XCTAssertEqual(HLBarterScreenViewController.modalTradeId(""), "")
+        XCTAssertEqual(HLBarterScreenViewController.modalTradeId(" "), " ")
+        XCTAssertNotEqual(HLBarterScreenViewController.modalTradeId(" "), "")
+        XCTAssertEqual(HLBarterScreenViewController.modalTradeId(" ").characters.count, 1)
+        XCTAssertEqual(HLBarterScreenViewController.modalTradeId("   "), "   ")
+        XCTAssertEqual(HLBarterScreenViewController.modalTradeId("\n"), "\n")
+        XCTAssertEqual(HLBarterScreenViewController.modalTradeId(" t1 "), " t1 ")
+        XCTAssertNotEqual(HLBarterScreenViewController.modalTradeId(" t1 "), "t1")
+        XCTAssertEqual(HLBarterScreenViewController.modalTradeId("t1"), "t1")
+
+        trade.tradeId = " t1 "
+        trade.other_agree = true
+        modal.currentTradeId = HLBarterScreenViewController.modalTradeId(trade.tradeId)
+        modal.isTradeAgreed = trade.other_agree
+        XCTAssertEqual(modal.currentTradeId, " t1 ")
+        XCTAssertTrue(modal.isTradeAgreed)
+
+        trade.tradeId = ""
+        modal.currentTradeId = HLBarterScreenViewController.modalTradeId(trade.tradeId)
+        XCTAssertEqual(modal.currentTradeId, "")
+
+        let base = "https://hula.trading/api/"
+        XCTAssertNil(HLBarterScreenViewController.liveBarterRequestURL(apiBase: base, tradeId: nil))
+        XCTAssertNil(HLBarterScreenViewController.liveBarterRequestURL(apiBase: base, tradeId: ""))
+        XCTAssertNil(HLBarterScreenViewController.liveBarterRequestURL(apiBase: base, tradeId: " "))
+        XCTAssertNil(HLBarterScreenViewController.liveBarterRequestURL(apiBase: base, tradeId: "   "))
+        XCTAssertNil(HLBarterScreenViewController.liveBarterRequestURL(apiBase: base, tradeId: "\n"))
+        XCTAssertEqual(
+            HLBarterScreenViewController.liveBarterRequestURL(apiBase: base, tradeId: " t1 "),
+            "https://hula.trading/api/live_barter/t1"
+        )
+        XCTAssertEqual(
+            HLBarterScreenViewController.liveBarterRequestURL(apiBase: base, tradeId: "t&1"),
+            "https://hula.trading/api/live_barter/t%261"
+        )
+        XCTAssertNotEqual(
+            HLBarterScreenViewController.modalTradeId(" t1 "),
+            "t1"
+        )
+
+        XCTAssertFalse(HulaProduct.isVideoRequested(["t1": true], forTradeId: nil))
+        XCTAssertFalse(HulaProduct.isVideoRequested(["t1": true], forTradeId: ""))
+        XCTAssertFalse(HulaProduct.isVideoRequested(["t1": true], forTradeId: " "))
+        XCTAssertFalse(HulaProduct.isVideoRequested(["t1": true], forTradeId: "\n"))
+        XCTAssertFalse(HulaProduct.isVideoRequested(nil, forTradeId: "t1"))
+        XCTAssertTrue(HulaProduct.isVideoRequested(["t1": true], forTradeId: " t1 "))
+        XCTAssertFalse(HulaProduct.isVideoRequested([" t1 ": true], forTradeId: " t1 "))
+        XCTAssertEqual(HulaProduct.videoURL(["t1": "http://v"], forTradeId: nil), "")
+        XCTAssertEqual(HulaProduct.videoURL(["t1": "http://v"], forTradeId: " "), "")
+        XCTAssertEqual(HulaProduct.videoURL(nil, forTradeId: "t1"), "")
+        XCTAssertEqual(HulaProduct.videoURL(["t1": "http://v"], forTradeId: " t1 "), "http://v")
+        XCTAssertEqual(HulaProduct.videoURL([" t1 ": "http://v"], forTradeId: " t1 "), "")
+
+        let paddedFields = HLDataManager.MediaUploadPolicy.videoFormFields(productId: "p1", tradeId: " t1 ")
+        XCTAssertEqual(paddedFields?["product_id"], "p1")
+        XCTAssertEqual(paddedFields?["trade_id"], " t1 ")
+        XCTAssertNil(HLDataManager.MediaUploadPolicy.videoFormFields(productId: nil, tradeId: " t1 "))
+        XCTAssertEqual(
+            VideoProofUploadPolicy.fileName(productId: "p", tradeId: HLBarterScreenViewController.modalTradeId(nil)),
+            "videoproof_p_.mov"
+        )
+        XCTAssertEqual(
+            VideoProofUploadPolicy.fileName(productId: "p", tradeId: HLBarterScreenViewController.modalTradeId(" t/1 ")),
+            "videoproof_p_ t_1 .mov"
+        )
+        XCTAssertEqual(HLBarterScreenViewController.modalTradeId(" t/1 "), " t/1 ")
+    }
+
     private func tradeReadyFixture(
         ownerId: String,
         otherId: String,

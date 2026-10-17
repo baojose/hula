@@ -126,6 +126,17 @@ class HLBarterScreenViewController: BaseViewController {
         return CommonUtils.apiResourceURL(apiBase: apiBase, path: ["live_barter", tradeId])
     }
 
+    /// Product selection assigns IUO `thisTrade.tradeId` (`String!`) to
+    /// `HLProductModalViewController.currentTradeId` (`String`, default "").
+    /// A nil trade id crashed before the modal was presented. Nil maps to ""
+    /// (the property default). Do not trim: `""` stays `""` and `" t1 "` stays
+    /// `" t1 "`. Do not route this through `liveBarterRequestURL` (that skips a
+    /// blank id) or `isVideoRequested` / `videoURL` (those trim-reject blank).
+    /// Do not change `uploadVideo`'s tradeId.
+    class func modalTradeId(_ tradeId: String?) -> String {
+        return tradeId ?? ""
+    }
+
     /// Encode product-id lists so an `&` in an id cannot split the live_barter body.
     class func liveBarterPostString(ownerIds: [String], otherIds: [String], ownerMoney: Float, otherMoney: Float) -> String {
         let ownerp = CommonUtils.formEncodedValue(ownerIds.joined(separator: ","))
@@ -1241,7 +1252,7 @@ extension HLBarterScreenViewController: KDDragAndDropCollectionViewDataSource, U
                 viewController.hideVideoBtn = true
             }
             viewController.calledFrom = collectionView.tag
-            viewController.currentTradeId = self.thisTrade.tradeId
+            viewController.currentTradeId = HLBarterScreenViewController.modalTradeId(self.thisTrade.tradeId)
             viewController.isTradeAgreed = self.thisTrade.other_agree
             //print("viewController.isTradeAgreed \(viewController.isTradeAgreed)")
             viewController.modalPresentationStyle = .overCurrentContext
