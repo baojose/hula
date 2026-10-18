@@ -1055,7 +1055,15 @@ class HLBarterScreenViewController: BaseViewController {
         }
     }
     
-    func getUserProducts(user: String, taskCallback: @escaping (Bool, [HulaProduct]) -> ()) {
+    /// Inventory load, refresh, and `updateProductsFromTrade` passed IUO
+    /// `HulaUser.sharedInstance.userId` (`String!`) into `user: String`.
+    /// A nil viewer crashed at the call before `hasUserId` could take the
+    /// else branch that `taskCallback(false, [])`. The parameter is `String?`
+    /// so that branch still runs. Do not trim. `userProductsURL` still skips
+    /// blank and whitespace. `otherUserId` stays a non-optional `String`
+    /// default `""`. Do not drop the else callback. Do not change the
+    /// success path.
+    func getUserProducts(user: String?, taskCallback: @escaping (Bool, [HulaProduct]) -> ()) {
         //print("Getting user info...")
         if HLBarterScreenViewController.hasUserId(HulaUser.sharedInstance.userId){
             guard let queryURL = HLBarterScreenViewController.userProductsURL(
