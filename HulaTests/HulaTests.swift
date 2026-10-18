@@ -9070,6 +9070,118 @@ class HulaTests: XCTestCase {
         XCTAssertEqual(HLBarterScreenViewController.modalTradeId(" t/1 "), " t/1 ")
     }
 
+    /// Barter inventory load and `updateProductsFromTrade` passed IUO
+    /// `HulaUser.sharedInstance.userId` (`String!`) into
+    /// `getUserProducts(user: String)`. A nil viewer crashed at the call
+    /// before `hasUserId` could `taskCallback(false, [])`. Nil and empty
+    /// viewers take that callback and do not fetch, even when the argument
+    /// is a real id. A signed-in viewer still skips nil, blank, and
+    /// whitespace-only ids through `userProductsURL`. Do not trim. `" u&1 "`
+    /// still encodes as `u%261`. `otherUserId` stays `""` until a trade
+    /// assigns a counterparty.
+    func testNilViewerIdCallbacksFailedBarterInventoryWithoutFetch() {
+        let screen = HLBarterScreenViewController()
+        XCTAssertEqual(screen.otherUserId, "")
+        XCTAssertEqual(screen.otherUserId.characters.count, 0)
+
+        let previousUserId = HulaUser.sharedInstance.userId
+        defer {
+            HulaUser.sharedInstance.userId = previousUserId
+        }
+
+        var callbacks = 0
+        HulaUser.sharedInstance.userId = nil
+        screen.getUserProducts(user: HulaUser.sharedInstance.userId) { ok, products in
+            callbacks += 1
+            XCTAssertFalse(ok)
+            XCTAssertEqual(products.count, 0)
+        }
+        screen.getUserProducts(user: nil) { ok, products in
+            callbacks += 1
+            XCTAssertFalse(ok)
+            XCTAssertEqual(products.count, 0)
+        }
+        screen.getUserProducts(user: "u1") { ok, products in
+            callbacks += 1
+            XCTAssertFalse(ok)
+            XCTAssertEqual(products.count, 0)
+        }
+        HulaUser.sharedInstance.userId = ""
+        screen.getUserProducts(user: HulaUser.sharedInstance.userId) { ok, products in
+            callbacks += 1
+            XCTAssertFalse(ok)
+            XCTAssertEqual(products.count, 0)
+        }
+        XCTAssertEqual(callbacks, 4)
+
+        HulaUser.sharedInstance.userId = "viewer"
+        screen.otherUserId = ""
+        screen.getUserProducts(user: screen.otherUserId) { ok, products in
+            callbacks += 1
+            XCTAssertFalse(ok)
+            XCTAssertEqual(products.count, 0)
+        }
+        screen.getUserProducts(user: nil) { ok, products in
+            callbacks += 1
+            XCTAssertFalse(ok)
+            XCTAssertEqual(products.count, 0)
+        }
+        screen.getUserProducts(user: "") { ok, products in
+            callbacks += 1
+            XCTAssertFalse(ok)
+            XCTAssertEqual(products.count, 0)
+        }
+        screen.getUserProducts(user: " ") { ok, products in
+            callbacks += 1
+            XCTAssertFalse(ok)
+            XCTAssertEqual(products.count, 0)
+        }
+        screen.getUserProducts(user: "   ") { ok, products in
+            callbacks += 1
+            XCTAssertFalse(ok)
+            XCTAssertEqual(products.count, 0)
+        }
+        screen.getUserProducts(user: "\n") { ok, products in
+            callbacks += 1
+            XCTAssertFalse(ok)
+            XCTAssertEqual(products.count, 0)
+        }
+        XCTAssertEqual(callbacks, 10)
+        XCTAssertEqual(screen.otherUserId, "")
+
+        XCTAssertFalse(HLBarterScreenViewController.hasUserId(nil))
+        XCTAssertFalse(HLBarterScreenViewController.hasUserId(""))
+        XCTAssertTrue(HLBarterScreenViewController.hasUserId(" "))
+        XCTAssertTrue(HLBarterScreenViewController.hasUserId("viewer"))
+
+        let base = "https://hula.trading/api/"
+        XCTAssertNil(HLBarterScreenViewController.userProductsURL(apiBase: base, userId: nil))
+        XCTAssertNil(HLBarterScreenViewController.userProductsURL(apiBase: base, userId: ""))
+        XCTAssertNil(HLBarterScreenViewController.userProductsURL(apiBase: base, userId: " "))
+        XCTAssertNil(HLBarterScreenViewController.userProductsURL(apiBase: base, userId: "   "))
+        XCTAssertNil(HLBarterScreenViewController.userProductsURL(apiBase: base, userId: "\n"))
+        XCTAssertEqual(
+            HLBarterScreenViewController.userProductsURL(apiBase: base, userId: "u&1"),
+            "https://hula.trading/api/products/user/u%261"
+        )
+        XCTAssertEqual(
+            HLBarterScreenViewController.userProductsURL(apiBase: base, userId: " u&1 "),
+            "https://hula.trading/api/products/user/u%261"
+        )
+        XCTAssertEqual(
+            HLBarterScreenViewController.userProductsURL(apiBase: base, userId: " u&1 "),
+            HLBarterScreenViewController.userProductsURL(apiBase: base, userId: "u&1")
+        )
+        XCTAssertNotEqual(
+            HLBarterScreenViewController.userProductsURL(apiBase: base, userId: " u&1 "),
+            "https://hula.trading/api/products/user/%20u%261%20"
+        )
+        XCTAssertEqual(
+            HLBarterScreenViewController.userProductsURL(apiBase: base, userId: "u/1"),
+            "https://hula.trading/api/products/user/u%2F1"
+        )
+    }
+
     private func tradeReadyFixture(
         ownerId: String,
         otherId: String,
