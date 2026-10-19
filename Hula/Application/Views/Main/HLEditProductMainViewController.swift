@@ -36,6 +36,9 @@ class HLEditProductMainViewController: BaseViewController, ProductPictureDelegat
     }
 
     /// Category / condition labels used `text!` as the editor's previous value.
+    /// Title (tag 10) and description (tag 40) assigned IUO `productName` /
+    /// `productDescription` (`String!`) to local `previous: String`. Nil becomes
+    /// `""`. Whitespace is kept.
     class func editorPreviousText(_ raw: String?) -> String {
         return LabelMetricsPolicy.text(raw)
     }
@@ -178,7 +181,7 @@ class HLEditProductMainViewController: BaseViewController, ProductPictureDelegat
         case 10:
             // Title
             title = NSLocalizedString("Choose a title for your product", comment: "")
-            previous = product.productName
+            previous = HLEditProductMainViewController.editorPreviousText(product.productName)
             label = NSLocalizedString("Title", comment: "")
             item_toUpdate = "title"
         case 20:
@@ -196,7 +199,7 @@ class HLEditProductMainViewController: BaseViewController, ProductPictureDelegat
         case 40:
             // Description
             title = NSLocalizedString("Change description", comment: "")
-            previous = product.productDescription
+            previous = HLEditProductMainViewController.editorPreviousText(product.productDescription)
             label = NSLocalizedString("Description", comment: "")
             item_toUpdate = "description"
         default:

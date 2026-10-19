@@ -9182,6 +9182,89 @@ class HulaTests: XCTestCase {
         )
     }
 
+    /// Edit-product title (tag 10) and description (tag 40) assigned IUO
+    /// `product.productName` / `product.productDescription` (`String!`) to
+    /// local `previous: String`. A nil field crashed before the text editor
+    /// was pushed. Both now use `editorPreviousText` (`LabelMetricsPolicy.text`):
+    /// nil becomes `""`, and whitespace is kept. Category and condition already
+    /// used that helper on label text. Label assignments stay `UILabel.text`
+    /// (`String?`). `FormFieldPolicy.encoded` remains the separate PUT path
+    /// and must not replace the editor seed (`"a&b"` stays `"a&b"` here).
+    func testNilProductTitleAndDescriptionSeedEditorAsEmptyWithoutTrim() {
+        let product = HulaProduct()
+        product.productName = nil
+        product.productDescription = nil
+        XCTAssertEqual(HLEditProductMainViewController.editorPreviousText(product.productName), "")
+        XCTAssertEqual(HLEditProductMainViewController.editorPreviousText(product.productDescription), "")
+        XCTAssertEqual(
+            HLEditProductMainViewController.editorPreviousText(product.productName).characters.count,
+            0
+        )
+        XCTAssertEqual(
+            HLEditProductMainViewController.editorPreviousText(product.productDescription).characters.count,
+            0
+        )
+
+        product.productName = ""
+        product.productDescription = ""
+        XCTAssertEqual(HLEditProductMainViewController.editorPreviousText(product.productName), "")
+        XCTAssertEqual(HLEditProductMainViewController.editorPreviousText(product.productDescription), "")
+
+        product.productName = " "
+        product.productDescription = "   "
+        XCTAssertEqual(HLEditProductMainViewController.editorPreviousText(product.productName), " ")
+        XCTAssertEqual(HLEditProductMainViewController.editorPreviousText(product.productDescription), "   ")
+        XCTAssertNotEqual(HLEditProductMainViewController.editorPreviousText(product.productName), "")
+        XCTAssertNotEqual(HLEditProductMainViewController.editorPreviousText(product.productDescription), "")
+        XCTAssertEqual(
+            HLEditProductMainViewController.editorPreviousText(product.productName).characters.count,
+            1
+        )
+        XCTAssertEqual(
+            HLEditProductMainViewController.editorPreviousText(product.productDescription).characters.count,
+            3
+        )
+
+        product.productName = "\n"
+        product.productDescription = " \n "
+        XCTAssertEqual(HLEditProductMainViewController.editorPreviousText(product.productName), "\n")
+        XCTAssertEqual(HLEditProductMainViewController.editorPreviousText(product.productDescription), " \n ")
+        XCTAssertNotEqual(HLEditProductMainViewController.editorPreviousText(product.productName), "")
+
+        product.productName = "a"
+        product.productDescription = " bike "
+        XCTAssertEqual(HLEditProductMainViewController.editorPreviousText(product.productName), "a")
+        XCTAssertEqual(HLEditProductMainViewController.editorPreviousText(product.productDescription), " bike ")
+        XCTAssertNotEqual(
+            HLEditProductMainViewController.editorPreviousText(product.productDescription),
+            "bike"
+        )
+
+        product.productName = " t&1 "
+        product.productDescription = " line\n2 "
+        XCTAssertEqual(HLEditProductMainViewController.editorPreviousText(product.productName), " t&1 ")
+        XCTAssertEqual(
+            HLEditProductMainViewController.editorPreviousText(product.productDescription),
+            " line\n2 "
+        )
+        XCTAssertEqual(HLEditProductMainViewController.editorPreviousText("a&b"), "a&b")
+        XCTAssertNotEqual(FormFieldPolicy.encoded("a&b"), "a&b")
+        XCTAssertEqual(FormFieldPolicy.encoded("a&b"), "a%26b")
+        XCTAssertEqual(
+            LabelMetricsPolicy.text(product.productName),
+            HLEditProductMainViewController.editorPreviousText(product.productName)
+        )
+
+        product.productName = nil
+        product.productDescription = " "
+        XCTAssertEqual(FormFieldPolicy.encoded(product.productName), "")
+        XCTAssertEqual(FormFieldPolicy.encoded(product.productDescription), FormFieldPolicy.encoded(" "))
+        XCTAssertEqual(HLEditProductMainViewController.editorPreviousText(product.productDescription), " ")
+        XCTAssertEqual(HLEditProductMainViewController.editorPreviousText(nil), "")
+        XCTAssertEqual(HLEditProductMainViewController.editorPreviousText(" Used "), " Used ")
+        XCTAssertEqual(HLEditProductMainViewController.editorPreviousText(" "), " ")
+    }
+
     private func tradeReadyFixture(
         ownerId: String,
         otherId: String,
