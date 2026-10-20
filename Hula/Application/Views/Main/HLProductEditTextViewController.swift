@@ -32,6 +32,14 @@ class HLProductEditTextViewController: BaseViewController, UITextViewDelegate {
     class func editorLayoutHeight(width: CGFloat, font: UIFont?, text: String?) -> CGFloat {
         return LabelMetricsPolicy.layoutHeight(width: width, font: font, text: text, extra: 40)
     }
+
+    /// Condition chrome compared IUO `product.productCondition` (`String!`) to
+    /// `"new"`. A nil condition crashed in `viewDidLoad` for title, description,
+    /// category, and condition editors. Nil is not new, so the existing else
+    /// branch selects used. Exact `"new"` stays selected. Whitespace is kept.
+    class func selectsNewCondition(_ raw: String?) -> Bool {
+        return raw == "new"
+    }
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -57,7 +65,7 @@ class HLProductEditTextViewController: BaseViewController, UITextViewDelegate {
         editPageTitleLabel.text = pageTitle
         currentTextLabel.text = NSLocalizedString("CURRENT:", comment: "") + " \(originalText)"
         editableTextView.text = originalText
-        if (self.product.productCondition == "new"){
+        if HLProductEditTextViewController.selectsNewCondition(self.product.productCondition) {
             setBtnStatus(button:conditionNewBtn, selected:true)
             setBtnStatus(button:conditionUsedBtn, selected:false)
         } else {
