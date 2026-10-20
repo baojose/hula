@@ -9265,6 +9265,99 @@ class HulaTests: XCTestCase {
         XCTAssertEqual(HLEditProductMainViewController.editorPreviousText(" "), " ")
     }
 
+    /// `HLProductEditTextViewController.viewDidLoad` compared IUO
+    /// `product.productCondition` (`String!`) to `"new"`. A nil condition
+    /// crashed while loading the title, description, category, and condition
+    /// editors. `selectsNewCondition` treats nil as not new, so the existing
+    /// else branch selects used. Exact `"new"` stays selected. Do not trim.
+    /// `"New"`, `" new "`, `""`, `" "`, `"\n"`, and `"used"` stay on the used
+    /// branch. `saveAction` still assigns `editableTextView.text` onto
+    /// `productName` / `productDescription`. Category selection is unchanged.
+    /// Detail and modal `localizedCondition` stay a separate display path.
+    func testNilProductConditionSelectsUsedInTextEditorWithoutTrim() {
+        func stored(_ raw: String?) -> String? {
+            return raw
+        }
+
+        let product = HulaProduct()
+        product.productName = " bike "
+        product.productDescription = " line\n2 "
+        product.productCondition = nil
+        XCTAssertFalse(HLProductEditTextViewController.selectsNewCondition(product.productCondition))
+        XCTAssertFalse(HLProductEditTextViewController.selectsNewCondition(nil))
+        XCTAssertNil(stored(product.productCondition))
+        XCTAssertEqual(stored(product.productName), stored(" bike "))
+        XCTAssertEqual(stored(product.productDescription), stored(" line\n2 "))
+
+        product.productCondition = ""
+        XCTAssertFalse(HLProductEditTextViewController.selectsNewCondition(product.productCondition))
+        XCTAssertFalse(HLProductEditTextViewController.selectsNewCondition(""))
+        XCTAssertEqual(stored(product.productCondition), stored(""))
+
+        product.productCondition = " "
+        XCTAssertFalse(HLProductEditTextViewController.selectsNewCondition(product.productCondition))
+        XCTAssertFalse(HLProductEditTextViewController.selectsNewCondition(" "))
+        XCTAssertNotEqual(stored(product.productCondition), stored(""))
+        XCTAssertEqual(HLEditProductMainViewController.editorPreviousText(product.productCondition).characters.count, 1)
+
+        product.productCondition = "   "
+        XCTAssertFalse(HLProductEditTextViewController.selectsNewCondition(product.productCondition))
+        XCTAssertEqual(stored(product.productCondition), stored("   "))
+        XCTAssertEqual(HLEditProductMainViewController.editorPreviousText(product.productCondition).characters.count, 3)
+
+        product.productCondition = "\n"
+        XCTAssertFalse(HLProductEditTextViewController.selectsNewCondition(product.productCondition))
+        XCTAssertFalse(HLProductEditTextViewController.selectsNewCondition("\n"))
+        XCTAssertEqual(stored(product.productCondition), stored("\n"))
+
+        product.productCondition = " \n "
+        XCTAssertFalse(HLProductEditTextViewController.selectsNewCondition(product.productCondition))
+        XCTAssertEqual(stored(product.productCondition), stored(" \n "))
+
+        product.productCondition = "New"
+        XCTAssertFalse(HLProductEditTextViewController.selectsNewCondition(product.productCondition))
+        XCTAssertFalse(HLProductEditTextViewController.selectsNewCondition("New"))
+        XCTAssertFalse(HLProductEditTextViewController.selectsNewCondition("NEW"))
+        XCTAssertEqual(stored(product.productCondition), stored("New"))
+
+        product.productCondition = " new "
+        XCTAssertFalse(HLProductEditTextViewController.selectsNewCondition(product.productCondition))
+        XCTAssertFalse(HLProductEditTextViewController.selectsNewCondition(" new "))
+        XCTAssertFalse(HLProductEditTextViewController.selectsNewCondition("new "))
+        XCTAssertFalse(HLProductEditTextViewController.selectsNewCondition(" new"))
+        XCTAssertEqual(stored(product.productCondition), stored(" new "))
+        XCTAssertEqual(
+            HLEditProductMainViewController.editorPreviousText(product.productCondition),
+            " new "
+        )
+        XCTAssertNotEqual(
+            HLEditProductMainViewController.editorPreviousText(product.productCondition),
+            "new"
+        )
+
+        product.productCondition = "used"
+        XCTAssertFalse(HLProductEditTextViewController.selectsNewCondition(product.productCondition))
+        XCTAssertFalse(HLProductEditTextViewController.selectsNewCondition("used"))
+        XCTAssertFalse(HLProductEditTextViewController.selectsNewCondition("Used"))
+        XCTAssertEqual(stored(product.productCondition), stored("used"))
+
+        product.productCondition = "new"
+        XCTAssertTrue(HLProductEditTextViewController.selectsNewCondition(product.productCondition))
+        XCTAssertTrue(HLProductEditTextViewController.selectsNewCondition("new"))
+        XCTAssertEqual(stored(product.productCondition), stored("new"))
+        XCTAssertEqual(stored(product.productName), stored(" bike "))
+        XCTAssertEqual(stored(product.productDescription), stored(" line\n2 "))
+
+        XCTAssertFalse(HLProductEditTextViewController.selectsNewCondition("a&b"))
+        XCTAssertEqual(FormFieldPolicy.encoded("a&b"), "a%26b")
+        XCTAssertEqual(FormFieldPolicy.encoded("new"), "new")
+        XCTAssertNotEqual(FormFieldPolicy.encoded("a&b"), "new")
+        XCTAssertEqual(HLEditProductMainViewController.editorPreviousText(nil), "")
+        XCTAssertFalse(HLProductEditTextViewController.selectsNewCondition(
+            HLEditProductMainViewController.editorPreviousText(nil)
+        ))
+    }
+
     private func tradeReadyFixture(
         ownerId: String,
         otherId: String,
