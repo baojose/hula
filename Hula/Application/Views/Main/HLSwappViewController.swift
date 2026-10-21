@@ -11,6 +11,35 @@ import SpriteKit
 import FacebookShare
 import CoreMotion
 
+/// Bottom-bar action for a trade room. Review must stay on receipt confirmation
+/// even when ready flags would otherwise select Accept or Close Deal.
+struct TradeOfferButtonPolicy {
+    static let justAcceptTag = 1
+    static let closeDealTag = 91053
+    static let productsReceivedTag = 90441
+
+    static func finalTag(status: String, peerReady: Bool) -> Int {
+        if status == HulaConstants.review_status {
+            return productsReceivedTag
+        }
+        if peerReady {
+            return closeDealTag
+        }
+        return justAcceptTag
+    }
+
+    static func submittedStatus(tag: Int) -> String {
+        if tag == closeDealTag || tag == productsReceivedTag {
+            return HulaConstants.review_status
+        }
+        return HulaConstants.sent_status
+    }
+
+    static func submittedAccepted(tag: Int) -> String {
+        return tag == productsReceivedTag ? "true" : "false"
+    }
+}
+
 class HLSwappViewController: UIViewController {
     
     weak var barterDelegate: HLBarterScreenDelegate?
@@ -63,9 +92,9 @@ class HLSwappViewController: UIViewController {
     var tempTag: Int = 0
     var detection_counter : Int = 0;
     
-    let kTagJustAccept: Int = 1;
-    let kTagCloseDeal: Int = 91053;
-    let kTagProductsReceived: Int = 90441
+    let kTagJustAccept: Int = TradeOfferButtonPolicy.justAcceptTag
+    let kTagCloseDeal: Int = TradeOfferButtonPolicy.closeDealTag
+    let kTagProductsReceived: Int = TradeOfferButtonPolicy.productsReceivedTag
     
     var firstLoad : Bool = true
     
@@ -453,15 +482,8 @@ class HLSwappViewController: UIViewController {
                     let other_products = tradeStatus.other_products.joined(separator: ",")
                     let owner_money:Int = Int(tradeStatus.owner_money)
                     let other_money:Int = Int(tradeStatus.other_money)
-                    var status = HulaConstants.sent_status
-                    var acceptedTrade: String = "false"
-                    if buttonTag == self.kTagCloseDeal || buttonTag == self.kTagProductsReceived {
-                        // offer sent or product received
-                        status = HulaConstants.review_status
-                    }
-                    if buttonTag == self.kTagProductsReceived {
-                        acceptedTrade = "true"
-                    }
+                    let status = TradeOfferButtonPolicy.submittedStatus(tag: buttonTag)
+                    let acceptedTrade = TradeOfferButtonPolicy.submittedAccepted(tag: buttonTag)
                     let dataString:String = "status=\(status)&owner_products=\(owner_products)&other_products=\(other_products)&owner_money=\(owner_money)&other_money=\(other_money)&accepted=\(acceptedTrade)"
                     //print(dataString)
                     
@@ -515,7 +537,7 @@ class HLSwappViewController: UIViewController {
             self.backFromChat = true
         })
     }
-    func manageCheckMarks(trade:HulaTrade?){
+    func manageCheckMarks(trade:HulaTrade?, status: String = ""){
         
         if trade != nil {
             self.otherCheckMark.alpha = 0;
@@ -524,16 +546,27 @@ class HLSwappViewController: UIViewController {
             self.sendOfferBtn.tag = kTagJustAccept
             self.sendOfferBtn.setTitle(NSLocalizedString("Accept", comment: ""), for: .normal);
             
-            if ( (trade!.owner_ready && trade!.owner_id == HulaUser.sharedInstance.userId) || (trade!.other_ready && trade!.other_id == HulaUser.sharedInstance.userId) ) {
+            let viewerReady = (trade!.owner_ready && trade!.owner_id == HulaUser.sharedInstance.userId) || (trade!.other_ready && trade!.other_id == HulaUser.sharedInstance.userId)
+            let peerReady = (trade!.other_ready && trade!.owner_id == HulaUser.sharedInstance.userId) || (trade!.owner_ready && trade!.other_id == HulaUser.sharedInstance.userId)
+
+            if viewerReady {
                 // I am ready
                 self.myCheckMark.alpha = 1;
                 self.sendOfferBtn.setTitle("", for: .normal);
             }
-            if ( (trade!.other_ready && trade!.owner_id == HulaUser.sharedInstance.userId) || (trade!.owner_ready && trade!.other_id == HulaUser.sharedInstance.userId) ){
+            if peerReady {
                 self.sendOfferBtn.tag = kTagCloseDeal
                 self.otherCheckMark.alpha = 1;
                 self.otherOfferBtn.setTitle("", for: .normal)
                 self.threeDotsView.isHidden = true;
+            }
+            // Review is opened on the past-trade screen, which installs itself as
+            // barterDelegate before this runs. Ready flags must not replace
+            // "I received my stuff" or the tap sends offer_sent / accepted=false.
+            if TradeOfferButtonPolicy.finalTag(status: status, peerReady: peerReady) == kTagProductsReceived {
+                self.sendOfferBtn.setTitle(NSLocalizedString("I received my stuff", comment: ""), for: .normal)
+                self.sendOfferBtn.tag = kTagProductsReceived
+                self.threeDotsView.isHidden = true
             }
         } else {
             self.otherCheckMark.alpha = 0;
@@ -668,7 +701,7 @@ class HLSwappViewController: UIViewController {
                         //print("updating checkmarks...");
                         print("owner ready \(tr.owner_ready)");
                         print("other ready \(tr.other_ready)");
-                        self.manageCheckMarks(trade: tr);
+                        self.manageCheckMarks(trade: tr, status: currentStatus);
                         
                         if tr.other_agree {
                             self.otherUserView.alpha = 1
