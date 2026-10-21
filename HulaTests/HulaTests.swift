@@ -25,6 +25,56 @@ class HulaTests: XCTestCase {
         // This is an example of a functional test case.
         // Use XCTAssert and related functions to verify your tests produce the correct results.
     }
+
+    func testReviewStatusKeepsReceiptConfirmationDespiteReadyFlags() {
+        XCTAssertEqual(
+            TradeOfferButtonPolicy.finalTag(status: HulaConstants.review_status, peerReady: true),
+            TradeOfferButtonPolicy.productsReceivedTag
+        )
+        XCTAssertEqual(
+            TradeOfferButtonPolicy.finalTag(status: HulaConstants.review_status, peerReady: false),
+            TradeOfferButtonPolicy.productsReceivedTag
+        )
+        XCTAssertEqual(
+            TradeOfferButtonPolicy.submittedStatus(tag: TradeOfferButtonPolicy.productsReceivedTag),
+            HulaConstants.review_status
+        )
+        XCTAssertEqual(
+            TradeOfferButtonPolicy.submittedAccepted(tag: TradeOfferButtonPolicy.productsReceivedTag),
+            "true"
+        )
+    }
+
+    func testBarterReadyFlagsStillSelectAcceptOrCloseDeal() {
+        XCTAssertEqual(
+            TradeOfferButtonPolicy.finalTag(status: HulaConstants.sent_status, peerReady: false),
+            TradeOfferButtonPolicy.justAcceptTag
+        )
+        XCTAssertEqual(
+            TradeOfferButtonPolicy.finalTag(status: HulaConstants.pending_status, peerReady: false),
+            TradeOfferButtonPolicy.justAcceptTag
+        )
+        XCTAssertEqual(
+            TradeOfferButtonPolicy.finalTag(status: "", peerReady: true),
+            TradeOfferButtonPolicy.closeDealTag
+        )
+        XCTAssertEqual(
+            TradeOfferButtonPolicy.submittedStatus(tag: TradeOfferButtonPolicy.justAcceptTag),
+            HulaConstants.sent_status
+        )
+        XCTAssertEqual(
+            TradeOfferButtonPolicy.submittedAccepted(tag: TradeOfferButtonPolicy.justAcceptTag),
+            "false"
+        )
+        XCTAssertEqual(
+            TradeOfferButtonPolicy.submittedStatus(tag: TradeOfferButtonPolicy.closeDealTag),
+            HulaConstants.review_status
+        )
+        XCTAssertEqual(
+            TradeOfferButtonPolicy.submittedAccepted(tag: TradeOfferButtonPolicy.closeDealTag),
+            "false"
+        )
+    }
     
     func testPerformanceExample() {
         // This is an example of a performance test case.
