@@ -326,6 +326,19 @@ class HLSearchResultViewController: BaseViewController, UITableViewDataSource, U
         return perc >= minimumPercent
     }
 
+    /// Search results compared IUO `hprod.productCondition` (`String!`) to
+    /// `filterCondition`. When the filter is not `"all"`, a nil condition
+    /// crashed before the row was classified. Nil is not equal to the filter,
+    /// so the condition stays invalid. `"all"` still accepts every condition,
+    /// including nil, `""`, and `" new "`. Exact match stays valid. Whitespace
+    /// is kept. Reputation, distance, and owner exclusion stay separate.
+    class func conditionMatchesFilter(_ condition: String?, filter: String) -> Bool {
+        if filter == "all" {
+            return true
+        }
+        return condition == filter
+    }
+
     func getFilteredList(){
         filteredList = []
         guard let products = productsList as? [NSDictionary] else {
@@ -340,7 +353,7 @@ class HLSearchResultViewController: BaseViewController, UITableViewDataSource, U
             var isValidUser = false
             hprod.populate(with: prod)
             
-            if filterCondition == "all" || hprod.productCondition == filterCondition{
+            if HLSearchResultViewController.conditionMatchesFilter(hprod.productCondition, filter: filterCondition) {
                 isValidCond = true
             }
             

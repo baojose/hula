@@ -9358,6 +9358,151 @@ class HulaTests: XCTestCase {
         ))
     }
 
+    /// `HLSearchResultViewController.getFilteredList` compared IUO
+    /// `hprod.productCondition` (`String!`) to `filterCondition` (`String`,
+    /// default `"all"`). When the filter is not `"all"`, a nil condition
+    /// crashed before the row was classified. `conditionMatchesFilter` treats
+    /// nil as not equal to the filter, so the condition stays invalid.
+    /// Filter `"all"` still accepts every condition, including nil, `""`, and
+    /// `" new "`. Exact match stays valid. Do not trim. `"new"` matches
+    /// `"new"`. `"New"`, `" new "`, `""`, `" "`, `"\n"`, and `"used"` do not
+    /// match `"new"`. Reputation, distance, and owner exclusion are unchanged.
+    /// Editor `selectsNewCondition` and detail/modal `localizedCondition` stay
+    /// separate paths.
+    func testNilProductConditionDoesNotMatchSearchFilterWithoutTrim() {
+        func stored(_ raw: String?) -> String? {
+            return raw
+        }
+
+        let product = HulaProduct()
+        product.productName = " bike "
+        product.productDescription = " line\n2 "
+        product.productCondition = nil
+        XCTAssertFalse(HLSearchResultViewController.conditionMatchesFilter(product.productCondition, filter: "new"))
+        XCTAssertFalse(HLSearchResultViewController.conditionMatchesFilter(nil, filter: "new"))
+        XCTAssertFalse(HLSearchResultViewController.conditionMatchesFilter(nil, filter: "used"))
+        XCTAssertFalse(HLSearchResultViewController.conditionMatchesFilter(nil, filter: ""))
+        XCTAssertTrue(HLSearchResultViewController.conditionMatchesFilter(product.productCondition, filter: "all"))
+        XCTAssertTrue(HLSearchResultViewController.conditionMatchesFilter(nil, filter: "all"))
+        XCTAssertNil(stored(product.productCondition))
+        XCTAssertEqual(stored(product.productName), stored(" bike "))
+        XCTAssertEqual(stored(product.productDescription), stored(" line\n2 "))
+
+        product.productCondition = ""
+        XCTAssertFalse(HLSearchResultViewController.conditionMatchesFilter(product.productCondition, filter: "new"))
+        XCTAssertFalse(HLSearchResultViewController.conditionMatchesFilter("", filter: "new"))
+        XCTAssertTrue(HLSearchResultViewController.conditionMatchesFilter("", filter: ""))
+        XCTAssertTrue(HLSearchResultViewController.conditionMatchesFilter(product.productCondition, filter: "all"))
+        XCTAssertEqual(stored(product.productCondition), stored(""))
+
+        product.productCondition = " "
+        XCTAssertFalse(HLSearchResultViewController.conditionMatchesFilter(product.productCondition, filter: "new"))
+        XCTAssertFalse(HLSearchResultViewController.conditionMatchesFilter(" ", filter: "new"))
+        XCTAssertFalse(HLSearchResultViewController.conditionMatchesFilter(" ", filter: ""))
+        XCTAssertTrue(HLSearchResultViewController.conditionMatchesFilter(" ", filter: " "))
+        XCTAssertTrue(HLSearchResultViewController.conditionMatchesFilter(product.productCondition, filter: "all"))
+        XCTAssertNotEqual(stored(product.productCondition), stored(""))
+        XCTAssertEqual((product.productCondition ?? "").characters.count, 1)
+
+        product.productCondition = "   "
+        XCTAssertFalse(HLSearchResultViewController.conditionMatchesFilter(product.productCondition, filter: "new"))
+        XCTAssertTrue(HLSearchResultViewController.conditionMatchesFilter(product.productCondition, filter: "all"))
+        XCTAssertEqual(stored(product.productCondition), stored("   "))
+        XCTAssertEqual((product.productCondition ?? "").characters.count, 3)
+
+        product.productCondition = "\n"
+        XCTAssertFalse(HLSearchResultViewController.conditionMatchesFilter(product.productCondition, filter: "new"))
+        XCTAssertFalse(HLSearchResultViewController.conditionMatchesFilter("\n", filter: "new"))
+        XCTAssertTrue(HLSearchResultViewController.conditionMatchesFilter(product.productCondition, filter: "all"))
+        XCTAssertEqual(stored(product.productCondition), stored("\n"))
+
+        product.productCondition = " \n "
+        XCTAssertFalse(HLSearchResultViewController.conditionMatchesFilter(product.productCondition, filter: "new"))
+        XCTAssertTrue(HLSearchResultViewController.conditionMatchesFilter(product.productCondition, filter: "all"))
+        XCTAssertTrue(HLSearchResultViewController.conditionMatchesFilter(" \n ", filter: " \n "))
+        XCTAssertEqual(stored(product.productCondition), stored(" \n "))
+
+        product.productCondition = "New"
+        XCTAssertFalse(HLSearchResultViewController.conditionMatchesFilter(product.productCondition, filter: "new"))
+        XCTAssertFalse(HLSearchResultViewController.conditionMatchesFilter("New", filter: "new"))
+        XCTAssertFalse(HLSearchResultViewController.conditionMatchesFilter("NEW", filter: "new"))
+        XCTAssertTrue(HLSearchResultViewController.conditionMatchesFilter("New", filter: "New"))
+        XCTAssertTrue(HLSearchResultViewController.conditionMatchesFilter(product.productCondition, filter: "all"))
+        XCTAssertEqual(stored(product.productCondition), stored("New"))
+
+        product.productCondition = " new "
+        XCTAssertFalse(HLSearchResultViewController.conditionMatchesFilter(product.productCondition, filter: "new"))
+        XCTAssertFalse(HLSearchResultViewController.conditionMatchesFilter(" new ", filter: "new"))
+        XCTAssertFalse(HLSearchResultViewController.conditionMatchesFilter("new ", filter: "new"))
+        XCTAssertFalse(HLSearchResultViewController.conditionMatchesFilter(" new", filter: "new"))
+        XCTAssertTrue(HLSearchResultViewController.conditionMatchesFilter(" new ", filter: " new "))
+        XCTAssertFalse(HLSearchResultViewController.conditionMatchesFilter("new", filter: " new "))
+        XCTAssertTrue(HLSearchResultViewController.conditionMatchesFilter(product.productCondition, filter: "all"))
+        XCTAssertEqual(stored(product.productCondition), stored(" new "))
+        XCTAssertEqual(
+            HLEditProductMainViewController.editorPreviousText(product.productCondition),
+            " new "
+        )
+        XCTAssertNotEqual(
+            HLEditProductMainViewController.editorPreviousText(product.productCondition),
+            "new"
+        )
+
+        product.productCondition = "used"
+        XCTAssertFalse(HLSearchResultViewController.conditionMatchesFilter(product.productCondition, filter: "new"))
+        XCTAssertFalse(HLSearchResultViewController.conditionMatchesFilter("used", filter: "new"))
+        XCTAssertFalse(HLSearchResultViewController.conditionMatchesFilter("Used", filter: "used"))
+        XCTAssertTrue(HLSearchResultViewController.conditionMatchesFilter(product.productCondition, filter: "used"))
+        XCTAssertTrue(HLSearchResultViewController.conditionMatchesFilter("used", filter: "used"))
+        XCTAssertTrue(HLSearchResultViewController.conditionMatchesFilter(product.productCondition, filter: "all"))
+        XCTAssertEqual(stored(product.productCondition), stored("used"))
+
+        product.productCondition = "new"
+        XCTAssertTrue(HLSearchResultViewController.conditionMatchesFilter(product.productCondition, filter: "new"))
+        XCTAssertTrue(HLSearchResultViewController.conditionMatchesFilter("new", filter: "new"))
+        XCTAssertFalse(HLSearchResultViewController.conditionMatchesFilter("new", filter: "used"))
+        XCTAssertFalse(HLSearchResultViewController.conditionMatchesFilter("new", filter: "All"))
+        XCTAssertTrue(HLSearchResultViewController.conditionMatchesFilter(product.productCondition, filter: "all"))
+        XCTAssertEqual(stored(product.productCondition), stored("new"))
+        XCTAssertEqual(stored(product.productName), stored(" bike "))
+        XCTAssertEqual(stored(product.productDescription), stored(" line\n2 "))
+
+        XCTAssertFalse(HLSearchResultViewController.conditionMatchesFilter("a&b", filter: "new"))
+        XCTAssertFalse(HLSearchResultViewController.conditionMatchesFilter("a%26b", filter: "a&b"))
+        XCTAssertTrue(HLSearchResultViewController.conditionMatchesFilter("a&b", filter: "a&b"))
+        XCTAssertEqual(FormFieldPolicy.encoded("a&b"), "a%26b")
+        XCTAssertEqual(FormFieldPolicy.encoded("new"), "new")
+        XCTAssertNotEqual(FormFieldPolicy.encoded("a&b"), "new")
+
+        XCTAssertTrue(HLProductEditTextViewController.selectsNewCondition("new"))
+        XCTAssertFalse(HLProductEditTextViewController.selectsNewCondition(nil))
+        XCTAssertFalse(HLProductEditTextViewController.selectsNewCondition(" new "))
+        XCTAssertFalse(HLProductEditTextViewController.selectsNewCondition(
+            HLEditProductMainViewController.editorPreviousText(nil)
+        ))
+        XCTAssertEqual(HLProductDetailViewController.localizedCondition("new"), "New")
+        XCTAssertEqual(HLProductModalViewController.localizedCondition("new"), "New")
+        XCTAssertFalse(HLSearchResultViewController.conditionMatchesFilter(
+            HLProductDetailViewController.localizedCondition("new"),
+            filter: "new"
+        ))
+        XCTAssertTrue(HLSearchResultViewController.conditionMatchesFilter(
+            HLProductDetailViewController.localizedCondition("new"),
+            filter: "all"
+        ))
+
+        XCTAssertTrue(HLSearchResultViewController.sellerMeetsReputation(nil, minimumPercent: 0))
+        XCTAssertFalse(HLSearchResultViewController.sellerMeetsReputation(nil, minimumPercent: 80))
+        XCTAssertEqual(HLSearchResultViewController.listingOwnerId(nil), "")
+        XCTAssertEqual(HLSearchResultViewController.listingOwnerId(""), "")
+        XCTAssertEqual(HLSearchResultViewController.listingOwnerId(" me "), " me ")
+        XCTAssertNotEqual(HLSearchResultViewController.listingOwnerId(" me "), "me")
+        XCTAssertEqual(
+            HLSearchResultViewController.listingOwnerId(nil),
+            HLSearchResultViewController.listingOwnerId("")
+        )
+    }
+
     private func tradeReadyFixture(
         ownerId: String,
         otherId: String,
