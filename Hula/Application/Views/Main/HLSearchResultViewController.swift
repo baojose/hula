@@ -72,6 +72,18 @@ class HLSearchResultViewController: BaseViewController, UITableViewDataSource, U
         return ProductListingPolicy.seller(in: users, ownerId: ownerId)
     }
 
+    /// Search cells and row selection compared IUO `product.productCategoryId`
+    /// (`String!`) to `"xx_user"`. A nil category crashed before the row was
+    /// classified as a user hit or a product. Nil is not a user row, so product
+    /// chrome stays and selection still pushes product detail. Exact `"xx_user"`
+    /// stays a user row. Do not trim. `"XX_user"`, `" xx_user "`, `"xx_user "`,
+    /// `""`, `" "`, `"\n"`, and `"xx_users"` stay product rows. `searchUserProduct`
+    /// still writes `"xx_user"`. Condition filtering, reputation, distance, and
+    /// owner exclusion stay separate.
+    class func isUserSearchRow(_ categoryId: String?) -> Bool {
+        return categoryId == "xx_user"
+    }
+
     class func resultsTitle(searchByCategory: Bool, category: NSDictionary?, keyword: String?) -> String {
         if searchByCategory {
             return categorySearchTitle(from: category)
@@ -158,7 +170,7 @@ class HLSearchResultViewController: BaseViewController, UITableViewDataSource, U
         let prod_thumb = commonUtils.getThumbFor(url: HLSearchResultViewController.listingImageURL(product.productImage))
         cell.productImage.loadImageFromURL(urlString: prod_thumb)
         
-        if product.productCategoryId == "xx_user" {
+        if HLSearchResultViewController.isUserSearchRow(product.productCategoryId) {
             commonUtils.circleImageView(cell.productImage);
             
             cell.productOwnerName.isHidden = true;
@@ -212,7 +224,7 @@ class HLSearchResultViewController: BaseViewController, UITableViewDataSource, U
             return
         }
         
-        if product.productCategoryId == "xx_user" {
+        if HLSearchResultViewController.isUserSearchRow(product.productCategoryId) {
             // not a product, but a user!!!
             HLDataManager.sharedInstance.getUserProfile(userId: product.productId, taskCallback: {(user, prods, userfeedback) in
                 let storyboard = UIStoryboard(name: "Main", bundle: nil)
