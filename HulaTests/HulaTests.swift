@@ -9503,6 +9503,170 @@ class HulaTests: XCTestCase {
         )
     }
 
+    /// `HLSearchResultViewController` `cellForRow` and `didSelectRowAt` compared
+    /// IUO `product.productCategoryId` (`String!`) to `"xx_user"`. A nil category
+    /// crashed before the row was classified as a user hit or a product.
+    /// `isUserSearchRow` treats nil as not a user row, so product chrome stays
+    /// and selection still pushes product detail. Exact `"xx_user"` stays a user
+    /// row. Do not trim. `"XX_user"`, `" xx_user "`, `"xx_user "`, `""`, `" "`,
+    /// `"\n"`, and `"xx_users"` stay product rows. `searchUserProduct` still
+    /// writes `"xx_user"`. Do not change `getUserProfile`. Do not change
+    /// condition filtering, reputation, distance, or owner exclusion. Do not
+    /// change label assignments (`cell.productName.text = product.productName`).
+    /// Do not enable the turn gate or `waitingTurnEnabled`.
+    func testNilCategoryIdIsNotASearchUserRowWithoutTrim() {
+        func stored(_ raw: String?) -> String? {
+            return raw
+        }
+
+        let product = HulaProduct()
+        product.productName = " bike "
+        product.productDescription = " line\n2 "
+        product.productId = "p&1"
+        product.productCategoryId = nil
+        XCTAssertFalse(HLSearchResultViewController.isUserSearchRow(product.productCategoryId))
+        XCTAssertFalse(HLSearchResultViewController.isUserSearchRow(nil))
+        XCTAssertNil(stored(product.productCategoryId))
+        XCTAssertEqual(stored(product.productName), stored(" bike "))
+        XCTAssertEqual(stored(product.productDescription), stored(" line\n2 "))
+        XCTAssertEqual(stored(product.productId), stored("p&1"))
+
+        product.productCategoryId = ""
+        XCTAssertFalse(HLSearchResultViewController.isUserSearchRow(product.productCategoryId))
+        XCTAssertFalse(HLSearchResultViewController.isUserSearchRow(""))
+        XCTAssertEqual(stored(product.productCategoryId), stored(""))
+
+        product.productCategoryId = " "
+        XCTAssertFalse(HLSearchResultViewController.isUserSearchRow(product.productCategoryId))
+        XCTAssertFalse(HLSearchResultViewController.isUserSearchRow(" "))
+        XCTAssertNotEqual(stored(product.productCategoryId), stored(""))
+        XCTAssertEqual((product.productCategoryId ?? "").characters.count, 1)
+
+        product.productCategoryId = "   "
+        XCTAssertFalse(HLSearchResultViewController.isUserSearchRow(product.productCategoryId))
+        XCTAssertEqual(stored(product.productCategoryId), stored("   "))
+        XCTAssertEqual((product.productCategoryId ?? "").characters.count, 3)
+
+        product.productCategoryId = "\n"
+        XCTAssertFalse(HLSearchResultViewController.isUserSearchRow(product.productCategoryId))
+        XCTAssertFalse(HLSearchResultViewController.isUserSearchRow("\n"))
+        XCTAssertEqual(stored(product.productCategoryId), stored("\n"))
+
+        product.productCategoryId = " \n "
+        XCTAssertFalse(HLSearchResultViewController.isUserSearchRow(product.productCategoryId))
+        XCTAssertEqual(stored(product.productCategoryId), stored(" \n "))
+
+        product.productCategoryId = "XX_user"
+        XCTAssertFalse(HLSearchResultViewController.isUserSearchRow(product.productCategoryId))
+        XCTAssertFalse(HLSearchResultViewController.isUserSearchRow("XX_user"))
+        XCTAssertFalse(HLSearchResultViewController.isUserSearchRow("Xx_user"))
+        XCTAssertEqual(stored(product.productCategoryId), stored("XX_user"))
+
+        product.productCategoryId = " xx_user "
+        XCTAssertFalse(HLSearchResultViewController.isUserSearchRow(product.productCategoryId))
+        XCTAssertFalse(HLSearchResultViewController.isUserSearchRow(" xx_user "))
+        XCTAssertFalse(HLSearchResultViewController.isUserSearchRow("xx_user "))
+        XCTAssertFalse(HLSearchResultViewController.isUserSearchRow(" xx_user"))
+        XCTAssertTrue(HLSearchResultViewController.isUserSearchRow("xx_user"))
+        XCTAssertEqual(stored(product.productCategoryId), stored(" xx_user "))
+        XCTAssertEqual((product.productCategoryId ?? "").characters.count, 9)
+        XCTAssertNotEqual(stored(product.productCategoryId), stored("xx_user"))
+
+        product.productCategoryId = "xx_users"
+        XCTAssertFalse(HLSearchResultViewController.isUserSearchRow(product.productCategoryId))
+        XCTAssertFalse(HLSearchResultViewController.isUserSearchRow("xx_users"))
+        XCTAssertFalse(HLSearchResultViewController.isUserSearchRow("xx_user\n"))
+        XCTAssertEqual(stored(product.productCategoryId), stored("xx_users"))
+
+        product.productCategoryId = "a&b"
+        XCTAssertFalse(HLSearchResultViewController.isUserSearchRow(product.productCategoryId))
+        XCTAssertFalse(HLSearchResultViewController.isUserSearchRow("a%26b"))
+        XCTAssertEqual(stored(product.productCategoryId), stored("a&b"))
+        XCTAssertEqual(FormFieldPolicy.encoded("a&b"), "a%26b")
+        XCTAssertEqual(FormFieldPolicy.encoded("xx_user"), "xx_user")
+        XCTAssertNotEqual(FormFieldPolicy.encoded("a&b"), "xx_user")
+
+        product.productCategoryId = "xx_user"
+        XCTAssertTrue(HLSearchResultViewController.isUserSearchRow(product.productCategoryId))
+        XCTAssertTrue(HLSearchResultViewController.isUserSearchRow("xx_user"))
+        XCTAssertFalse(HLSearchResultViewController.isUserSearchRow("XX_user"))
+        XCTAssertEqual(stored(product.productCategoryId), stored("xx_user"))
+        XCTAssertEqual(stored(product.productName), stored(" bike "))
+        XCTAssertEqual(stored(product.productDescription), stored(" line\n2 "))
+        XCTAssertEqual(stored(product.productId), stored("p&1"))
+
+        XCTAssertNil(CommonUtils.searchUserProduct(from: ["name": "Ada"] as NSDictionary))
+        let built = CommonUtils.searchUserProduct(from: [
+            "_id": " u&1 ",
+            "name": "Ada",
+            "nick": "ada",
+            "image": " http://img "
+        ] as NSDictionary)
+        XCTAssertEqual(built?.productCategoryId, "xx_user")
+        XCTAssertTrue(HLSearchResultViewController.isUserSearchRow(built?.productCategoryId))
+        XCTAssertEqual(built?.productId, " u&1 ")
+        XCTAssertNotEqual(built?.productId, "u&1")
+        XCTAssertEqual(built?.productImage, " http://img ")
+        let spacedId = CommonUtils.searchUserProduct(from: ["_id": " "] as NSDictionary)
+        XCTAssertEqual(spacedId?.productCategoryId, "xx_user")
+        XCTAssertTrue(HLSearchResultViewController.isUserSearchRow(spacedId?.productCategoryId))
+        XCTAssertEqual(spacedId?.productId, " ")
+
+        product.productCondition = nil
+        product.productCategoryId = nil
+        XCTAssertFalse(HLSearchResultViewController.isUserSearchRow(product.productCategoryId))
+        XCTAssertFalse(HLSearchResultViewController.conditionMatchesFilter(product.productCondition, filter: "new"))
+        XCTAssertTrue(HLSearchResultViewController.conditionMatchesFilter(product.productCondition, filter: "all"))
+        product.productCategoryId = "xx_user"
+        product.productCondition = " new "
+        XCTAssertTrue(HLSearchResultViewController.isUserSearchRow(product.productCategoryId))
+        XCTAssertFalse(HLSearchResultViewController.conditionMatchesFilter(product.productCondition, filter: "new"))
+        XCTAssertTrue(HLSearchResultViewController.conditionMatchesFilter(product.productCondition, filter: "all"))
+        XCTAssertEqual(stored(product.productCondition), stored(" new "))
+        XCTAssertFalse(CompleteProductProfilePolicy.shouldHideConditionGroup(categoryId: product.productCategoryId))
+        XCTAssertFalse(CompleteProductProfilePolicy.shouldHideConditionGroup(categoryId: nil))
+        XCTAssertTrue(CompleteProductProfilePolicy.shouldHideConditionGroup(
+            categoryId: CompleteProductProfilePolicy.serviceCategoryId
+        ))
+
+        let base = "https://hula.trading/api/"
+        XCTAssertNil(HLDataManager.userProfileURL(apiBase: base, userId: nil))
+        XCTAssertNil(HLDataManager.userProfileURL(apiBase: base, userId: ""))
+        XCTAssertNil(HLDataManager.userProfileURL(apiBase: base, userId: " "))
+        XCTAssertNil(HLDataManager.userProfileURL(apiBase: base, userId: "\n"))
+        XCTAssertEqual(
+            HLDataManager.userProfileURL(apiBase: base, userId: product.productId),
+            "https://hula.trading/api/users/p%261"
+        )
+        XCTAssertEqual(
+            HLDataManager.userProfileURL(apiBase: base, userId: " u&1 "),
+            "https://hula.trading/api/users/u%261"
+        )
+
+        XCTAssertTrue(HLSearchResultViewController.sellerMeetsReputation(nil, minimumPercent: 0))
+        XCTAssertFalse(HLSearchResultViewController.sellerMeetsReputation(nil, minimumPercent: 80))
+        XCTAssertEqual(HLSearchResultViewController.listingOwnerId(nil), "")
+        XCTAssertEqual(HLSearchResultViewController.listingOwnerId(""), "")
+        XCTAssertEqual(HLSearchResultViewController.listingOwnerId(" me "), " me ")
+        XCTAssertNotEqual(HLSearchResultViewController.listingOwnerId(" me "), "me")
+        XCTAssertTrue(HLProductEditTextViewController.selectsNewCondition("new"))
+        XCTAssertFalse(HLProductEditTextViewController.selectsNewCondition(nil))
+        XCTAssertFalse(HLProductEditTextViewController.selectsNewCondition("xx_user"))
+        XCTAssertEqual(HLProductDetailViewController.localizedCondition("new"), "New")
+        XCTAssertFalse(HLSwappViewController.showsWaitingForReply(
+            turnUserId: "xx_user",
+            viewerId: nil,
+            waitingTurnEnabled: false
+        ))
+        XCTAssertFalse(HLSwappViewController.shouldBlockOffer(
+            turnUserId: nil,
+            viewerId: "xx_user",
+            buttonTag: 0,
+            productsReceivedTag: 1,
+            turnGateEnabled: false
+        ))
+    }
+
     private func tradeReadyFixture(
         ownerId: String,
         otherId: String,
