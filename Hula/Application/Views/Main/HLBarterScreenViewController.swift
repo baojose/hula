@@ -195,6 +195,27 @@ class HLBarterScreenViewController: BaseViewController {
         return LiveBarterWritePolicy.recoveredPublishState(currentGeneration: currentGeneration)
     }
 
+    /// `refreshProductsArrays` compared IUO `productId` (`String!`) to another
+    /// IUO `productId`. `populateTradedProducts` compared IUO `pr.productId` to
+    /// a non-optional traded id. A nil id crashed before video fields were
+    /// copied, or before a traded id was recognized, so a real listing could be
+    /// treated as deleted. Nil matches nobody, including another nil and `""`.
+    /// Exact `"p1"` matches `"p1"`. Do not trim. `" p1 "` does not match `"p1"`.
+    /// `"P1"` does not match `"p1"`. Do not use
+    /// `ProductIdentityPolicy.identifiersMatch` (nil becomes `""`, so nil would
+    /// match `""`). Do not change `removingTradedProducts`.
+    class func sameListedProduct(_ lhs: String?, _ rhs: String?) -> Bool {
+        return BarterProductMatchPolicy.sameProduct(lhs, rhs)
+    }
+
+    class func listedProducts(matching productId: String, in products: [HulaProduct]) -> [HulaProduct] {
+        return BarterProductMatchPolicy.listedProducts(matching: productId, in: products)
+    }
+
+    class func copyingListedVideoFields(from fresh: [HulaProduct], onto existing: [HulaProduct]) {
+        BarterProductMatchPolicy.copyingVideoFields(from: fresh, onto: existing)
+    }
+
     /// Pull traded ids out of available inventory without mutating during a precomputed
     /// `0...count-1` walk. Opening a trade room used to trap when a traded listing sat
     /// early among 3+ items: `remove(at:)` shrank the array while the original last
@@ -450,28 +471,8 @@ class HLBarterScreenViewController: BaseViewController {
         getUserProducts(user: HulaUser.sharedInstance.userId, taskCallback: {(ok, result) in
             guard ok, result.count > 0 else { return }
             if (result.count > 0){
-                for j in 0 ... (result.count - 1) {
-                    if (self.myTradedProducts.count > 0){
-                        for i in 0 ... (self.myTradedProducts.count - 1) {
-                            if (self.myTradedProducts[i].productId == result[j].productId){
-                                //print("found product!")
-                                self.myTradedProducts[i].video_url = result[j].video_url;
-                                self.myTradedProducts[i].video_requested = result[j].video_requested;
-                                
-                            }
-                        }
-                    }
-                    if (self.myProducts.count > 0){
-                        for i in 0 ... (self.myProducts.count - 1) {
-                            if (self.myProducts[i].productId == result[j].productId){
-                                //print("found product!")
-                                self.myProducts[i].video_url = result[j].video_url;
-                                self.myProducts[i].video_requested = result[j].video_requested;
-                                
-                            }
-                        }
-                    }
-                }
+                HLBarterScreenViewController.copyingListedVideoFields(from: result, onto: self.myTradedProducts)
+                HLBarterScreenViewController.copyingListedVideoFields(from: result, onto: self.myProducts)
                 self.mySelectedProductsCollection.reloadData()
                 self.myProductsCollection.reloadData()
             }
@@ -482,27 +483,8 @@ class HLBarterScreenViewController: BaseViewController {
         getUserProducts(user: self.otherUserId, taskCallback: {(ok, result) in
             guard ok, result.count > 0 else { return }
             if (result.count > 0){
-                for j in 0 ... (result.count - 1) {
-                    if (self.otherTradedProducts.count > 0){
-                        for i in 0 ... (self.otherTradedProducts.count - 1) {
-                            if (self.otherTradedProducts[i].productId == result[j].productId){
-                                //print("found product!")
-                                self.otherTradedProducts[i].video_url = result[j].video_url;
-                                self.otherTradedProducts[i].video_requested = result[j].video_requested;
-                                
-                            }
-                        }
-                    }
-                    if (self.otherProducts.count > 0){
-                        for i in 0 ... (self.otherProducts.count - 1) {
-                            if (self.otherProducts[i].productId == result[j].productId){
-                                //print("found product!")
-                                self.otherProducts[i].video_url = result[j].video_url;
-                                self.otherProducts[i].video_requested = result[j].video_requested;
-                            }
-                        }
-                    }
-                }
+                HLBarterScreenViewController.copyingListedVideoFields(from: result, onto: self.otherTradedProducts)
+                HLBarterScreenViewController.copyingListedVideoFields(from: result, onto: self.otherProducts)
                 self.otherSelectedProductsCollection.reloadData()
                 self.otherProductsCollection.reloadData()
             }
@@ -522,15 +504,12 @@ class HLBarterScreenViewController: BaseViewController {
         
         //print(thisTrade.last_bid_diff)
         for pr_id in list{
-            var found : Bool = false
-            for pr in reference_list{
-                if pr.productId == pr_id{
-                    final_arr.append(pr)
-                    found = true
-                }
+            let matches = HLBarterScreenViewController.listedProducts(matching: pr_id, in: reference_list)
+            if !matches.isEmpty {
+                final_arr.append(contentsOf: matches)
             }
-            
-            if !found && pr_id != "" {
+
+            if matches.isEmpty && pr_id != "" {
                 //self.animateDisolveProduct(pr_id, type: type)
                 let tmp_prod = HulaProduct(id: pr_id, name: NSLocalizedString("Deleted product", comment: ""), image: CommonUtils.sharedInstance.productImageURL(productId: pr_id))
                 tmp_prod.productStatus = "deleted"
@@ -1759,6 +1738,50 @@ extension HLBarterScreenViewController: CalculatorDelegate{
             }
         }
         return newArr
+    }
+}
+
+/// Barter inventory refresh and traded-product lookup compared IUO `productId`
+/// (`String!`) with `==`. A nil id crashed before `video_url` / `video_requested`
+/// were copied, or before a traded id was recognized. Nil matches nobody,
+/// including another nil and `""`. Exact strings match, including `""`.
+/// Whitespace and case are kept. `ProductIdentityPolicy.identifiersMatch`
+/// still treats nil as `""` and must not be used here. `removingTraded` still
+/// maps a nil id to `""`.
+struct BarterProductMatchPolicy {
+    static func sameProduct(_ lhs: String?, _ rhs: String?) -> Bool {
+        guard let lhs = lhs, let rhs = rhs else {
+            return false
+        }
+        return lhs == rhs
+    }
+
+    static func listedProducts(matching productId: String, in products: [HulaProduct]) -> [HulaProduct] {
+        var matches: [HulaProduct] = []
+        for product in products {
+            if sameProduct(product.productId, productId) {
+                matches.append(product)
+            }
+        }
+        return matches
+    }
+
+    /// Same walk `refreshProductsArrays` used: each fresh row updates every
+    /// existing row with the same id. The two assignments stay `video_url` and
+    /// `video_requested`. A nil id on either side copies nothing.
+    static func copyingVideoFields(from fresh: [HulaProduct], onto existing: [HulaProduct]) {
+        if fresh.count > 0 {
+            for j in 0 ... (fresh.count - 1) {
+                if existing.count > 0 {
+                    for i in 0 ... (existing.count - 1) {
+                        if sameProduct(existing[i].productId, fresh[j].productId) {
+                            existing[i].video_url = fresh[j].video_url
+                            existing[i].video_requested = fresh[j].video_requested
+                        }
+                    }
+                }
+            }
+        }
     }
 }
 

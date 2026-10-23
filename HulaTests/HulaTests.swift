@@ -9667,6 +9667,267 @@ class HulaTests: XCTestCase {
         ))
     }
 
+    /// `HLBarterScreenViewController.refreshProductsArrays` compared IUO
+    /// `productId` (`String!`) to another IUO `productId` in the traded and
+    /// available columns. `populateTradedProducts` compared IUO `pr.productId`
+    /// to a non-optional traded id. A nil id crashed before video fields were
+    /// copied, or before a traded id was recognized, so a real listing could be
+    /// treated as deleted. `sameListedProduct` treats nil as a match for nobody,
+    /// including another nil and `""`. Exact `"p1"` matches `"p1"`. Do not trim.
+    /// `" p1 "` does not match `"p1"`. `"P1"` does not match `"p1"`. Do not use
+    /// `ProductIdentityPolicy.identifiersMatch` (nil becomes `""`, so nil would
+    /// match `""`). Do not change `removingTradedProducts`. Do not change the
+    /// `video_url` / `video_requested` writes. Do not change `getUserProducts`.
+    /// Do not change `isUserSearchRow`. Do not enable the turn gate.
+    func testNilProductIdDoesNotMatchBarterListingOrCopyVideo() {
+        func stored(_ raw: String?) -> String? {
+            return raw
+        }
+
+        let nilId = HulaProduct()
+        nilId.productId = nil
+        nilId.productName = "nil row"
+        XCTAssertFalse(HLBarterScreenViewController.sameListedProduct(nilId.productId, nilId.productId))
+        XCTAssertFalse(HLBarterScreenViewController.sameListedProduct(nil, nil))
+        XCTAssertFalse(BarterProductMatchPolicy.sameProduct(nil, nil))
+        XCTAssertFalse(HLBarterScreenViewController.sameListedProduct(nil, ""))
+        XCTAssertFalse(HLBarterScreenViewController.sameListedProduct("", nil))
+        XCTAssertFalse(HLBarterScreenViewController.sameListedProduct(nil, "p1"))
+        XCTAssertFalse(HLBarterScreenViewController.sameListedProduct("p1", nil))
+        XCTAssertNil(stored(nilId.productId))
+        XCTAssertEqual(stored(nilId.productName), stored("nil row"))
+        XCTAssertTrue(ProductIdentityPolicy.identifiersMatch(nil, nil))
+        XCTAssertTrue(ProductIdentityPolicy.identifiersMatch(nil, ""))
+        XCTAssertTrue(ProductIdentityPolicy.identifiersMatch(nilId.productId, ""))
+
+        XCTAssertTrue(HLBarterScreenViewController.sameListedProduct("", ""))
+        XCTAssertTrue(BarterProductMatchPolicy.sameProduct("", ""))
+        XCTAssertFalse(HLBarterScreenViewController.sameListedProduct("", "p1"))
+        XCTAssertFalse(HLBarterScreenViewController.sameListedProduct(" ", ""))
+        XCTAssertFalse(HLBarterScreenViewController.sameListedProduct(" ", "p1"))
+        XCTAssertTrue(HLBarterScreenViewController.sameListedProduct(" ", " "))
+        XCTAssertEqual((" " as String).characters.count, 1)
+        XCTAssertFalse(HLBarterScreenViewController.sameListedProduct("   ", "p1"))
+        XCTAssertTrue(HLBarterScreenViewController.sameListedProduct("   ", "   "))
+        XCTAssertEqual(("   " as String).characters.count, 3)
+        XCTAssertFalse(HLBarterScreenViewController.sameListedProduct("\n", "p1"))
+        XCTAssertTrue(HLBarterScreenViewController.sameListedProduct("\n", "\n"))
+        XCTAssertFalse(HLBarterScreenViewController.sameListedProduct(" \n ", "p1"))
+        XCTAssertTrue(HLBarterScreenViewController.sameListedProduct(" \n ", " \n "))
+
+        XCTAssertTrue(HLBarterScreenViewController.sameListedProduct("p1", "p1"))
+        XCTAssertTrue(BarterProductMatchPolicy.sameProduct("p1", "p1"))
+        XCTAssertFalse(HLBarterScreenViewController.sameListedProduct("P1", "p1"))
+        XCTAssertFalse(HLBarterScreenViewController.sameListedProduct("p1", "P1"))
+        XCTAssertFalse(HLBarterScreenViewController.sameListedProduct(" p1 ", "p1"))
+        XCTAssertFalse(HLBarterScreenViewController.sameListedProduct("p1 ", "p1"))
+        XCTAssertFalse(HLBarterScreenViewController.sameListedProduct(" p1", "p1"))
+        XCTAssertTrue(HLBarterScreenViewController.sameListedProduct(" p1 ", " p1 "))
+        XCTAssertFalse(HLBarterScreenViewController.sameListedProduct("p1\n", "p1"))
+        XCTAssertTrue(HLBarterScreenViewController.sameListedProduct("p1\n", "p1\n"))
+        XCTAssertFalse(HLBarterScreenViewController.sameListedProduct("a&b", "a%26b"))
+        XCTAssertTrue(HLBarterScreenViewController.sameListedProduct("a&b", "a&b"))
+        XCTAssertEqual(FormFieldPolicy.encoded("a&b"), "a%26b")
+        XCTAssertEqual(FormFieldPolicy.encoded("p1"), "p1")
+        XCTAssertNotEqual(FormFieldPolicy.encoded("a&b"), "p1")
+
+        let spaced = HulaProduct(id: " p1 ", name: "spaced", image: " spaced-img ")
+        let upper = HulaProduct(id: "P1", name: "upper", image: "")
+        let first = HulaProduct(id: "p1", name: "first", image: "img")
+        first.productDescription = " line\n2 "
+        let second = HulaProduct(id: "p1", name: "second", image: "")
+        let empty = HulaProduct()
+        empty.productId = ""
+        empty.productName = "empty"
+        let newline = HulaProduct(id: "p1\n", name: "newline", image: "")
+        let inventory = [nilId, spaced, upper, first, empty, newline, second]
+
+        let matches = HLBarterScreenViewController.listedProducts(matching: "p1", in: inventory)
+        XCTAssertEqual(matches.count, 2)
+        XCTAssertTrue(matches[0] === first)
+        XCTAssertTrue(matches[1] === second)
+        XCTAssertEqual(stored(matches[0].productName), stored("first"))
+        XCTAssertEqual(stored(matches[0].productDescription), stored(" line\n2 "))
+        XCTAssertEqual(stored(matches[0].productId), stored("p1"))
+        let viaPolicy = BarterProductMatchPolicy.listedProducts(matching: "p1", in: inventory)
+        XCTAssertEqual(viaPolicy.count, 2)
+        XCTAssertTrue(viaPolicy[0] === first)
+        XCTAssertTrue(viaPolicy[1] === second)
+
+        let spacedMatches = HLBarterScreenViewController.listedProducts(matching: " p1 ", in: inventory)
+        XCTAssertEqual(spacedMatches.count, 1)
+        XCTAssertTrue(spacedMatches[0] === spaced)
+        XCTAssertEqual(stored(spacedMatches[0].productImage), stored(" spaced-img "))
+        XCTAssertEqual(HLBarterScreenViewController.listedProducts(matching: "P1", in: inventory).count, 1)
+        XCTAssertTrue(HLBarterScreenViewController.listedProducts(matching: "P1", in: inventory)[0] === upper)
+        let emptyMatches = HLBarterScreenViewController.listedProducts(matching: "", in: inventory)
+        XCTAssertEqual(emptyMatches.count, 1)
+        XCTAssertTrue(emptyMatches[0] === empty)
+        XCTAssertEqual(HLBarterScreenViewController.listedProducts(matching: "p1", in: [nilId]).count, 0)
+        XCTAssertEqual(HLBarterScreenViewController.listedProducts(matching: "", in: [nilId]).count, 0)
+        XCTAssertEqual(HLBarterScreenViewController.listedProducts(matching: "p1", in: [newline]).count, 0)
+        XCTAssertEqual(HLBarterScreenViewController.listedProducts(matching: "p1\n", in: [newline]).count, 1)
+        XCTAssertEqual(HLBarterScreenViewController.listedProducts(matching: "a&b", in: [first]).count, 0)
+
+        let nilRow = HulaProduct()
+        nilRow.productId = nil
+        nilRow.productName = "nil row"
+        nilRow.productDescription = " keep "
+        nilRow.video_url = ["t": "keep-url"]
+        nilRow.video_requested = ["t": false]
+        let row = HulaProduct(id: "p1", name: "Bike", image: "img")
+        row.productDescription = " line\n2 "
+        row.video_url = ["t": "old"]
+        row.video_requested = ["t": false]
+        let nilFresh = HulaProduct()
+        nilFresh.productId = nil
+        nilFresh.productName = "fresh nil"
+        nilFresh.video_url = ["t": "nil-video"]
+        nilFresh.video_requested = ["t": true]
+        let realFresh = HulaProduct(id: "p1", name: "Renamed", image: "other")
+        realFresh.productDescription = "nope"
+        realFresh.video_url = ["t": "http://v"]
+        realFresh.video_requested = ["t": true]
+        HLBarterScreenViewController.copyingListedVideoFields(from: [nilFresh, realFresh], onto: [nilRow, row])
+        BarterProductMatchPolicy.copyingVideoFields(from: [nilFresh, realFresh], onto: [nilRow, row])
+        XCTAssertEqual(nilRow.video_url["t"], "keep-url")
+        XCTAssertEqual(nilRow.video_requested["t"], false)
+        XCTAssertEqual(stored(nilRow.productName), stored("nil row"))
+        XCTAssertEqual(stored(nilRow.productDescription), stored(" keep "))
+        XCTAssertNil(stored(nilRow.productId))
+        XCTAssertEqual(row.video_url["t"], "http://v")
+        XCTAssertEqual(row.video_requested["t"], true)
+        XCTAssertEqual(stored(row.productName), stored("Bike"))
+        XCTAssertEqual(stored(row.productDescription), stored(" line\n2 "))
+        XCTAssertEqual(stored(row.productId), stored("p1"))
+        XCTAssertEqual(stored(row.productImage), stored("img"))
+
+        let spacedRow = HulaProduct(id: " p1 ", name: "spaced", image: "")
+        spacedRow.video_url = ["t": "spaced-old"]
+        spacedRow.video_requested = ["t": false]
+        let upperRow = HulaProduct(id: "P1", name: "upper", image: "")
+        upperRow.video_url = ["t": "upper-old"]
+        upperRow.video_requested = ["t": false]
+        HLBarterScreenViewController.copyingListedVideoFields(from: [realFresh], onto: [spacedRow, upperRow])
+        XCTAssertEqual(spacedRow.video_url["t"], "spaced-old")
+        XCTAssertEqual(spacedRow.video_requested["t"], false)
+        XCTAssertEqual(upperRow.video_url["t"], "upper-old")
+        XCTAssertEqual(upperRow.video_requested["t"], false)
+        XCTAssertEqual(stored(spacedRow.productId), stored(" p1 "))
+        XCTAssertEqual(stored(upperRow.productId), stored("P1"))
+
+        let older = HulaProduct(id: "p1", name: "older", image: "")
+        older.video_url = ["t": "one"]
+        older.video_requested = ["t": false]
+        let newer = HulaProduct(id: "p1", name: "newer", image: "")
+        newer.video_url = ["t": "two"]
+        newer.video_requested = ["t": true]
+        let lastWins = HulaProduct(id: "p1", name: "row", image: "")
+        lastWins.video_url = ["t": "before"]
+        lastWins.video_requested = ["t": false]
+        HLBarterScreenViewController.copyingListedVideoFields(from: [older, newer], onto: [lastWins])
+        XCTAssertEqual(lastWins.video_url["t"], "two")
+        XCTAssertEqual(lastWins.video_requested["t"], true)
+        XCTAssertEqual(stored(lastWins.productName), stored("row"))
+
+        let twinA = HulaProduct(id: "p1", name: "A", image: "")
+        let twinB = HulaProduct(id: "p1", name: "B", image: "")
+        twinA.video_url = ["t": "old"]
+        twinB.video_url = ["t": "old"]
+        twinA.video_requested = ["t": false]
+        twinB.video_requested = ["t": false]
+        HLBarterScreenViewController.copyingListedVideoFields(from: [realFresh], onto: [twinA, twinB])
+        XCTAssertEqual(twinA.video_url["t"], "http://v")
+        XCTAssertEqual(twinB.video_url["t"], "http://v")
+        XCTAssertEqual(twinA.video_requested["t"], true)
+        XCTAssertEqual(twinB.video_requested["t"], true)
+        XCTAssertEqual(stored(twinA.productName), stored("A"))
+        XCTAssertEqual(stored(twinB.productName), stored("B"))
+
+        let emptyRow = HulaProduct()
+        emptyRow.productId = ""
+        emptyRow.productName = "empty"
+        emptyRow.video_url = ["t": "empty-old"]
+        emptyRow.video_requested = ["t": false]
+        let emptyFresh = HulaProduct()
+        emptyFresh.productId = ""
+        emptyFresh.video_url = ["t": "empty-new"]
+        emptyFresh.video_requested = ["t": true]
+        let nilNeighbor = HulaProduct()
+        nilNeighbor.productId = nil
+        nilNeighbor.video_url = ["t": "nil-old"]
+        nilNeighbor.video_requested = ["t": false]
+        HLBarterScreenViewController.copyingListedVideoFields(from: [emptyFresh], onto: [emptyRow, nilNeighbor])
+        XCTAssertEqual(emptyRow.video_url["t"], "empty-new")
+        XCTAssertEqual(emptyRow.video_requested["t"], true)
+        XCTAssertEqual(nilNeighbor.video_url["t"], "nil-old")
+        XCTAssertEqual(nilNeighbor.video_requested["t"], false)
+        XCTAssertEqual(stored(emptyRow.productName), stored("empty"))
+
+        let cleared = HulaProduct(id: "p1", name: "Bike", image: "img")
+        cleared.video_url = ["t": "old"]
+        cleared.video_requested = ["t": true]
+        let nilFields = HulaProduct(id: "p1", name: "other", image: "")
+        nilFields.video_url = nil
+        nilFields.video_requested = nil
+        HLBarterScreenViewController.copyingListedVideoFields(from: [nilFields], onto: [cleared])
+        XCTAssertNil(cleared.video_url)
+        XCTAssertNil(cleared.video_requested)
+        XCTAssertEqual(stored(cleared.productName), stored("Bike"))
+        XCTAssertEqual(stored(cleared.productImage), stored("img"))
+
+        let untouched = HulaProduct(id: "p1", name: "Bike", image: "")
+        untouched.video_url = ["t": "stay"]
+        untouched.video_requested = ["t": false]
+        HLBarterScreenViewController.copyingListedVideoFields(from: [], onto: [untouched])
+        HLBarterScreenViewController.copyingListedVideoFields(from: [realFresh], onto: [])
+        XCTAssertEqual(untouched.video_url["t"], "stay")
+        XCTAssertEqual(untouched.video_requested["t"], false)
+
+        let keep = HulaProduct(id: "p1", name: "Bike", image: "")
+        let stripped = BarterInventoryPolicy.removingTraded(from: [nilId, keep], tradedIds: [""])
+        XCTAssertEqual(stripped.count, 1)
+        XCTAssertEqual(stripped[0].productId, "p1")
+        XCTAssertTrue(stripped[0] === keep)
+        let viaScreen = HLBarterScreenViewController.removingTradedProducts(from: [nilId, keep], tradedIds: ["p1"])
+        XCTAssertEqual(viaScreen.count, 1)
+        XCTAssertNil(viaScreen[0].productId)
+        XCTAssertTrue(viaScreen[0] === nilId)
+        XCTAssertFalse(HLBarterScreenViewController.sameListedProduct(nilId.productId, ""))
+        XCTAssertFalse(HLBarterScreenViewController.sameListedProduct(nilId.productId, "p1"))
+
+        XCTAssertFalse(HLSearchResultViewController.isUserSearchRow(nil))
+        XCTAssertTrue(HLSearchResultViewController.isUserSearchRow("xx_user"))
+        XCTAssertFalse(HLSearchResultViewController.isUserSearchRow(" p1 "))
+        XCTAssertFalse(HLSearchResultViewController.conditionMatchesFilter(nil, filter: "new"))
+        XCTAssertTrue(HLSearchResultViewController.conditionMatchesFilter(nil, filter: "all"))
+        XCTAssertTrue(HLBarterScreenViewController.hasUserId(" "))
+        XCTAssertFalse(HLBarterScreenViewController.hasUserId(nil))
+        XCTAssertFalse(HLBarterScreenViewController.hasUserId(""))
+        let base = "https://hula.trading/api/"
+        XCTAssertNil(HLBarterScreenViewController.userProductsURL(apiBase: base, userId: nil))
+        XCTAssertNil(HLBarterScreenViewController.userProductsURL(apiBase: base, userId: ""))
+        XCTAssertNil(HLBarterScreenViewController.userProductsURL(apiBase: base, userId: " "))
+        XCTAssertNil(HLBarterScreenViewController.userProductsURL(apiBase: base, userId: "   "))
+        XCTAssertNil(HLBarterScreenViewController.userProductsURL(apiBase: base, userId: "\n"))
+        XCTAssertEqual(
+            HLBarterScreenViewController.userProductsURL(apiBase: base, userId: " u&1 "),
+            "https://hula.trading/api/products/user/u%261"
+        )
+        XCTAssertFalse(HLSwappViewController.showsWaitingForReply(
+            turnUserId: "p1",
+            viewerId: nil,
+            waitingTurnEnabled: false
+        ))
+        XCTAssertFalse(HLSwappViewController.shouldBlockOffer(
+            turnUserId: nil,
+            viewerId: "p1",
+            buttonTag: 0,
+            productsReceivedTag: 1,
+            turnGateEnabled: false
+        ))
+    }
+
     private func tradeReadyFixture(
         ownerId: String,
         otherId: String,
