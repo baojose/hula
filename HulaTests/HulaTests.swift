@@ -9928,6 +9928,190 @@ class HulaTests: XCTestCase {
         ))
     }
 
+    /// `HLMyProductsViewController.didSelectRowAt` compared IUO `product.productName`
+    /// (`String!`) to `NSLocalizedString("Untitled product", comment: "")`. A nil
+    /// name crashed before the row chose complete-profile vs edit. `isUntitledProduct`
+    /// treats nil as not untitled, so the existing else branch opens the editor.
+    /// Exact `"Untitled product"` stays the incomplete path. Do not trim.
+    /// `" Untitled product "`, `"Untitled product "`, `" Untitled product"`,
+    /// `"untitled product"`, `"UNTITLED PRODUCT"`, `""`, `" "`, `"\n"`, and
+    /// `" \n "` stay on the edit path. Do not change
+    /// `cell.productDescription.text = product.productName`. Do not change
+    /// `listingImageURL`, `showsMultipleTrades`, or `reversedProductIndex`.
+    /// Do not change `sameListedProduct` or `removingTraded`. Do not enable the
+    /// turn gate.
+    func testNilProductNameDoesNotOpenCompleteProfileWithoutTrim() {
+        func stored(_ raw: String?) -> String? {
+            return raw
+        }
+
+        let untitled = NSLocalizedString("Untitled product", comment: "")
+        let nilName = HulaProduct()
+        nilName.productName = nil
+        nilName.productId = "p1"
+        nilName.productDescription = " keep "
+        nilName.productImage = " img "
+        XCTAssertFalse(HLMyProductsViewController.isUntitledProduct(nilName.productName))
+        XCTAssertFalse(HLMyProductsViewController.isUntitledProduct(nil))
+        XCTAssertNil(stored(nilName.productName))
+        XCTAssertEqual(stored(nilName.productId), stored("p1"))
+        XCTAssertEqual(stored(nilName.productDescription), stored(" keep "))
+        XCTAssertEqual(stored(nilName.productImage), stored(" img "))
+        XCTAssertFalse(ProductIdentityPolicy.identifiersMatch(nilName.productName, untitled))
+        XCTAssertTrue(ProductIdentityPolicy.identifiersMatch(nil, ""))
+        XCTAssertTrue(ProductIdentityPolicy.identifiersMatch(nilName.productName, ""))
+
+        let empty = HulaProduct()
+        empty.productName = ""
+        XCTAssertFalse(HLMyProductsViewController.isUntitledProduct(empty.productName))
+        XCTAssertFalse(HLMyProductsViewController.isUntitledProduct(""))
+        XCTAssertEqual(stored(empty.productName), stored(""))
+        XCTAssertEqual(("" as String).characters.count, 0)
+
+        let space = HulaProduct()
+        space.productName = " "
+        XCTAssertFalse(HLMyProductsViewController.isUntitledProduct(space.productName))
+        XCTAssertFalse(HLMyProductsViewController.isUntitledProduct(" "))
+        XCTAssertEqual((" " as String).characters.count, 1)
+        XCTAssertEqual(stored(space.productName), stored(" "))
+
+        let spaces = HulaProduct()
+        spaces.productName = "   "
+        XCTAssertFalse(HLMyProductsViewController.isUntitledProduct(spaces.productName))
+        XCTAssertFalse(HLMyProductsViewController.isUntitledProduct("   "))
+        XCTAssertEqual(("   " as String).characters.count, 3)
+
+        let newline = HulaProduct()
+        newline.productName = "\n"
+        XCTAssertFalse(HLMyProductsViewController.isUntitledProduct(newline.productName))
+        XCTAssertFalse(HLMyProductsViewController.isUntitledProduct("\n"))
+        XCTAssertEqual(stored(newline.productName), stored("\n"))
+
+        let spacedNewline = HulaProduct()
+        spacedNewline.productName = " \n "
+        XCTAssertFalse(HLMyProductsViewController.isUntitledProduct(spacedNewline.productName))
+        XCTAssertFalse(HLMyProductsViewController.isUntitledProduct(" \n "))
+        XCTAssertEqual(stored(spacedNewline.productName), stored(" \n "))
+
+        let padded = HulaProduct()
+        padded.productName = " Untitled product "
+        XCTAssertFalse(HLMyProductsViewController.isUntitledProduct(padded.productName))
+        XCTAssertFalse(HLMyProductsViewController.isUntitledProduct(" Untitled product "))
+        XCTAssertEqual(stored(padded.productName), stored(" Untitled product "))
+
+        let trailing = HulaProduct()
+        trailing.productName = "Untitled product "
+        XCTAssertFalse(HLMyProductsViewController.isUntitledProduct(trailing.productName))
+        XCTAssertFalse(HLMyProductsViewController.isUntitledProduct("Untitled product "))
+        XCTAssertEqual(stored(trailing.productName), stored("Untitled product "))
+
+        let leading = HulaProduct()
+        leading.productName = " Untitled product"
+        XCTAssertFalse(HLMyProductsViewController.isUntitledProduct(leading.productName))
+        XCTAssertFalse(HLMyProductsViewController.isUntitledProduct(" Untitled product"))
+        XCTAssertEqual(stored(leading.productName), stored(" Untitled product"))
+
+        let lower = HulaProduct()
+        lower.productName = "untitled product"
+        XCTAssertFalse(HLMyProductsViewController.isUntitledProduct(lower.productName))
+        XCTAssertFalse(HLMyProductsViewController.isUntitledProduct("untitled product"))
+        XCTAssertEqual(stored(lower.productName), stored("untitled product"))
+
+        let upper = HulaProduct()
+        upper.productName = "UNTITLED PRODUCT"
+        XCTAssertFalse(HLMyProductsViewController.isUntitledProduct(upper.productName))
+        XCTAssertFalse(HLMyProductsViewController.isUntitledProduct("UNTITLED PRODUCT"))
+        XCTAssertEqual(stored(upper.productName), stored("UNTITLED PRODUCT"))
+
+        let withNewline = HulaProduct()
+        withNewline.productName = "Untitled product\n"
+        XCTAssertFalse(HLMyProductsViewController.isUntitledProduct(withNewline.productName))
+        XCTAssertFalse(HLMyProductsViewController.isUntitledProduct("Untitled product\n"))
+        XCTAssertEqual(stored(withNewline.productName), stored("Untitled product\n"))
+
+        let encoded = HulaProduct()
+        encoded.productName = "a&b"
+        XCTAssertFalse(HLMyProductsViewController.isUntitledProduct(encoded.productName))
+        XCTAssertFalse(HLMyProductsViewController.isUntitledProduct("a%26b"))
+        XCTAssertEqual(stored(encoded.productName), stored("a&b"))
+        XCTAssertEqual(FormFieldPolicy.encoded("a&b"), "a%26b")
+        XCTAssertNotEqual(FormFieldPolicy.encoded("a&b"), untitled)
+
+        let exact = HulaProduct(id: "p1", name: untitled, image: "img")
+        exact.productDescription = " line\n2 "
+        XCTAssertTrue(HLMyProductsViewController.isUntitledProduct(exact.productName))
+        XCTAssertTrue(HLMyProductsViewController.isUntitledProduct(untitled))
+        XCTAssertEqual(stored(exact.productName), stored(untitled))
+        XCTAssertEqual(stored(exact.productDescription), stored(" line\n2 "))
+        XCTAssertEqual(stored(exact.productId), stored("p1"))
+        XCTAssertEqual(stored(exact.productImage), stored("img"))
+        XCTAssertFalse(HLMyProductsViewController.isUntitledProduct("Untitled"))
+        XCTAssertFalse(HLMyProductsViewController.isUntitledProduct("product"))
+
+        XCTAssertEqual(HLMyProductsViewController.listingImageURL(nilName.productImage), " img ")
+        XCTAssertEqual(HLMyProductsViewController.listingImageURL(nil), "")
+        XCTAssertEqual(HLMyProductsViewController.listingImageURL(" kept"), " kept")
+        XCTAssertFalse(HLMyProductsViewController.showsMultipleTrades(nil))
+        XCTAssertFalse(HLMyProductsViewController.showsMultipleTrades(0))
+        XCTAssertFalse(HLMyProductsViewController.showsMultipleTrades(1))
+        XCTAssertTrue(HLMyProductsViewController.showsMultipleTrades(2))
+        XCTAssertNil(HLMyProductsViewController.reversedProductIndex(row: 0, count: 0))
+        XCTAssertEqual(HLMyProductsViewController.reversedProductIndex(row: 0, count: 2), 1)
+        XCTAssertEqual(HLMyProductsViewController.reversedProductIndex(row: 1, count: 2), 0)
+        let newest = HLMyProductsViewController.product(atRow: 0, in: [exact, nilName])
+        XCTAssertNotNil(newest)
+        if let newest = newest {
+            XCTAssertTrue(newest === nilName)
+            XCTAssertFalse(HLMyProductsViewController.isUntitledProduct(newest.productName))
+            XCTAssertNil(stored(newest.productName))
+        }
+        let older = HLMyProductsViewController.product(atRow: 1, in: [exact, nilName])
+        XCTAssertNotNil(older)
+        if let older = older {
+            XCTAssertTrue(older === exact)
+            XCTAssertTrue(HLMyProductsViewController.isUntitledProduct(older.productName))
+            XCTAssertEqual(stored(older.productName), stored(untitled))
+        }
+
+        XCTAssertFalse(HLBarterScreenViewController.sameListedProduct(nil, nil))
+        XCTAssertFalse(HLBarterScreenViewController.sameListedProduct(nil, ""))
+        XCTAssertTrue(HLBarterScreenViewController.sameListedProduct("p1", "p1"))
+        XCTAssertFalse(HLBarterScreenViewController.sameListedProduct(" p1 ", "p1"))
+        let kept = HulaProduct(id: "p1", name: untitled, image: "")
+        let stripped = HLBarterScreenViewController.removingTradedProducts(from: [nilName, kept], tradedIds: [""])
+        XCTAssertEqual(stripped.count, 2)
+        XCTAssertTrue(stripped[0] === nilName)
+        XCTAssertTrue(stripped[1] === kept)
+        let nilId = HulaProduct()
+        nilId.productId = nil
+        nilId.productName = untitled
+        let removed = HLBarterScreenViewController.removingTradedProducts(from: [nilId, kept], tradedIds: [""])
+        XCTAssertEqual(removed.count, 1)
+        XCTAssertTrue(removed[0] === kept)
+        XCTAssertTrue(HLMyProductsViewController.isUntitledProduct(nilId.productName))
+        XCTAssertFalse(HLBarterScreenViewController.sameListedProduct(nilId.productId, ""))
+        XCTAssertFalse(HLSearchResultViewController.isUserSearchRow(nil))
+        XCTAssertTrue(HLSearchResultViewController.isUserSearchRow("xx_user"))
+        XCTAssertFalse(HLSearchResultViewController.conditionMatchesFilter(nil, filter: "new"))
+        XCTAssertTrue(HLSearchResultViewController.conditionMatchesFilter(nil, filter: "all"))
+        XCTAssertTrue(HLProductEditTextViewController.selectsNewCondition("new"))
+        XCTAssertFalse(HLProductEditTextViewController.selectsNewCondition(nil))
+        XCTAssertEqual(HLEditProductMainViewController.editorPreviousText(nil), "")
+        XCTAssertEqual(HLEditProductMainViewController.editorPreviousText(" bike "), " bike ")
+        XCTAssertFalse(HLSwappViewController.showsWaitingForReply(
+            turnUserId: untitled,
+            viewerId: nil,
+            waitingTurnEnabled: false
+        ))
+        XCTAssertFalse(HLSwappViewController.shouldBlockOffer(
+            turnUserId: nil,
+            viewerId: untitled,
+            buttonTag: 0,
+            productsReceivedTag: 1,
+            turnGateEnabled: false
+        ))
+    }
+
     private func tradeReadyFixture(
         ownerId: String,
         otherId: String,
