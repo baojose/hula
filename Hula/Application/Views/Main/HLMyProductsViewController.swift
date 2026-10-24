@@ -165,7 +165,7 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
         guard let product = HLMyProductsViewController.product(at: order_sorted, in: self.arrayProducts) else {
             return
         }
-        if (product.productName == NSLocalizedString("Untitled product", comment: "") ) {
+        if HLMyProductsViewController.isUntitledProduct(product.productName) {
             // product is incomplete
             let viewController = self.storyboard?.instantiateViewController(withIdentifier: "completeProductProfilePage") as! HLCompleteProductProfileViewController
             self.dataManager.newProduct = product
@@ -212,6 +212,20 @@ class HLMyProductsViewController: BaseViewController, UITableViewDelegate, UITab
     
     
     // Custom functions for ViewController
+
+    /// My Products row selection compared IUO `product.productName` (`String!`)
+    /// to `NSLocalizedString("Untitled product", comment: "")`. A nil name
+    /// crashed before the row chose complete-profile vs edit. Nil is not
+    /// untitled, so the existing else branch opens the editor. Exact
+    /// `"Untitled product"` stays the incomplete path. Do not trim.
+    /// `" Untitled product "`, `"Untitled product "`, `" Untitled product"`,
+    /// `"untitled product"`, `"UNTITLED PRODUCT"`, `""`, `" "`, `"\n"`, and
+    /// `" \n "` stay on the edit path. Do not change
+    /// `cell.productDescription.text = product.productName`. Do not change
+    /// `listingImageURL`, `showsMultipleTrades`, or `reversedProductIndex`.
+    class func isUntitledProduct(_ productName: String?) -> Bool {
+        return productName == NSLocalizedString("Untitled product", comment: "")
+    }
 
     /// Newest-first inventory used `count - row - 1` then clamped empty lists
     /// to index 0. A reload that empties the array must skip instead of crashing.
