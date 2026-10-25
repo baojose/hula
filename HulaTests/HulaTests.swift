@@ -10112,6 +10112,168 @@ class HulaTests: XCTestCase {
         ))
     }
 
+    /// `HLHomeViewController.initView` compared IUO `HulaUser.userName`
+    /// (`String!`) to `""`. A nil name crashed even though the profile alert
+    /// is commented out. `userNameEqualsEmpty` treats nil as not equal to
+    /// `""`, so the if stays false and the alert stays skipped. Exact `""`
+    /// still enters the if. Do not trim. `" "`, `"   "`, `"\n"`, `" \n "`,
+    /// `" a "`, and `"a"` stay outside the if. Do not use
+    /// `UserIdentityPolicy.isIncompleteProfile` (nil becomes `""`, and nick,
+    /// bio, and photo also count). Do not use `hasDisplayValue` or
+    /// `hasUserId`. Do not uncomment the alert. Do not change
+    /// `isUntitledProduct`, search keyword, or Near You URLs.
+    func testNilUserNameDoesNotEnterHomeProfileAlertWithoutTrim() {
+        func stored(_ raw: String?) -> String? {
+            return raw
+        }
+
+        let untitled = NSLocalizedString("Untitled product", comment: "")
+        let user = HulaUser()
+        user.userNick = "nick"
+        user.userBio = "bio"
+        user.userPhotoURL = "http://photo"
+        user.userName = nil
+        XCTAssertFalse(HLHomeViewController.userNameEqualsEmpty(user.userName))
+        XCTAssertFalse(HLHomeViewController.userNameEqualsEmpty(nil))
+        XCTAssertNil(stored(user.userName))
+        XCTAssertEqual(stored(user.userNick), stored("nick"))
+        XCTAssertEqual(stored(user.userBio), stored("bio"))
+        XCTAssertEqual(stored(user.userPhotoURL), stored("http://photo"))
+        XCTAssertTrue(user.isIncompleteProfile())
+        XCTAssertTrue(HulaUser.isIncompleteProfile(
+            name: nil,
+            nick: "nick",
+            bio: "bio",
+            photoURL: "http://photo"
+        ))
+        XCTAssertFalse(HulaUser.hasDisplayValue(user.userName))
+        XCTAssertFalse(HulaUser.hasDisplayValue(nil))
+        XCTAssertFalse(HulaUser.hasUserId(user.userName))
+        XCTAssertFalse(HulaUser.hasUserId(nil))
+        XCTAssertEqual(HLHomeViewController.searchKeyword(from: nil), "")
+        XCTAssertFalse(HLHomeViewController.userNameEqualsEmpty(nil))
+
+        user.userName = ""
+        XCTAssertTrue(HLHomeViewController.userNameEqualsEmpty(user.userName))
+        XCTAssertTrue(HLHomeViewController.userNameEqualsEmpty(""))
+        XCTAssertEqual(stored(user.userName), stored(""))
+        XCTAssertEqual(("" as String).characters.count, 0)
+        XCTAssertTrue(HulaUser.isIncompleteProfile(
+            name: "",
+            nick: "nick",
+            bio: "bio",
+            photoURL: "http://photo"
+        ))
+        XCTAssertFalse(HulaUser.hasDisplayValue(""))
+        XCTAssertFalse(HulaUser.hasUserId(""))
+        XCTAssertEqual(HLHomeViewController.searchKeyword(from: ""), "")
+
+        user.userName = " "
+        XCTAssertFalse(HLHomeViewController.userNameEqualsEmpty(user.userName))
+        XCTAssertFalse(HLHomeViewController.userNameEqualsEmpty(" "))
+        XCTAssertEqual((" " as String).characters.count, 1)
+        XCTAssertEqual(stored(user.userName), stored(" "))
+        XCTAssertFalse(HulaUser.isIncompleteProfile(
+            name: " ",
+            nick: "nick",
+            bio: "bio",
+            photoURL: "http://photo"
+        ))
+        XCTAssertFalse(HulaUser.hasDisplayValue(" "))
+        XCTAssertTrue(HulaUser.hasUserId(" "))
+
+        user.userName = "   "
+        XCTAssertFalse(HLHomeViewController.userNameEqualsEmpty(user.userName))
+        XCTAssertFalse(HLHomeViewController.userNameEqualsEmpty("   "))
+        XCTAssertEqual(("   " as String).characters.count, 3)
+        XCTAssertEqual(stored(user.userName), stored("   "))
+        XCTAssertTrue(HulaUser.hasDisplayValue("   "))
+
+        user.userName = "\n"
+        XCTAssertFalse(HLHomeViewController.userNameEqualsEmpty(user.userName))
+        XCTAssertFalse(HLHomeViewController.userNameEqualsEmpty("\n"))
+        XCTAssertEqual(("\n" as String).characters.count, 1)
+        XCTAssertEqual(stored(user.userName), stored("\n"))
+
+        user.userName = " \n "
+        XCTAssertFalse(HLHomeViewController.userNameEqualsEmpty(user.userName))
+        XCTAssertFalse(HLHomeViewController.userNameEqualsEmpty(" \n "))
+        XCTAssertEqual((" \n " as String).characters.count, 3)
+        XCTAssertEqual(stored(user.userName), stored(" \n "))
+
+        user.userName = " a "
+        XCTAssertFalse(HLHomeViewController.userNameEqualsEmpty(user.userName))
+        XCTAssertFalse(HLHomeViewController.userNameEqualsEmpty(" a "))
+        XCTAssertEqual(stored(user.userName), stored(" a "))
+        XCTAssertEqual(HLHomeViewController.searchKeyword(from: " a "), " a ")
+        XCTAssertTrue(HulaUser.hasDisplayValue(" a "))
+
+        user.userName = "a"
+        XCTAssertFalse(HLHomeViewController.userNameEqualsEmpty(user.userName))
+        XCTAssertFalse(HLHomeViewController.userNameEqualsEmpty("a"))
+        XCTAssertEqual(("a" as String).characters.count, 1)
+        XCTAssertEqual(stored(user.userName), stored("a"))
+        XCTAssertFalse(HulaUser.hasDisplayValue("a"))
+        XCTAssertTrue(HulaUser.hasUserId("a"))
+        XCTAssertFalse(HulaUser.isIncompleteProfile(
+            name: "a",
+            nick: "nick",
+            bio: "bio",
+            photoURL: "http://photo"
+        ))
+        XCTAssertTrue(HulaUser.isIncompleteProfile(
+            name: "a",
+            nick: "",
+            bio: "bio",
+            photoURL: "http://photo"
+        ))
+
+        user.userName = "a&b"
+        XCTAssertFalse(HLHomeViewController.userNameEqualsEmpty(user.userName))
+        XCTAssertFalse(HLHomeViewController.userNameEqualsEmpty("a%26b"))
+        XCTAssertEqual(stored(user.userName), stored("a&b"))
+        XCTAssertEqual(FormFieldPolicy.encoded("a&b"), "a%26b")
+        XCTAssertNotEqual(FormFieldPolicy.encoded("a&b"), "")
+
+        let loggedOut = HulaUser()
+        loggedOut.userName = "Ada"
+        loggedOut.logout()
+        XCTAssertTrue(HLHomeViewController.userNameEqualsEmpty(loggedOut.userName))
+        XCTAssertEqual(stored(loggedOut.userName), stored(""))
+        XCTAssertFalse(HLHomeViewController.userNameEqualsEmpty("Ada"))
+
+        XCTAssertFalse(HLMyProductsViewController.isUntitledProduct(nil))
+        XCTAssertFalse(HLMyProductsViewController.isUntitledProduct(""))
+        XCTAssertTrue(HLMyProductsViewController.isUntitledProduct(untitled))
+        XCTAssertFalse(HLHomeViewController.userNameEqualsEmpty(untitled))
+        XCTAssertFalse(HLHomeViewController.userNameEqualsEmpty(" Untitled product "))
+        XCTAssertEqual(
+            HLHomeViewController.productsNearURL(
+                apiBase: "https://hula.trading/api/",
+                latitude: 37.5,
+                longitude: -122.25
+            ),
+            "https://hula.trading/api/products/near/37.5/-122.25"
+        )
+        XCTAssertEqual(HLHomeViewController.searchKeyword(from: "camera"), "camera")
+        XCTAssertFalse(HLBarterScreenViewController.sameListedProduct(nil, ""))
+        XCTAssertTrue(HLBarterScreenViewController.sameListedProduct("p1", "p1"))
+        XCTAssertFalse(HLSearchResultViewController.isUserSearchRow(nil))
+        XCTAssertTrue(HLSearchResultViewController.isUserSearchRow("xx_user"))
+        XCTAssertFalse(HLSwappViewController.showsWaitingForReply(
+            turnUserId: "",
+            viewerId: nil,
+            waitingTurnEnabled: false
+        ))
+        XCTAssertFalse(HLSwappViewController.shouldBlockOffer(
+            turnUserId: nil,
+            viewerId: "",
+            buttonTag: 0,
+            productsReceivedTag: 1,
+            turnGateEnabled: false
+        ))
+    }
+
     private func tradeReadyFixture(
         ownerId: String,
         otherId: String,
