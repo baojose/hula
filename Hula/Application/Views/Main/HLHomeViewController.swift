@@ -106,10 +106,24 @@ class HLHomeViewController: BaseViewController, UIScrollViewDelegate, UITextFiel
         self.profileCompleteAlertView.isHidden = true;
         self.noResultView.isHidden = true;
         //print(HulaUser.sharedInstance.userName)
-        if (HulaUser.sharedInstance.userName == ""){
+        if HLHomeViewController.userNameEqualsEmpty(HulaUser.sharedInstance.userName) {
             //self.showProfileCompleteAlertView()
         }
         searchTxtField.addTarget(self, action: #selector(searchTextDidChange(_:)), for: UIControlEvents.editingChanged)
+    }
+
+    /// Home `initView` compared IUO `HulaUser.userName` (`String!`) to `""`.
+    /// A nil name crashed even though `showProfileCompleteAlertView()` is
+    /// commented out. Nil is not equal to `""`, so the if stays false and the
+    /// alert stays skipped. Exact `""` still enters the if. Do not trim.
+    /// `" "`, `"   "`, `"\n"`, `" \n "`, `" a "`, and `"a"` stay outside the
+    /// if. Do not use `UserIdentityPolicy.isIncompleteProfile` (nil becomes
+    /// `""`, and nick, bio, and photo also count). Do not use
+    /// `hasDisplayValue` (count > 1) or `hasUserId`. Do not uncomment the
+    /// alert. Do not change `isUntitledProduct`, `searchKeyword`, or Near You
+    /// URLs. Do not rewrite the stored name.
+    class func userNameEqualsEmpty(_ userName: String?) -> Bool {
+        return userName == ""
     }
 
     /// Autocomplete path. Blank keywords and failed encoding must not force-unwrap `encodedKw!`.
