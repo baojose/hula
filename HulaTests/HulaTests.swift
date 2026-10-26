@@ -10274,6 +10274,240 @@ class HulaTests: XCTestCase {
         ))
     }
 
+    /// `HLCompleteProductProfileViewController.initView` interpolated IUO
+    /// `productCategoryId` and `productCategory` (`String!`) inside
+    /// `print("Cat: \(...)")`. A nil category id or name crashed before
+    /// `shouldHideConditionGroup`. `categoryPrintText` returns the raw string
+    /// for that print only. Nil becomes `""`. Do not trim. `" "`, `"   "`,
+    /// `"\n"`, `" \n "`, and a padded service id stay themselves. Exact
+    /// `59124d47a0716d0938e9276c` still hides the condition group. Do not
+    /// route the print through `isUserSearchRow` or `FormFieldPolicy.encoded`.
+    /// Do not rewrite the stored category id or name. Do not change name,
+    /// description, or condition prefill. Do not change `userNameEqualsEmpty`.
+    /// Do not enable the turn gate or `waitingTurnEnabled`.
+    func testNilCategoryPrintTextDoesNotCrashCompleteProfileWithoutTrim() {
+        func stored(_ raw: String?) -> String? {
+            return raw
+        }
+
+        let serviceId = CompleteProductProfilePolicy.serviceCategoryId
+        let untitled = NSLocalizedString("Untitled product", comment: "")
+        let product = HulaProduct()
+        product.productName = " bike "
+        product.productDescription = " line\n2 "
+        product.productCondition = " used "
+        product.productImage = " http://img "
+        product.productCategoryId = nil
+        product.productCategory = nil
+        XCTAssertEqual(HLCompleteProductProfileViewController.categoryPrintText(product.productCategoryId), "")
+        XCTAssertEqual(HLCompleteProductProfileViewController.categoryPrintText(product.productCategory), "")
+        XCTAssertEqual(HLCompleteProductProfileViewController.categoryPrintText(nil), "")
+        XCTAssertEqual(
+            "Cat: \(HLCompleteProductProfileViewController.categoryPrintText(product.productCategoryId))",
+            "Cat: "
+        )
+        XCTAssertEqual(
+            "Cat: \(HLCompleteProductProfileViewController.categoryPrintText(product.productCategory))",
+            "Cat: "
+        )
+        XCTAssertNil(stored(product.productCategoryId))
+        XCTAssertNil(stored(product.productCategory))
+        XCTAssertEqual(stored(product.productName), stored(" bike "))
+        XCTAssertEqual(stored(product.productDescription), stored(" line\n2 "))
+        XCTAssertEqual(stored(product.productCondition), stored(" used "))
+        XCTAssertEqual(stored(product.productImage), stored(" http://img "))
+        XCTAssertFalse(CompleteProductProfilePolicy.shouldHideConditionGroup(categoryId: product.productCategoryId))
+        XCTAssertFalse(CompleteProductProfilePolicy.shouldHideConditionGroup(categoryId: nil))
+        XCTAssertFalse(HLSearchResultViewController.isUserSearchRow(product.productCategoryId))
+        XCTAssertEqual((product.productName ?? "").characters.count, 6)
+        XCTAssertNotEqual(product.productName ?? "", untitled)
+        XCTAssertEqual(HLCompleteProductProfileViewController.referenceImageURL(product.productImage), " http://img ")
+        XCTAssertNotEqual(HLCompleteProductProfileViewController.referenceImageURL(product.productImage), "")
+
+        product.productCategoryId = ""
+        product.productCategory = ""
+        XCTAssertEqual(HLCompleteProductProfileViewController.categoryPrintText(product.productCategoryId), "")
+        XCTAssertEqual(HLCompleteProductProfileViewController.categoryPrintText(product.productCategory), "")
+        XCTAssertEqual(HLCompleteProductProfileViewController.categoryPrintText(""), "")
+        XCTAssertEqual(stored(product.productCategoryId), stored(""))
+        XCTAssertEqual(stored(product.productCategory), stored(""))
+        XCTAssertEqual(("" as String).characters.count, 0)
+        XCTAssertFalse(CompleteProductProfilePolicy.shouldHideConditionGroup(categoryId: ""))
+        XCTAssertFalse(CompleteProductProfilePolicy.shouldHideConditionGroup(categoryId: product.productCategoryId))
+
+        product.productCategoryId = " "
+        product.productCategory = " "
+        XCTAssertEqual(HLCompleteProductProfileViewController.categoryPrintText(product.productCategoryId), " ")
+        XCTAssertEqual(HLCompleteProductProfileViewController.categoryPrintText(product.productCategory), " ")
+        XCTAssertEqual(HLCompleteProductProfileViewController.categoryPrintText(" "), " ")
+        XCTAssertNotEqual(HLCompleteProductProfileViewController.categoryPrintText(" "), "")
+        XCTAssertEqual((" " as String).characters.count, 1)
+        XCTAssertEqual(stored(product.productCategoryId), stored(" "))
+        XCTAssertEqual(stored(product.productCategory), stored(" "))
+        XCTAssertNil(CommonUtils.nonEmptyTrimmed(" "))
+        XCTAssertFalse(CompleteProductProfilePolicy.shouldHideConditionGroup(categoryId: " "))
+        XCTAssertFalse(HLSearchResultViewController.isUserSearchRow(" "))
+
+        product.productCategoryId = "   "
+        product.productCategory = "   "
+        XCTAssertEqual(HLCompleteProductProfileViewController.categoryPrintText(product.productCategoryId), "   ")
+        XCTAssertEqual(HLCompleteProductProfileViewController.categoryPrintText("   "), "   ")
+        XCTAssertEqual(("   " as String).characters.count, 3)
+        XCTAssertEqual(stored(product.productCategoryId), stored("   "))
+        XCTAssertEqual(stored(product.productCategory), stored("   "))
+        XCTAssertFalse(CompleteProductProfilePolicy.shouldHideConditionGroup(categoryId: "   "))
+
+        product.productCategoryId = "\n"
+        product.productCategory = "\n"
+        XCTAssertEqual(HLCompleteProductProfileViewController.categoryPrintText(product.productCategoryId), "\n")
+        XCTAssertEqual(HLCompleteProductProfileViewController.categoryPrintText(product.productCategory), "\n")
+        XCTAssertEqual(HLCompleteProductProfileViewController.categoryPrintText("\n"), "\n")
+        XCTAssertEqual(("\n" as String).characters.count, 1)
+        XCTAssertEqual(stored(product.productCategoryId), stored("\n"))
+        XCTAssertFalse(CompleteProductProfilePolicy.shouldHideConditionGroup(categoryId: "\n"))
+
+        product.productCategoryId = " \n "
+        product.productCategory = " \n "
+        XCTAssertEqual(HLCompleteProductProfileViewController.categoryPrintText(product.productCategoryId), " \n ")
+        XCTAssertEqual(HLCompleteProductProfileViewController.categoryPrintText(product.productCategory), " \n ")
+        XCTAssertEqual((" \n " as String).characters.count, 3)
+        XCTAssertEqual(stored(product.productCategoryId), stored(" \n "))
+        XCTAssertEqual(stored(product.productCategory), stored(" \n "))
+        XCTAssertFalse(CompleteProductProfilePolicy.shouldHideConditionGroup(categoryId: " \n "))
+        XCTAssertNil(CommonUtils.nonEmptyTrimmed(" \n "))
+
+        let paddedService = " \(serviceId) "
+        product.productCategoryId = paddedService
+        product.productCategory = paddedService
+        XCTAssertEqual(HLCompleteProductProfileViewController.categoryPrintText(product.productCategoryId), paddedService)
+        XCTAssertEqual(HLCompleteProductProfileViewController.categoryPrintText(product.productCategory), paddedService)
+        XCTAssertEqual((paddedService as String).characters.count, 26)
+        XCTAssertNotEqual(HLCompleteProductProfileViewController.categoryPrintText(paddedService), serviceId)
+        XCTAssertNotEqual(HLCompleteProductProfileViewController.categoryPrintText(paddedService), "")
+        XCTAssertEqual(stored(product.productCategoryId), stored(paddedService))
+        XCTAssertEqual(stored(product.productCategory), stored(paddedService))
+        XCTAssertFalse(CompleteProductProfilePolicy.shouldHideConditionGroup(categoryId: paddedService))
+        XCTAssertFalse(CompleteProductProfilePolicy.shouldHideConditionGroup(categoryId: " \(serviceId)"))
+        XCTAssertFalse(CompleteProductProfilePolicy.shouldHideConditionGroup(categoryId: "\(serviceId) "))
+        XCTAssertNotEqual(FormFieldPolicy.encoded(paddedService), paddedService)
+        XCTAssertNotEqual(FormFieldPolicy.encoded(paddedService), serviceId)
+        XCTAssertFalse(CompleteProductProfilePolicy.shouldHideConditionGroup(categoryId: FormFieldPolicy.encoded(paddedService)))
+        XCTAssertFalse(HLSearchResultViewController.isUserSearchRow(paddedService))
+
+        let upperService = "59124D47A0716D0938E9276C"
+        product.productCategoryId = upperService
+        XCTAssertEqual(HLCompleteProductProfileViewController.categoryPrintText(product.productCategoryId), upperService)
+        XCTAssertEqual(stored(product.productCategoryId), stored(upperService))
+        XCTAssertFalse(CompleteProductProfilePolicy.shouldHideConditionGroup(categoryId: upperService))
+        XCTAssertNotEqual(upperService, serviceId)
+
+        product.productCategoryId = "a&b"
+        product.productCategory = "a&b"
+        XCTAssertEqual(HLCompleteProductProfileViewController.categoryPrintText(product.productCategoryId), "a&b")
+        XCTAssertEqual(HLCompleteProductProfileViewController.categoryPrintText(product.productCategory), "a&b")
+        XCTAssertNotEqual(HLCompleteProductProfileViewController.categoryPrintText("a&b"), "a%26b")
+        XCTAssertEqual(stored(product.productCategoryId), stored("a&b"))
+        XCTAssertEqual(stored(product.productCategory), stored("a&b"))
+        XCTAssertEqual(FormFieldPolicy.encoded("a&b"), "a%26b")
+        XCTAssertEqual(FormFieldPolicy.encoded(nil), "")
+        XCTAssertNotEqual(FormFieldPolicy.encoded("a&b"), "")
+        XCTAssertFalse(CompleteProductProfilePolicy.shouldHideConditionGroup(categoryId: "a&b"))
+        XCTAssertFalse(CompleteProductProfilePolicy.shouldHideConditionGroup(categoryId: "a%26b"))
+        XCTAssertFalse(HLSearchResultViewController.isUserSearchRow("a&b"))
+
+        product.productCategoryId = "xx_user"
+        product.productCategory = "Services"
+        XCTAssertEqual(HLCompleteProductProfileViewController.categoryPrintText(product.productCategoryId), "xx_user")
+        XCTAssertEqual(HLCompleteProductProfileViewController.categoryPrintText(product.productCategory), "Services")
+        XCTAssertTrue(HLSearchResultViewController.isUserSearchRow("xx_user"))
+        XCTAssertTrue(HLSearchResultViewController.isUserSearchRow(product.productCategoryId))
+        XCTAssertFalse(HLSearchResultViewController.isUserSearchRow("XX_user"))
+        XCTAssertFalse(HLSearchResultViewController.isUserSearchRow(nil))
+        XCTAssertFalse(CompleteProductProfilePolicy.shouldHideConditionGroup(categoryId: "xx_user"))
+        XCTAssertFalse(CompleteProductProfilePolicy.shouldHideConditionGroup(categoryId: "Services"))
+        XCTAssertEqual(stored(product.productCategoryId), stored("xx_user"))
+        XCTAssertEqual(stored(product.productCategory), stored("Services"))
+        XCTAssertEqual(HLProductDetailViewController.localizedCategory("xx_user"), "xx_user")
+        XCTAssertEqual(
+            HLProductDetailViewController.localizedCategory(nil),
+            NSLocalizedString("", comment: "")
+        )
+        XCTAssertEqual(HLCompleteProductProfileViewController.categoryPrintText(" bike "), " bike ")
+        XCTAssertNotEqual(HLCompleteProductProfileViewController.categoryPrintText(" bike "), "bike")
+
+        product.productCategoryId = serviceId
+        product.productCategory = "Services"
+        XCTAssertEqual(HLCompleteProductProfileViewController.categoryPrintText(product.productCategoryId), serviceId)
+        XCTAssertEqual(HLCompleteProductProfileViewController.categoryPrintText(product.productCategory), "Services")
+        XCTAssertEqual(
+            "Cat: \(HLCompleteProductProfileViewController.categoryPrintText(product.productCategoryId))",
+            "Cat: \(serviceId)"
+        )
+        XCTAssertEqual(stored(product.productCategoryId), stored(serviceId))
+        XCTAssertEqual(stored(product.productCategory), stored("Services"))
+        XCTAssertTrue(CompleteProductProfilePolicy.shouldHideConditionGroup(categoryId: product.productCategoryId))
+        XCTAssertTrue(CompleteProductProfilePolicy.shouldHideConditionGroup(categoryId: serviceId))
+        XCTAssertEqual(FormFieldPolicy.encoded(serviceId), serviceId)
+        XCTAssertFalse(HLSearchResultViewController.isUserSearchRow(serviceId))
+        XCTAssertEqual(stored(product.productName), stored(" bike "))
+        XCTAssertEqual(stored(product.productDescription), stored(" line\n2 "))
+        XCTAssertEqual(stored(product.productCondition), stored(" used "))
+
+        let kept = HLCompleteProductProfileViewController.resolvedProductFields(
+            titleField: nil,
+            descriptionField: "  ",
+            existingTitle: product.productName,
+            existingDescription: product.productDescription
+        )
+        XCTAssertEqual(kept.title, " bike ")
+        XCTAssertEqual(kept.description, " line\n2 ")
+        let trimmedFields = HLCompleteProductProfileViewController.resolvedProductFields(
+            titleField: " Bike ",
+            descriptionField: " desc ",
+            existingTitle: " bike ",
+            existingDescription: " line\n2 "
+        )
+        XCTAssertEqual(trimmedFields.title, "Bike")
+        XCTAssertEqual(trimmedFields.description, "desc")
+        XCTAssertEqual(HLCompleteProductProfileViewController.categoryPrintText(" Bike "), " Bike ")
+        XCTAssertEqual(HLCompleteProductProfileViewController.descriptionFieldText(nil), "")
+        XCTAssertEqual(HLCompleteProductProfileViewController.descriptionFieldText(" line\n2 "), " line\n2 ")
+        XCTAssertEqual(HLEditProductMainViewController.editorPreviousText(nil), "")
+        XCTAssertEqual(HLEditProductMainViewController.editorPreviousText(" bike "), " bike ")
+        XCTAssertEqual(HLCompleteProductProfileViewController.referenceImageURL(nil), "")
+        XCTAssertEqual(HLCompleteProductProfileViewController.referenceImageURL(" http://img "), " http://img ")
+
+        product.productName = nil
+        XCTAssertEqual((product.productName ?? "").characters.count, 0)
+        XCTAssertEqual(HLHomeViewController.searchKeyword(from: nil), "")
+        XCTAssertFalse(HLHomeViewController.userNameEqualsEmpty(nil))
+        XCTAssertTrue(HLHomeViewController.userNameEqualsEmpty(""))
+        XCTAssertFalse(HLHomeViewController.userNameEqualsEmpty(" "))
+        XCTAssertFalse(HLMyProductsViewController.isUntitledProduct(nil))
+        XCTAssertTrue(HLMyProductsViewController.isUntitledProduct(untitled))
+        XCTAssertFalse(HLMyProductsViewController.isUntitledProduct(""))
+        XCTAssertFalse(HLProductEditTextViewController.selectsNewCondition(nil))
+        XCTAssertTrue(HLProductEditTextViewController.selectsNewCondition("new"))
+        XCTAssertFalse(HLProductEditTextViewController.selectsNewCondition("used"))
+        XCTAssertFalse(HLProductEditTextViewController.selectsNewCondition(" used "))
+        XCTAssertFalse(HLSearchResultViewController.conditionMatchesFilter(nil, filter: "new"))
+        XCTAssertTrue(HLSearchResultViewController.conditionMatchesFilter(nil, filter: "all"))
+        XCTAssertFalse(HLBarterScreenViewController.sameListedProduct(nil, ""))
+        XCTAssertTrue(HLBarterScreenViewController.sameListedProduct(serviceId, serviceId))
+        XCTAssertFalse(HLSwappViewController.showsWaitingForReply(
+            turnUserId: serviceId,
+            viewerId: nil,
+            waitingTurnEnabled: false
+        ))
+        XCTAssertFalse(HLSwappViewController.shouldBlockOffer(
+            turnUserId: nil,
+            viewerId: serviceId,
+            buttonTag: 0,
+            productsReceivedTag: 1,
+            turnGateEnabled: false
+        ))
+    }
+
     private func tradeReadyFixture(
         ownerId: String,
         otherId: String,
