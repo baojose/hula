@@ -74,8 +74,8 @@ class HLCompleteProductProfileViewController: BaseViewController, UIScrollViewDe
         self.view.addGestureRecognizer(tapGesture)
         
         //perkScrollView.contentSize = CGSize(width: mainScrollView.frame.size.width, height: mainScrollView.frame.size.height+130)
-        print("Cat: \(dataManager.newProduct.productCategoryId)");
-        print("Cat: \(dataManager.newProduct.productCategory)");
+        print("Cat: \(HLCompleteProductProfileViewController.categoryPrintText(dataManager.newProduct.productCategoryId))");
+        print("Cat: \(HLCompleteProductProfileViewController.categoryPrintText(dataManager.newProduct.productCategory))");
         if CompleteProductProfilePolicy.shouldHideConditionGroup(categoryId: dataManager.newProduct.productCategoryId) {
             // service product. No need to set as used or new
             conditionGroup.isHidden = true;
@@ -185,6 +185,20 @@ class HLCompleteProductProfileViewController: BaseViewController, UIScrollViewDe
 
         let description = trimmedDescription.count > 0 ? trimmedDescription : priorDescription
         return (title, description)
+    }
+
+    /// Complete-profile `initView` interpolated IUO `productCategoryId` and
+    /// `productCategory` (`String!`) inside `print("Cat: \(...)")`. A nil
+    /// category id or name crashed before `shouldHideConditionGroup`. This
+    /// returns the raw string for that print only. Nil becomes `""`. Do not
+    /// trim. `" "`, `"   "`, `"\n"`, `" \n "`, and a padded service id stay
+    /// themselves. Do not change `shouldHideConditionGroup`. Exact
+    /// `59124d47a0716d0938e9276c` still hides. Do not route through
+    /// `isUserSearchRow` or `FormFieldPolicy.encoded`. Do not rewrite the
+    /// stored category id or name. Do not change name, description, or
+    /// condition prefill.
+    class func categoryPrintText(_ raw: String?) -> String {
+        return raw ?? ""
     }
 
     /// The local capture is a `UIImage!`. When it is nil, the screen loads
