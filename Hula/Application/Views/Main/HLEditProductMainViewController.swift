@@ -67,6 +67,22 @@ class HLEditProductMainViewController: BaseViewController, ProductPictureDelegat
         return PhotoGalleryPolicy.shouldOpenCameraForLastSlot(slotIndex: slotIndex, linkCount: linkCount)
     }
 
+    /// Delete-image interpolated IUO `dataManager.newProduct.arrProductPhotos`
+    /// (`NSMutableArray!`) inside
+    /// `print("self.dataManager.newProduct.arrProductPhotos \(...)")` before
+    /// `FeaturedPhotoPolicy.removeObject`. A nil draft album crashed the
+    /// delete path. This returns the print string only. Nil becomes `""`.
+    /// A non-nil array keeps `description`. Do not trim that description.
+    /// The print reads the draft album. Removal still uses
+    /// `product.arrProductPhotos`. Do not change `removeObject`,
+    /// `removingLink`, `canPromote`, or `promoteObject`.
+    class func draftAlbumPrintText(_ photos: NSMutableArray?) -> String {
+        guard let photos = photos else {
+            return ""
+        }
+        return photos.description
+    }
+
     override func viewDidLoad() {
         super.viewDidLoad()
         self.initData()
@@ -362,7 +378,7 @@ extension HLEditProductMainViewController {
         let  deleteButton = UIAlertAction(title: NSLocalizedString("Delete image", comment: ""), style: .destructive, handler: { (action) -> Void in
             print("Delete button tapped")
             print("self.currentEditingIndex \(self.currentEditingIndex)")
-            print("self.dataManager.newProduct.arrProductPhotos \(self.dataManager.newProduct.arrProductPhotos)")
+            print("self.dataManager.newProduct.arrProductPhotos \(HLEditProductMainViewController.draftAlbumPrintText(self.dataManager.newProduct.arrProductPhotos))")
             _ = FeaturedPhotoPolicy.removeObject(in: self.product.arrProductPhotos, at: self.currentEditingIndex)
             if let remaining = FeaturedPhotoPolicy.removingLink(self.product.arrProductPhotoLink, at: self.currentEditingIndex) {
                 self.product.arrProductPhotoLink = remaining
