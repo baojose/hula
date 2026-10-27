@@ -10508,6 +10508,238 @@ class HulaTests: XCTestCase {
         ))
     }
 
+    /// `HLEditProductMainViewController` delete-image interpolated IUO
+    /// `dataManager.newProduct.arrProductPhotos` (`NSMutableArray!`) inside
+    /// `print("self.dataManager.newProduct.arrProductPhotos \(...)")` before
+    /// `FeaturedPhotoPolicy.removeObject`. A nil draft album crashed the
+    /// delete path. `draftAlbumPrintText` returns the print string only. Nil
+    /// becomes `""`. A non-nil array keeps `description`. Do not trim that
+    /// description. The print reads the draft album. Removal still uses
+    /// `product.arrProductPhotos`. Do not switch those albums. Do not change
+    /// `removeObject`, `removingLink`, `canPromote`, or `promoteObject`.
+    /// Index 0 still deletes. `canPromote` still rejects index 0. Do not
+    /// change `categoryPrintText`. Do not enable the turn gate.
+    func testNilDraftAlbumPrintTextDoesNotCrashEditProductDeleteWithoutTrim() {
+        func printed(_ photos: NSMutableArray?) -> String {
+            return HLEditProductMainViewController.draftAlbumPrintText(photos)
+        }
+        func storedAlbum(_ photos: NSMutableArray?) -> NSMutableArray? {
+            return photos
+        }
+
+        let serviceId = CompleteProductProfilePolicy.serviceCategoryId
+        let untitled = NSLocalizedString("Untitled product", comment: "")
+
+        XCTAssertEqual(printed(nil), "")
+        XCTAssertEqual(
+            "self.dataManager.newProduct.arrProductPhotos \(printed(nil))",
+            "self.dataManager.newProduct.arrProductPhotos "
+        )
+        XCTAssertFalse(FeaturedPhotoPolicy.removeObject(in: nil, at: 0))
+        XCTAssertFalse(FeaturedPhotoPolicy.removeObject(in: nil, at: -1))
+        XCTAssertNil(FeaturedPhotoPolicy.removingLink(nil, at: 0))
+        XCTAssertFalse(FeaturedPhotoPolicy.promoteObject(in: nil, at: 1))
+        XCTAssertFalse(FeaturedPhotoPolicy.canPromote(index: 0, count: 1))
+
+        let fresh = HulaProduct()
+        XCTAssertEqual(printed(fresh.arrProductPhotos), fresh.arrProductPhotos.description)
+        XCTAssertNotEqual(printed(fresh.arrProductPhotos), "")
+        XCTAssertNotEqual(printed(fresh.arrProductPhotos), printed(nil))
+        XCTAssertEqual(fresh.arrProductPhotos.count, 0)
+        XCTAssertFalse(FeaturedPhotoPolicy.removeObject(in: fresh.arrProductPhotos, at: 0))
+        XCTAssertEqual(fresh.arrProductPhotos.count, 0)
+
+        let draft = HulaProduct()
+        draft.arrProductPhotos = nil
+        XCTAssertNil(storedAlbum(draft.arrProductPhotos))
+        XCTAssertEqual(printed(draft.arrProductPhotos), "")
+        XCTAssertEqual(printed(nil), "")
+
+        let draftAlbum = NSMutableArray()
+        draftAlbum.add(" bike ")
+        draft.arrProductPhotos = draftAlbum
+        XCTAssertEqual(printed(draft.arrProductPhotos), draftAlbum.description)
+        XCTAssertEqual(
+            "self.dataManager.newProduct.arrProductPhotos \(printed(draft.arrProductPhotos))",
+            "self.dataManager.newProduct.arrProductPhotos \(draftAlbum.description)"
+        )
+        XCTAssertNotEqual(
+            "self.dataManager.newProduct.arrProductPhotos \(printed(draft.arrProductPhotos))",
+            "self.dataManager.newProduct.arrProductPhotos "
+        )
+        XCTAssertEqual(draftAlbum.object(at: 0) as? String, " bike ")
+        XCTAssertNotEqual(printed(draftAlbum), "")
+        XCTAssertNotEqual(printed(draftAlbum), "bike")
+        XCTAssertEqual(FeaturedPhotoPolicy.firstURL([" bike "]), "bike")
+
+        let listed = HulaProduct()
+        let listedAlbum = NSMutableArray()
+        listedAlbum.add(" keep ")
+        listedAlbum.add(" drop ")
+        listed.arrProductPhotos = listedAlbum
+        listed.arrProductPhotoLink = [" keep-url ", " drop-url "]
+        XCTAssertNotEqual(printed(draft.arrProductPhotos), printed(listed.arrProductPhotos))
+        XCTAssertEqual(printed(listed.arrProductPhotos), listedAlbum.description)
+        XCTAssertTrue(FeaturedPhotoPolicy.removeObject(in: listed.arrProductPhotos, at: 1))
+        XCTAssertEqual(listedAlbum.count, 1)
+        XCTAssertEqual(listedAlbum.object(at: 0) as? String, " keep ")
+        XCTAssertEqual(draftAlbum.count, 1)
+        XCTAssertEqual(draftAlbum.object(at: 0) as? String, " bike ")
+        XCTAssertEqual(printed(draft.arrProductPhotos), draftAlbum.description)
+        if let remaining = FeaturedPhotoPolicy.removingLink(listed.arrProductPhotoLink, at: 1) {
+            listed.arrProductPhotoLink = remaining
+        }
+        XCTAssertEqual(listed.arrProductPhotoLink ?? [], [" keep-url "])
+        XCTAssertEqual((listed.arrProductPhotoLink ?? []).first ?? "", " keep-url ")
+        XCTAssertNotEqual((listed.arrProductPhotoLink ?? []).first ?? "", "keep-url")
+
+        draft.arrProductPhotos = nil
+        XCTAssertEqual(printed(draft.arrProductPhotos), "")
+        XCTAssertNil(storedAlbum(draft.arrProductPhotos))
+        XCTAssertFalse(FeaturedPhotoPolicy.removeObject(in: draft.arrProductPhotos, at: 0))
+        XCTAssertEqual(listedAlbum.count, 1)
+        XCTAssertEqual(listedAlbum.object(at: 0) as? String, " keep ")
+
+        listed.arrProductPhotos = nil
+        listed.arrProductPhotoLink = nil
+        XCTAssertNil(storedAlbum(listed.arrProductPhotos))
+        XCTAssertFalse(FeaturedPhotoPolicy.removeObject(in: listed.arrProductPhotos, at: 0))
+        XCTAssertNil(FeaturedPhotoPolicy.removingLink(listed.arrProductPhotoLink, at: 0))
+        XCTAssertEqual(printed(listed.arrProductPhotos), "")
+
+        let stable = NSMutableArray()
+        stable.add(" only ")
+        let stableDescription = stable.description
+        XCTAssertEqual(printed(stable), stableDescription)
+        XCTAssertFalse(FeaturedPhotoPolicy.removeObject(in: stable, at: 1))
+        XCTAssertFalse(FeaturedPhotoPolicy.removeObject(in: stable, at: -1))
+        XCTAssertEqual(stable.count, 1)
+        XCTAssertEqual(stable.object(at: 0) as? String, " only ")
+        XCTAssertEqual(printed(stable), stableDescription)
+        XCTAssertNil(FeaturedPhotoPolicy.removingLink([" only "], at: 1))
+        XCTAssertNil(FeaturedPhotoPolicy.removingLink([" only "], at: -1))
+        XCTAssertEqual(FeaturedPhotoPolicy.removingLink([" only "], at: 0) ?? [], [])
+
+        let featured = NSMutableArray()
+        featured.add(" featured ")
+        featured.add(" other ")
+        XCTAssertFalse(FeaturedPhotoPolicy.canPromote(index: 0, count: featured.count))
+        XCTAssertTrue(FeaturedPhotoPolicy.canPromote(index: 1, count: featured.count))
+        XCTAssertFalse(FeaturedPhotoPolicy.canPromote(index: 2, count: featured.count))
+        XCTAssertFalse(FeaturedPhotoPolicy.canPromote(index: -1, count: featured.count))
+        XCTAssertFalse(FeaturedPhotoPolicy.promoteObject(in: featured, at: 0))
+        XCTAssertEqual(featured.object(at: 0) as? String, " featured ")
+        XCTAssertEqual(featured.object(at: 1) as? String, " other ")
+        XCTAssertTrue(FeaturedPhotoPolicy.removeObject(in: featured, at: 0))
+        XCTAssertEqual(featured.count, 1)
+        XCTAssertEqual(featured.object(at: 0) as? String, " other ")
+        XCTAssertEqual(FeaturedPhotoPolicy.removingLink([" featured ", " other "], at: 0) ?? [], [" other "])
+
+        let blanks = NSMutableArray()
+        blanks.add(" ")
+        blanks.add("\n")
+        XCTAssertEqual(printed(blanks), blanks.description)
+        XCTAssertNotEqual(printed(blanks), "")
+        XCTAssertNotEqual(printed(blanks), NSMutableArray().description)
+        XCTAssertTrue(FeaturedPhotoPolicy.removeObject(in: blanks, at: 0))
+        XCTAssertEqual(blanks.count, 1)
+        XCTAssertEqual(blanks.object(at: 0) as? String, "\n")
+        XCTAssertEqual(FeaturedPhotoPolicy.removingLink([" ", "\n"], at: 0) ?? [], ["\n"])
+        XCTAssertEqual(FeaturedPhotoPolicy.removingLink(["   "], at: 0) ?? ["sentinel"], [])
+        XCTAssertEqual(FeaturedPhotoPolicy.removingLink([" \n "], at: 0) ?? ["sentinel"], [])
+        XCTAssertNil(FeaturedPhotoPolicy.firstURL([" "]))
+        XCTAssertNil(FeaturedPhotoPolicy.firstURL(["   "]))
+        XCTAssertNil(FeaturedPhotoPolicy.firstURL(["\n"]))
+        XCTAssertNil(FeaturedPhotoPolicy.firstURL([" \n "]))
+        XCTAssertNil(FeaturedPhotoPolicy.firstURL(nil))
+
+        let tokens = [" ", "   ", "\n", " \n ", " bike ", " Bike ", "a&b", "xx_user"]
+        for token in tokens {
+            let row = NSMutableArray()
+            row.add(token)
+            XCTAssertEqual(printed(row), row.description)
+            XCTAssertNotEqual(printed(row), "")
+            XCTAssertNotEqual(printed(row), NSMutableArray().description)
+            XCTAssertEqual(row.object(at: 0) as? String, token)
+            XCTAssertNil(CommonUtils.nonEmptyTrimmed(" "))
+        }
+
+        let space = NSMutableArray()
+        space.add(" ")
+        let emptyString = NSMutableArray()
+        emptyString.add("")
+        let trimmedBike = NSMutableArray()
+        trimmedBike.add("bike")
+        XCTAssertNotEqual(printed(space), printed(emptyString))
+        XCTAssertNotEqual(printed(space), printed(nil))
+        XCTAssertNotEqual(printed(draftAlbum), printed(trimmedBike))
+        XCTAssertEqual(draftAlbum.object(at: 0) as? String, " bike ")
+
+        let amp = NSMutableArray()
+        amp.add("a&b")
+        XCTAssertEqual(printed(amp), amp.description)
+        XCTAssertEqual(amp.object(at: 0) as? String, "a&b")
+        XCTAssertEqual(FormFieldPolicy.encoded("a&b"), "a%26b")
+        XCTAssertEqual(FormFieldPolicy.encoded(nil), "")
+        XCTAssertNotEqual(amp.object(at: 0) as? String, FormFieldPolicy.encoded("a&b"))
+        XCTAssertNotEqual(printed(amp), "a%26b")
+
+        let mixed = NSMutableArray()
+        mixed.add(NSNull())
+        mixed.add(" photo ")
+        XCTAssertEqual(printed(mixed), mixed.description)
+        XCTAssertNotEqual(printed(mixed), "")
+        XCTAssertTrue(FeaturedPhotoPolicy.removeObject(in: mixed, at: 0))
+        XCTAssertEqual(mixed.count, 1)
+        XCTAssertEqual(mixed.object(at: 0) as? String, " photo ")
+        XCTAssertNotEqual(mixed.object(at: 0) as? String, "photo")
+
+        let many = NSMutableArray()
+        many.add(" ")
+        many.add(" bike ")
+        many.add("a&b")
+        XCTAssertEqual(printed(many), many.description)
+        XCTAssertEqual(many.count, 3)
+        XCTAssertEqual(many.object(at: 0) as? String, " ")
+        XCTAssertEqual(many.object(at: 1) as? String, " bike ")
+        XCTAssertEqual(many.object(at: 2) as? String, "a&b")
+
+        XCTAssertEqual(HLCompleteProductProfileViewController.categoryPrintText(nil), "")
+        XCTAssertEqual(HLCompleteProductProfileViewController.categoryPrintText(""), "")
+        XCTAssertEqual(HLCompleteProductProfileViewController.categoryPrintText(" "), " ")
+        XCTAssertEqual(HLCompleteProductProfileViewController.categoryPrintText(" bike "), " bike ")
+        XCTAssertEqual(HLCompleteProductProfileViewController.categoryPrintText("a&b"), "a&b")
+        XCTAssertNotEqual(HLCompleteProductProfileViewController.categoryPrintText("a&b"), "a%26b")
+        XCTAssertFalse(CompleteProductProfilePolicy.shouldHideConditionGroup(categoryId: nil))
+        XCTAssertFalse(CompleteProductProfilePolicy.shouldHideConditionGroup(categoryId: " "))
+        XCTAssertFalse(CompleteProductProfilePolicy.shouldHideConditionGroup(categoryId: " \(serviceId) "))
+        XCTAssertTrue(CompleteProductProfilePolicy.shouldHideConditionGroup(categoryId: serviceId))
+        XCTAssertEqual(HLEditProductMainViewController.editorPreviousText(nil), "")
+        XCTAssertEqual(HLEditProductMainViewController.editorPreviousText(" bike "), " bike ")
+        XCTAssertEqual(HLCompleteProductProfileViewController.referenceImageURL(nil), "")
+        XCTAssertEqual(HLCompleteProductProfileViewController.referenceImageURL(" http://img "), " http://img ")
+        XCTAssertFalse(HLHomeViewController.userNameEqualsEmpty(nil))
+        XCTAssertTrue(HLHomeViewController.userNameEqualsEmpty(""))
+        XCTAssertFalse(HLHomeViewController.userNameEqualsEmpty(" "))
+        XCTAssertEqual(HLHomeViewController.searchKeyword(from: nil), "")
+        XCTAssertFalse(HLMyProductsViewController.isUntitledProduct(nil))
+        XCTAssertTrue(HLMyProductsViewController.isUntitledProduct(untitled))
+        XCTAssertFalse(HLBarterScreenViewController.sameListedProduct(nil, ""))
+        XCTAssertTrue(HLBarterScreenViewController.sameListedProduct(serviceId, serviceId))
+        XCTAssertFalse(HLSwappViewController.showsWaitingForReply(
+            turnUserId: serviceId,
+            viewerId: nil,
+            waitingTurnEnabled: false
+        ))
+        XCTAssertFalse(HLSwappViewController.shouldBlockOffer(
+            turnUserId: nil,
+            viewerId: serviceId,
+            buttonTag: 0,
+            productsReceivedTag: 1,
+            turnGateEnabled: false
+        ))
+    }
+
     private func tradeReadyFixture(
         ownerId: String,
         otherId: String,
