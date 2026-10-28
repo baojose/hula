@@ -10740,6 +10740,152 @@ class HulaTests: XCTestCase {
         ))
     }
 
+    /// `HulaTrade.description` interpolated IUO `owner_id` and `other_id`
+    /// (`String!`). A nil id crashed the print. `debugDescriptionText` returns
+    /// the print string only. Nil becomes `""`. Whitespace is kept. Do not
+    /// trim. Do not percent-encode. Do not use this helper for
+    /// `TradeTurnPolicy.idsMatch` (nil still matches nobody, including `""`).
+    /// Do not change `categoryPrintText` or `draftAlbumPrintText`. Do not
+    /// enable the turn gate.
+    func testNilTradeOwnerIdsDoNotCrashDebugDescriptionWithoutTrim() {
+        func printed(ownerId: String?, otherId: String?) -> String {
+            return HulaTrade.debugDescriptionText(ownerId: ownerId, otherId: otherId)
+        }
+
+        let empty = "**** Hula Trade - owner:  and other:   ****\n"
+        let serviceId = CompleteProductProfilePolicy.serviceCategoryId
+        let untitled = NSLocalizedString("Untitled product", comment: "")
+
+        XCTAssertEqual(printed(ownerId: nil, otherId: nil), empty)
+        XCTAssertEqual(printed(ownerId: "", otherId: ""), empty)
+        XCTAssertEqual(printed(ownerId: nil, otherId: ""), empty)
+        XCTAssertEqual(printed(ownerId: "", otherId: nil), empty)
+        XCTAssertFalse(printed(ownerId: nil, otherId: nil).contains("nil"))
+
+        let named = "**** Hula Trade - owner: Ada and other:   Bob****\n"
+        XCTAssertEqual(printed(ownerId: "Ada", otherId: "Bob"), named)
+        XCTAssertNotEqual(printed(ownerId: "Ada", otherId: "Bob"), empty)
+
+        let fresh = HulaTrade()
+        XCTAssertEqual(fresh.owner_id, "")
+        XCTAssertEqual(fresh.other_id, "")
+        XCTAssertEqual(fresh.description, empty)
+        XCTAssertEqual(fresh.description, printed(ownerId: fresh.owner_id, otherId: fresh.other_id))
+
+        fresh.owner_id = nil
+        fresh.other_id = nil
+        XCTAssertEqual(fresh.description, empty)
+        XCTAssertEqual(printed(ownerId: fresh.owner_id, otherId: fresh.other_id), empty)
+        XCTAssertNil(fresh.owner_id)
+        XCTAssertNil(fresh.other_id)
+        XCTAssertFalse(TradeTurnPolicy.idsMatch(fresh.owner_id, fresh.other_id))
+        XCTAssertFalse(TradeTurnPolicy.idsMatch(nil, ""))
+        XCTAssertFalse(TradeTurnPolicy.idsMatch(nil, nil))
+        XCTAssertTrue(TradeTurnPolicy.idsMatch("", ""))
+
+        fresh.owner_id = " bike "
+        fresh.other_id = "a&b"
+        XCTAssertEqual(
+            fresh.description,
+            "**** Hula Trade - owner:  bike  and other:   a&b****\n"
+        )
+        XCTAssertEqual(fresh.description, printed(ownerId: " bike ", otherId: "a&b"))
+        XCTAssertEqual(fresh.owner_id, " bike ")
+        XCTAssertEqual(fresh.other_id, "a&b")
+        XCTAssertNotEqual(fresh.description, printed(ownerId: "bike", otherId: "a%26b"))
+        XCTAssertNotEqual(fresh.owner_id, "bike")
+        XCTAssertNotEqual(fresh.other_id, "a%26b")
+        XCTAssertEqual(FormFieldPolicy.encoded("a&b"), "a%26b")
+        XCTAssertEqual(FormFieldPolicy.encoded(nil), "")
+        XCTAssertNotEqual(printed(ownerId: "a&b", otherId: "a&b"), printed(ownerId: "a%26b", otherId: "a%26b"))
+        XCTAssertFalse(TradeTurnPolicy.idsMatch(" bike ", "bike"))
+        XCTAssertTrue(TradeTurnPolicy.idsMatch(" bike ", " bike "))
+        XCTAssertFalse(TradeTurnPolicy.idsMatch(nil, " bike "))
+
+        let tokens = [" ", "   ", "\n", " \n ", " bike ", " Bike ", "a&b", "xx_user", serviceId]
+        for token in tokens {
+            let row = HulaTrade()
+            row.owner_id = token
+            row.other_id = token
+            XCTAssertEqual(row.description, printed(ownerId: token, otherId: token))
+            XCTAssertEqual(row.owner_id, token)
+            XCTAssertEqual(row.other_id, token)
+            XCTAssertNotEqual(row.description, empty)
+            XCTAssertNotEqual(printed(ownerId: token, otherId: ""), printed(ownerId: nil, otherId: ""))
+            XCTAssertNil(CommonUtils.nonEmptyTrimmed(" "))
+        }
+
+        XCTAssertNotEqual(printed(ownerId: " ", otherId: ""), printed(ownerId: "", otherId: ""))
+        XCTAssertNotEqual(printed(ownerId: " ", otherId: ""), printed(ownerId: nil, otherId: nil))
+        XCTAssertNotEqual(printed(ownerId: "   ", otherId: " "), printed(ownerId: " ", otherId: "   "))
+        XCTAssertNotEqual(printed(ownerId: "\n", otherId: ""), printed(ownerId: " ", otherId: ""))
+        XCTAssertNotEqual(printed(ownerId: " \n ", otherId: " \n "), printed(ownerId: "\n", otherId: "\n"))
+        XCTAssertNotEqual(printed(ownerId: " bike ", otherId: " Bike "), printed(ownerId: "bike", otherId: "Bike"))
+        XCTAssertNotEqual(printed(ownerId: " Bike ", otherId: " bike "), printed(ownerId: " bike ", otherId: " Bike "))
+        XCTAssertEqual(
+            printed(ownerId: "xx_user", otherId: "xx_user"),
+            "**** Hula Trade - owner: xx_user and other:   xx_user****\n"
+        )
+        XCTAssertNotEqual(printed(ownerId: "xx_user", otherId: ""), empty)
+        XCTAssertFalse(TradeTurnPolicy.idsMatch("xx_user", " xx_user "))
+        XCTAssertTrue(TradeTurnPolicy.idsMatch("xx_user", "xx_user"))
+
+        let padded = " \(serviceId) "
+        XCTAssertEqual(
+            printed(ownerId: padded, otherId: serviceId),
+            "**** Hula Trade - owner: \(padded) and other:   \(serviceId)****\n"
+        )
+        XCTAssertNotEqual(printed(ownerId: padded, otherId: serviceId), printed(ownerId: serviceId, otherId: serviceId))
+        XCTAssertNotEqual(printed(ownerId: serviceId.uppercased(), otherId: serviceId), printed(ownerId: serviceId, otherId: serviceId))
+        XCTAssertFalse(TradeTurnPolicy.idsMatch(padded, serviceId))
+        XCTAssertTrue(TradeTurnPolicy.idsMatch(serviceId, serviceId))
+
+        fresh.owner_id = " keep "
+        fresh.other_id = " peer "
+        let stable = fresh.description
+        XCTAssertEqual(stable, printed(ownerId: " keep ", otherId: " peer "))
+        XCTAssertEqual(fresh.description, stable)
+        XCTAssertEqual(fresh.owner_id, " keep ")
+        XCTAssertEqual(fresh.other_id, " peer ")
+        XCTAssertEqual(FormFieldPolicy.encoded(fresh.owner_id), FormFieldPolicy.encoded(" keep "))
+        XCTAssertNotEqual(FormFieldPolicy.encoded(" keep "), " keep ")
+        XCTAssertNotEqual(fresh.description, printed(ownerId: "keep", otherId: "peer"))
+
+        XCTAssertEqual(HLEditProductMainViewController.draftAlbumPrintText(nil), "")
+        XCTAssertEqual(HLCompleteProductProfileViewController.categoryPrintText(nil), "")
+        XCTAssertEqual(HLCompleteProductProfileViewController.categoryPrintText(""), "")
+        XCTAssertEqual(HLCompleteProductProfileViewController.categoryPrintText(" "), " ")
+        XCTAssertEqual(HLCompleteProductProfileViewController.categoryPrintText(" bike "), " bike ")
+        XCTAssertEqual(HLCompleteProductProfileViewController.categoryPrintText("a&b"), "a&b")
+        XCTAssertNotEqual(HLCompleteProductProfileViewController.categoryPrintText("a&b"), "a%26b")
+        XCTAssertFalse(CompleteProductProfilePolicy.shouldHideConditionGroup(categoryId: nil))
+        XCTAssertFalse(CompleteProductProfilePolicy.shouldHideConditionGroup(categoryId: " "))
+        XCTAssertFalse(CompleteProductProfilePolicy.shouldHideConditionGroup(categoryId: " \(serviceId) "))
+        XCTAssertTrue(CompleteProductProfilePolicy.shouldHideConditionGroup(categoryId: serviceId))
+        XCTAssertEqual(HLEditProductMainViewController.editorPreviousText(nil), "")
+        XCTAssertEqual(HLEditProductMainViewController.editorPreviousText(" bike "), " bike ")
+        XCTAssertFalse(HLHomeViewController.userNameEqualsEmpty(nil))
+        XCTAssertTrue(HLHomeViewController.userNameEqualsEmpty(""))
+        XCTAssertFalse(HLHomeViewController.userNameEqualsEmpty(" "))
+        XCTAssertEqual(HLHomeViewController.searchKeyword(from: nil), "")
+        XCTAssertFalse(HLMyProductsViewController.isUntitledProduct(nil))
+        XCTAssertTrue(HLMyProductsViewController.isUntitledProduct(untitled))
+        XCTAssertFalse(HLBarterScreenViewController.sameListedProduct(nil, ""))
+        XCTAssertTrue(HLBarterScreenViewController.sameListedProduct(serviceId, serviceId))
+        XCTAssertFalse(HLSwappViewController.showsWaitingForReply(
+            turnUserId: serviceId,
+            viewerId: nil,
+            waitingTurnEnabled: false
+        ))
+        XCTAssertFalse(HLSwappViewController.shouldBlockOffer(
+            turnUserId: nil,
+            viewerId: serviceId,
+            buttonTag: 0,
+            productsReceivedTag: 1,
+            turnGateEnabled: false
+        ))
+    }
+
     private func tradeReadyFixture(
         ownerId: String,
         otherId: String,
