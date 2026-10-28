@@ -277,7 +277,16 @@ class HulaTrade: NSObject {
         }
     }
     
+    /// Debug print interpolated IUO `owner_id` / `other_id` (`String!`). A nil
+    /// id crashed `description`. Nil becomes `""` for the print only. Do not
+    /// trim. Do not percent-encode. Do not use this for `TradeTurnPolicy.idsMatch`.
+    class func debugDescriptionText(ownerId: String?, otherId: String?) -> String {
+        let owner = ownerId ?? ""
+        let other = otherId ?? ""
+        return "**** Hula Trade - owner: \(owner) and other:   \(other)****\n"
+    }
+
     override var description : String {
-        return "**** Hula Trade - owner: \(self.owner_id) and other:   \(self.other_id)****\n"
+        return HulaTrade.debugDescriptionText(ownerId: self.owner_id, otherId: self.other_id)
     }
 }
