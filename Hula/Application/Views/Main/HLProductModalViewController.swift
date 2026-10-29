@@ -99,6 +99,30 @@ class HLProductModalViewController: UIViewController, UIImagePickerControllerDel
         return OnboardingTutorialPolicy.shouldShow(named: "product_modal", in: tutorials)
     }
 
+    /// `playVideo` printed IUO `product.video_url` (`[String:String]!`). A nil
+    /// map crashed the print. This returns the print string only. Nil becomes
+    /// `""`. A non-nil map keeps `description`. Do not trim. Do not
+    /// percent-encode. Do not route the print through `HulaProduct.videoURL`
+    /// (that trims the trade id).
+    class func videoMapPrintText(_ map: [String: String]?) -> String {
+        guard let map = map else {
+            return ""
+        }
+        return map.description
+    }
+
+    /// `playVideo` passed IUO `product.video_url` into non-optional
+    /// `CommonUtils.playableVideoURL`. A nil map crashed before the
+    /// missing-video alert. Nil is not playable. A non-nil map uses
+    /// `CommonUtils.playableVideoURL` unchanged, including exact trade-id
+    /// lookup. Do not trim the trade id. Do not use `HulaProduct.videoURL`.
+    class func playableVideoURL(videoURLs: [String: String]?, tradeId: String) -> URL? {
+        guard let videoURLs = videoURLs else {
+            return nil
+        }
+        return CommonUtils.playableVideoURL(videoURLs: videoURLs, tradeId: tradeId)
+    }
+
     override func viewDidLoad() {
         super.viewDidLoad()
 
@@ -339,8 +363,8 @@ class HLProductModalViewController: UIViewController, UIImagePickerControllerDel
         
         print("do not allow rotation")
         
-        print(product.video_url)
-        guard let videoURL = CommonUtils.playableVideoURL(
+        print(HLProductModalViewController.videoMapPrintText(product.video_url))
+        guard let videoURL = HLProductModalViewController.playableVideoURL(
             videoURLs: product.video_url,
             tradeId: currentTradeId
         ) else {
