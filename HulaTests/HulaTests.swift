@@ -10886,6 +10886,207 @@ class HulaTests: XCTestCase {
         ))
     }
 
+    /// `HLProductModalViewController.playVideo` printed IUO `product.video_url`
+    /// (`[String:String]!`) and passed that map into non-optional
+    /// `CommonUtils.playableVideoURL`. A nil map crashed before the
+    /// missing-video alert. `videoMapPrintText` returns the print string
+    /// only. Nil becomes `""`. A non-nil map keeps `description`. Do not
+    /// trim. Do not percent-encode. A nil map is not playable. Non-nil maps
+    /// keep exact trade-id lookup. Do not route the print or the playback
+    /// lookup through `HulaProduct.videoURL` (that trims the trade id). Do
+    /// not change `CommonUtils.playableVideoURL`. Do not change
+    /// `debugDescriptionText`. Do not enable the turn gate.
+    func testNilVideoMapDoesNotCrashProductModalPlaybackWithoutTrim() {
+        func printed(_ map: [String: String]?) -> String {
+            return HLProductModalViewController.videoMapPrintText(map)
+        }
+        func played(_ map: [String: String]?, tradeId: String) -> URL? {
+            return HLProductModalViewController.playableVideoURL(videoURLs: map, tradeId: tradeId)
+        }
+
+        let file = "https://hula.trading/files/video.mp4"
+        let serviceId = CompleteProductProfilePolicy.serviceCategoryId
+        let untitled = NSLocalizedString("Untitled product", comment: "")
+        let emptyTrade = "**** Hula Trade - owner:  and other:   ****\n"
+
+        XCTAssertEqual(printed(nil), "")
+        XCTAssertFalse(printed(nil).contains("nil"))
+        XCTAssertNil(played(nil, "t1"))
+        XCTAssertNil(played(nil, ""))
+        XCTAssertNil(played(nil, " "))
+        XCTAssertNil(played(nil, " bike "))
+
+        let product = HulaProduct()
+        XCTAssertEqual(product.video_url.count, 0)
+        product.video_url = nil
+        XCTAssertEqual(printed(product.video_url), "")
+        XCTAssertNil(played(product.video_url, "t1"))
+        XCTAssertNil(product.video_url)
+        XCTAssertEqual(HulaProduct.videoURL(product.video_url, forTradeId: "t1"), "")
+
+        let empty: [String: String] = [:]
+        XCTAssertEqual(printed(empty), empty.description)
+        XCTAssertNotEqual(printed(empty), "")
+        XCTAssertNil(played(empty, "t1"))
+        XCTAssertNil(CommonUtils.playableVideoURL(videoURLs: empty, tradeId: "t1"))
+
+        XCTAssertNil(played(["t1": ""], "t1"))
+        XCTAssertNil(CommonUtils.playableVideoURL(videoURLs: ["t1": ""], tradeId: "t1"))
+        XCTAssertNil(played(["other": file], "t1"))
+        XCTAssertNil(CommonUtils.playableVideoURL(videoURLs: ["other": file], tradeId: "t1"))
+        XCTAssertEqual(played(["t1": file], "t1")?.absoluteString, file)
+        XCTAssertEqual(CommonUtils.playableVideoURL(videoURLs: ["t1": file], tradeId: "t1")?.absoluteString, file)
+        XCTAssertEqual(HulaProduct.videoURL(["t1": file], forTradeId: "t1"), file)
+
+        let spacedValue = ["t1": " "]
+        XCTAssertEqual(printed(spacedValue), spacedValue.description)
+        XCTAssertNotEqual(printed(spacedValue), printed(["t1": ""]))
+        XCTAssertEqual(spacedValue["t1"], " ")
+        XCTAssertNil(played(spacedValue, "t1"))
+        XCTAssertNil(CommonUtils.playableVideoURL(videoURLs: spacedValue, tradeId: "t1"))
+        XCTAssertEqual(HulaProduct.videoURL(spacedValue, forTradeId: "t1"), " ")
+
+        let paddedFile = " \(file) "
+        let paddedValue = ["t1": paddedFile]
+        XCTAssertEqual(printed(paddedValue), paddedValue.description)
+        XCTAssertEqual(paddedValue["t1"], paddedFile)
+        XCTAssertNotEqual(paddedValue["t1"], file)
+        XCTAssertNil(played(paddedValue, "t1"))
+        XCTAssertNil(CommonUtils.playableVideoURL(videoURLs: paddedValue, tradeId: "t1"))
+        XCTAssertEqual(HulaProduct.videoURL(paddedValue, forTradeId: "t1"), paddedFile)
+
+        let exactSpace = [" ": file]
+        XCTAssertEqual(printed(exactSpace), exactSpace.description)
+        XCTAssertNotEqual(printed(exactSpace), "")
+        XCTAssertEqual(played(exactSpace, " ")?.absoluteString, file)
+        XCTAssertEqual(CommonUtils.playableVideoURL(videoURLs: exactSpace, tradeId: " ")?.absoluteString, file)
+        XCTAssertNil(played(exactSpace, ""))
+        XCTAssertNil(played(exactSpace, "bike"))
+        XCTAssertEqual(HulaProduct.videoURL(exactSpace, forTradeId: " "), "")
+        XCTAssertNil(CommonUtils.nonEmptyTrimmed(" "))
+
+        let blankKey = ["": file]
+        XCTAssertEqual(played(blankKey, "")?.absoluteString, file)
+        XCTAssertEqual(CommonUtils.playableVideoURL(videoURLs: blankKey, tradeId: "")?.absoluteString, file)
+        XCTAssertEqual(HulaProduct.videoURL(blankKey, forTradeId: ""), "")
+        XCTAssertNil(played(blankKey, " "))
+
+        let paddedKey = [" bike ": file]
+        XCTAssertEqual(printed(paddedKey), paddedKey.description)
+        XCTAssertEqual(played(paddedKey, " bike ")?.absoluteString, file)
+        XCTAssertNil(played(paddedKey, "bike"))
+        XCTAssertNil(played(paddedKey, " Bike "))
+        XCTAssertEqual(HulaProduct.videoURL(paddedKey, forTradeId: " bike "), "")
+        XCTAssertEqual(HulaProduct.videoURL(paddedKey, forTradeId: "bike"), "")
+        XCTAssertEqual(paddedKey[" bike "], file)
+
+        let trimmedKey = ["t1": file]
+        XCTAssertNil(played(trimmedKey, " t1 "))
+        XCTAssertNil(played(trimmedKey, "t1 "))
+        XCTAssertNil(played(trimmedKey, " t1"))
+        XCTAssertEqual(played(trimmedKey, "t1")?.absoluteString, file)
+        XCTAssertEqual(HulaProduct.videoURL(trimmedKey, forTradeId: " t1 "), file)
+
+        let ampersand = ["a&b": "a&b"]
+        XCTAssertEqual(printed(ampersand), ampersand.description)
+        XCTAssertTrue(printed(ampersand).contains("a&b"))
+        XCTAssertFalse(printed(ampersand).contains("a%26b"))
+        XCTAssertNotEqual(printed(ampersand), ["a%26b": "a%26b"].description)
+        XCTAssertEqual(ampersand["a&b"], "a&b")
+        XCTAssertNil(ampersand["a%26b"])
+        XCTAssertEqual(FormFieldPolicy.encoded("a&b"), "a%26b")
+        XCTAssertEqual(FormFieldPolicy.encoded(nil), "")
+        XCTAssertNotEqual(printed(ampersand), HulaProduct.videoURL(ampersand, forTradeId: "a&b"))
+        let ampersandFile = ["a&b": file]
+        XCTAssertEqual(played(ampersandFile, "a&b")?.absoluteString, file)
+        XCTAssertNil(played(ampersandFile, "a%26b"))
+        XCTAssertEqual(CommonUtils.playableVideoURL(videoURLs: ampersandFile, tradeId: "a&b")?.absoluteString, file)
+        XCTAssertNil(CommonUtils.playableVideoURL(videoURLs: ampersandFile, tradeId: "a%26b"))
+        XCTAssertEqual(HulaProduct.videoURL(ampersandFile, forTradeId: "a&b"), file)
+
+        let malformed = ["t1": "not a url"]
+        XCTAssertEqual(printed(malformed), malformed.description)
+        XCTAssertNotEqual(printed(malformed), "not a url")
+        XCTAssertNil(played(malformed, "t1"))
+        XCTAssertNil(CommonUtils.playableVideoURL(videoURLs: malformed, tradeId: "t1"))
+        XCTAssertEqual(HulaProduct.videoURL(malformed, forTradeId: "t1"), "not a url")
+
+        let tokens = [" ", "   ", "\n", " \n ", " bike ", " Bike ", "a&b", "xx_user", serviceId]
+        for token in tokens {
+            let row = [token: token]
+            XCTAssertEqual(printed(row), row.description)
+            XCTAssertEqual(row[token], token)
+            XCTAssertNotEqual(printed(row), "")
+            XCTAssertFalse(printed(row).contains("%26"))
+            let trimmed = token.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)
+            if trimmed != token {
+                XCTAssertNil(row[trimmed])
+            }
+            let stored = [token: file]
+            XCTAssertEqual(played(stored, token)?.absoluteString, file)
+            XCTAssertEqual(CommonUtils.playableVideoURL(videoURLs: stored, tradeId: token)?.absoluteString, file)
+            XCTAssertNil(played(stored, token + "x"))
+            XCTAssertEqual(stored[token], file)
+        }
+
+        var kept = [" bike ": " bike "]
+        XCTAssertEqual(printed(kept), kept.description)
+        XCTAssertNil(played(kept, " bike "))
+        XCTAssertEqual(kept[" bike "], " bike ")
+        XCTAssertEqual(kept.count, 1)
+        kept[" bike "] = file
+        XCTAssertEqual(played(kept, " bike ")?.absoluteString, file)
+        XCTAssertEqual(kept[" bike "], file)
+        XCTAssertNil(played(kept, "bike"))
+
+        product.video_url = [" keep ": " keep "]
+        XCTAssertEqual(printed(product.video_url), product.video_url.description)
+        XCTAssertEqual(product.video_url[" keep "], " keep ")
+        XCTAssertNil(played(product.video_url, "keep"))
+        product.video_url = ["xx_user": file]
+        XCTAssertEqual(played(product.video_url, "xx_user")?.absoluteString, file)
+        XCTAssertNil(played(product.video_url, " xx_user "))
+        XCTAssertEqual(product.video_url["xx_user"], file)
+
+        XCTAssertEqual(HulaTrade.debugDescriptionText(ownerId: nil, otherId: nil), emptyTrade)
+        XCTAssertEqual(HulaTrade.debugDescriptionText(ownerId: " bike ", otherId: "a&b"), "**** Hula Trade - owner:  bike  and other:   a&b****\n")
+        XCTAssertFalse(TradeTurnPolicy.idsMatch(nil, ""))
+        XCTAssertFalse(TradeTurnPolicy.idsMatch(nil, nil))
+        XCTAssertTrue(TradeTurnPolicy.idsMatch("", ""))
+        XCTAssertFalse(TradeTurnPolicy.idsMatch(" bike ", "bike"))
+        XCTAssertEqual(HLEditProductMainViewController.draftAlbumPrintText(nil), "")
+        XCTAssertEqual(HLCompleteProductProfileViewController.categoryPrintText(nil), "")
+        XCTAssertEqual(HLCompleteProductProfileViewController.categoryPrintText(" bike "), " bike ")
+        XCTAssertEqual(HLCompleteProductProfileViewController.categoryPrintText("a&b"), "a&b")
+        XCTAssertNotEqual(HLCompleteProductProfileViewController.categoryPrintText("a&b"), "a%26b")
+        XCTAssertFalse(CompleteProductProfilePolicy.shouldHideConditionGroup(categoryId: nil))
+        XCTAssertFalse(CompleteProductProfilePolicy.shouldHideConditionGroup(categoryId: " "))
+        XCTAssertFalse(CompleteProductProfilePolicy.shouldHideConditionGroup(categoryId: " \(serviceId) "))
+        XCTAssertTrue(CompleteProductProfilePolicy.shouldHideConditionGroup(categoryId: serviceId))
+        XCTAssertEqual(HLEditProductMainViewController.editorPreviousText(nil), "")
+        XCTAssertEqual(HLEditProductMainViewController.editorPreviousText(" bike "), " bike ")
+        XCTAssertFalse(HLHomeViewController.userNameEqualsEmpty(nil))
+        XCTAssertTrue(HLHomeViewController.userNameEqualsEmpty(""))
+        XCTAssertFalse(HLHomeViewController.userNameEqualsEmpty(" "))
+        XCTAssertEqual(HLHomeViewController.searchKeyword(from: nil), "")
+        XCTAssertFalse(HLMyProductsViewController.isUntitledProduct(nil))
+        XCTAssertTrue(HLMyProductsViewController.isUntitledProduct(untitled))
+        XCTAssertFalse(HLBarterScreenViewController.sameListedProduct(nil, ""))
+        XCTAssertTrue(HLBarterScreenViewController.sameListedProduct(serviceId, serviceId))
+        XCTAssertFalse(HLSwappViewController.showsWaitingForReply(
+            turnUserId: serviceId,
+            viewerId: nil,
+            waitingTurnEnabled: false
+        ))
+        XCTAssertFalse(HLSwappViewController.shouldBlockOffer(
+            turnUserId: nil,
+            viewerId: serviceId,
+            buttonTag: 0,
+            productsReceivedTag: 1,
+            turnGateEnabled: false
+        ))
+    }
+
     private func tradeReadyFixture(
         ownerId: String,
         otherId: String,
