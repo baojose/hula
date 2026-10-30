@@ -11087,6 +11087,372 @@ class HulaTests: XCTestCase {
         ))
     }
 
+    /// Upload success assigned `video_requested[currentTradeId] = true` and
+    /// `video_url[currentTradeId] = staticServerURL + path` on IUO maps. A nil
+    /// map crashed before the success UI. `recordingUploadedVideo` stores the
+    /// exact trade id and the exact flag or URL. A nil map becomes a
+    /// one-entry map. Failure returns nil and does not write, so tag `43909`
+    /// stays on the success path only. Do not trim. Do not percent-encode.
+    /// Do not use `HulaProduct.videoURL` or `nonEmptyTrimmed`. Do not change
+    /// `MediaUploadPolicy`. Do not change `videoMapPrintText` or
+    /// `playableVideoURL`. Do not enable the turn gate.
+    func testNilVideoMapDoesNotCrashUploadSuccessWithoutTrim() {
+        let showUploaded = HLDataManager.MediaUploadPolicy.showUploaded
+        let showRecord = HLDataManager.MediaUploadPolicy.showRecord
+        let file = "/files/v.mp4"
+        let storedFile = HulaConstants.staticServerURL + file
+        let serviceId = CompleteProductProfilePolicy.serviceCategoryId
+        let untitled = NSLocalizedString("Untitled product", comment: "")
+        let emptyTrade = "**** Hula Trade - owner:  and other:   ****\n"
+
+        func recorded(
+            requested: [String: Bool]?,
+            urls: [String: String]?,
+            tradeId: String,
+            uploadState: String,
+            path: String?
+        ) -> (requested: [String: Bool], urls: [String: String])? {
+            return HLProductModalViewController.recordingUploadedVideo(
+                requested: requested,
+                urls: urls,
+                tradeId: tradeId,
+                uploadState: uploadState,
+                path: path
+            )
+        }
+
+        XCTAssertEqual(HulaConstants.staticServerURL, "https://hula.trading")
+        XCTAssertEqual(showUploaded, "uploaded")
+        XCTAssertEqual(showRecord, "record")
+        XCTAssertNotEqual(showUploaded, showRecord)
+        XCTAssertEqual(HLDataManager.MediaUploadPolicy.videoButtonState(ok: true, path: file), showUploaded)
+        XCTAssertEqual(HLDataManager.MediaUploadPolicy.videoButtonState(ok: true, path: ""), showUploaded)
+        XCTAssertEqual(HLDataManager.MediaUploadPolicy.videoButtonState(ok: true, path: " "), showUploaded)
+        XCTAssertEqual(HLDataManager.MediaUploadPolicy.videoButtonState(ok: true, path: " bike "), showUploaded)
+        XCTAssertEqual(HLDataManager.MediaUploadPolicy.videoButtonState(ok: false, path: file), showRecord)
+        XCTAssertEqual(HLDataManager.MediaUploadPolicy.videoButtonState(ok: false, path: " "), showRecord)
+        XCTAssertEqual(HLDataManager.MediaUploadPolicy.videoButtonState(ok: true, path: nil), showRecord)
+        XCTAssertEqual(HLDataManager.MediaUploadPolicy.uploadPath(from: ["path": file] as [String: Any]), file)
+        XCTAssertNil(HLDataManager.MediaUploadPolicy.uploadPath(from: ["path": 1] as [String: Any]))
+        XCTAssertNil(HLDataManager.MediaUploadPolicy.uploadPath(from: nil))
+
+        XCTAssertNil(recorded(requested: nil, urls: nil, tradeId: "t1", uploadState: showRecord, path: file))
+        XCTAssertNil(recorded(requested: nil, urls: nil, tradeId: "t1", uploadState: showUploaded, path: nil))
+        XCTAssertNil(recorded(requested: nil, urls: nil, tradeId: "t1", uploadState: showRecord, path: nil))
+        XCTAssertNil(recorded(requested: nil, urls: nil, tradeId: "t1", uploadState: "uploaded ", path: file))
+        XCTAssertNil(recorded(requested: nil, urls: nil, tradeId: "t1", uploadState: "Uploaded", path: file))
+        XCTAssertNil(recorded(requested: ["t1": true], urls: ["t1": storedFile], tradeId: "t1", uploadState: showRecord, path: file))
+
+        let product = HulaProduct()
+        product.video_requested = nil
+        product.video_url = nil
+        XCTAssertNil(recorded(
+            requested: product.video_requested,
+            urls: product.video_url,
+            tradeId: "t1",
+            uploadState: showRecord,
+            path: file
+        ))
+        XCTAssertNil(product.video_requested)
+        XCTAssertNil(product.video_url)
+        XCTAssertEqual(HulaProduct.videoURL(product.video_url, forTradeId: "t1"), "")
+        XCTAssertFalse(HulaProduct.isVideoRequested(product.video_requested, forTradeId: "t1"))
+
+        guard let created = recorded(
+            requested: product.video_requested,
+            urls: product.video_url,
+            tradeId: "t1",
+            uploadState: showUploaded,
+            path: file
+        ) else {
+            XCTFail("nil maps should become a one-entry upload record")
+            return
+        }
+        XCTAssertNil(product.video_requested)
+        XCTAssertNil(product.video_url)
+        XCTAssertEqual(created.requested.count, 1)
+        XCTAssertEqual(created.urls.count, 1)
+        XCTAssertEqual(created.requested["t1"] ?? false, true)
+        XCTAssertNil(created.requested[" t1 "])
+        XCTAssertEqual(created.urls["t1"] ?? "", storedFile)
+        XCTAssertNil(created.urls[" t1 "])
+        XCTAssertFalse((created.urls["t1"] ?? "").contains("%26"))
+        XCTAssertNotEqual(created.urls["t1"] ?? "", HulaConstants.staticServerURL + "/" + file)
+        product.video_requested = created.requested
+        product.video_url = created.urls
+        XCTAssertEqual(product.video_requested["t1"] ?? false, true)
+        XCTAssertEqual(product.video_url["t1"] ?? "", storedFile)
+        XCTAssertEqual(HulaProduct.videoURL(product.video_url, forTradeId: "t1"), storedFile)
+        XCTAssertTrue(HulaProduct.isVideoRequested(product.video_requested, forTradeId: "t1"))
+        XCTAssertEqual(
+            HLProductModalViewController.playableVideoURL(videoURLs: product.video_url, tradeId: "t1")?.absoluteString,
+            storedFile
+        )
+        XCTAssertNil(HLProductModalViewController.playableVideoURL(videoURLs: product.video_url, tradeId: " t1 "))
+
+        let priorRequested: [String: Bool] = ["other": false, "t1": false]
+        let priorURLs: [String: String] = ["other": "keep", "t1": "old"]
+        guard let replaced = recorded(
+            requested: priorRequested,
+            urls: priorURLs,
+            tradeId: "t1",
+            uploadState: showUploaded,
+            path: file
+        ) else {
+            XCTFail("an existing map should record the uploaded trade")
+            return
+        }
+        XCTAssertEqual(priorRequested["t1"] ?? true, false)
+        XCTAssertEqual(priorRequested["other"] ?? true, false)
+        XCTAssertEqual(priorURLs["t1"] ?? "", "old")
+        XCTAssertEqual(priorURLs["other"] ?? "", "keep")
+        XCTAssertEqual(priorRequested.count, 2)
+        XCTAssertEqual(priorURLs.count, 2)
+        XCTAssertEqual(replaced.requested.count, 2)
+        XCTAssertEqual(replaced.urls.count, 2)
+        XCTAssertEqual(replaced.requested["t1"] ?? false, true)
+        XCTAssertEqual(replaced.requested["other"] ?? true, false)
+        XCTAssertEqual(replaced.urls["t1"] ?? "", storedFile)
+        XCTAssertEqual(replaced.urls["other"] ?? "", "keep")
+        XCTAssertNil(replaced.urls["bike"])
+
+        guard let added = recorded(
+            requested: ["other": true],
+            urls: nil,
+            tradeId: "t1",
+            uploadState: showUploaded,
+            path: file
+        ) else {
+            XCTFail("a nil url map should become a one-entry map beside the existing request map")
+            return
+        }
+        XCTAssertEqual(added.requested.count, 2)
+        XCTAssertEqual(added.urls.count, 1)
+        XCTAssertEqual(added.requested["other"] ?? false, true)
+        XCTAssertEqual(added.requested["t1"] ?? false, true)
+        XCTAssertEqual(added.urls["t1"] ?? "", storedFile)
+        XCTAssertNil(added.urls["other"])
+
+        guard let addedRequest = recorded(
+            requested: nil,
+            urls: ["other": " keep "],
+            tradeId: "t1",
+            uploadState: showUploaded,
+            path: file
+        ) else {
+            XCTFail("a nil request map should become a one-entry map beside the existing url map")
+            return
+        }
+        XCTAssertEqual(addedRequest.requested.count, 1)
+        XCTAssertEqual(addedRequest.urls.count, 2)
+        XCTAssertEqual(addedRequest.requested["t1"] ?? false, true)
+        XCTAssertNil(addedRequest.requested["other"])
+        XCTAssertEqual(addedRequest.urls["other"] ?? "", " keep ")
+        XCTAssertEqual(addedRequest.urls["t1"] ?? "", storedFile)
+        XCTAssertNotEqual(addedRequest.urls["other"] ?? "", "keep")
+
+        let tokens = ["", " ", "   ", "\n", " \n ", " bike ", " Bike ", "a&b", "xx_user", " p&1 ", "prod/1", serviceId]
+        for token in tokens {
+            guard let row = recorded(
+                requested: nil,
+                urls: nil,
+                tradeId: token,
+                uploadState: showUploaded,
+                path: token
+            ) else {
+                XCTFail("exact token should be stored")
+                return
+            }
+            let stored = HulaConstants.staticServerURL + token
+            XCTAssertEqual(row.requested.count, 1)
+            XCTAssertEqual(row.urls.count, 1)
+            XCTAssertEqual(row.requested[token] ?? false, true)
+            XCTAssertEqual(row.urls[token] ?? "", stored)
+            XCTAssertFalse((row.urls[token] ?? "").contains("%26"))
+            XCTAssertFalse((row.urls[token] ?? "").contains("%2F"))
+            let encodedToken = FormFieldPolicy.encoded(token)
+            if encodedToken != token {
+                XCTAssertNotEqual(row.urls[token] ?? "", HulaConstants.staticServerURL + encodedToken)
+                XCTAssertNil(row.urls[encodedToken])
+                XCTAssertNil(row.requested[encodedToken])
+            }
+            let trimmed = token.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)
+            if trimmed != token {
+                XCTAssertNil(row.requested[trimmed])
+                XCTAssertNil(row.urls[trimmed])
+                XCTAssertNotEqual(row.urls[token] ?? "", HulaConstants.staticServerURL + trimmed)
+            }
+            if trimmed.characters.count == 0 {
+                XCTAssertEqual(HulaProduct.videoURL(row.urls, forTradeId: token), "")
+                XCTAssertFalse(HulaProduct.isVideoRequested(row.requested, forTradeId: token))
+            } else if trimmed != token {
+                XCTAssertEqual(HulaProduct.videoURL(row.urls, forTradeId: token), "")
+                XCTAssertEqual(HulaProduct.videoURL(row.urls, forTradeId: trimmed), "")
+                XCTAssertFalse(HulaProduct.isVideoRequested(row.requested, forTradeId: token))
+            } else {
+                XCTAssertEqual(HulaProduct.videoURL(row.urls, forTradeId: token), stored)
+                XCTAssertTrue(HulaProduct.isVideoRequested(row.requested, forTradeId: token))
+            }
+            XCTAssertNil(CommonUtils.playableVideoURL(videoURLs: row.urls, tradeId: token + "x"))
+        }
+
+        guard let spaced = recorded(
+            requested: [:] as [String: Bool],
+            urls: [:] as [String: String],
+            tradeId: " ",
+            uploadState: showUploaded,
+            path: " "
+        ) else {
+            XCTFail("a space trade id should be stored")
+            return
+        }
+        XCTAssertEqual(spaced.urls[" "] ?? "", HulaConstants.staticServerURL + " ")
+        XCTAssertNil(spaced.urls[""])
+        XCTAssertNil(spaced.urls["bike"])
+        XCTAssertNil(CommonUtils.nonEmptyTrimmed(" "))
+        XCTAssertEqual(HulaProduct.videoURL(spaced.urls, forTradeId: " "), "")
+        XCTAssertNil(HLProductModalViewController.playableVideoURL(videoURLs: spaced.urls, tradeId: " "))
+        XCTAssertEqual(HLProductModalViewController.videoMapPrintText(spaced.urls), spaced.urls.description)
+        XCTAssertNotEqual(HLProductModalViewController.videoMapPrintText(spaced.urls), "")
+
+        guard let padded = recorded(
+            requested: ["bike": false],
+            urls: ["bike": storedFile],
+            tradeId: " bike ",
+            uploadState: showUploaded,
+            path: " bike "
+        ) else {
+            XCTFail("a padded trade id should stay padded")
+            return
+        }
+        XCTAssertEqual(padded.requested.count, 2)
+        XCTAssertEqual(padded.urls.count, 2)
+        XCTAssertEqual(padded.requested[" bike "] ?? false, true)
+        XCTAssertEqual(padded.requested["bike"] ?? true, false)
+        XCTAssertEqual(padded.urls[" bike "] ?? "", HulaConstants.staticServerURL + " bike ")
+        XCTAssertEqual(padded.urls["bike"] ?? "", storedFile)
+        XCTAssertNotEqual(padded.urls[" bike "] ?? "", HulaConstants.staticServerURL + "bike")
+        XCTAssertEqual(HulaProduct.videoURL(padded.urls, forTradeId: " bike "), "")
+        XCTAssertEqual(HulaProduct.videoURL(padded.urls, forTradeId: "bike"), storedFile)
+        XCTAssertNil(HLProductModalViewController.playableVideoURL(videoURLs: padded.urls, tradeId: " bike "))
+        XCTAssertEqual(
+            HLProductModalViewController.playableVideoURL(videoURLs: padded.urls, tradeId: "bike")?.absoluteString,
+            storedFile
+        )
+
+        guard let ampersand = recorded(
+            requested: nil,
+            urls: nil,
+            tradeId: "a&b",
+            uploadState: showUploaded,
+            path: "a&b"
+        ) else {
+            XCTFail("an ampersand trade id should stay unencoded")
+            return
+        }
+        XCTAssertEqual(ampersand.urls["a&b"] ?? "", HulaConstants.staticServerURL + "a&b")
+        XCTAssertNil(ampersand.urls["a%26b"])
+        XCTAssertNil(ampersand.requested["a%26b"])
+        XCTAssertFalse((ampersand.urls["a&b"] ?? "").contains("%26"))
+        XCTAssertEqual(FormFieldPolicy.encoded("a&b"), "a%26b")
+        XCTAssertEqual(FormFieldPolicy.encoded(nil), "")
+        XCTAssertNotEqual(ampersand.urls["a&b"] ?? "", HulaConstants.staticServerURL + "a%26b")
+        XCTAssertNotEqual(ampersand.urls["a&b"] ?? "", FormFieldPolicy.encoded(HulaConstants.staticServerURL + "a&b"))
+        XCTAssertEqual(HulaProduct.videoURL(ampersand.urls, forTradeId: "a&b"), HulaConstants.staticServerURL + "a&b")
+        XCTAssertEqual(HulaProduct.videoURL(ampersand.urls, forTradeId: "a%26b"), "")
+
+        guard let slash = recorded(
+            requested: nil,
+            urls: ["keep": "keep"],
+            tradeId: "prod/1",
+            uploadState: showUploaded,
+            path: "prod/1"
+        ) else {
+            XCTFail("a slash path should stay unencoded")
+            return
+        }
+        XCTAssertEqual(slash.urls["prod/1"] ?? "", HulaConstants.staticServerURL + "prod/1")
+        XCTAssertNil(slash.urls["prod%2F1"])
+        XCTAssertEqual(slash.urls["keep"] ?? "", "keep")
+        XCTAssertFalse((slash.urls["prod/1"] ?? "").contains("%2F"))
+        XCTAssertEqual(slash.requested.count, 1)
+        XCTAssertEqual(slash.urls.count, 2)
+
+        guard let blankPath = recorded(
+            requested: [:] as [String: Bool],
+            urls: [:] as [String: String],
+            tradeId: "t1",
+            uploadState: showUploaded,
+            path: ""
+        ) else {
+            XCTFail("an empty path should still be concatenated")
+            return
+        }
+        XCTAssertEqual(blankPath.urls["t1"] ?? "", HulaConstants.staticServerURL)
+        XCTAssertNotEqual(blankPath.urls["t1"] ?? "", "")
+        XCTAssertEqual(blankPath.requested["t1"] ?? false, true)
+        XCTAssertEqual(HulaProduct.videoURL(blankPath.urls, forTradeId: "t1"), HulaConstants.staticServerURL)
+        XCTAssertEqual(
+            HLProductModalViewController.playableVideoURL(videoURLs: blankPath.urls, tradeId: "t1")?.absoluteString,
+            HulaConstants.staticServerURL
+        )
+
+        product.video_requested = ["keep": false]
+        product.video_url = ["keep": " keep "]
+        XCTAssertNil(recorded(
+            requested: product.video_requested,
+            urls: product.video_url,
+            tradeId: " ",
+            uploadState: showRecord,
+            path: " "
+        ))
+        XCTAssertEqual(product.video_requested.count, 1)
+        XCTAssertEqual(product.video_url.count, 1)
+        XCTAssertEqual(product.video_requested["keep"] ?? true, false)
+        XCTAssertEqual(product.video_url["keep"] ?? "", " keep ")
+        XCTAssertNil(product.video_url[" "])
+
+        XCTAssertEqual(HLProductModalViewController.videoMapPrintText(nil), "")
+        XCTAssertNil(HLProductModalViewController.playableVideoURL(videoURLs: nil, tradeId: "t1"))
+        XCTAssertEqual(HulaTrade.debugDescriptionText(ownerId: nil, otherId: nil), emptyTrade)
+        XCTAssertEqual(HulaTrade.debugDescriptionText(ownerId: " bike ", otherId: "a&b"), "**** Hula Trade - owner:  bike  and other:   a&b****\n")
+        XCTAssertFalse(TradeTurnPolicy.idsMatch(nil, ""))
+        XCTAssertFalse(TradeTurnPolicy.idsMatch(nil, nil))
+        XCTAssertTrue(TradeTurnPolicy.idsMatch("", ""))
+        XCTAssertFalse(TradeTurnPolicy.idsMatch(" bike ", "bike"))
+        XCTAssertEqual(HLEditProductMainViewController.draftAlbumPrintText(nil), "")
+        XCTAssertEqual(HLCompleteProductProfileViewController.categoryPrintText(nil), "")
+        XCTAssertEqual(HLCompleteProductProfileViewController.categoryPrintText(" bike "), " bike ")
+        XCTAssertEqual(HLCompleteProductProfileViewController.categoryPrintText("a&b"), "a&b")
+        XCTAssertNotEqual(HLCompleteProductProfileViewController.categoryPrintText("a&b"), "a%26b")
+        XCTAssertFalse(CompleteProductProfilePolicy.shouldHideConditionGroup(categoryId: nil))
+        XCTAssertFalse(CompleteProductProfilePolicy.shouldHideConditionGroup(categoryId: " "))
+        XCTAssertFalse(CompleteProductProfilePolicy.shouldHideConditionGroup(categoryId: " \(serviceId) "))
+        XCTAssertTrue(CompleteProductProfilePolicy.shouldHideConditionGroup(categoryId: serviceId))
+        XCTAssertEqual(HLEditProductMainViewController.editorPreviousText(nil), "")
+        XCTAssertEqual(HLEditProductMainViewController.editorPreviousText(" bike "), " bike ")
+        XCTAssertFalse(HLHomeViewController.userNameEqualsEmpty(nil))
+        XCTAssertTrue(HLHomeViewController.userNameEqualsEmpty(""))
+        XCTAssertFalse(HLHomeViewController.userNameEqualsEmpty(" "))
+        XCTAssertEqual(HLHomeViewController.searchKeyword(from: nil), "")
+        XCTAssertFalse(HLMyProductsViewController.isUntitledProduct(nil))
+        XCTAssertTrue(HLMyProductsViewController.isUntitledProduct(untitled))
+        XCTAssertFalse(HLBarterScreenViewController.sameListedProduct(nil, ""))
+        XCTAssertTrue(HLBarterScreenViewController.sameListedProduct(serviceId, serviceId))
+        XCTAssertFalse(HLSwappViewController.showsWaitingForReply(
+            turnUserId: serviceId,
+            viewerId: nil,
+            waitingTurnEnabled: false
+        ))
+        XCTAssertFalse(HLSwappViewController.shouldBlockOffer(
+            turnUserId: nil,
+            viewerId: serviceId,
+            buttonTag: 0,
+            productsReceivedTag: 1,
+            turnGateEnabled: false
+        ))
+    }
+
     private func tradeReadyFixture(
         ownerId: String,
         otherId: String,
