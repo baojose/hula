@@ -123,6 +123,29 @@ class HLProductModalViewController: UIViewController, UIImagePickerControllerDel
         return CommonUtils.playableVideoURL(videoURLs: videoURLs, tradeId: tradeId)
     }
 
+    /// Upload success assigned `video_requested[currentTradeId] = true` and
+    /// `video_url[currentTradeId] = staticServerURL + path` on IUO maps. A nil
+    /// map crashed before the success UI. This stores the exact trade id and
+    /// the exact flag or URL. A nil map becomes a one-entry map. Failure
+    /// returns nil and does not write. Do not trim. Do not percent-encode.
+    /// Do not use `HulaProduct.videoURL` or `nonEmptyTrimmed`.
+    class func recordingUploadedVideo(
+        requested: [String: Bool]?,
+        urls: [String: String]?,
+        tradeId: String,
+        uploadState: String,
+        path: String?
+    ) -> (requested: [String: Bool], urls: [String: String])? {
+        guard uploadState == HLDataManager.MediaUploadPolicy.showUploaded, let path = path else {
+            return nil
+        }
+        var nextRequested = requested ?? [:]
+        var nextURLs = urls ?? [:]
+        nextRequested[tradeId] = true
+        nextURLs[tradeId] = HulaConstants.staticServerURL + path
+        return (nextRequested, nextURLs)
+    }
+
     override func viewDidLoad() {
         super.viewDidLoad()
 
@@ -460,9 +483,15 @@ class HLProductModalViewController: UIViewController, UIImagePickerControllerDel
                 DispatchQueue.main.async {
                     let uploadPath = HLDataManager.MediaUploadPolicy.uploadPath(from: json)
                     let state = HLDataManager.MediaUploadPolicy.videoButtonState(ok: success, path: uploadPath)
-                    if state == HLDataManager.MediaUploadPolicy.showUploaded, let vp = uploadPath {
-                        self.product.video_requested[self.currentTradeId] = true
-                        self.product.video_url[self.currentTradeId] = HulaConstants.staticServerURL + vp
+                    if let recorded = HLProductModalViewController.recordingUploadedVideo(
+                        requested: self.product.video_requested,
+                        urls: self.product.video_url,
+                        tradeId: self.currentTradeId,
+                        uploadState: state,
+                        path: uploadPath
+                    ) {
+                        self.product.video_requested = recorded.requested
+                        self.product.video_url = recorded.urls
                         self.videoBtn.setTitle(NSLocalizedString(" Video uploaded", comment: ""), for: .normal)
                         self.videoBtn.setImage(UIImage(named: "video-player-icon-red"), for: .normal)
                         self.videoBtn.tag = 43909
