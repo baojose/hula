@@ -153,7 +153,7 @@ class HLProductDetailViewController: BaseViewController, UIScrollViewDelegate, U
             var newFrame: CGRect! = self.productTableView.frame
             newFrame.size.height = (CGFloat(self.sellerProducts.count) * 129.0);
             //print(newFrame.size.height)
-            print(self.sellerUser.location)
+            print(HLProductDetailViewController.locationPrintText(self.sellerUser.location))
             self.productDistance.text = self.commonUtils.getDistanceFrom(loc: self.sellerUser.location)
             
             self.productTableView.frame = newFrame
@@ -171,6 +171,22 @@ class HLProductDetailViewController: BaseViewController, UIScrollViewDelegate, U
         } else {
             addToTradeViewContainer.isHidden = false
         }
+    }
+
+    /// Seller-products reload printed IUO `sellerUser.location` (`CLLocation!`)
+    /// before optional `getDistanceFrom`. A nil location crashed the print.
+    /// Distance already accepts `CLLocation?` and returns "-" for nil and for
+    /// `0,0`. This returns the print string only. Nil becomes `""`. A non-nil
+    /// location keeps `description`, including `0,0`, so a missing location
+    /// stays distinct from a real coordinate. Do not trim. Do not
+    /// percent-encode. Do not route the print through
+    /// `HulaUser.debugDescriptionText` (that substitutes `0,0`) or
+    /// `getDistanceFrom`. Do not change distance math.
+    class func locationPrintText(_ location: CLLocation?) -> String {
+        guard let location = location else {
+            return ""
+        }
+        return location.description
     }
 
     /// Soft-read seller inventory rows. Tapping used `as! NSDictionary` after cellForRow
