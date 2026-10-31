@@ -11453,6 +11453,233 @@ class HulaTests: XCTestCase {
         ))
     }
 
+    /// Seller-products reload printed IUO `sellerUser.location` (`CLLocation!`)
+    /// before optional `getDistanceFrom`. A nil location crashed the print.
+    /// `locationPrintText` returns the print string only. Nil becomes `""`.
+    /// A non-nil location keeps `description`, including `0,0`. Distance still
+    /// returns "-" for nil and for `0,0`. Do not trim. Do not percent-encode.
+    /// Do not route the print through `HulaUser.debugDescriptionText` or
+    /// `getDistanceFrom`. Do not change distance math. Do not enable the turn
+    /// gate.
+    func testNilSellerLocationDoesNotCrashProductDetailPrintWithoutChangingDistance() {
+        let utils = CommonUtils.sharedInstance
+        let serviceId = CompleteProductProfilePolicy.serviceCategoryId
+        let untitled = NSLocalizedString("Untitled product", comment: "")
+        let emptyTrade = "**** Hula Trade - owner:  and other:   ****\n"
+        let origin = CLLocation(latitude: 0, longitude: 0)
+        let nyc = CLLocation(latitude: 1.5, longitude: -2.25)
+        let south = CLLocation(latitude: -33.865143, longitude: 151.2099)
+        let precise = CLLocation(latitude: 10.9, longitude: -0.1)
+        let axis = CLLocation(latitude: 0, longitude: -74)
+        let pole = CLLocation(latitude: 90, longitude: 180)
+        let anti = CLLocation(latitude: -90, longitude: -180)
+        let stamped = CLLocation(
+            coordinate: CLLocationCoordinate2D(latitude: 40.75, longitude: -74),
+            altitude: 12.5,
+            horizontalAccuracy: 5,
+            verticalAccuracy: 3,
+            timestamp: Date(timeIntervalSince1970: 1500000000)
+        )
+        let invalid = CLLocation(
+            coordinate: CLLocationCoordinate2D(latitude: 1, longitude: 2),
+            altitude: 0,
+            horizontalAccuracy: -1,
+            verticalAccuracy: -1,
+            timestamp: Date(timeIntervalSince1970: 0)
+        )
+
+        func printed(_ location: CLLocation?) -> String {
+            return HLProductDetailViewController.locationPrintText(location)
+        }
+
+        XCTAssertEqual(printed(nil), "")
+        XCTAssertEqual(utils.getDistanceFrom(loc: nil), "-")
+        XCTAssertEqual(utils.getDistanceFrom(loc: origin), "-")
+        XCTAssertEqual(utils.getDistanceFrom(lat: 0, lon: 0), "-")
+        XCTAssertNotEqual(printed(nil), "-")
+        XCTAssertNotEqual(printed(origin), "")
+        XCTAssertNotEqual(printed(origin), "-")
+        XCTAssertEqual(printed(origin), origin.description)
+        XCTAssertEqual(printed(origin), printed(origin))
+        XCTAssertNotEqual(origin.description, "")
+        XCTAssertNotEqual(printed(nil), origin.description)
+
+        let nilDebug = HulaUser.debugDescriptionText(userId: nil, nick: nil, location: nil)
+        XCTAssertEqual(nilDebug, "User id: ; nick:     location: 0.0 ,  0.0\n")
+        XCTAssertNotEqual(printed(nil), nilDebug)
+        XCTAssertNotEqual(printed(origin), nilDebug)
+        let nycDebug = HulaUser.debugDescriptionText(userId: "u1", nick: "a&b", location: nyc)
+        XCTAssertEqual(nycDebug, "User id: u1; nick:   a&b  location: 1.5 ,  -2.25\n")
+        XCTAssertNotEqual(printed(nyc), nycDebug)
+        XCTAssertNotEqual(nycDebug, "a%26b")
+        XCTAssertFalse(nycDebug.contains("%26"))
+        XCTAssertEqual(printed(nyc), nyc.description)
+        XCTAssertNotEqual(printed(nyc), utils.getDistanceFrom(loc: nyc))
+        XCTAssertEqual(printed(south), south.description)
+        XCTAssertEqual(printed(precise), precise.description)
+        XCTAssertEqual(printed(axis), axis.description)
+        XCTAssertEqual(printed(pole), pole.description)
+        XCTAssertEqual(printed(anti), anti.description)
+        XCTAssertEqual(printed(stamped), stamped.description)
+        XCTAssertEqual(printed(invalid), invalid.description)
+        XCTAssertNotEqual(printed(axis), "")
+        XCTAssertNotEqual(printed(axis), "-")
+        XCTAssertNotEqual(printed(precise), printed(origin))
+        XCTAssertFalse(printed(nyc).contains("%26"))
+        XCTAssertFalse(printed(south).contains("%2F"))
+        XCTAssertEqual(FormFieldPolicy.encoded("a&b"), "a%26b")
+        XCTAssertEqual(FormFieldPolicy.encoded(nil), "")
+        XCTAssertNotEqual(printed(nyc), FormFieldPolicy.encoded(nyc.description))
+
+        assertLocation(origin, latitude: 0, longitude: 0)
+        assertLocation(nyc, latitude: 1.5, longitude: -2.25)
+        assertLocation(south, latitude: -33.865143, longitude: 151.2099)
+        assertLocation(precise, latitude: 10.9, longitude: -0.1)
+        assertLocation(axis, latitude: 0, longitude: -74)
+        assertLocation(pole, latitude: 90, longitude: 180)
+        assertLocation(anti, latitude: -90, longitude: -180)
+        assertLocation(stamped, latitude: 40.75, longitude: -74)
+        XCTAssertEqual(stamped.altitude, 12.5, accuracy: 0.0000001)
+        XCTAssertEqual(stamped.horizontalAccuracy, 5, accuracy: 0.0000001)
+        XCTAssertEqual(stamped.verticalAccuracy, 3, accuracy: 0.0000001)
+        XCTAssertEqual(stamped.timestamp.timeIntervalSince1970, 1500000000, accuracy: 0.001)
+        XCTAssertEqual(invalid.horizontalAccuracy, -1, accuracy: 0.0000001)
+        XCTAssertEqual(precise.coordinate.latitude, 10.9, accuracy: 0.0000001)
+        XCTAssertEqual(Int(precise.coordinate.latitude), 10)
+
+        var iuoLocation: CLLocation! = nil
+        XCTAssertEqual(printed(iuoLocation), "")
+        iuoLocation = nyc
+        XCTAssertEqual(printed(iuoLocation), nyc.description)
+        XCTAssertTrue(iuoLocation === nyc)
+
+        let seller = HulaUser()
+        XCTAssertNotNil(seller.location)
+        assertLocation(seller.location, latitude: 0, longitude: 0)
+        XCTAssertEqual(printed(seller.location), seller.location.description)
+        XCTAssertEqual(utils.getDistanceFrom(loc: seller.location), "-")
+        let defaultLocation: CLLocation = seller.location
+        seller.populate(with: ["nick": " bike ", "name": "a&b"])
+        XCTAssertEqual(seller.userNick, " bike ")
+        XCTAssertEqual(seller.userName, "a&b")
+        XCTAssertNotEqual(seller.userName, "a%26b")
+        XCTAssertNotEqual(seller.userNick, "bike")
+        assertLocation(seller.location, latitude: 0, longitude: 0)
+        XCTAssertTrue(seller.location === defaultLocation)
+        XCTAssertEqual(printed(seller.location), defaultLocation.description)
+
+        seller.populate(with: ["location": NSNull(), "nick": " \n "])
+        XCTAssertEqual(seller.userNick, " \n ")
+        XCTAssertTrue(seller.location === defaultLocation)
+        XCTAssertEqual(printed(seller.location), defaultLocation.description)
+
+        seller.populate(with: ["location": [true, false]])
+        assertLocation(seller.location, latitude: 0, longitude: 0)
+        XCTAssertEqual(printed(seller.location), seller.location.description)
+
+        seller.populate(with: ["location": [] as [Any]])
+        assertLocation(seller.location, latitude: 0, longitude: 0)
+
+        seller.populate(with: [
+            "location": [NSNumber(value: 0), NSNumber(value: 0)],
+            "nick": "xx_user"
+        ])
+        assertLocation(seller.location, latitude: 0, longitude: 0)
+        XCTAssertEqual(seller.userNick, "xx_user")
+        XCTAssertNotEqual(printed(seller.location), "")
+        XCTAssertEqual(printed(seller.location), seller.location.description)
+        XCTAssertEqual(utils.getDistanceFrom(loc: seller.location), "-")
+        XCTAssertNotEqual(printed(seller.location), utils.getDistanceFrom(loc: seller.location))
+
+        seller.location = nil
+        seller.userId = nil
+        seller.userNick = nil
+        XCTAssertEqual(printed(seller.location), "")
+        XCTAssertEqual(utils.getDistanceFrom(loc: seller.location), "-")
+        XCTAssertEqual(seller.description, nilDebug)
+        XCTAssertNotEqual(printed(seller.location), seller.description)
+        seller.populate(with: ["location": "not coordinates", "nick": " bike "])
+        XCTAssertEqual(seller.userNick, " bike ")
+        XCTAssertEqual(printed(seller.location), "")
+        XCTAssertEqual(utils.getDistanceFrom(loc: seller.location), "-")
+
+        seller.populate(with: [
+            "location": [
+                NSNumber(value: -33.865143),
+                NSNumber(value: 151.2099)
+            ],
+            "nick": "a&b",
+            "name": " Bike "
+        ])
+        assertLocation(seller.location, latitude: -33.865143, longitude: 151.2099)
+        XCTAssertEqual(seller.userNick, "a&b")
+        XCTAssertEqual(seller.userName, " Bike ")
+        XCTAssertNotEqual(seller.userNick, "a%26b")
+        XCTAssertNotEqual(seller.userName, "Bike")
+        XCTAssertEqual(printed(seller.location), seller.location.description)
+        XCTAssertNotEqual(printed(seller.location), "")
+        XCTAssertNotEqual(printed(seller.location), "-")
+        XCTAssertFalse(printed(seller.location).contains("%26"))
+        let stored: CLLocation = seller.location
+        XCTAssertEqual(printed(stored), stored.description)
+        XCTAssertTrue(seller.location === stored)
+        XCTAssertEqual(utils.getDistanceFrom(loc: nil), "-")
+
+        seller.location = stamped
+        XCTAssertTrue(seller.location === stamped)
+        XCTAssertEqual(printed(seller.location), stamped.description)
+        XCTAssertEqual(stamped.timestamp.timeIntervalSince1970, 1500000000, accuracy: 0.001)
+        XCTAssertEqual(utils.getDistanceFrom(loc: seller.location), utils.getDistanceFrom(loc: stamped))
+        XCTAssertNotEqual(printed(seller.location), utils.getDistanceFrom(loc: stamped))
+
+        XCTAssertNil(HLProductModalViewController.recordingUploadedVideo(
+            requested: nil,
+            urls: nil,
+            tradeId: "t1",
+            uploadState: HLDataManager.MediaUploadPolicy.showRecord,
+            path: "/files/v.mp4"
+        ))
+        XCTAssertEqual(HLProductModalViewController.videoMapPrintText(nil), "")
+        XCTAssertNil(HLProductModalViewController.playableVideoURL(videoURLs: nil, tradeId: "t1"))
+        XCTAssertEqual(HulaTrade.debugDescriptionText(ownerId: nil, otherId: nil), emptyTrade)
+        XCTAssertEqual(HulaTrade.debugDescriptionText(ownerId: " bike ", otherId: "a&b"), "**** Hula Trade - owner:  bike  and other:   a&b****\n")
+        XCTAssertFalse(TradeTurnPolicy.idsMatch(nil, ""))
+        XCTAssertFalse(TradeTurnPolicy.idsMatch(nil, nil))
+        XCTAssertTrue(TradeTurnPolicy.idsMatch("", ""))
+        XCTAssertFalse(TradeTurnPolicy.idsMatch(" bike ", "bike"))
+        XCTAssertEqual(HLEditProductMainViewController.draftAlbumPrintText(nil), "")
+        XCTAssertEqual(HLCompleteProductProfileViewController.categoryPrintText(nil), "")
+        XCTAssertEqual(HLCompleteProductProfileViewController.categoryPrintText(" bike "), " bike ")
+        XCTAssertEqual(HLCompleteProductProfileViewController.categoryPrintText("a&b"), "a&b")
+        XCTAssertNotEqual(HLCompleteProductProfileViewController.categoryPrintText("a&b"), "a%26b")
+        XCTAssertFalse(CompleteProductProfilePolicy.shouldHideConditionGroup(categoryId: nil))
+        XCTAssertFalse(CompleteProductProfilePolicy.shouldHideConditionGroup(categoryId: " "))
+        XCTAssertFalse(CompleteProductProfilePolicy.shouldHideConditionGroup(categoryId: " \(serviceId) "))
+        XCTAssertTrue(CompleteProductProfilePolicy.shouldHideConditionGroup(categoryId: serviceId))
+        XCTAssertEqual(HLEditProductMainViewController.editorPreviousText(nil), "")
+        XCTAssertEqual(HLEditProductMainViewController.editorPreviousText(" bike "), " bike ")
+        XCTAssertFalse(HLHomeViewController.userNameEqualsEmpty(nil))
+        XCTAssertTrue(HLHomeViewController.userNameEqualsEmpty(""))
+        XCTAssertFalse(HLHomeViewController.userNameEqualsEmpty(" "))
+        XCTAssertEqual(HLHomeViewController.searchKeyword(from: nil), "")
+        XCTAssertFalse(HLMyProductsViewController.isUntitledProduct(nil))
+        XCTAssertTrue(HLMyProductsViewController.isUntitledProduct(untitled))
+        XCTAssertFalse(HLBarterScreenViewController.sameListedProduct(nil, ""))
+        XCTAssertTrue(HLBarterScreenViewController.sameListedProduct(serviceId, serviceId))
+        XCTAssertFalse(HLSwappViewController.showsWaitingForReply(
+            turnUserId: serviceId,
+            viewerId: nil,
+            waitingTurnEnabled: false
+        ))
+        XCTAssertFalse(HLSwappViewController.shouldBlockOffer(
+            turnUserId: nil,
+            viewerId: serviceId,
+            buttonTag: 0,
+            productsReceivedTag: 1,
+            turnGateEnabled: false
+        ))
+    }
+
     private func tradeReadyFixture(
         ownerId: String,
         otherId: String,
