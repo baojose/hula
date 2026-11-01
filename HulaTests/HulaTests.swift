@@ -11680,6 +11680,153 @@ class HulaTests: XCTestCase {
         ))
     }
 
+    /// Trade-room nick labels and chat badges identify the counterparty.
+    /// A nick shorter than 17 characters stays exact, including spaces and
+    /// `&`. Longer nicks keep 15 characters plus "...". `displayNick` trims
+    /// and must not be used here. Chat badges match owner ids exactly: a
+    /// padded id is not the trimmed id, so the unread side does not flip.
+    /// Missing owner id still matches viewer `""`. Do not percent-encode.
+    /// Do not enable the turn gate.
+    func testTradeRoomNickAndChatBadgeKeepExactIdentityStrings() {
+        XCTAssertNil(HLSwappViewController.otherUserNickLabel(nil))
+
+        XCTAssertEqual(HLSwappViewController.otherUserNickLabel(""), "")
+        XCTAssertEqual(HLSwappViewController.otherUserNickLabel(" "), " ")
+        XCTAssertEqual(HLSwappViewController.otherUserNickLabel("   "), "   ")
+        XCTAssertEqual(HLSwappViewController.otherUserNickLabel("\n"), "\n")
+        XCTAssertEqual(HLSwappViewController.otherUserNickLabel(" \n "), " \n ")
+        XCTAssertEqual(HLSwappViewController.otherUserNickLabel(" bike "), " bike ")
+        XCTAssertEqual(HLSwappViewController.otherUserNickLabel(" Bike "), " Bike ")
+        XCTAssertEqual(HLSwappViewController.otherUserNickLabel("a&b"), "a&b")
+        XCTAssertEqual(HLSwappViewController.otherUserNickLabel("xx_user"), "xx_user")
+        XCTAssertNotEqual(HLSwappViewController.otherUserNickLabel(" bike "), "bike")
+        XCTAssertNotEqual(HLSwappViewController.otherUserNickLabel("a&b"), "a%26b")
+        XCTAssertNotEqual(HLSwappViewController.otherUserNickLabel(" Bike "), "Bike")
+        XCTAssertEqual(CommonUtils.displayNick(" bike "), "bike")
+        XCTAssertEqual(CommonUtils.displayNick(" "), "")
+        XCTAssertNil(CommonUtils.displayNick(nil))
+        XCTAssertNotEqual(
+            HLSwappViewController.otherUserNickLabel(" bike "),
+            CommonUtils.displayNick(" bike ")
+        )
+        XCTAssertNotEqual(
+            HLSwappViewController.otherUserNickLabel(" "),
+            CommonUtils.displayNick(" ")
+        )
+        XCTAssertEqual(FormFieldPolicy.encoded("a&b"), "a%26b")
+        XCTAssertNotEqual(
+            HLSwappViewController.otherUserNickLabel("a&b"),
+            FormFieldPolicy.encoded("a&b")
+        )
+
+        let sixteen = String(repeating: Character("a"), count: 16)
+        let seventeen = String(repeating: Character("b"), count: 17)
+        let fifteenBs = String(repeating: Character("b"), count: 15)
+        XCTAssertEqual(HLSwappViewController.otherUserNickLabel(sixteen), sixteen)
+        XCTAssertEqual(HLSwappViewController.otherUserNickLabel(seventeen), fifteenBs + "...")
+        XCTAssertFalse((HLSwappViewController.otherUserNickLabel(seventeen) ?? "").contains("%"))
+
+        let paddedLong = " " + String(repeating: Character("a"), count: 20)
+        let expectedPadded = " " + String(repeating: Character("a"), count: 14) + "..."
+        XCTAssertEqual(HLSwappViewController.otherUserNickLabel(paddedLong), expectedPadded)
+        XCTAssertNotEqual(HLSwappViewController.otherUserNickLabel(paddedLong), CommonUtils.displayNick(paddedLong))
+
+        let ampersandLong = "a&b" + String(repeating: Character("c"), count: 20)
+        let expectedAmpersand = "a&b" + String(repeating: Character("c"), count: 12) + "..."
+        XCTAssertEqual(HLSwappViewController.otherUserNickLabel(ampersandLong), expectedAmpersand)
+        XCTAssertFalse((HLSwappViewController.otherUserNickLabel(ampersandLong) ?? "").contains("%26"))
+
+        let emoji = String(repeating: Character("🙂"), count: 17)
+        let emojiLabel = String(repeating: Character("🙂"), count: 15) + "..."
+        XCTAssertEqual(HLSwappViewController.otherUserNickLabel(emoji), emojiLabel)
+
+        let trade: NSDictionary = [
+            "owner_id": " bike ",
+            "other_id": "a&b",
+            "owner_unread": NSNumber(value: 3),
+            "other_unread": NSNumber(value: 9)
+        ]
+        let ownerView = HLSwappViewController.peerChatContext(from: trade, viewerId: " bike ")
+        XCTAssertEqual(ownerView.peerId, "a&b")
+        XCTAssertEqual(ownerView.unread, 3)
+        XCTAssertNotEqual(ownerView.peerId, "a%26b")
+
+        let trimmedOwner = HLSwappViewController.peerChatContext(from: trade, viewerId: "bike")
+        XCTAssertEqual(trimmedOwner.peerId, " bike ")
+        XCTAssertEqual(trimmedOwner.unread, 9)
+        XCTAssertNotEqual(trimmedOwner.peerId, "bike")
+
+        let otherView = HLSwappViewController.peerChatContext(from: trade, viewerId: "a&b")
+        XCTAssertEqual(otherView.peerId, " bike ")
+        XCTAssertEqual(otherView.unread, 9)
+        XCTAssertNotEqual(otherView.peerId, ownerView.peerId)
+
+        let encodedViewer = HLSwappViewController.peerChatContext(from: trade, viewerId: "a%26b")
+        XCTAssertEqual(encodedViewer.peerId, " bike ")
+        XCTAssertEqual(encodedViewer.unread, 9)
+
+        let newlineTrade: NSDictionary = [
+            "owner_id": " \n ",
+            "other_id": "peer",
+            "owner_unread": NSNumber(value: 10.9),
+            "other_unread": NSNumber(value: -2)
+        ]
+        let newlineOwner = HLSwappViewController.peerChatContext(from: newlineTrade, viewerId: " \n ")
+        XCTAssertEqual(newlineOwner.peerId, "peer")
+        XCTAssertEqual(newlineOwner.unread, 10)
+        let newlineMiss = HLSwappViewController.peerChatContext(from: newlineTrade, viewerId: "\n")
+        XCTAssertEqual(newlineMiss.peerId, " \n ")
+        XCTAssertEqual(newlineMiss.unread, -2)
+
+        let missingOwner: NSDictionary = [
+            "other_id": "peer",
+            "owner_unread": NSNumber(value: 2),
+            "other_unread": NSNumber(value: 8)
+        ]
+        let emptyViewer = HLSwappViewController.peerChatContext(from: missingOwner, viewerId: "")
+        XCTAssertEqual(emptyViewer.peerId, "peer")
+        XCTAssertEqual(emptyViewer.unread, 2)
+        let stranger = HLSwappViewController.peerChatContext(from: missingOwner, viewerId: "me")
+        XCTAssertEqual(stranger.peerId, "")
+        XCTAssertEqual(stranger.unread, 8)
+
+        let nullOwner: NSDictionary = [
+            "owner_id": NSNull(),
+            "other_id": "peer",
+            "owner_unread": true,
+            "other_unread": "4"
+        ]
+        XCTAssertEqual(HLSwappViewController.peerChatContext(from: nullOwner, viewerId: "").peerId, "peer")
+        XCTAssertEqual(HLSwappViewController.peerChatContext(from: nullOwner, viewerId: "").unread, 0)
+        XCTAssertEqual(HLSwappViewController.peerChatContext(from: nullOwner, viewerId: "peer").unread, 0)
+
+        let numericOwner: NSDictionary = [
+            "owner_id": NSNumber(value: 1),
+            "other_id": "peer",
+            "owner_unread": NSNumber(value: 4),
+            "other_unread": NSNumber(value: 5)
+        ]
+        XCTAssertEqual(HLSwappViewController.peerChatContext(from: numericOwner, viewerId: "1").peerId, "")
+        XCTAssertEqual(HLSwappViewController.peerChatContext(from: numericOwner, viewerId: "1").unread, 5)
+
+        XCTAssertFalse(TradeTurnPolicy.idsMatch(nil, ""))
+        XCTAssertFalse(TradeTurnPolicy.idsMatch(nil, nil))
+        XCTAssertTrue(TradeTurnPolicy.idsMatch("", ""))
+        XCTAssertFalse(TradeTurnPolicy.idsMatch(" bike ", "bike"))
+        XCTAssertFalse(HLSwappViewController.showsWaitingForReply(
+            turnUserId: " bike ",
+            viewerId: nil,
+            waitingTurnEnabled: false
+        ))
+        XCTAssertFalse(HLSwappViewController.shouldBlockOffer(
+            turnUserId: nil,
+            viewerId: "a&b",
+            buttonTag: 0,
+            productsReceivedTag: 1,
+            turnGateEnabled: false
+        ))
+    }
+
     private func tradeReadyFixture(
         ownerId: String,
         otherId: String,

@@ -192,6 +192,22 @@ class HLSwappViewController: UIViewController {
         return CommonUtils.userResourceURL(apiBase: apiBase, userId: userId, extra: ["nick"])
     }
 
+    /// Counterparty label on the trade room. A nick shorter than 17 characters
+    /// is shown unchanged. A longer nick keeps the first 15 characters and
+    /// "...". Nil stays nil so a missing `nick` does not clear the label.
+    /// Do not trim. Do not percent-encode. Do not use `displayNick` (that
+    /// trims `" bike "` to `bike` and drops whitespace-only nicks).
+    class func otherUserNickLabel(_ nick: String?) -> String? {
+        guard let nick = nick else {
+            return nil
+        }
+        if nick.characters.count < 17 {
+            return nick
+        }
+        let end = nick.index(nick.startIndex, offsetBy: 15)
+        return nick.substring(to: end) + "..."
+    }
+
     /// Post-deal feedback. Blank resource must not POST to the API root.
     class func feedbackURL(apiBase: String) -> String? {
         return CommonUtils.apiCollectionURL(apiBase: apiBase, resource: "feedback")
@@ -942,13 +958,9 @@ class HLSwappViewController: UIViewController {
                         ) {
                             HLDataManager.sharedInstance.httpGet(urlstr: queryURL, taskCallback: { (result, json) in
                                 if let dict = json as? [String:String]{
-                                    if let nick = dict["nick"] {
+                                    if let label = HLSwappViewController.otherUserNickLabel(dict["nick"]) {
                                         DispatchQueue.main.async {
-                                            if nick.count < 17 {
-                                                self.otherUserNick.text = nick
-                                            } else {
-                                                self.otherUserNick.text = String( nick.prefix(15) ) + "...";
-                                            }
+                                            self.otherUserNick.text = label
                                         }
                                     }
                                 }
