@@ -300,6 +300,42 @@ extension HLDashboardViewController: UICollectionViewDelegate, UICollectionViewD
     class func tradeRoomCount(tradeCount: Int?, maxTrades: Int) -> Int {
         return max(tradeCount ?? 0, maxTrades)
     }
+
+    /// Lobby cells pick the counterparty and which tray is on the left by
+    /// `idsMatch` against `other_id`. Nil matches nobody, including another
+    /// nil and `""`, so a missing `other_id` does not make viewer `""` the
+    /// other participant. Empty strings still match. A missing counterparty
+    /// id stays nil and the avatar is not loaded; `""` is a real id and still
+    /// loads. The viewer's products stay on the left: `other_products` is
+    /// left only when the viewer is the other participant. The badge reads
+    /// `other_unread` only in that case, and only when the parsed count is
+    /// greater than 0. Do not trim. Do not percent-encode. Do not route this
+    /// through `peerChatContext` (`?? ""` would flip a missing other id onto
+    /// `other_unread` and the owner avatar).
+    class func lobbyRoomLayout(from trade: NSDictionary, viewerId: String?) -> (
+        counterpartyId: String?,
+        viewerIsOther: Bool,
+        otherProductsSide: String,
+        ownerProductsSide: String,
+        unreadCount: Int?
+    ) {
+        let otherId = trade.object(forKey: "other_id") as? String
+        let ownerId = trade.object(forKey: "owner_id") as? String
+        let viewerIsOther = TradeTurnPolicy.idsMatch(viewerId, otherId)
+        let counterpartyId: String? = viewerIsOther ? ownerId : otherId
+        let otherProductsSide = viewerIsOther ? "left" : "right"
+        let ownerProductsSide = viewerIsOther ? "right" : "left"
+        let rawUnread = viewerIsOther
+            ? trade.object(forKey: "other_unread")
+            : trade.object(forKey: "owner_unread")
+        let unreadCount: Int?
+        if let count = CommonUtils.intFromJSON(rawUnread), count > 0 {
+            unreadCount = count
+        } else {
+            unreadCount = nil
+        }
+        return (counterpartyId, viewerIsOther, otherProductsSide, ownerProductsSide, unreadCount)
+    }
     
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
@@ -335,11 +371,11 @@ extension HLDashboardViewController: UICollectionViewDelegate, UICollectionViewD
 
             cell.tradeId = tradeId
 
-            var otherUserId = thisTrade.object(forKey: "other_id") as? String
-            if TradeTurnPolicy.idsMatch(otherUserId, HulaUser.sharedInstance.userId) {
-                otherUserId = thisTrade.object(forKey: "owner_id") as? String
-            }
-            if let otherUserId = otherUserId {
+            let layout = HLDashboardViewController.lobbyRoomLayout(
+                from: thisTrade,
+                viewerId: HulaUser.sharedInstance.userId
+            )
+            if let otherUserId = layout.counterpartyId {
                 cell.userImage.loadImageFromURL(urlString: CommonUtils.sharedInstance.userImageURL(userId: otherUserId) )
                 cell.userId = otherUserId
             } else {
@@ -355,36 +391,16 @@ extension HLDashboardViewController: UICollectionViewDelegate, UICollectionViewD
             if let tmp = CommonUtils.floatFromJSON(thisTrade.object(forKey: "other_money")) {
                 other_money = tmp
             }
-            
-            if TradeTurnPolicy.idsMatch(
-                HulaUser.sharedInstance.userId,
-                thisTrade.object(forKey: "other_id") as? String
-            ) {
-                // i am the other of the trade
-                if let other_products_arr = CommonUtils.stringArrayFromJSON(thisTrade.object(forKey: "other_products")) {
-                    drawProducts(inCell: cell, fromArr: other_products_arr, money: other_money, side: "left")
-                }
-                if let owner_products_arr = CommonUtils.stringArrayFromJSON(thisTrade.object(forKey: "owner_products")) {
-                    drawProducts(inCell: cell, fromArr: owner_products_arr, money: owner_money, side: "right")
-                }
-                
-                if let chat_count = CommonUtils.intFromJSON(thisTrade.object(forKey: "other_unread")),
-                   chat_count > 0 {
-                    cell.chatCountLabel.text = "\(chat_count)"
-                    cell.chatCountLabel.isHidden = false
-                }
-            } else {
-                if let other_products_arr = CommonUtils.stringArrayFromJSON(thisTrade.object(forKey: "other_products")) {
-                    drawProducts(inCell: cell, fromArr: other_products_arr, money: other_money, side: "right")
-                }
-                if let owner_products_arr = CommonUtils.stringArrayFromJSON(thisTrade.object(forKey: "owner_products")) {
-                    drawProducts(inCell: cell, fromArr: owner_products_arr, money: owner_money, side: "left")
-                }
-                if let chat_count = CommonUtils.intFromJSON(thisTrade.object(forKey: "owner_unread")),
-                   chat_count > 0 {
-                    cell.chatCountLabel.text = "\(chat_count)"
-                    cell.chatCountLabel.isHidden = false
-                }
+
+            if let other_products_arr = CommonUtils.stringArrayFromJSON(thisTrade.object(forKey: "other_products")) {
+                drawProducts(inCell: cell, fromArr: other_products_arr, money: other_money, side: layout.otherProductsSide)
+            }
+            if let owner_products_arr = CommonUtils.stringArrayFromJSON(thisTrade.object(forKey: "owner_products")) {
+                drawProducts(inCell: cell, fromArr: owner_products_arr, money: owner_money, side: layout.ownerProductsSide)
+            }
+            if let chat_count = layout.unreadCount {
+                cell.chatCountLabel.text = "\(chat_count)"
+                cell.chatCountLabel.isHidden = false
             }
             
             cell.myImage.loadImageFromURL(urlString: HLDashboardViewController.viewerImageURL(HulaUser.sharedInstance.userId))
