@@ -11827,6 +11827,167 @@ class HulaTests: XCTestCase {
         ))
     }
 
+    /// Lobby rooms place the viewer's products on the left and badge the
+    /// viewer's unread count. The side is `idsMatch` on `other_id`, not
+    /// `peerChatContext`. A missing other id is not viewer `""`, so the badge
+    /// stays on `owner_unread` and the avatar is not loaded. `" bike "` is
+    /// not `bike`. `"a&b"` is not percent-encoded. Counts that are not greater
+    /// than 0 stay hidden. `10.9` truncates to 10. Do not enable the turn gate.
+    func testLobbyRoomLayoutKeepsViewerTrayOnTheLeftWithoutCoalescingIds() {
+        let padded: NSDictionary = [
+            "owner_id": "a&b",
+            "other_id": " bike ",
+            "owner_unread": NSNumber(value: 4),
+            "other_unread": NSNumber(value: 9)
+        ]
+        let otherView = HLDashboardViewController.lobbyRoomLayout(from: padded, viewerId: " bike ")
+        XCTAssertTrue(otherView.viewerIsOther)
+        XCTAssertEqual(otherView.counterpartyId, "a&b")
+        XCTAssertNotEqual(otherView.counterpartyId, "a%26b")
+        XCTAssertEqual(otherView.otherProductsSide, "left")
+        XCTAssertEqual(otherView.ownerProductsSide, "right")
+        XCTAssertEqual(otherView.unreadCount, 9)
+        XCTAssertEqual(FormFieldPolicy.encoded("a&b"), "a%26b")
+        XCTAssertNotEqual(otherView.counterpartyId, FormFieldPolicy.encoded("a&b"))
+
+        let trimmedOther = HLDashboardViewController.lobbyRoomLayout(from: padded, viewerId: "bike")
+        XCTAssertFalse(trimmedOther.viewerIsOther)
+        XCTAssertEqual(trimmedOther.counterpartyId, " bike ")
+        XCTAssertNotEqual(trimmedOther.counterpartyId, "bike")
+        XCTAssertEqual(trimmedOther.otherProductsSide, "right")
+        XCTAssertEqual(trimmedOther.ownerProductsSide, "left")
+        XCTAssertEqual(trimmedOther.unreadCount, 4)
+
+        let ownerView = HLDashboardViewController.lobbyRoomLayout(from: padded, viewerId: "a&b")
+        XCTAssertFalse(ownerView.viewerIsOther)
+        XCTAssertEqual(ownerView.counterpartyId, " bike ")
+        XCTAssertEqual(ownerView.otherProductsSide, "right")
+        XCTAssertEqual(ownerView.ownerProductsSide, "left")
+        XCTAssertEqual(ownerView.unreadCount, 4)
+        XCTAssertNotEqual(ownerView.counterpartyId, otherView.counterpartyId)
+
+        let encodedViewer = HLDashboardViewController.lobbyRoomLayout(from: padded, viewerId: "a%26b")
+        XCTAssertFalse(encodedViewer.viewerIsOther)
+        XCTAssertEqual(encodedViewer.counterpartyId, " bike ")
+        XCTAssertEqual(encodedViewer.unreadCount, 4)
+
+        let newline: NSDictionary = [
+            "owner_id": "owner",
+            "other_id": " \n ",
+            "owner_unread": NSNumber(value: -3),
+            "other_unread": NSNumber(value: 10.9)
+        ]
+        let newlineOther = HLDashboardViewController.lobbyRoomLayout(from: newline, viewerId: " \n ")
+        XCTAssertTrue(newlineOther.viewerIsOther)
+        XCTAssertEqual(newlineOther.counterpartyId, "owner")
+        XCTAssertEqual(newlineOther.otherProductsSide, "left")
+        XCTAssertEqual(newlineOther.unreadCount, 10)
+        let newlineMiss = HLDashboardViewController.lobbyRoomLayout(from: newline, viewerId: "\n")
+        XCTAssertFalse(newlineMiss.viewerIsOther)
+        XCTAssertEqual(newlineMiss.counterpartyId, " \n ")
+        XCTAssertNotEqual(newlineMiss.counterpartyId, "\n")
+        XCTAssertEqual(newlineMiss.ownerProductsSide, "left")
+        XCTAssertNil(newlineMiss.unreadCount)
+
+        let missingOther: NSDictionary = [
+            "owner_id": "owner",
+            "owner_unread": NSNumber(value: 2),
+            "other_unread": NSNumber(value: 8)
+        ]
+        let emptyViewer = HLDashboardViewController.lobbyRoomLayout(from: missingOther, viewerId: "")
+        XCTAssertFalse(emptyViewer.viewerIsOther)
+        XCTAssertNil(emptyViewer.counterpartyId)
+        XCTAssertEqual(emptyViewer.ownerProductsSide, "left")
+        XCTAssertEqual(emptyViewer.otherProductsSide, "right")
+        XCTAssertEqual(emptyViewer.unreadCount, 2)
+        let chatContext = HLSwappViewController.peerChatContext(from: missingOther, viewerId: "")
+        XCTAssertEqual(chatContext.peerId, "owner")
+        XCTAssertEqual(chatContext.unread, 8)
+        XCTAssertNotEqual(emptyViewer.unreadCount, chatContext.unread)
+        XCTAssertFalse(TradeTurnPolicy.idsMatch("", nil))
+
+        let blankOther: NSDictionary = [
+            "owner_id": "owner",
+            "other_id": "",
+            "owner_unread": NSNumber(value: 2),
+            "other_unread": NSNumber(value: 8)
+        ]
+        let blankMatch = HLDashboardViewController.lobbyRoomLayout(from: blankOther, viewerId: "")
+        XCTAssertTrue(blankMatch.viewerIsOther)
+        XCTAssertEqual(blankMatch.counterpartyId, "owner")
+        XCTAssertEqual(blankMatch.otherProductsSide, "left")
+        XCTAssertEqual(blankMatch.unreadCount, 8)
+        XCTAssertTrue(TradeTurnPolicy.idsMatch("", ""))
+
+        let spaceOther: NSDictionary = [
+            "owner_id": "owner",
+            "other_id": " ",
+            "owner_unread": NSNumber(value: 1),
+            "other_unread": NSNumber(value: 0)
+        ]
+        let spaceMatch = HLDashboardViewController.lobbyRoomLayout(from: spaceOther, viewerId: " ")
+        XCTAssertTrue(spaceMatch.viewerIsOther)
+        XCTAssertEqual(spaceMatch.counterpartyId, "owner")
+        XCTAssertNil(spaceMatch.unreadCount)
+        let spaceMiss = HLDashboardViewController.lobbyRoomLayout(from: spaceOther, viewerId: "")
+        XCTAssertFalse(spaceMiss.viewerIsOther)
+        XCTAssertEqual(spaceMiss.counterpartyId, " ")
+        XCTAssertEqual(spaceMiss.unreadCount, 1)
+
+        let nullOther: NSDictionary = [
+            "owner_id": NSNull(),
+            "other_id": NSNull(),
+            "owner_unread": true,
+            "other_unread": "4"
+        ]
+        let nullView = HLDashboardViewController.lobbyRoomLayout(from: nullOther, viewerId: nil)
+        XCTAssertFalse(nullView.viewerIsOther)
+        XCTAssertNil(nullView.counterpartyId)
+        XCTAssertEqual(nullView.ownerProductsSide, "left")
+        XCTAssertNil(nullView.unreadCount)
+        XCTAssertFalse(TradeTurnPolicy.idsMatch(nil, nil))
+        let emptyOnNull = HLDashboardViewController.lobbyRoomLayout(from: nullOther, viewerId: "")
+        XCTAssertFalse(emptyOnNull.viewerIsOther)
+        XCTAssertNil(emptyOnNull.counterpartyId)
+        XCTAssertNil(emptyOnNull.unreadCount)
+
+        let numericOther: NSDictionary = [
+            "owner_id": "owner",
+            "other_id": NSNumber(value: 1),
+            "owner_unread": NSNumber(value: 6),
+            "other_unread": NSNumber(value: 7)
+        ]
+        let numericView = HLDashboardViewController.lobbyRoomLayout(from: numericOther, viewerId: "1")
+        XCTAssertFalse(numericView.viewerIsOther)
+        XCTAssertNil(numericView.counterpartyId)
+        XCTAssertEqual(numericView.ownerProductsSide, "left")
+        XCTAssertEqual(numericView.otherProductsSide, "right")
+        XCTAssertEqual(numericView.unreadCount, 6)
+        XCTAssertNotEqual(numericView.unreadCount, 7)
+
+        let zeroUnread: NSDictionary = [
+            "owner_id": "owner",
+            "other_id": "peer",
+            "owner_unread": NSNumber(value: 0),
+            "other_unread": NSNumber(value: 1)
+        ]
+        XCTAssertNil(HLDashboardViewController.lobbyRoomLayout(from: zeroUnread, viewerId: "owner").unreadCount)
+        XCTAssertEqual(HLDashboardViewController.lobbyRoomLayout(from: zeroUnread, viewerId: "peer").unreadCount, 1)
+
+        XCTAssertFalse(HLSwappViewController.showsWaitingForReply(
+            turnUserId: " bike ",
+            viewerId: nil,
+            waitingTurnEnabled: false
+        ))
+        XCTAssertFalse(HLSwappViewController.shouldBlockOffer(
+            turnUserId: nil,
+            viewerId: "a&b",
+            buttonTag: 0,
+            productsReceivedTag: 1,
+            turnGateEnabled: false
+        ))
+    }
+
     private func tradeReadyFixture(
         ownerId: String,
         otherId: String,
