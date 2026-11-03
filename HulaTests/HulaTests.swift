@@ -11988,6 +11988,244 @@ class HulaTests: XCTestCase {
         ))
     }
 
+    /// Product-modal video chrome. Only `calledFrom == 1` hides the buttons,
+    /// so the other inventory column (`4`) still shows them. A URL whose
+    /// character count is greater than 0 plays, including whitespace. The
+    /// owner's empty URL is Record even when nobody requested a video. A
+    /// peer's empty URL is Waiting or Request. Nil is not the owner.
+    func testProductModalVideoProofChromeKeepsPlayRecordAndRequestDistinct() {
+        let playImage = "video-player-icon-red"
+        let requestedImage = "video-requested-red"
+        let playTitle = NSLocalizedString(" Play video", comment: "")
+        let available = NSLocalizedString("Video proof available", comment: "")
+        let recordTitle = NSLocalizedString(" Record video proof", comment: "")
+        let ownerWaiting = NSLocalizedString("User waiting for video proof", comment: "")
+        let peerWaitingTitle = NSLocalizedString(" Waiting for video proof...", comment: "")
+        let peerWaiting = NSLocalizedString("Video proof requested", comment: "")
+
+        let hidden = HLProductModalViewController.videoProofChrome(
+            calledFrom: 1,
+            productOwnerId: "me",
+            viewerId: "me",
+            videoRequested: true,
+            videoURL: "https://cdn.example/proof.mp4"
+        )
+        XCTAssertTrue(hidden.buttonsHidden)
+        XCTAssertNil(hidden.statusImageName)
+        XCTAssertEqual(hidden.statusText, "")
+        XCTAssertNil(hidden.buttonImageName)
+        XCTAssertNotEqual(hidden.buttonTag, 43909)
+        let hiddenPeer = HLProductModalViewController.videoProofChrome(
+            calledFrom: 1,
+            productOwnerId: nil,
+            viewerId: nil,
+            videoRequested: false,
+            videoURL: ""
+        )
+        XCTAssertTrue(hiddenPeer.buttonsHidden)
+
+        for calledFrom in [0, 2, 3, 4, -1] {
+            let visible = HLProductModalViewController.videoProofChrome(
+                calledFrom: calledFrom,
+                productOwnerId: "owner",
+                viewerId: "peer",
+                videoRequested: false,
+                videoURL: ""
+            )
+            XCTAssertFalse(visible.buttonsHidden)
+            XCTAssertEqual(visible.buttonTag, 1)
+            XCTAssertEqual(visible.buttonTitle, " Request video proof")
+        }
+
+        let ownerPlay = HLProductModalViewController.videoProofChrome(
+            calledFrom: 2,
+            productOwnerId: "me",
+            viewerId: "me",
+            videoRequested: false,
+            videoURL: "https://cdn.example/proof.mp4"
+        )
+        XCTAssertFalse(ownerPlay.buttonsHidden)
+        XCTAssertEqual(ownerPlay.statusImageName, playImage)
+        XCTAssertEqual(ownerPlay.buttonImageName, playImage)
+        XCTAssertEqual(ownerPlay.statusText, available)
+        XCTAssertEqual(ownerPlay.buttonTitle, playTitle)
+        XCTAssertEqual(ownerPlay.buttonTag, 43909)
+        let ownerPlayRequested = HLProductModalViewController.videoProofChrome(
+            calledFrom: 3,
+            productOwnerId: "me",
+            viewerId: "me",
+            videoRequested: true,
+            videoURL: "https://cdn.example/proof.mp4"
+        )
+        XCTAssertEqual(ownerPlayRequested.buttonTag, 43909)
+
+        let ownerRecord = HLProductModalViewController.videoProofChrome(
+            calledFrom: 2,
+            productOwnerId: "",
+            viewerId: "",
+            videoRequested: false,
+            videoURL: ""
+        )
+        XCTAssertFalse(ownerRecord.buttonsHidden)
+        XCTAssertEqual(ownerRecord.statusImageName, requestedImage)
+        XCTAssertNil(ownerRecord.buttonImageName)
+        XCTAssertEqual(ownerRecord.statusText, ownerWaiting)
+        XCTAssertEqual(ownerRecord.buttonTitle, recordTitle)
+        XCTAssertEqual(ownerRecord.buttonTag, 43904)
+        XCTAssertNotEqual(ownerRecord.buttonTag, -43904)
+        let ownerRecordEvenIfRequested = HLProductModalViewController.videoProofChrome(
+            calledFrom: 2,
+            productOwnerId: " ",
+            viewerId: " ",
+            videoRequested: true,
+            videoURL: ""
+        )
+        XCTAssertEqual(ownerRecordEvenIfRequested.buttonTag, 43904)
+        XCTAssertEqual(ownerRecordEvenIfRequested.buttonTitle, recordTitle)
+
+        let spaceURL = " "
+        let newlineURL = "\n"
+        let paddedURL = " \n "
+        let rawURL = "a&b"
+        XCTAssertNil(CommonUtils.nonEmptyTrimmed(spaceURL))
+        XCTAssertNil(CommonUtils.nonEmptyTrimmed(newlineURL))
+        XCTAssertNil(CommonUtils.nonEmptyTrimmed(paddedURL))
+        XCTAssertEqual(HulaProduct.videoURL(["t1": spaceURL], forTradeId: "t1"), spaceURL)
+        for url in [spaceURL, newlineURL, paddedURL, rawURL, " bike ", "🎥"] {
+            let play = HLProductModalViewController.videoProofChrome(
+                calledFrom: 2,
+                productOwnerId: "me",
+                viewerId: "me",
+                videoRequested: false,
+                videoURL: url
+            )
+            XCTAssertEqual(play.buttonTag, 43909)
+            XCTAssertEqual(play.statusImageName, playImage)
+            XCTAssertEqual(play.buttonImageName, playImage)
+            XCTAssertNotEqual(play.buttonTitle, recordTitle)
+            XCTAssertFalse(play.buttonTitle.contains("%"))
+        }
+        let encodedURL = HLProductModalViewController.videoProofChrome(
+            calledFrom: 4,
+            productOwnerId: "owner",
+            viewerId: "peer",
+            videoRequested: false,
+            videoURL: rawURL
+        )
+        XCTAssertEqual(encodedURL.buttonTag, 43909)
+        XCTAssertEqual(encodedURL.statusImageName, playImage)
+        XCTAssertFalse(encodedURL.buttonTitle.contains("%"))
+
+        let peerPlay = HLProductModalViewController.videoProofChrome(
+            calledFrom: 4,
+            productOwnerId: "owner",
+            viewerId: "peer",
+            videoRequested: false,
+            videoURL: "https://cdn.example/proof.mp4"
+        )
+        XCTAssertEqual(peerPlay.buttonTag, 43909)
+        XCTAssertEqual(peerPlay.statusText, available)
+        XCTAssertEqual(peerPlay.buttonTitle, playTitle)
+        XCTAssertEqual(peerPlay.buttonImageName, playImage)
+
+        let peerWaitingChrome = HLProductModalViewController.videoProofChrome(
+            calledFrom: 3,
+            productOwnerId: "owner",
+            viewerId: "peer",
+            videoRequested: true,
+            videoURL: ""
+        )
+        XCTAssertEqual(peerWaitingChrome.statusImageName, requestedImage)
+        XCTAssertNil(peerWaitingChrome.buttonImageName)
+        XCTAssertEqual(peerWaitingChrome.statusText, peerWaiting)
+        XCTAssertEqual(peerWaitingChrome.buttonTitle, peerWaitingTitle)
+        XCTAssertEqual(peerWaitingChrome.buttonTag, -43904)
+        XCTAssertNotEqual(peerWaitingChrome.buttonTag, 43904)
+        XCTAssertNotEqual(peerWaitingChrome.buttonTag, 1)
+
+        let peerRequest = HLProductModalViewController.videoProofChrome(
+            calledFrom: 0,
+            productOwnerId: nil,
+            viewerId: nil,
+            videoRequested: false,
+            videoURL: ""
+        )
+        XCTAssertFalse(peerRequest.buttonsHidden)
+        XCTAssertNil(peerRequest.statusImageName)
+        XCTAssertNil(peerRequest.buttonImageName)
+        XCTAssertEqual(peerRequest.statusText, "")
+        XCTAssertEqual(peerRequest.buttonTitle, " Request video proof")
+        XCTAssertEqual(peerRequest.buttonTag, 1)
+        XCTAssertFalse(TradeViewerSidePolicy.isViewersProduct(productOwnerId: nil, viewerId: nil))
+
+        let missingOwner = HLProductModalViewController.videoProofChrome(
+            calledFrom: 4,
+            productOwnerId: nil,
+            viewerId: "",
+            videoRequested: false,
+            videoURL: ""
+        )
+        XCTAssertEqual(missingOwner.buttonTag, 1)
+        XCTAssertNotEqual(missingOwner.buttonTag, 43904)
+        let blankOwner = HLProductModalViewController.videoProofChrome(
+            calledFrom: 4,
+            productOwnerId: "",
+            viewerId: "",
+            videoRequested: true,
+            videoURL: ""
+        )
+        XCTAssertEqual(blankOwner.buttonTag, 43904)
+
+        let paddedOwner = HLProductModalViewController.videoProofChrome(
+            calledFrom: 2,
+            productOwnerId: " bike ",
+            viewerId: "bike",
+            videoRequested: false,
+            videoURL: ""
+        )
+        XCTAssertEqual(paddedOwner.buttonTag, 1)
+        XCTAssertEqual(paddedOwner.buttonTitle, " Request video proof")
+        let exactPad = HLProductModalViewController.videoProofChrome(
+            calledFrom: 2,
+            productOwnerId: " bike ",
+            viewerId: " bike ",
+            videoRequested: false,
+            videoURL: ""
+        )
+        XCTAssertEqual(exactPad.buttonTag, 43904)
+
+        let ampersand = HLProductModalViewController.videoProofChrome(
+            calledFrom: 3,
+            productOwnerId: "a&b",
+            viewerId: "a%26b",
+            videoRequested: true,
+            videoURL: ""
+        )
+        XCTAssertEqual(ampersand.buttonTag, -43904)
+        XCTAssertNotEqual(ampersand.buttonTag, 43904)
+        let exactAmp = HLProductModalViewController.videoProofChrome(
+            calledFrom: 3,
+            productOwnerId: "a&b",
+            viewerId: "a&b",
+            videoRequested: false,
+            videoURL: " \n "
+        )
+        XCTAssertEqual(exactAmp.buttonTag, 43909)
+
+        XCTAssertFalse(HLSwappViewController.showsWaitingForReply(
+            turnUserId: " bike ",
+            viewerId: nil,
+            waitingTurnEnabled: false
+        ))
+        XCTAssertFalse(HLSwappViewController.shouldBlockOffer(
+            turnUserId: nil,
+            viewerId: "a&b",
+            buttonTag: 0,
+            productsReceivedTag: 1,
+            turnGateEnabled: false
+        ))
+    }
+
     private func tradeReadyFixture(
         ownerId: String,
         otherId: String,

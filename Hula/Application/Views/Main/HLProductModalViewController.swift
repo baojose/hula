@@ -256,72 +256,119 @@ class HLProductModalViewController: UIViewController, UIImagePickerControllerDel
         productsScrollView.contentOffset = CGPoint(x: 0.0, y: 0.0)
     }
     
+    /// Video-proof chrome. Only `calledFrom == 1` (the viewer's own inventory
+    /// column) hides the buttons. The barter presenter also sets
+    /// `hideVideoBtn` for the other inventory column (`calledFrom == 4`); this
+    /// method overwrites that flag, so tag 4 still shows chrome. A URL with
+    /// `characters.count > 0` is playable, including `" "`, `"\n"`, `" \n "`,
+    /// and `"a&b"`. The owner's empty URL is always Record, even when nobody
+    /// requested a video. A peer's empty URL is Waiting only when requested,
+    /// otherwise Request. Nil owner is not the viewer, including nil == nil.
+    /// Empty strings still match. Do not trim. Do not percent-encode. Do not
+    /// use `nonEmptyTrimmed` on the URL. Do not use `playableVideoURL` (that
+    /// is the playback lookup, not this count). Do not route ownership
+    /// through `TradeTurnPolicy.idsMatch`.
+    class func videoProofChrome(
+        calledFrom: Int,
+        productOwnerId: String?,
+        viewerId: String?,
+        videoRequested: Bool,
+        videoURL: String
+    ) -> (
+        buttonsHidden: Bool,
+        statusImageName: String?,
+        statusText: String,
+        buttonTitle: String,
+        buttonImageName: String?,
+        buttonTag: Int
+    ) {
+        if calledFrom == 1 {
+            return (true, nil, "", "", nil, 0)
+        }
+        let hasVideo = videoURL.characters.count > 0
+        if TradeViewerSidePolicy.isViewersProduct(productOwnerId: productOwnerId, viewerId: viewerId) {
+            if hasVideo {
+                return (
+                    false,
+                    "video-player-icon-red",
+                    NSLocalizedString("Video proof available", comment: ""),
+                    NSLocalizedString(" Play video", comment: ""),
+                    "video-player-icon-red",
+                    43909
+                )
+            }
+            return (
+                false,
+                "video-requested-red",
+                NSLocalizedString("User waiting for video proof", comment: ""),
+                NSLocalizedString(" Record video proof", comment: ""),
+                nil,
+                43904
+            )
+        }
+        if videoRequested || hasVideo {
+            if hasVideo {
+                return (
+                    false,
+                    "video-player-icon-red",
+                    NSLocalizedString("Video proof available", comment: ""),
+                    NSLocalizedString(" Play video", comment: ""),
+                    "video-player-icon-red",
+                    43909
+                )
+            }
+            return (
+                false,
+                "video-requested-red",
+                NSLocalizedString("Video proof requested", comment: ""),
+                NSLocalizedString(" Waiting for video proof...", comment: ""),
+                nil,
+                -43904
+            )
+        }
+        return (
+            false,
+            nil,
+            "",
+            " Request video proof",
+            nil,
+            1
+        )
+    }
+
     func setupVideoButtons(){
         print("Called from: \(calledFrom)")
-        hideVideoBtn = false
-        if calledFrom == 1 {
-            hideVideoBtn = true
-            videoStatusImg.isHidden = true;
-            videoStatusImg2.isHidden = true;
-        }
-        if !hideVideoBtn {
-            videoBtnHolder.isHidden = false
-            var vreq : Bool = HulaProduct.isVideoRequested(product.video_requested, forTradeId: currentTradeId)
-            var vurl : String = HulaProduct.videoURL(product.video_url, forTradeId: currentTradeId)
-            if !TradeViewerSidePolicy.isViewersProduct(
-                productOwnerId: product.productOwner,
-                viewerId: HulaUser.sharedInstance.userId
-            ) {
-                // not my product
-                if (vreq || vurl.count  > 0) {
-                    // video has been requested
-                    if (vurl.count > 0) {
-                        // video was requested and is available
-                        videoStatusImg.image = UIImage(named: "video-player-icon-red")
-                        videoStatusImg2.image = UIImage(named: "video-player-icon-red")
-                        videoStatusLbl.text = NSLocalizedString("Video proof available", comment: "")
-                        videoBtn.setTitle(NSLocalizedString(" Play video", comment: ""), for: .normal)
-                        videoBtn.setImage(UIImage(named: "video-player-icon-red"), for: .normal)
-                        videoBtn.tag = 43909
-                    } else {
-                        // video is still pending recod
-                        videoStatusImg.image = UIImage(named: "video-requested-red")
-                        videoStatusImg2.image = UIImage(named: "video-requested-red")
-                        videoBtn.setTitle(NSLocalizedString(" Waiting for video proof...", comment: ""), for: .normal)
-                        videoStatusLbl.text = NSLocalizedString("Video proof requested", comment: "")
-                        videoBtn.tag = -43904
-                    }
-                } else {
-                    // video has not been requested
-                    videoBtn.setTitle(" Request video proof", for: .normal)
-                    videoStatusImg.image = nil
-                    videoStatusImg2.image = nil
-                    videoStatusLbl.text = ""
-                    videoBtn.tag = 1
-                }
-            } else {
-                // it is my product
-                if (vurl.count > 0){
-                    // I've already recorded a video
-                    videoStatusImg.image = UIImage(named: "video-player-icon-red")
-                    videoStatusImg2.image = UIImage(named: "video-player-icon-red")
-                    videoStatusLbl.text = NSLocalizedString("Video proof available", comment: "")
-                    videoBtn.setTitle(NSLocalizedString(" Play video", comment: ""), for: .normal)
-                    videoBtn.setImage(UIImage(named: "video-player-icon-red"), for: .normal)
-                    videoBtn.tag = 43909
-                } else {
-                    // video is still pending recod
-                    videoStatusImg.image = UIImage(named: "video-requested-red")
-                    videoStatusImg2.image = UIImage(named: "video-requested-red")
-                    videoStatusLbl.text = NSLocalizedString("User waiting for video proof", comment: "")
-                    videoBtn.setTitle(NSLocalizedString(" Record video proof", comment: ""), for: .normal)
-                    videoBtn.tag = 43904
-                }
-            }
-        } else {
+        let vreq = HulaProduct.isVideoRequested(product.video_requested, forTradeId: currentTradeId)
+        let vurl = HulaProduct.videoURL(product.video_url, forTradeId: currentTradeId)
+        let chrome = HLProductModalViewController.videoProofChrome(
+            calledFrom: calledFrom,
+            productOwnerId: product.productOwner,
+            viewerId: HulaUser.sharedInstance.userId,
+            videoRequested: vreq,
+            videoURL: vurl
+        )
+        hideVideoBtn = chrome.buttonsHidden
+        if chrome.buttonsHidden {
+            videoStatusImg.isHidden = true
+            videoStatusImg2.isHidden = true
             videoBtnHolder.isHidden = true
             videoStatusLbl.text = ""
+            return
         }
+        videoBtnHolder.isHidden = false
+        if let name = chrome.statusImageName {
+            videoStatusImg.image = UIImage(named: name)
+            videoStatusImg2.image = UIImage(named: name)
+        } else {
+            videoStatusImg.image = nil
+            videoStatusImg2.image = nil
+        }
+        videoStatusLbl.text = chrome.statusText
+        videoBtn.setTitle(chrome.buttonTitle, for: .normal)
+        if let buttonImage = chrome.buttonImageName {
+            videoBtn.setImage(UIImage(named: buttonImage), for: .normal)
+        }
+        videoBtn.tag = chrome.buttonTag
     }
     
     @IBAction func videoAction(_ sender: Any) {
