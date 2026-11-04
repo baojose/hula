@@ -199,6 +199,38 @@ class HLProductDetailViewController: BaseViewController, UIScrollViewDelegate, U
         return !HulaProduct.isTraded(product.productStatus)
     }
 
+    /// Seller-inventory rows compared raw `status` to `"traded"` and raw `_id`
+    /// to IUO `productData.productId`. A non-string status left the cell on its
+    /// storyboard defaults. Exact `"traded"` shows the badge and disables the
+    /// row even when the id matches the product on screen. Any other string
+    /// shows the arrow unless `_id` is a String equal to that product. Nil
+    /// matches nobody, including another nil and `""`. `" bike "` is not
+    /// `bike`. `"a&b"` is not `a%26b`. Do not trim. Do not percent-encode. Do
+    /// not use `ProductIdentityPolicy.identifiersMatch` (nil becomes `""` and
+    /// would disable a blank id). Do not use `HulaProduct.isTraded` for this
+    /// chrome (that is the tap gate after populate). Do not change
+    /// `shouldOpenSellerProduct`.
+    class func sellerInventoryRowChrome(
+        status: Any?,
+        productId: Any?,
+        currentProductId: String?
+    ) -> (
+        showsTradedBadge: Bool,
+        showsArrow: Bool,
+        interactionEnabled: Bool
+    )? {
+        guard let status = status as? String else {
+            return nil
+        }
+        if status == "traded" {
+            return (true, false, false)
+        }
+        if let productId = productId as? String, productId == currentProductId {
+            return (false, false, false)
+        }
+        return (false, true, true)
+    }
+
     /// Empty productId must not force-unwrap or GET `products/report/`.
     class func reportProductURL(apiBase: String, productId: String?) -> String? {
         return CommonUtils.apiResourceURL(apiBase: apiBase, path: ["products", "report", productId])
@@ -270,27 +302,15 @@ class HLProductDetailViewController: BaseViewController, UIScrollViewDelegate, U
                 cell.productImage.loadImageFromURL(urlString: HulaConstants.noProductThumb)
             }
             
-            if let st = pr.object(forKey: "status") as? String{
-                if st == "traded"{
-                    cell.tradedAlertImage.isHidden = false
-                    cell.tradedLabel.isHidden = false
-                    cell.goArrow.isHidden = true
-                    cell.isUserInteractionEnabled = false
-                } else {
-                    cell.tradedAlertImage.isHidden = true
-                    cell.tradedLabel.isHidden = true
-                    cell.goArrow.isHidden = false
-                    cell.isUserInteractionEnabled = true
-                    
-                    
-                    if let prid = pr.object(forKey: "_id") as? String {
-                        if (prid == productData.productId){
-                            cell.goArrow.isHidden = true
-                            cell.isUserInteractionEnabled = false
-                        }
-                    }
-                    
-                }
+            if let chrome = HLProductDetailViewController.sellerInventoryRowChrome(
+                status: pr.object(forKey: "status"),
+                productId: pr.object(forKey: "_id"),
+                currentProductId: productData.productId
+            ) {
+                cell.tradedAlertImage.isHidden = !chrome.showsTradedBadge
+                cell.tradedLabel.isHidden = !chrome.showsTradedBadge
+                cell.goArrow.isHidden = !chrome.showsArrow
+                cell.isUserInteractionEnabled = chrome.interactionEnabled
             }
         }
         return cell
