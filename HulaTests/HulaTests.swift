@@ -12226,6 +12226,210 @@ class HulaTests: XCTestCase {
         ))
     }
 
+    /// Seller inventory on product detail. A status that is not a String leaves
+    /// the row alone. Exact `"traded"` shows the badge and disables the row.
+    /// Any other string stays tappable unless `_id` equals the product already
+    /// on screen. Nil is not `""`. `" bike "` is not `bike`. `"a&b"` is not
+    /// percent-encoded. Do not route the id through `identifiersMatch`.
+    func testSellerInventoryRowChromeKeepsTradedAndCurrentProductDistinct() {
+        func expectChrome(
+            _ chrome: (showsTradedBadge: Bool, showsArrow: Bool, interactionEnabled: Bool)?,
+            badge: Bool,
+            arrow: Bool,
+            enabled: Bool,
+            file: StaticString = #file,
+            line: UInt = #line
+        ) {
+            XCTAssertEqual(chrome?.showsTradedBadge, badge as Bool?, file: file, line: line)
+            XCTAssertEqual(chrome?.showsArrow, arrow as Bool?, file: file, line: line)
+            XCTAssertEqual(chrome?.interactionEnabled, enabled as Bool?, file: file, line: line)
+        }
+
+        XCTAssertNil(HLProductDetailViewController.sellerInventoryRowChrome(
+            status: nil,
+            productId: "p1",
+            currentProductId: "p1"
+        ))
+        XCTAssertNil(HLProductDetailViewController.sellerInventoryRowChrome(
+            status: NSNull(),
+            productId: "",
+            currentProductId: ""
+        ))
+        XCTAssertNil(HLProductDetailViewController.sellerInventoryRowChrome(
+            status: NSNumber(value: 1),
+            productId: "1",
+            currentProductId: "1"
+        ))
+        XCTAssertNil(HLProductDetailViewController.sellerInventoryRowChrome(
+            status: true,
+            productId: "p1",
+            currentProductId: "p1"
+        ))
+        XCTAssertFalse(HulaProduct.isTraded(nil))
+        XCTAssertTrue(ProductIdentityPolicy.identifiersMatch(nil, ""))
+        XCTAssertTrue(ProductIdentityPolicy.identifiersMatch(nil, nil))
+
+        let traded = HLProductDetailViewController.sellerInventoryRowChrome(
+            status: "traded",
+            productId: "p1",
+            currentProductId: "p1"
+        )
+        expectChrome(traded, badge: true, arrow: false, enabled: false)
+        XCTAssertTrue(HulaProduct.isTraded("traded"))
+        let tradedOtherId = HLProductDetailViewController.sellerInventoryRowChrome(
+            status: "traded",
+            productId: NSNumber(value: 1),
+            currentProductId: nil
+        )
+        expectChrome(tradedOtherId, badge: true, arrow: false, enabled: false)
+        let tradedBlank = HLProductDetailViewController.sellerInventoryRowChrome(
+            status: "traded",
+            productId: "",
+            currentProductId: ""
+        )
+        expectChrome(tradedBlank, badge: true, arrow: false, enabled: false)
+
+        for status in ["Traded", " traded ", "traded ", " traded", "", " ", "\n", " \n ", "a&b", "xx_user"] {
+            let open = HLProductDetailViewController.sellerInventoryRowChrome(
+                status: status,
+                productId: "other",
+                currentProductId: "current"
+            )
+            expectChrome(open, badge: false, arrow: true, enabled: true)
+            XCTAssertFalse(HulaProduct.isTraded(status))
+            XCTAssertNotEqual(status, "traded")
+        }
+
+        let current = HLProductDetailViewController.sellerInventoryRowChrome(
+            status: "available",
+            productId: "p1",
+            currentProductId: "p1"
+        )
+        expectChrome(current, badge: false, arrow: false, enabled: false)
+        let blankIds = HLProductDetailViewController.sellerInventoryRowChrome(
+            status: "",
+            productId: "",
+            currentProductId: ""
+        )
+        expectChrome(blankIds, badge: false, arrow: false, enabled: false)
+        let spaces = HLProductDetailViewController.sellerInventoryRowChrome(
+            status: " ",
+            productId: " ",
+            currentProductId: " "
+        )
+        expectChrome(spaces, badge: false, arrow: false, enabled: false)
+        let newlines = HLProductDetailViewController.sellerInventoryRowChrome(
+            status: " \n ",
+            productId: " \n ",
+            currentProductId: " \n "
+        )
+        expectChrome(newlines, badge: false, arrow: false, enabled: false)
+        let newlineMiss = HLProductDetailViewController.sellerInventoryRowChrome(
+            status: " \n ",
+            productId: " \n ",
+            currentProductId: "\n"
+        )
+        expectChrome(newlineMiss, badge: false, arrow: true, enabled: true)
+
+        let padded = HLProductDetailViewController.sellerInventoryRowChrome(
+            status: "available",
+            productId: " bike ",
+            currentProductId: "bike"
+        )
+        expectChrome(padded, badge: false, arrow: true, enabled: true)
+        XCTAssertNotEqual(" bike ", "bike")
+        let exactPad = HLProductDetailViewController.sellerInventoryRowChrome(
+            status: "available",
+            productId: " bike ",
+            currentProductId: " bike "
+        )
+        expectChrome(exactPad, badge: false, arrow: false, enabled: false)
+
+        let ampersand = HLProductDetailViewController.sellerInventoryRowChrome(
+            status: "available",
+            productId: "a&b",
+            currentProductId: "a%26b"
+        )
+        expectChrome(ampersand, badge: false, arrow: true, enabled: true)
+        XCTAssertEqual(FormFieldPolicy.encoded("a&b"), "a%26b")
+        XCTAssertNotEqual("a&b", FormFieldPolicy.encoded("a&b"))
+        let exactAmp = HLProductDetailViewController.sellerInventoryRowChrome(
+            status: "used",
+            productId: "a&b",
+            currentProductId: "a&b"
+        )
+        expectChrome(exactAmp, badge: false, arrow: false, enabled: false)
+
+        let caseMiss = HLProductDetailViewController.sellerInventoryRowChrome(
+            status: "available",
+            productId: "P1",
+            currentProductId: "p1"
+        )
+        expectChrome(caseMiss, badge: false, arrow: true, enabled: true)
+
+        let numericId = HLProductDetailViewController.sellerInventoryRowChrome(
+            status: "available",
+            productId: NSNumber(value: 1),
+            currentProductId: "1"
+        )
+        expectChrome(numericId, badge: false, arrow: true, enabled: true)
+        let nullId = HLProductDetailViewController.sellerInventoryRowChrome(
+            status: "available",
+            productId: NSNull(),
+            currentProductId: ""
+        )
+        expectChrome(nullId, badge: false, arrow: true, enabled: true)
+        let missingId = HLProductDetailViewController.sellerInventoryRowChrome(
+            status: "available",
+            productId: nil,
+            currentProductId: nil
+        )
+        expectChrome(missingId, badge: false, arrow: true, enabled: true)
+        let blankOnNil = HLProductDetailViewController.sellerInventoryRowChrome(
+            status: "",
+            productId: "",
+            currentProductId: nil
+        )
+        expectChrome(blankOnNil, badge: false, arrow: true, enabled: true)
+        XCTAssertTrue(ProductIdentityPolicy.identifiersMatch("", nil))
+
+        let emoji = HLProductDetailViewController.sellerInventoryRowChrome(
+            status: "available",
+            productId: "🙂",
+            currentProductId: "🙂"
+        )
+        expectChrome(emoji, badge: false, arrow: false, enabled: false)
+        let emojiMiss = HLProductDetailViewController.sellerInventoryRowChrome(
+            status: "available",
+            productId: "🙂",
+            currentProductId: "🙂 "
+        )
+        expectChrome(emojiMiss, badge: false, arrow: true, enabled: true)
+
+        let tradedProduct = HulaProduct()
+        tradedProduct.productStatus = "traded"
+        XCTAssertFalse(HLProductDetailViewController.shouldOpenSellerProduct(tradedProduct))
+        let paddedStatus = HulaProduct()
+        paddedStatus.productStatus = " traded "
+        XCTAssertTrue(HLProductDetailViewController.shouldOpenSellerProduct(paddedStatus))
+        let unset = HulaProduct()
+        unset.productStatus = nil
+        XCTAssertTrue(HLProductDetailViewController.shouldOpenSellerProduct(unset))
+
+        XCTAssertFalse(HLSwappViewController.showsWaitingForReply(
+            turnUserId: " bike ",
+            viewerId: nil,
+            waitingTurnEnabled: false
+        ))
+        XCTAssertFalse(HLSwappViewController.shouldBlockOffer(
+            turnUserId: nil,
+            viewerId: "a&b",
+            buttonTag: 0,
+            productsReceivedTag: 1,
+            turnGateEnabled: false
+        ))
+    }
+
     private func tradeReadyFixture(
         ownerId: String,
         otherId: String,
