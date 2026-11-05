@@ -12430,6 +12430,86 @@ class HulaTests: XCTestCase {
         ))
     }
 
+    /// Search distance chips keep a row when the limit is All (`0`) or the
+    /// miles are strictly under the limit. Near You and search hide the
+    /// viewer's own listing by comparing coalesced ids. Nil matches `""`.
+    /// `" bike "` is not `bike`. `"a&b"` is not percent-encoded. Turn-id
+    /// matching must not drive this: `idsMatch` says nil matches nobody, which
+    /// would leave a blank listing on screen.
+    func testSearchDistanceAndOwnListingExclusionKeepBlankIdsHidden() {
+        func passes(miles: CGFloat, limit: CGFloat) -> Bool {
+            return HLSearchResultViewController.passesDistanceFilter(miles: miles, limit: limit)
+        }
+        XCTAssertTrue(passes(miles: CGFloat(0), limit: CGFloat(0)))
+        XCTAssertTrue(passes(miles: CGFloat(10000), limit: CGFloat(0)))
+        let limits: [CGFloat] = [CGFloat(5), CGFloat(10), CGFloat(20), CGFloat(50)]
+        for limit in limits {
+            XCTAssertTrue(passes(miles: CGFloat(0), limit: limit))
+            XCTAssertTrue(passes(miles: limit - CGFloat(0.1), limit: limit))
+            XCTAssertFalse(passes(miles: limit, limit: limit))
+            XCTAssertFalse(passes(miles: limit + CGFloat(0.1), limit: limit))
+        }
+        XCTAssertFalse(passes(miles: CGFloat(0), limit: CGFloat(-1)))
+        XCTAssertTrue(passes(miles: CGFloat(-1), limit: CGFloat(5)))
+        XCTAssertFalse(HLSearchResultViewController.conditionMatchesFilter(nil, filter: "new"))
+
+        func expectIncluded(_ owner: String?, _ viewer: String?, included: Bool) {
+            XCTAssertEqual(
+                HLSearchResultViewController.includesOtherSeller(productOwnerId: owner, viewerId: viewer),
+                included
+            )
+            XCTAssertEqual(
+                HLHomeViewController.includesOtherSeller(productOwnerId: owner, viewerId: viewer),
+                included
+            )
+            XCTAssertEqual(
+                ProductListingPolicy.includesOtherSeller(productOwnerId: owner, viewerId: viewer),
+                included
+            )
+        }
+
+        expectIncluded(nil, nil, included: false)
+        expectIncluded(nil, "", included: false)
+        expectIncluded("", nil, included: false)
+        expectIncluded("", "", included: false)
+        expectIncluded(" ", " ", included: false)
+        expectIncluded(" \n ", " \n ", included: false)
+        expectIncluded(" bike ", " bike ", included: false)
+        expectIncluded("a&b", "a&b", included: false)
+        expectIncluded("🙂", "🙂", included: false)
+
+        expectIncluded(" ", "", included: true)
+        expectIncluded(" \n ", "\n", included: true)
+        expectIncluded(" bike ", "bike", included: true)
+        expectIncluded("a&b", "a%26b", included: true)
+        expectIncluded("P1", "p1", included: true)
+        expectIncluded("🙂", "🙂 ", included: true)
+        expectIncluded("seller", "me", included: true)
+
+        XCTAssertFalse(TradeTurnPolicy.idsMatch(nil, ""))
+        XCTAssertFalse(TradeTurnPolicy.idsMatch(nil, nil))
+        XCTAssertTrue(TradeTurnPolicy.idsMatch("", ""))
+        XCTAssertFalse(HLSearchResultViewController.includesOtherSeller(productOwnerId: "", viewerId: ""))
+        XCTAssertFalse(HLHomeViewController.includesOtherSeller(productOwnerId: nil, viewerId: ""))
+        XCTAssertEqual(ProductListingPolicy.ownerId(nil), "")
+        XCTAssertEqual(ProductListingPolicy.ownerId(" bike "), " bike ")
+        XCTAssertNotEqual(" bike ", "bike")
+        XCTAssertEqual(FormFieldPolicy.encoded("a&b"), "a%26b")
+        XCTAssertNotEqual("a&b", FormFieldPolicy.encoded("a&b"))
+        XCTAssertFalse(HLSwappViewController.showsWaitingForReply(
+            turnUserId: " bike ",
+            viewerId: nil,
+            waitingTurnEnabled: false
+        ))
+        XCTAssertFalse(HLSwappViewController.shouldBlockOffer(
+            turnUserId: nil,
+            viewerId: "a&b",
+            buttonTag: 0,
+            productsReceivedTag: 1,
+            turnGateEnabled: false
+        ))
+    }
+
     private func tradeReadyFixture(
         ownerId: String,
         otherId: String,
