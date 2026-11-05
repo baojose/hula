@@ -2042,6 +2042,16 @@ struct ProductListingPolicy {
         return owner ?? ""
     }
 
+    /// Home Near You and search drop the viewer's own listings. Nil becomes
+    /// `""`, so a missing owner matches a missing viewer and the row is hidden.
+    /// `""` matches `""`. `" "` matches `" "`. `" bike "` is not `bike`.
+    /// `"a&b"` is not `a%26b`. Do not trim. Do not percent-encode. Do not use
+    /// `TradeTurnPolicy.idsMatch`: nil matches nobody there, so `!idsMatch`
+    /// would keep a blank listing on screen.
+    static func includesOtherSeller(productOwnerId: String?, viewerId: String?) -> Bool {
+        return ownerId(productOwnerId) != ownerId(viewerId)
+    }
+
     static func imageURL(_ image: String?) -> String {
         return image ?? ""
     }

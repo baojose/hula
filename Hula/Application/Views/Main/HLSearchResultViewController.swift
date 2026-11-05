@@ -351,6 +351,27 @@ class HLSearchResultViewController: BaseViewController, UITableViewDataSource, U
         return condition == filter
     }
 
+    /// Distance chips are 5, 10, 20, 50, or All (`0`). `0` keeps every row,
+    /// including a missing GPS fix that `getCGDistanceFrom` reports as `0`
+    /// miles. Any other limit keeps the row only when miles are strictly less
+    /// than the limit, so a product exactly 5 miles away fails the 5-mile
+    /// chip. Do not use `<=`. Do not treat `0` miles as unknown. Do not fold
+    /// this into condition or reputation. 0,0 coordinates stay inside
+    /// `getCGDistanceFrom`.
+    class func passesDistanceFilter(miles: CGFloat, limit: CGFloat) -> Bool {
+        return limit == 0.0 || miles < limit
+    }
+
+    /// Own listings are removed before the row is appended. Nil owner and nil
+    /// viewer both become `""` and the row stays hidden. Do not trim. Do not
+    /// percent-encode. Do not use `TradeTurnPolicy.idsMatch`.
+    class func includesOtherSeller(productOwnerId: String?, viewerId: String?) -> Bool {
+        return ProductListingPolicy.includesOtherSeller(
+            productOwnerId: productOwnerId,
+            viewerId: viewerId
+        )
+    }
+
     func getFilteredList(){
         filteredList = []
         guard let products = productsList as? [NSDictionary] else {
@@ -373,11 +394,17 @@ class HLSearchResultViewController: BaseViewController, UITableViewDataSource, U
             isValidRep = HLSearchResultViewController.sellerMeetsReputation(seller, minimumPercent: filterReputation)
             
             
-            if filterDistance == 0.0 || commonUtils.getCGDistanceFrom(loc: hprod.productLocation) < filterDistance {
+            if HLSearchResultViewController.passesDistanceFilter(
+                miles: commonUtils.getCGDistanceFrom(loc: hprod.productLocation),
+                limit: filterDistance
+            ) {
                 isValidDist = true
             }
             
-            if HLSearchResultViewController.listingOwnerId(hprod.productOwner) != HLSearchResultViewController.listingOwnerId(HulaUser.sharedInstance.userId) {
+            if HLSearchResultViewController.includesOtherSeller(
+                productOwnerId: hprod.productOwner,
+                viewerId: HulaUser.sharedInstance.userId
+            ) {
                 // remove my products from the list
                 isValidUser = true
             }

@@ -207,6 +207,15 @@ class HLHomeViewController: BaseViewController, UIScrollViewDelegate, UITextFiel
         return ProductListingPolicy.ownerId(owner)
     }
 
+    /// Near You drops the viewer's own listings. Nil matches `""` and the row
+    /// stays hidden. Do not trim. Do not use `TradeTurnPolicy.idsMatch`.
+    class func includesOtherSeller(productOwnerId: String?, viewerId: String?) -> Bool {
+        return ProductListingPolicy.includesOtherSeller(
+            productOwnerId: productOwnerId,
+            viewerId: viewerId
+        )
+    }
+
     class func listingImageURL(_ image: String?) -> String {
         return ProductListingPolicy.imageURL(image)
     }
@@ -272,7 +281,10 @@ class HLHomeViewController: BaseViewController, UIScrollViewDelegate, UITextFiel
                         for prod in products{
                             let p = HulaProduct()
                             p.populate(with: prod)
-                            if HLHomeViewController.listingOwnerId(p.productOwner) != HLHomeViewController.listingOwnerId(HulaUser.sharedInstance.userId) {
+                            if HLHomeViewController.includesOtherSeller(
+                                productOwnerId: p.productOwner,
+                                viewerId: HulaUser.sharedInstance.userId
+                            ) {
                                 self.productArray.append(p);
                             }
                         }
