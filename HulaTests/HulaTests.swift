@@ -12510,6 +12510,123 @@ class HulaTests: XCTestCase {
         ))
     }
 
+    /// Notification taps open the trade room for exact `"trade"` and `"chat"`,
+    /// and a seller profile for exact `"start"` only when `from_id` is a
+    /// non-empty string. `""` stays closed. `" "` is still a sender id. Nil is
+    /// not `""`. `" bike "` is not `bike`. `"a&b"` is not percent-encoded.
+    /// Accept/Decline stay on every `"start"` row, including a blank sender.
+    /// `idsMatch` must not drive this: empty strings match, which would open
+    /// a profile for a blank sender.
+    func testNotificationRowDestinationKeepsTradeChatAndStartProfilesDistinct() {
+        func expectDestination(
+            _ type: Any?,
+            _ fromUserId: Any?,
+            opensTradeRoom: Bool,
+            sellerUserId: String?,
+            file: StaticString = #file,
+            line: UInt = #line
+        ) {
+            let destination = HLNotificationsViewController.rowDestination(
+                type: type,
+                fromUserId: fromUserId
+            )
+            XCTAssertEqual(destination.opensTradeRoom, opensTradeRoom, file: file, line: line)
+            XCTAssertEqual(destination.sellerUserId, sellerUserId, file: file, line: line)
+        }
+
+        expectDestination(nil, "seller", opensTradeRoom: false, sellerUserId: nil)
+        expectDestination(NSNull(), "seller", opensTradeRoom: false, sellerUserId: nil)
+        expectDestination(NSNumber(value: 1), "seller", opensTradeRoom: false, sellerUserId: nil)
+        expectDestination(true, "seller", opensTradeRoom: false, sellerUserId: nil)
+        expectDestination("trade", nil, opensTradeRoom: true, sellerUserId: nil)
+        expectDestination("chat", nil, opensTradeRoom: true, sellerUserId: nil)
+        expectDestination("trade", NSNull(), opensTradeRoom: true, sellerUserId: nil)
+        expectDestination("chat", "", opensTradeRoom: true, sellerUserId: nil)
+        expectDestination("trade", "seller", opensTradeRoom: true, sellerUserId: nil)
+        expectDestination("chat", " ", opensTradeRoom: true, sellerUserId: nil)
+        expectDestination("chat", NSNumber(value: 1), opensTradeRoom: true, sellerUserId: nil)
+
+        for missed in ["Trade", "CHAT", " trade", "trade ", " trade ", "chat ", " start", "start ", "Start", "", " ", "\n", " \n ", "a&b", "xx_user"] {
+            expectDestination(missed, "seller", opensTradeRoom: false, sellerUserId: nil)
+            XCTAssertNotEqual(missed, "trade")
+            XCTAssertNotEqual(missed, "chat")
+            XCTAssertFalse(NotificationRowPolicy.shouldShowStartActions(type: missed))
+            XCTAssertFalse(HLNotificationsViewController.shouldShowStartActions(type: missed))
+        }
+
+        expectDestination("start", nil, opensTradeRoom: false, sellerUserId: nil)
+        expectDestination("start", NSNull(), opensTradeRoom: false, sellerUserId: nil)
+        expectDestination("start", NSNumber(value: 1), opensTradeRoom: false, sellerUserId: nil)
+        expectDestination("start", true, opensTradeRoom: false, sellerUserId: nil)
+        expectDestination("start", "", opensTradeRoom: false, sellerUserId: nil)
+        XCTAssertTrue(NotificationRowPolicy.shouldShowStartActions(type: "start"))
+        XCTAssertTrue(HLNotificationsViewController.shouldShowStartActions(type: "start"))
+        XCTAssertFalse(NotificationRowPolicy.shouldShowStartActions(type: nil))
+        XCTAssertFalse(HLNotificationsViewController.shouldShowStartActions(type: "trade"))
+        XCTAssertFalse(HLNotificationsViewController.shouldShowStartActions(type: "chat"))
+        XCTAssertTrue(TradeTurnPolicy.idsMatch("", ""))
+        XCTAssertFalse(TradeTurnPolicy.idsMatch(nil, ""))
+        XCTAssertNil(HLNotificationsViewController.rowDestination(type: "start", fromUserId: "").sellerUserId)
+
+        expectDestination("start", " ", opensTradeRoom: false, sellerUserId: " ")
+        expectDestination("start", "\n", opensTradeRoom: false, sellerUserId: "\n")
+        expectDestination("start", " \n ", opensTradeRoom: false, sellerUserId: " \n ")
+        let base = "https://hula.trading/api/"
+        XCTAssertNil(HLDataManager.userProfileURL(apiBase: base, userId: " "))
+        XCTAssertNil(HLDataManager.userProfileURL(apiBase: base, userId: "\n"))
+        XCTAssertNil(HLDataManager.userProfileURL(apiBase: base, userId: " \n "))
+        XCTAssertEqual((" " as String).characters.count, 1)
+        XCTAssertEqual(("" as String).characters.count, 0)
+
+        expectDestination("start", " bike ", opensTradeRoom: false, sellerUserId: " bike ")
+        XCTAssertNotEqual(" bike ", "bike")
+        XCTAssertNotEqual(
+            HLNotificationsViewController.rowDestination(type: "start", fromUserId: " bike ").sellerUserId,
+            "bike"
+        )
+        XCTAssertEqual(
+            HLDataManager.userProfileURL(apiBase: base, userId: " bike "),
+            HLDataManager.userProfileURL(apiBase: base, userId: "bike")
+        )
+        XCTAssertEqual(
+            HLDataManager.userProfileURL(apiBase: base, userId: "bike"),
+            "https://hula.trading/api/users/bike"
+        )
+
+        expectDestination("start", "a&b", opensTradeRoom: false, sellerUserId: "a&b")
+        XCTAssertNotEqual("a&b", "a%26b")
+        XCTAssertEqual(FormFieldPolicy.encoded("a&b"), "a%26b")
+        XCTAssertEqual(
+            HLDataManager.userProfileURL(apiBase: base, userId: "a&b"),
+            "https://hula.trading/api/users/a%26b"
+        )
+        XCTAssertNotEqual(
+            HLNotificationsViewController.rowDestination(type: "start", fromUserId: "a&b").sellerUserId,
+            "a%26b"
+        )
+
+        expectDestination("start", "P1", opensTradeRoom: false, sellerUserId: "P1")
+        XCTAssertNotEqual("P1", "p1")
+        expectDestination("start", "🙂", opensTradeRoom: false, sellerUserId: "🙂")
+        XCTAssertEqual(("🙂" as String).characters.count, 1)
+        expectDestination("start", "seller", opensTradeRoom: false, sellerUserId: "seller")
+
+        XCTAssertFalse(HLSearchResultViewController.passesDistanceFilter(miles: CGFloat(5), limit: CGFloat(5)))
+        XCTAssertTrue(HLSearchResultViewController.passesDistanceFilter(miles: CGFloat(0), limit: CGFloat(0)))
+        XCTAssertFalse(HLSwappViewController.showsWaitingForReply(
+            turnUserId: " bike ",
+            viewerId: nil,
+            waitingTurnEnabled: false
+        ))
+        XCTAssertFalse(HLSwappViewController.shouldBlockOffer(
+            turnUserId: nil,
+            viewerId: "a&b",
+            buttonTag: 0,
+            productsReceivedTag: 1,
+            turnGateEnabled: false
+        ))
+    }
+
     private func tradeReadyFixture(
         ownerId: String,
         otherId: String,
