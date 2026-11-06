@@ -274,34 +274,26 @@ class HLNotificationsViewController: BaseViewController, UITableViewDelegate, UI
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         guard let notification = HLDataManager.sharedInstance.notification(at: indexPath.row) else { return }
         
-        if let type = notification.object(forKey: "type") as? String{
-            if (type == "trade"){
-                if let portraitNC = self.tabBarController?.navigationController as? HulaPortraitNavigationController {
-                    portraitNC.openSwapView()
-                }
-                
+        let destination = HLNotificationsViewController.rowDestination(
+            type: notification.object(forKey: "type"),
+            fromUserId: notification.object(forKey: "from_id")
+        )
+        if destination.opensTradeRoom {
+            if let portraitNC = self.tabBarController?.navigationController as? HulaPortraitNavigationController {
+                portraitNC.openSwapView()
             }
-            
-            if (type == "chat"){
-                if let portraitNC = self.tabBarController?.navigationController as? HulaPortraitNavigationController {
-                    portraitNC.openSwapView()
-                }
-            }
-            
-            if (type == "start"){
-                if let user_id = notification.object(forKey: "from_id") as? String, user_id.count > 0 {
-                    HLDataManager.sharedInstance.getUserProfile(userId: user_id, taskCallback: {(user, prods, userfeedback) in
-                        let storyboard = UIStoryboard(name: "Main", bundle: nil)
-                        let myModalViewController = storyboard.instantiateViewController(withIdentifier: "sellerInfoPage") as! HLSellerInfoViewController
-                        myModalViewController.user = user
-                        myModalViewController.userProducts = prods
-                        myModalViewController.userFeedback = userfeedback
-                        myModalViewController.modalPresentationStyle = UIModalPresentationStyle.fullScreen
-                        myModalViewController.modalTransitionStyle = UIModalTransitionStyle.coverVertical
-                        self.navigationController?.pushViewController(myModalViewController, animated: true)
-                    })
-                }
-            }
+        }
+        if let user_id = destination.sellerUserId {
+            HLDataManager.sharedInstance.getUserProfile(userId: user_id, taskCallback: {(user, prods, userfeedback) in
+                let storyboard = UIStoryboard(name: "Main", bundle: nil)
+                let myModalViewController = storyboard.instantiateViewController(withIdentifier: "sellerInfoPage") as! HLSellerInfoViewController
+                myModalViewController.user = user
+                myModalViewController.userProducts = prods
+                myModalViewController.userFeedback = userfeedback
+                myModalViewController.modalPresentationStyle = UIModalPresentationStyle.fullScreen
+                myModalViewController.modalTransitionStyle = UIModalTransitionStyle.coverVertical
+                self.navigationController?.pushViewController(myModalViewController, animated: true)
+            })
         }
         
         if let notification_id = notification.object(forKey: "_id") as? String{
@@ -452,6 +444,33 @@ extension HLNotificationsViewController {
 
     class func hasNotifications(_ notifications: NSArray?) -> Bool {
         return SessionListPolicy.hasItems(notifications)
+    }
+
+    /// A notification row opens the trade room for exact `"trade"` or `"chat"`,
+    /// and the seller profile for exact `"start"` only when `from_id` is a
+    /// String whose character count is greater than 0. Nil, `NSNull`, numbers,
+    /// and bools are not strings, so they open nothing. `""` does not open a
+    /// profile. `" "` does, and is passed through unchanged; `userProfileURL`
+    /// still skips it after trim. `" bike "` is not `bike`. `"a&b"` is not
+    /// percent-encoded here. Do not trim. Do not use `TradeTurnPolicy.idsMatch`
+    /// (`""` matches `""`, which would open a profile for a blank sender).
+    /// Do not change `shouldShowStartActions`: Accept/Decline still appear for
+    /// every `"start"` row, including a blank sender. Do not route accept or
+    /// reject through this helper; those paths do not require a non-empty id.
+    /// Do not change `userProfileURL` or `encodedPathSegment`.
+    class func rowDestination(type: Any?, fromUserId: Any?) -> (opensTradeRoom: Bool, sellerUserId: String?) {
+        guard let type = type as? String else {
+            return (false, nil)
+        }
+        if type == "trade" || type == "chat" {
+            return (true, nil)
+        }
+        if type == "start" {
+            if let userId = fromUserId as? String, userId.characters.count > 0 {
+                return (false, userId)
+            }
+        }
+        return (false, nil)
     }
 }
 
