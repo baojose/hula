@@ -12627,6 +12627,190 @@ class HulaTests: XCTestCase {
         ))
     }
 
+    /// Barter inventory cells show the play icon when this trade's video URL
+    /// has any characters, the requested icon only when that URL is empty and
+    /// proof was requested, and no image otherwise. Exact `"deleted"` then
+    /// replaces that image. `" "` is still a URL. `" bike "` is not `bike`.
+    /// `"a&b"` is not percent-encoded. Trade-id lookup still trims; the URL
+    /// value does not. The modal's `videoProofChrome` stays a different
+    /// decision, including Record for the owner's empty URL.
+    func testBarterInventoryStatusImageKeepsPlayRequestedAndDeletedDistinct() {
+        func expectImage(
+            _ videoRequested: Bool,
+            _ videoURL: String,
+            _ productStatus: String?,
+            _ expected: String?,
+            file: StaticString = #file,
+            line: UInt = #line
+        ) {
+            XCTAssertEqual(
+                HLBarterScreenViewController.inventoryStatusImageName(
+                    videoRequested: videoRequested,
+                    videoURL: videoURL,
+                    productStatus: productStatus
+                ),
+                expected,
+                file: file,
+                line: line
+            )
+        }
+
+        expectImage(false, "", nil, nil)
+        expectImage(false, "", "", nil)
+        expectImage(false, "", " ", nil)
+        expectImage(false, "", "\n", nil)
+        expectImage(false, "", " \n ", nil)
+        expectImage(false, "", "traded", nil)
+        expectImage(false, "", "Deleted", nil)
+        expectImage(false, "", "DELETED", nil)
+        expectImage(false, "", " deleted", nil)
+        expectImage(false, "", "deleted ", nil)
+        expectImage(false, "", " deleted ", nil)
+        expectImage(true, "", nil, "video-requested-red")
+        expectImage(true, "", "", "video-requested-red")
+        expectImage(true, "", "traded", "video-requested-red")
+        expectImage(true, "", " deleted", "video-requested-red")
+        expectImage(true, "", "deleted ", "video-requested-red")
+        expectImage(true, "", "Deleted", "video-requested-red")
+
+        expectImage(false, " ", nil, "video-player-icon-red")
+        expectImage(false, "\n", nil, "video-player-icon-red")
+        expectImage(false, " \n ", nil, "video-player-icon-red")
+        expectImage(true, " ", nil, "video-player-icon-red")
+        expectImage(true, "\n", "", "video-player-icon-red")
+        expectImage(false, " bike ", nil, "video-player-icon-red")
+        expectImage(false, "bike", nil, "video-player-icon-red")
+        XCTAssertNotEqual(" bike ", "bike")
+        expectImage(false, "a&b", nil, "video-player-icon-red")
+        expectImage(false, "a%26b", nil, "video-player-icon-red")
+        XCTAssertNotEqual("a&b", "a%26b")
+        XCTAssertEqual(FormFieldPolicy.encoded("a&b"), "a%26b")
+        expectImage(false, "P1", nil, "video-player-icon-red")
+        XCTAssertNotEqual("P1", "p1")
+        expectImage(false, "🙂", nil, "video-player-icon-red")
+        XCTAssertEqual(("🙂" as String).characters.count, 1)
+        XCTAssertEqual((" " as String).characters.count, 1)
+        XCTAssertEqual(("" as String).characters.count, 0)
+        XCTAssertEqual((" \n " as String).characters.count, 3)
+
+        expectImage(false, "", "deleted", "icon-product-removed")
+        expectImage(true, "", "deleted", "icon-product-removed")
+        expectImage(false, "https://cdn.example/proof.mp4", "deleted", "icon-product-removed")
+        expectImage(true, " ", "deleted", "icon-product-removed")
+        expectImage(false, " bike ", "deleted", "icon-product-removed")
+        expectImage(false, "a&b", "deleted", "icon-product-removed")
+        expectImage(false, "🙂", "deleted", "icon-product-removed")
+        expectImage(false, " bike ", " deleted ", "video-player-icon-red")
+        expectImage(true, "", " \n ", "video-requested-red")
+
+        XCTAssertTrue(HulaProduct.isDeleted("deleted"))
+        XCTAssertTrue(ProductIdentityPolicy.isDeleted("deleted"))
+        XCTAssertFalse(HulaProduct.isDeleted(nil))
+        XCTAssertFalse(HulaProduct.isDeleted(""))
+        XCTAssertFalse(HulaProduct.isDeleted(" "))
+        XCTAssertFalse(HulaProduct.isDeleted("\n"))
+        XCTAssertFalse(HulaProduct.isDeleted(" \n "))
+        XCTAssertFalse(HulaProduct.isDeleted(" deleted"))
+        XCTAssertFalse(HulaProduct.isDeleted("deleted "))
+        XCTAssertFalse(HulaProduct.isDeleted(" deleted "))
+        XCTAssertFalse(HulaProduct.isDeleted("Deleted"))
+        XCTAssertFalse(HulaProduct.isDeleted("traded"))
+        XCTAssertTrue(HulaProduct.isTraded("traded"))
+        XCTAssertFalse(HulaProduct.isTraded("deleted"))
+        XCTAssertFalse(ProductIdentityPolicy.identifiersMatch(" deleted ", "deleted"))
+        XCTAssertTrue(ProductIdentityPolicy.identifiersMatch(nil, ""))
+        XCTAssertFalse(HulaProduct.isDeleted(nil))
+
+        XCTAssertEqual(HulaProduct.videoURL(["t": " "], forTradeId: "t"), " ")
+        XCTAssertEqual(HulaProduct.videoURL(["t": "\n"], forTradeId: "t"), "\n")
+        XCTAssertEqual(HulaProduct.videoURL(["t": " \n "], forTradeId: "t"), " \n ")
+        XCTAssertEqual(HulaProduct.videoURL(["t": " bike "], forTradeId: "t"), " bike ")
+        XCTAssertEqual(HulaProduct.videoURL(["t": "a&b"], forTradeId: "t"), "a&b")
+        XCTAssertNotEqual(HulaProduct.videoURL(["t": "a&b"], forTradeId: "t"), "a%26b")
+        XCTAssertEqual(HulaProduct.videoURL(["t": "🙂"], forTradeId: "t"), "🙂")
+        XCTAssertEqual(HulaProduct.videoURL(["a&b": "clip"], forTradeId: "a&b"), "clip")
+        XCTAssertEqual(HulaProduct.videoURL(["P1": "clip"], forTradeId: "P1"), "clip")
+        XCTAssertEqual(HulaProduct.videoURL(["P1": "clip"], forTradeId: "p1"), "")
+        XCTAssertEqual(HulaProduct.videoURL(["bike": "clip"], forTradeId: " bike "), "clip")
+        XCTAssertEqual(HulaProduct.videoURL([" bike ": "clip"], forTradeId: " bike "), "")
+        XCTAssertEqual(HulaProduct.videoURL([" bike ": "clip"], forTradeId: "bike"), "")
+        XCTAssertTrue(HulaProduct.isVideoRequested(["bike": true], forTradeId: " bike "))
+        XCTAssertFalse(HulaProduct.isVideoRequested([" bike ": true], forTradeId: "bike"))
+        XCTAssertEqual(HulaProduct.videoURL([" ": "clip"], forTradeId: " "), "")
+        XCTAssertEqual(HulaProduct.videoURL(["": "clip"], forTradeId: ""), "")
+        XCTAssertEqual(HulaProduct.videoURL(["\n": "clip"], forTradeId: "\n"), "")
+        XCTAssertEqual(HulaProduct.videoURL([" \n ": "clip"], forTradeId: " \n "), "")
+        XCTAssertFalse(HulaProduct.isVideoRequested([" ": true], forTradeId: " "))
+        XCTAssertFalse(HulaProduct.isVideoRequested(["": true], forTradeId: ""))
+        XCTAssertEqual(HulaProduct.videoURL(nil, forTradeId: "t"), "")
+        XCTAssertFalse(HulaProduct.isVideoRequested(nil, forTradeId: "t"))
+        XCTAssertEqual(HulaProduct.videoURL(["t": "clip"], forTradeId: nil), "")
+        XCTAssertFalse(HulaProduct.isVideoRequested(["t": true], forTradeId: nil))
+        XCTAssertFalse(HulaProduct.isVideoRequested(["t": false], forTradeId: "t"))
+        XCTAssertFalse(HulaProduct.isVideoRequested([:], forTradeId: "t"))
+
+        let spacedURL = HulaProduct.videoURL(["t": " "], forTradeId: "t")
+        expectImage(false, spacedURL, nil, "video-player-icon-red")
+        let missedBike = HulaProduct.videoURL([" bike ": "clip"], forTradeId: "bike")
+        let missedRequest = HulaProduct.isVideoRequested([" bike ": true], forTradeId: "bike")
+        expectImage(missedRequest, missedBike, "available", nil)
+        let trimmedHit = HulaProduct.videoURL(["bike": "clip"], forTradeId: " bike ")
+        expectImage(false, trimmedHit, nil, "video-player-icon-red")
+        XCTAssertNotEqual(trimmedHit, " bike ")
+
+        let hiddenInventoryColumn = HLProductModalViewController.videoProofChrome(
+            calledFrom: 1,
+            productOwnerId: "owner",
+            viewerId: "owner",
+            videoRequested: true,
+            videoURL: "clip"
+        )
+        XCTAssertTrue(hiddenInventoryColumn.buttonsHidden)
+        XCTAssertNil(hiddenInventoryColumn.statusImageName)
+        expectImage(true, "clip", nil, "video-player-icon-red")
+
+        let ownerRecord = HLProductModalViewController.videoProofChrome(
+            calledFrom: 4,
+            productOwnerId: "owner",
+            viewerId: "owner",
+            videoRequested: false,
+            videoURL: ""
+        )
+        XCTAssertFalse(ownerRecord.buttonsHidden)
+        XCTAssertEqual(ownerRecord.statusImageName, "video-requested-red")
+        XCTAssertEqual(ownerRecord.buttonTag, 43904)
+        expectImage(false, "", nil, nil)
+
+        let peerColumn = HLProductModalViewController.videoProofChrome(
+            calledFrom: 4,
+            productOwnerId: "peer",
+            viewerId: "me",
+            videoRequested: false,
+            videoURL: ""
+        )
+        XCTAssertFalse(peerColumn.buttonsHidden)
+        XCTAssertEqual(peerColumn.buttonTag, 1)
+        XCTAssertNil(peerColumn.statusImageName)
+        expectImage(false, "", "available", nil)
+
+        XCTAssertNil(HLNotificationsViewController.rowDestination(type: "start", fromUserId: "").sellerUserId)
+        XCTAssertFalse(HLSearchResultViewController.passesDistanceFilter(miles: CGFloat(5), limit: CGFloat(5)))
+        XCTAssertTrue(HLSearchResultViewController.passesDistanceFilter(miles: CGFloat(0), limit: CGFloat(0)))
+        XCTAssertFalse(HLSearchResultViewController.includesOtherSeller(productOwnerId: "", viewerId: ""))
+        XCTAssertFalse(HLSwappViewController.showsWaitingForReply(
+            turnUserId: " bike ",
+            viewerId: nil,
+            waitingTurnEnabled: false
+        ))
+        XCTAssertFalse(HLSwappViewController.shouldBlockOffer(
+            turnUserId: nil,
+            viewerId: "a&b",
+            buttonTag: 0,
+            productsReceivedTag: 1,
+            turnGateEnabled: false
+        ))
+    }
+
     private func tradeReadyFixture(
         ownerId: String,
         otherId: String,

@@ -1249,6 +1249,39 @@ extension HLBarterScreenViewController: KDDragAndDropCollectionViewDataSource, U
         }
     }
     
+    /// Barter inventory cells choose the status image after `videoURL` /
+    /// `isVideoRequested` resolve this trade. A URL with `characters.count > 0`
+    /// is the play icon, including `" "`, `"\n"`, `" \n "`, `" bike "`,
+    /// `"a&b"`, and one emoji, even when proof was also requested. An empty
+    /// URL shows the requested icon only when this trade requested proof.
+    /// Otherwise the image is nil. Exact `"deleted"` then replaces whichever
+    /// of those images was chosen, including a playable URL. Nil status is
+    /// not deleted. `" deleted "` is not `"deleted"`. `"Deleted"` is not
+    /// `"deleted"`. Do not trim the URL. Do not percent-encode it. Do not
+    /// fold this into `videoProofChrome`: that helper hides buttons when
+    /// `calledFrom == 1` and treats the owner's empty URL as Record. Do not
+    /// change `isVideoRequested` or `videoURL` (those still trim the trade
+    /// id and reject a blank one). Do not change `isDeleted`. Do not use
+    /// `isTraded` for this image.
+    class func inventoryStatusImageName(
+        videoRequested: Bool,
+        videoURL: String,
+        productStatus: String?
+    ) -> String? {
+        var imageName: String? = nil
+        if videoRequested || videoURL.characters.count > 0 {
+            if videoURL.characters.count > 0 {
+                imageName = "video-player-icon-red"
+            } else {
+                imageName = "video-requested-red"
+            }
+        }
+        if HulaProduct.isDeleted(productStatus) {
+            imageName = "icon-product-removed"
+        }
+        return imageName
+    }
+
     // The cell that is returned must be retrieved from a call to -dequeueReusableCellWithReuseIdentifier:forIndexPath:
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         
@@ -1298,24 +1331,19 @@ extension HLBarterScreenViewController: KDDragAndDropCollectionViewDataSource, U
         }
         //print(product.video_requested)
         //print(product.video_url)
-        var vreq : Bool = HulaProduct.isVideoRequested(product.video_requested, forTradeId: thisTrade.tradeId)
-        var vurl : String = HulaProduct.videoURL(product.video_url, forTradeId: thisTrade.tradeId)
-        
+        let vreq = HulaProduct.isVideoRequested(product.video_requested, forTradeId: thisTrade.tradeId)
+        let vurl = HulaProduct.videoURL(product.video_url, forTradeId: thisTrade.tradeId)
+        let statusImageName = HLBarterScreenViewController.inventoryStatusImageName(
+            videoRequested: vreq,
+            videoURL: vurl,
+            productStatus: product.productStatus
+        )
+
         cell.statusImage.isHidden = false
-        if ( vreq || vurl.count > 0 ){
-            if vurl.count > 0 {
-                cell.statusImage.image = UIImage(named: "video-player-icon-red")
-            } else {
-                cell.statusImage.image = UIImage(named: "video-requested-red")
-            }
+        if let statusImageName = statusImageName {
+            cell.statusImage.image = UIImage(named: statusImageName)
         } else {
             cell.statusImage.image = nil
-        }
-        
-        
-        if HulaProduct.isDeleted(product.productStatus) {
-            cell.statusImage.image = UIImage(named: "icon-product-removed")
-            cell.statusImage.isHidden = false
         }
         
         cell.isHidden = false
