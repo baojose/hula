@@ -12811,6 +12811,172 @@ class HulaTests: XCTestCase {
         ))
     }
 
+    /// Past-trade headlines use exact status strings. `"closed"` is canceled
+    /// and keeps the date. `"review"` is the close-the-deal title and replaces
+    /// the date. `"ended"` stays "Exchange completed". `" closed "` is not
+    /// `"closed"`. `"Closed"` is not `"closed"`. `"preview"` is not `"review"`.
+    /// Nil is not force-unwrapped and is not `""`. Acceptance checkmarks stay
+    /// on `pastTradeClosedMarks` and do not read this status.
+    func testPastTradeHeadlineKeepsCanceledReviewAndCompletedDistinct() {
+        let completedTitle = NSLocalizedString("Exchange completed", comment: "")
+        let canceledTitle = NSLocalizedString("Trade canceled", comment: "")
+        let reviewTitle = NSLocalizedString("Close the deal", comment: "")
+        let reviewDate = NSLocalizedString("We recommend confirming this trade only after exchanging stuff", comment: "")
+
+        func expectHeadline(
+            _ status: String?,
+            title: String,
+            dateReplacement: String?,
+            file: StaticString = #file,
+            line: UInt = #line
+        ) {
+            let headline = HLPastTradeViewController.headline(status: status)
+            XCTAssertEqual(headline.title, title, file: file, line: line)
+            XCTAssertEqual(headline.dateReplacement, dateReplacement, file: file, line: line)
+        }
+
+        XCTAssertEqual(HulaConstants.cancel_status, "closed")
+        XCTAssertEqual(HulaConstants.review_status, "review")
+        XCTAssertEqual(HulaConstants.end_status, "ended")
+        XCTAssertEqual(HulaConstants.pending_status, "pending")
+        XCTAssertEqual(HulaConstants.sent_status, "offer_sent")
+
+        expectHeadline("closed", title: canceledTitle, dateReplacement: nil)
+        expectHeadline(HulaConstants.cancel_status, title: canceledTitle, dateReplacement: nil)
+        expectHeadline("review", title: reviewTitle, dateReplacement: reviewDate)
+        expectHeadline(HulaConstants.review_status, title: reviewTitle, dateReplacement: reviewDate)
+        XCTAssertNotEqual(canceledTitle, reviewTitle)
+        XCTAssertNotEqual(reviewTitle, completedTitle)
+        XCTAssertNotEqual(reviewDate, reviewTitle)
+
+        let others: [String?] = [
+            "ended", "pending", "offer_sent",
+            "Closed", "CLOSED", " closed", "closed ", " closed ", "closed.", "unclosed",
+            "Review", "REVIEW", " review", "review ", " review ", "preview", "reviewing",
+            "", " ", "\n", " \n ",
+            "a&b", "a%26b", "P1", "p1", " bike ", "🙂",
+            nil
+        ]
+        for other in others {
+            expectHeadline(other, title: completedTitle, dateReplacement: nil)
+        }
+        XCTAssertNotEqual(" closed ", "closed")
+        XCTAssertNotEqual("Closed", "closed")
+        XCTAssertNotEqual("CLOSED", "closed")
+        XCTAssertNotEqual("preview", "review")
+        XCTAssertNotEqual("reviewing", "review")
+        XCTAssertNotEqual("a&b", "a%26b")
+        XCTAssertEqual(FormFieldPolicy.encoded("a&b"), "a%26b")
+        XCTAssertEqual(("closed" as String).characters.count, 6)
+        XCTAssertEqual((" closed" as String).characters.count, 7)
+        XCTAssertEqual((" closed " as String).characters.count, 8)
+        XCTAssertEqual(("review" as String).characters.count, 6)
+        XCTAssertEqual((" review" as String).characters.count, 7)
+        XCTAssertEqual(("🙂" as String).characters.count, 1)
+        XCTAssertEqual(("" as String).characters.count, 0)
+        XCTAssertEqual((" " as String).characters.count, 1)
+
+        let fresh = HulaTrade()
+        XCTAssertEqual(fresh.status, "pending")
+        expectHeadline(fresh.status, title: completedTitle, dateReplacement: nil)
+
+        let missing = HulaTrade()
+        missing.loadFrom(dict: NSDictionary())
+        XCTAssertEqual(missing.status, "pending")
+        expectHeadline(missing.status, title: completedTitle, dateReplacement: nil)
+
+        let nullStatus = HulaTrade()
+        nullStatus.loadFrom(dict: ["status": NSNull()] as NSDictionary)
+        XCTAssertEqual(nullStatus.status, "pending")
+        expectHeadline(nullStatus.status, title: completedTitle, dateReplacement: nil)
+
+        let numeric = HulaTrade()
+        numeric.loadFrom(dict: ["status": NSNumber(value: 1)] as NSDictionary)
+        XCTAssertEqual(numeric.status, "pending")
+        expectHeadline(numeric.status, title: completedTitle, dateReplacement: nil)
+
+        let boolStatus = HulaTrade()
+        boolStatus.loadFrom(dict: ["status": true] as NSDictionary)
+        XCTAssertEqual(boolStatus.status, "pending")
+        expectHeadline(boolStatus.status, title: completedTitle, dateReplacement: nil)
+
+        let keptClosed = HulaTrade()
+        keptClosed.status = "closed"
+        keptClosed.loadFrom(dict: ["status": NSNumber(value: 1)] as NSDictionary)
+        XCTAssertEqual(keptClosed.status, "closed")
+        expectHeadline(keptClosed.status, title: canceledTitle, dateReplacement: nil)
+
+        let padded = HulaTrade()
+        padded.loadFrom(dict: ["status": " closed "] as NSDictionary)
+        XCTAssertEqual(padded.status, " closed ")
+        expectHeadline(padded.status, title: completedTitle, dateReplacement: nil)
+
+        let ampersand = HulaTrade()
+        ampersand.loadFrom(dict: ["status": "a&b"] as NSDictionary)
+        XCTAssertEqual(ampersand.status, "a&b")
+        XCTAssertNotEqual(ampersand.status, FormFieldPolicy.encoded("a&b"))
+        expectHeadline(ampersand.status, title: completedTitle, dateReplacement: nil)
+
+        let reviewTrade = HulaTrade()
+        reviewTrade.loadFrom(dict: ["status": "review"] as NSDictionary)
+        XCTAssertEqual(reviewTrade.status, "review")
+        expectHeadline(reviewTrade.status, title: reviewTitle, dateReplacement: reviewDate)
+
+        let endedTrade = HulaTrade()
+        endedTrade.loadFrom(dict: ["status": "ended"] as NSDictionary)
+        XCTAssertEqual(endedTrade.status, "ended")
+        expectHeadline(endedTrade.status, title: completedTitle, dateReplacement: nil)
+
+        let nilStatus = HulaTrade()
+        nilStatus.status = nil
+        XCTAssertNil(nilStatus.status)
+        expectHeadline(nilStatus.status, title: completedTitle, dateReplacement: nil)
+
+        let nilViewerMarks = TradeViewerSidePolicy.pastTradeClosedMarks(
+            ownerId: nil,
+            viewerId: nil,
+            ownerAccepted: true,
+            otherAccepted: false
+        )
+        XCTAssertFalse(nilViewerMarks.showMine)
+        XCTAssertTrue(nilViewerMarks.showOther)
+        let ownerMarks = TradeViewerSidePolicy.pastTradeClosedMarks(
+            ownerId: "me",
+            viewerId: "me",
+            ownerAccepted: false,
+            otherAccepted: true
+        )
+        XCTAssertFalse(ownerMarks.showMine)
+        XCTAssertTrue(ownerMarks.showOther)
+        expectHeadline("closed", title: canceledTitle, dateReplacement: nil)
+        expectHeadline(nil, title: completedTitle, dateReplacement: nil)
+
+        XCTAssertEqual(
+            HLBarterScreenViewController.inventoryStatusImageName(
+                videoRequested: false,
+                videoURL: " ",
+                productStatus: nil
+            ),
+            "video-player-icon-red"
+        )
+        XCTAssertNil(HLNotificationsViewController.rowDestination(type: "start", fromUserId: "").sellerUserId)
+        XCTAssertFalse(HLSearchResultViewController.passesDistanceFilter(miles: CGFloat(5), limit: CGFloat(5)))
+        XCTAssertTrue(HLSearchResultViewController.passesDistanceFilter(miles: CGFloat(0), limit: CGFloat(0)))
+        XCTAssertFalse(HLSearchResultViewController.includesOtherSeller(productOwnerId: "", viewerId: ""))
+        XCTAssertFalse(HLSwappViewController.showsWaitingForReply(
+            turnUserId: " bike ",
+            viewerId: nil,
+            waitingTurnEnabled: false
+        ))
+        XCTAssertFalse(HLSwappViewController.shouldBlockOffer(
+            turnUserId: nil,
+            viewerId: "a&b",
+            buttonTag: 0,
+            productsReceivedTag: 1,
+            turnGateEnabled: false
+        ))
+    }
+
     private func tradeReadyFixture(
         ownerId: String,
         otherId: String,

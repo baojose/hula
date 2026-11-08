@@ -54,6 +54,30 @@ class HLPastTradeViewController: UIViewController, UICollectionViewDelegate, UIC
     class func productThumbURL(_ image: String?) -> String {
         return ProfilePhotoPolicy.thumbURL(image)
     }
+
+    /// Past-trade headline. Exact `cancel_status` (`"closed"`) is "Trade canceled"
+    /// and keeps the `timeAgo` date. Exact `review_status` (`"review"`) is
+    /// "Close the deal" and replaces that date with the confirm-after-exchange
+    /// sentence. Every other status, including `"ended"`, `"Closed"`,
+    /// `" closed"`, `"closed "`, `" review"`, `"preview"`, `""`, and nil, stays
+    /// "Exchange completed" and keeps the date. Review is checked second, so it
+    /// wins only when the status is exactly `"review"`. Do not trim. Do not
+    /// case-fold. Do not percent-encode. Do not fold this into
+    /// `pastTradeClosedMarks` (those are the acceptance checkmarks). A nil
+    /// status must not be force-unwrapped; `==` on `String?` is the same path
+    /// the IUO `status` compare already used.
+    class func headline(status: String?) -> (title: String, dateReplacement: String?) {
+        var title = NSLocalizedString("Exchange completed", comment: "")
+        var dateReplacement: String? = nil
+        if status == HulaConstants.cancel_status {
+            title = NSLocalizedString("Trade canceled", comment: "")
+        }
+        if status == HulaConstants.review_status {
+            title = NSLocalizedString("Close the deal", comment: "")
+            dateReplacement = NSLocalizedString("We recommend confirming this trade only after exchanging stuff", comment: "")
+        }
+        return (title, dateReplacement)
+    }
     
     
     override func viewDidLoad() {
@@ -74,16 +98,11 @@ class HLPastTradeViewController: UIViewController, UICollectionViewDelegate, UIC
         //print (thisTrade)
         let lastUpdate = thisTrade.last_update as NSDate
         dateLabel.text = CommonUtils.sharedInstance.timeAgoSinceDate(date: lastUpdate, numericDates: false)
-        var tradeStatus = NSLocalizedString("Exchange completed", comment: "")
-        //print(thisTrade.status)
-        if (thisTrade.status == HulaConstants.cancel_status){
-            tradeStatus = NSLocalizedString("Trade canceled", comment: "")
+        let headline = HLPastTradeViewController.headline(status: thisTrade.status)
+        if let dateReplacement = headline.dateReplacement {
+            dateLabel.text = dateReplacement
         }
-        if (thisTrade.status == HulaConstants.review_status){
-            tradeStatus = NSLocalizedString("Close the deal", comment: "")
-            dateLabel.text = NSLocalizedString("We recommend confirming this trade only after exchanging stuff", comment: "")
-        }
-        mainLabel.text = tradeStatus
+        mainLabel.text = headline.title
         
         let marks = TradeViewerSidePolicy.pastTradeClosedMarks(
             ownerId: thisTrade.owner_id,
