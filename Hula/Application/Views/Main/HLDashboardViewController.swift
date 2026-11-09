@@ -336,6 +336,37 @@ extension HLDashboardViewController: UICollectionViewDelegate, UICollectionViewD
         }
         return (counterpartyId, viewerIsOther, otherProductsSide, ownerProductsSide, unreadCount)
     }
+
+    /// Lobby list bucket. Both `status` and `_id` must already be Strings.
+    /// Exact `end_status` (`"ended"`) or `cancel_status` (`"closed"`) becomes
+    /// list status `"past"`. Every other string, including `"review"`,
+    /// `"Closed"`, `" closed"`, `"closed "`, `"ended "`, `"end"`, `""`,
+    /// `"pending"`, `"offer_sent"`, `"a&b"`, `"P1"`, and one emoji, becomes
+    /// `"current"`. A missing, `NSNull`, numeric, or bool status, or a
+    /// non-string `_id`, never reaches that compare: the cell stays empty
+    /// ("Trade unavailable") and returns before the avatar, trays, or turn
+    /// badge. The original status string is kept for `lobbyBadge`, which is
+    /// nil unless the list status is already `"current"`. `"ended"` stays
+    /// "Exchange completed" in `headline`; `"review"` still replaces that
+    /// date. Do not trim. Do not case-fold. Do not percent-encode. Do not
+    /// fold this into `lobbyBadge`, `headline`, or `lobbyRoomLayout`.
+    class func lobbyListBucket(from trade: NSDictionary) -> (
+        listStatus: String,
+        tradeStatus: String,
+        tradeId: String
+    )? {
+        guard let tradeStatus = trade.object(forKey: "status") as? String,
+              let tradeId = trade.object(forKey: "_id") as? String else {
+            return nil
+        }
+        let listStatus: String
+        if tradeStatus == HulaConstants.end_status || tradeStatus == HulaConstants.cancel_status {
+            listStatus = "past"
+        } else {
+            listStatus = "current"
+        }
+        return (listStatus, tradeStatus, tradeId)
+    }
     
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
@@ -355,21 +386,16 @@ extension HLDashboardViewController: UICollectionViewDelegate, UICollectionViewD
             cell.emptyRoomLabel.text = ""
             //print(thisTrade)
             
-            guard let trade_status = thisTrade.object(forKey: "status") as? String,
-                  let tradeId = thisTrade.object(forKey: "_id") as? String else {
+            guard let bucket = HLDashboardViewController.lobbyListBucket(from: thisTrade) else {
                 cell.isEmptyRoom = true
                 cell.emptyRoomLabel.text = NSLocalizedString("Trade unavailable", comment: "")
                 return cell
             }
-            var status = trade_status
-            if status == HulaConstants.end_status || status == HulaConstants.cancel_status {
-                status = "past"
-            } else {
-                status = "current"
-            }
+            let trade_status = bucket.tradeStatus
+            let status = bucket.listStatus
             cell.tradeStatus = status
 
-            cell.tradeId = tradeId
+            cell.tradeId = bucket.tradeId
 
             let layout = HLDashboardViewController.lobbyRoomLayout(
                 from: thisTrade,

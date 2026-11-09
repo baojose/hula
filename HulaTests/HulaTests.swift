@@ -12977,6 +12977,339 @@ class HulaTests: XCTestCase {
         ))
     }
 
+    /// Lobby rooms become `"past"` only for exact `"ended"` or `"closed"`.
+    /// `"review"` stays `"current"` so the turn badge can still show
+    /// in-review. `" closed "` is not `"closed"`. `"Closed"` is not
+    /// `"closed"`. `"ended "` is not `"ended"`. A missing, `NSNull`, numeric,
+    /// or bool status, or a non-string `_id`, never reaches that compare.
+    /// The original status is what `headline` and `lobbyBadge` still read.
+    func testLobbyListBucketKeepsEndedAndClosedPastWithoutFoldingReview() {
+        func room(_ fields: [String: Any]) -> NSDictionary {
+            return NSDictionary(dictionary: fields)
+        }
+
+        func expectBucket(
+            _ fields: [String: Any],
+            listStatus: String,
+            tradeStatus: String,
+            tradeId: String,
+            file: StaticString = #file,
+            line: UInt = #line
+        ) {
+            let bucket = HLDashboardViewController.lobbyListBucket(from: room(fields))
+            XCTAssertEqual(bucket?.listStatus, listStatus, file: file, line: line)
+            XCTAssertEqual(bucket?.tradeStatus, tradeStatus, file: file, line: line)
+            XCTAssertEqual(bucket?.tradeId, tradeId, file: file, line: line)
+        }
+
+        func expectUnavailable(
+            _ fields: [String: Any],
+            file: StaticString = #file,
+            line: UInt = #line
+        ) {
+            XCTAssertNil(
+                HLDashboardViewController.lobbyListBucket(from: room(fields)),
+                file: file,
+                line: line
+            )
+        }
+
+        XCTAssertEqual(HulaConstants.end_status, "ended")
+        XCTAssertEqual(HulaConstants.cancel_status, "closed")
+        XCTAssertEqual(HulaConstants.review_status, "review")
+        XCTAssertEqual(HulaConstants.pending_status, "pending")
+        XCTAssertEqual(HulaConstants.sent_status, "offer_sent")
+
+        expectBucket(
+            ["status": "ended", "_id": "t-ended"],
+            listStatus: "past",
+            tradeStatus: "ended",
+            tradeId: "t-ended"
+        )
+        expectBucket(
+            ["status": HulaConstants.end_status, "_id": "t-end-const"],
+            listStatus: "past",
+            tradeStatus: "ended",
+            tradeId: "t-end-const"
+        )
+        expectBucket(
+            ["status": "closed", "_id": "t-closed"],
+            listStatus: "past",
+            tradeStatus: "closed",
+            tradeId: "t-closed"
+        )
+        expectBucket(
+            ["status": HulaConstants.cancel_status, "_id": "t-cancel-const"],
+            listStatus: "past",
+            tradeStatus: "closed",
+            tradeId: "t-cancel-const"
+        )
+        expectBucket(
+            ["status": "ended", "_id": ""],
+            listStatus: "past",
+            tradeStatus: "ended",
+            tradeId: ""
+        )
+        expectBucket(
+            ["status": "closed", "_id": " "],
+            listStatus: "past",
+            tradeStatus: "closed",
+            tradeId: " "
+        )
+        expectBucket(
+            ["status": "ended", "_id": "\n"],
+            listStatus: "past",
+            tradeStatus: "ended",
+            tradeId: "\n"
+        )
+        expectBucket(
+            ["status": "closed", "_id": " \n "],
+            listStatus: "past",
+            tradeStatus: "closed",
+            tradeId: " \n "
+        )
+        expectBucket(
+            ["status": "ended", "_id": " bike "],
+            listStatus: "past",
+            tradeStatus: "ended",
+            tradeId: " bike "
+        )
+        XCTAssertNotEqual(" bike ", "bike")
+        expectBucket(
+            ["status": "closed", "_id": "a&b"],
+            listStatus: "past",
+            tradeStatus: "closed",
+            tradeId: "a&b"
+        )
+        XCTAssertNotEqual("a&b", "a%26b")
+        XCTAssertEqual(FormFieldPolicy.encoded("a&b"), "a%26b")
+        expectBucket(
+            ["status": "ended", "_id": "P1"],
+            listStatus: "past",
+            tradeStatus: "ended",
+            tradeId: "P1"
+        )
+        XCTAssertNotEqual("P1", "p1")
+        expectBucket(
+            ["status": "closed", "_id": "🙂"],
+            listStatus: "past",
+            tradeStatus: "closed",
+            tradeId: "🙂"
+        )
+        expectBucket(
+            ["status": "ended", "_id": "1"],
+            listStatus: "past",
+            tradeStatus: "ended",
+            tradeId: "1"
+        )
+
+        let currentStatuses = [
+            "review", "pending", "offer_sent",
+            "Closed", "CLOSED", " closed", "closed ", " closed ", "closed.", "unclosed",
+            "ENDED", "Ended", " ended", "ended ", " ended ", "end", "ending",
+            "Review", "REVIEW", " review", "review ", " review ", "preview", "reviewing",
+            "", " ", "\n", " \n ",
+            "a&b", "a%26b", "P1", "p1", " bike ", "🙂", "1"
+        ]
+        for status in currentStatuses {
+            expectBucket(
+                ["status": status, "_id": "room"],
+                listStatus: "current",
+                tradeStatus: status,
+                tradeId: "room"
+            )
+        }
+        XCTAssertNotEqual(" closed ", "closed")
+        XCTAssertNotEqual("Closed", "closed")
+        XCTAssertNotEqual("CLOSED", "closed")
+        XCTAssertNotEqual("ended ", "ended")
+        XCTAssertNotEqual(" ended", "ended")
+        XCTAssertNotEqual("ENDED", "ended")
+        XCTAssertNotEqual("preview", "review")
+        XCTAssertNotEqual("reviewing", "review")
+        XCTAssertNotEqual("a&b", "a%26b")
+        XCTAssertEqual(("ended" as String).characters.count, 5)
+        XCTAssertEqual((" ended" as String).characters.count, 6)
+        XCTAssertEqual((" ended " as String).characters.count, 7)
+        XCTAssertEqual(("closed" as String).characters.count, 6)
+        XCTAssertEqual((" closed " as String).characters.count, 8)
+        XCTAssertEqual(("review" as String).characters.count, 6)
+        XCTAssertEqual(("🙂" as String).characters.count, 1)
+        XCTAssertEqual(("" as String).characters.count, 0)
+        XCTAssertEqual((" " as String).characters.count, 1)
+        XCTAssertEqual((" \n " as String).characters.count, 3)
+
+        expectBucket(
+            ["status": " ", "_id": " "],
+            listStatus: "current",
+            tradeStatus: " ",
+            tradeId: " "
+        )
+        expectBucket(
+            ["status": "", "_id": ""],
+            listStatus: "current",
+            tradeStatus: "",
+            tradeId: ""
+        )
+        expectBucket(
+            ["status": " \n ", "_id": " \n "],
+            listStatus: "current",
+            tradeStatus: " \n ",
+            tradeId: " \n "
+        )
+        expectBucket(
+            ["status": "a&b", "_id": "a&b"],
+            listStatus: "current",
+            tradeStatus: "a&b",
+            tradeId: "a&b"
+        )
+        expectBucket(
+            ["status": " bike ", "_id": " bike "],
+            listStatus: "current",
+            tradeStatus: " bike ",
+            tradeId: " bike "
+        )
+        XCTAssertFalse(ProductIdentityPolicy.identifiersMatch(" closed ", "closed"))
+        XCTAssertFalse(ProductIdentityPolicy.identifiersMatch("ended ", "ended"))
+        XCTAssertTrue(ProductIdentityPolicy.identifiersMatch(nil, ""))
+        XCTAssertTrue(TradeTurnPolicy.idsMatch("", ""))
+        XCTAssertFalse(TradeTurnPolicy.idsMatch(nil, ""))
+
+        expectUnavailable([:])
+        expectUnavailable(["_id": "only-id"])
+        expectUnavailable(["status": "ended"])
+        expectUnavailable(["status": "closed"])
+        expectUnavailable(["status": "review", "_id": NSNull()])
+        expectUnavailable(["status": NSNull(), "_id": "t"])
+        expectUnavailable(["status": NSNull(), "_id": NSNull()])
+        expectUnavailable(["status": NSNumber(value: 1), "_id": "t"])
+        expectUnavailable(["status": NSNumber(value: 0), "_id": "ended"])
+        expectUnavailable(["status": "ended", "_id": NSNumber(value: 1)])
+        expectUnavailable(["status": "closed", "_id": NSNumber(value: 1)])
+        expectUnavailable(["status": true, "_id": "t"])
+        expectUnavailable(["status": false, "_id": "t"])
+        expectUnavailable(["status": "ended", "_id": true])
+        expectUnavailable(["status": "review", "_id": false])
+        expectUnavailable(["status": "1", "_id": NSNumber(value: 1)])
+        expectBucket(
+            ["status": "1", "_id": "1"],
+            listStatus: "current",
+            tradeStatus: "1",
+            tradeId: "1"
+        )
+
+        let unavailableLayout = HLDashboardViewController.lobbyRoomLayout(
+            from: room(["status": NSNull(), "_id": "t", "other_id": "peer", "owner_id": "me"]),
+            viewerId: "me"
+        )
+        XCTAssertNil(HLDashboardViewController.lobbyListBucket(from: room(["status": NSNull(), "_id": "t", "other_id": "peer"])))
+        XCTAssertEqual(unavailableLayout.counterpartyId, "peer")
+        XCTAssertFalse(unavailableLayout.viewerIsOther)
+        XCTAssertEqual(unavailableLayout.ownerProductsSide, "left")
+
+        let ended = HLDashboardViewController.lobbyListBucket(from: room(["status": "ended", "_id": "t", "turn_user_id": "peer"]))
+        XCTAssertEqual(ended?.listStatus, "past")
+        XCTAssertEqual(ended?.tradeStatus, "ended")
+        XCTAssertNil(TradeTurnPolicy.lobbyBadge(
+            listStatus: ended?.listStatus,
+            tradeStatus: ended?.tradeStatus,
+            turnValue: "peer",
+            viewerId: "me"
+        ))
+        XCTAssertEqual(
+            TradeTurnPolicy.lobbyBadge(
+                listStatus: "current",
+                tradeStatus: "ended",
+                turnValue: "peer",
+                viewerId: "me"
+            ),
+            TradeTurnPolicy.badgeOtherTurn
+        )
+        let endedHeadline = HLPastTradeViewController.headline(status: ended?.tradeStatus)
+        XCTAssertEqual(endedHeadline.title, NSLocalizedString("Exchange completed", comment: ""))
+        XCTAssertNil(endedHeadline.dateReplacement)
+
+        let closed = HLDashboardViewController.lobbyListBucket(from: room(["status": "closed", "_id": "t"]))
+        XCTAssertEqual(closed?.listStatus, "past")
+        XCTAssertNil(TradeTurnPolicy.lobbyBadge(
+            listStatus: closed?.listStatus,
+            tradeStatus: closed?.tradeStatus,
+            turnValue: "me",
+            viewerId: "me"
+        ))
+        let closedHeadline = HLPastTradeViewController.headline(status: "closed")
+        XCTAssertEqual(closedHeadline.title, NSLocalizedString("Trade canceled", comment: ""))
+        XCTAssertNil(closedHeadline.dateReplacement)
+
+        let review = HLDashboardViewController.lobbyListBucket(from: room(["status": "review", "_id": "t"]))
+        XCTAssertEqual(review?.listStatus, "current")
+        XCTAssertEqual(review?.tradeStatus, "review")
+        XCTAssertEqual(
+            TradeTurnPolicy.lobbyBadge(
+                listStatus: review?.listStatus,
+                tradeStatus: review?.tradeStatus,
+                turnValue: "peer",
+                viewerId: "me"
+            ),
+            TradeTurnPolicy.badgeInReview
+        )
+        XCTAssertEqual(
+            TradeTurnPolicy.lobbyBadge(
+                listStatus: review?.listStatus,
+                tradeStatus: review?.tradeStatus,
+                turnValue: NSNull(),
+                viewerId: "me"
+            ),
+            TradeTurnPolicy.badgeMyTurn
+        )
+        let reviewHeadline = HLPastTradeViewController.headline(status: review?.tradeStatus)
+        XCTAssertEqual(reviewHeadline.title, NSLocalizedString("Close the deal", comment: ""))
+        XCTAssertEqual(
+            reviewHeadline.dateReplacement,
+            NSLocalizedString("We recommend confirming this trade only after exchanging stuff", comment: "")
+        )
+
+        let padded = HLDashboardViewController.lobbyListBucket(from: room(["status": " closed ", "_id": "a&b"]))
+        XCTAssertEqual(padded?.listStatus, "current")
+        XCTAssertEqual(padded?.tradeStatus, " closed ")
+        XCTAssertEqual(padded?.tradeId, "a&b")
+        XCTAssertNotEqual(padded?.tradeId, "a%26b")
+        XCTAssertEqual(
+            TradeTurnPolicy.lobbyBadge(
+                listStatus: padded?.listStatus,
+                tradeStatus: padded?.tradeStatus,
+                turnValue: "a&b",
+                viewerId: "a&b"
+            ),
+            TradeTurnPolicy.badgeMyTurn
+        )
+
+        XCTAssertEqual(
+            HLBarterScreenViewController.inventoryStatusImageName(
+                videoRequested: false,
+                videoURL: " ",
+                productStatus: nil
+            ),
+            "video-player-icon-red"
+        )
+        XCTAssertNil(HLNotificationsViewController.rowDestination(type: "start", fromUserId: "").sellerUserId)
+        XCTAssertFalse(HLSearchResultViewController.passesDistanceFilter(miles: CGFloat(5), limit: CGFloat(5)))
+        XCTAssertTrue(HLSearchResultViewController.passesDistanceFilter(miles: CGFloat(0), limit: CGFloat(0)))
+        XCTAssertFalse(HLSearchResultViewController.includesOtherSeller(productOwnerId: "", viewerId: ""))
+        XCTAssertFalse(HLSwappViewController.showsWaitingForReply(
+            turnUserId: " bike ",
+            viewerId: nil,
+            waitingTurnEnabled: false
+        ))
+        XCTAssertFalse(HLSwappViewController.shouldBlockOffer(
+            turnUserId: nil,
+            viewerId: "a&b",
+            buttonTag: 0,
+            productsReceivedTag: 1,
+            turnGateEnabled: false
+        ))
+    }
+
     private func tradeReadyFixture(
         ownerId: String,
         otherId: String,
