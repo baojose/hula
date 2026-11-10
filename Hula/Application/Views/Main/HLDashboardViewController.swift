@@ -367,6 +367,39 @@ extension HLDashboardViewController: UICollectionViewDelegate, UICollectionViewD
         }
         return (listStatus, tradeStatus, tradeId)
     }
+
+    /// Lobby tap destination, chosen after `resolveAfterRefresh`. A non-string
+    /// `status` (missing, `NSNull`, numeric, or bool) does not open a room.
+    /// This decision does not read `_id`: a string status still names a room
+    /// when the id is numeric, which `lobbyListBucket` rejects. Exact trade
+    /// mode `"current"` (the `HLDataManager.tradeMode` default) and a status
+    /// that is not exactly `review_status` (`"review"`) opens the barter room
+    /// (`"barterRoom"`) and does not assign `currTrade`. Exact `"review"` on
+    /// that mode opens the past-trade screen (`"pastTrade"`) and assigns
+    /// `currTrade`. Any other mode, including `"past"`, `"Past"`,
+    /// `" current"`, `"current "`, and `""`, opens past trade even for
+    /// `"pending"`, `"ended"`, `"closed"`, and `"offer_sent"`. `"Review"`,
+    /// `" review"`, `"review "`, `"preview"`, `"ended"`, `"closed"`, and
+    /// `" closed "` while mode is `"current"` open the barter room. Do not
+    /// trim. Do not case-fold. Do not percent-encode. Do not fold this into
+    /// `lobbyListBucket` (`"ended"` and `"closed"` are list status `"past"`,
+    /// but a current-mode tap still opens the barter room). Do not fold this
+    /// into `headline`. Do not change `trade(at:)`, `tradeId`, or
+    /// `replacingControllers`. The 0.2s delay and `resolveAfterRefresh` stay
+    /// in front of this helper.
+    class func lobbyTapDestination(tradeMode: String, status: Any?) -> (
+        opensBarterRoom: Bool,
+        storyboardId: String,
+        assignsCurrentTrade: Bool
+    )? {
+        guard let tradeStatus = status as? String else {
+            return nil
+        }
+        if tradeMode == "current" && tradeStatus != HulaConstants.review_status {
+            return (true, "barterRoom", false)
+        }
+        return (false, "pastTrade", true)
+    }
     
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
@@ -530,19 +563,22 @@ extension HLDashboardViewController: UICollectionViewDelegate, UICollectionViewD
                 self.swappPageVC?.currentIndex = resolved.index
                 //print(swappPageVC.currentTrade!)
 
-                guard let tradeStatus = thisTrade.object(forKey: "status") as? String else {
+                guard let destination = HLDashboardViewController.lobbyTapDestination(
+                    tradeMode: HLDataManager.sharedInstance.tradeMode,
+                    status: thisTrade.object(forKey: "status")
+                ) else {
                     return
                 }
                 if let pageVC = self.swappPageVC {
-                    if HLDataManager.sharedInstance.tradeMode == "current" && tradeStatus != HulaConstants.review_status {
-                        let vc = (self.storyboard?.instantiateViewController( withIdentifier: "barterRoom")) as! HLBarterScreenViewController
+                    if destination.opensBarterRoom {
+                        let vc = (self.storyboard?.instantiateViewController( withIdentifier: destination.storyboardId)) as! HLBarterScreenViewController
                         pageVC.orderedViewControllers = HLSwappPageViewController.replacingControllers(
                             pageVC.orderedViewControllers,
                             at: TradeRoomPagePolicy.tradeRoomPage,
                             with: vc
                         )
                     } else {
-                        let vc = (self.storyboard?.instantiateViewController( withIdentifier: "pastTrade")) as! HLPastTradeViewController
+                        let vc = (self.storyboard?.instantiateViewController( withIdentifier: destination.storyboardId)) as! HLPastTradeViewController
                         vc.currTrade = thisTrade
                         pageVC.orderedViewControllers = HLSwappPageViewController.replacingControllers(
                             pageVC.orderedViewControllers,
