@@ -13310,6 +13310,309 @@ class HulaTests: XCTestCase {
         ))
     }
 
+    /// A lobby tap opens the barter room only when the mode is exactly
+    /// `"current"` and the status is a string other than exact `"review"`.
+    /// Exact `"review"` opens past trade and assigns `currTrade`. Any other
+    /// mode opens past trade, including `"ended"` and `"closed"`, which the
+    /// list bucket already marks `"past"`. A non-string status opens nothing.
+    /// The tap does not read `_id`. Do not trim. Do not case-fold.
+    func testLobbyTapDestinationOpensBarterOnlyForCurrentModeOutsideReview() {
+        func room(_ fields: [String: Any]) -> NSDictionary {
+            return NSDictionary(dictionary: fields)
+        }
+
+        func expectNoRoom(
+            _ tradeMode: String,
+            _ status: Any?,
+            file: StaticString = #file,
+            line: UInt = #line
+        ) {
+            XCTAssertNil(
+                HLDashboardViewController.lobbyTapDestination(tradeMode: tradeMode, status: status),
+                file: file,
+                line: line
+            )
+        }
+
+        func expectTap(
+            _ tradeMode: String,
+            _ status: Any?,
+            opensBarterRoom: Bool,
+            storyboardId: String,
+            assignsCurrentTrade: Bool,
+            file: StaticString = #file,
+            line: UInt = #line
+        ) {
+            let destination = HLDashboardViewController.lobbyTapDestination(
+                tradeMode: tradeMode,
+                status: status
+            )
+            XCTAssertEqual(destination?.opensBarterRoom, opensBarterRoom, file: file, line: line)
+            XCTAssertEqual(destination?.storyboardId, storyboardId, file: file, line: line)
+            XCTAssertEqual(destination?.assignsCurrentTrade, assignsCurrentTrade, file: file, line: line)
+        }
+
+        func expectBarter(
+            _ tradeMode: String,
+            _ status: Any?,
+            file: StaticString = #file,
+            line: UInt = #line
+        ) {
+            expectTap(
+                tradeMode,
+                status,
+                opensBarterRoom: true,
+                storyboardId: "barterRoom",
+                assignsCurrentTrade: false,
+                file: file,
+                line: line
+            )
+        }
+
+        func expectPast(
+            _ tradeMode: String,
+            _ status: Any?,
+            file: StaticString = #file,
+            line: UInt = #line
+        ) {
+            expectTap(
+                tradeMode,
+                status,
+                opensBarterRoom: false,
+                storyboardId: "pastTrade",
+                assignsCurrentTrade: true,
+                file: file,
+                line: line
+            )
+        }
+
+        XCTAssertEqual(HulaConstants.review_status, "review")
+        XCTAssertEqual(HulaConstants.end_status, "ended")
+        XCTAssertEqual(HulaConstants.cancel_status, "closed")
+        XCTAssertEqual(HulaConstants.pending_status, "pending")
+        XCTAssertEqual(HulaConstants.sent_status, "offer_sent")
+        XCTAssertEqual(TradeRoomPagePolicy.tradeRoomPage, 1)
+        XCTAssertEqual(("current" as String).characters.count, 7)
+        XCTAssertEqual((" current" as String).characters.count, 8)
+        XCTAssertEqual(("current " as String).characters.count, 8)
+        XCTAssertEqual((" current " as String).characters.count, 9)
+        XCTAssertEqual(("review" as String).characters.count, 6)
+        XCTAssertEqual((" review" as String).characters.count, 7)
+        XCTAssertEqual(("review " as String).characters.count, 7)
+        XCTAssertEqual((" review " as String).characters.count, 8)
+        XCTAssertEqual(("🙂" as String).characters.count, 1)
+        XCTAssertNotEqual("a&b", "a%26b")
+        XCTAssertEqual(FormFieldPolicy.encoded("a&b"), "a%26b")
+        XCTAssertNotEqual("P1", "p1")
+        XCTAssertNotEqual(" bike ", "bike")
+        XCTAssertNotEqual("Review", "review")
+        XCTAssertNotEqual("preview", "review")
+        XCTAssertNotEqual("reviewing", "review")
+        XCTAssertFalse(ProductIdentityPolicy.identifiersMatch("review ", "review"))
+        XCTAssertFalse(ProductIdentityPolicy.identifiersMatch(" current", "current"))
+        XCTAssertTrue(ProductIdentityPolicy.identifiersMatch(nil, ""))
+        XCTAssertTrue(TradeTurnPolicy.idsMatch("", ""))
+        XCTAssertFalse(TradeTurnPolicy.idsMatch(nil, ""))
+        XCTAssertFalse(TradeTurnPolicy.idsMatch("current", " current"))
+        XCTAssertTrue(TradeTurnPolicy.idsMatch("current", "current"))
+
+        let nonStringStatuses: [Any?] = [
+            nil,
+            NSNull(),
+            NSNumber(value: 1),
+            NSNumber(value: 0),
+            NSNumber(value: 10.9),
+            true,
+            false
+        ]
+        let modesForMissingStatus = ["current", "past", "Past", " current", "current ", "", "CURRENT"]
+        for mode in modesForMissingStatus {
+            for status in nonStringStatuses {
+                expectNoRoom(mode, status)
+            }
+        }
+
+        let bridgedMissing: [NSDictionary] = [
+            NSDictionary(),
+            room(["_id": "t"]),
+            room(["_id": ""]),
+            room(["_id": NSNumber(value: 1)]),
+            room(["status": NSNull(), "_id": "t"]),
+            room(["status": NSNull(), "_id": NSNull()]),
+            room(["status": NSNumber(value: 1), "_id": "room"]),
+            room(["status": NSNumber(value: 0), "_id": "ended"]),
+            room(["status": NSNumber(value: 10.9), "_id": "review"]),
+            room(["status": true, "_id": "t"]),
+            room(["status": false, "_id": "a&b"]),
+            room(["status": true, "_id": NSNumber(value: 1)])
+        ]
+        for trade in bridgedMissing {
+            XCTAssertNil(HLDashboardViewController.lobbyListBucket(from: trade))
+            for mode in modesForMissingStatus {
+                expectNoRoom(mode, trade.object(forKey: "status"))
+            }
+        }
+
+        let numericId = room(["status": "pending", "_id": NSNumber(value: 1)])
+        XCTAssertNil(HLDashboardViewController.lobbyListBucket(from: numericId))
+        XCTAssertNil(DashboardTradeSelection.tradeId(from: numericId))
+        XCTAssertNil(DashboardTradeSelection.resolveAfterRefresh(
+            tappedTradeId: DashboardTradeSelection.tradeId(from: numericId),
+            trades: [numericId]
+        ))
+        expectBarter("current", numericId.object(forKey: "status"))
+        expectPast("past", numericId.object(forKey: "status"))
+        expectPast(" current", numericId.object(forKey: "status"))
+
+        let emptyId = room(["status": "offer_sent", "_id": ""])
+        XCTAssertEqual(HLDashboardViewController.lobbyListBucket(from: emptyId)?.listStatus, "current")
+        XCTAssertEqual(HLDashboardViewController.lobbyListBucket(from: emptyId)?.tradeId, "")
+        XCTAssertEqual(DashboardTradeSelection.tradeId(from: emptyId), "")
+        XCTAssertNil(DashboardTradeSelection.resolveAfterRefresh(tappedTradeId: "", trades: [emptyId]))
+        expectBarter("current", emptyId.object(forKey: "status"))
+        expectPast("past", emptyId.object(forKey: "status"))
+
+        let spacedId = room(["status": "ended", "_id": " bike "])
+        XCTAssertEqual(HLDashboardViewController.lobbyListBucket(from: spacedId)?.listStatus, "past")
+        XCTAssertEqual(HLDashboardViewController.lobbyListBucket(from: spacedId)?.tradeId, " bike ")
+        XCTAssertNotEqual(HLDashboardViewController.lobbyListBucket(from: spacedId)?.tradeId, "bike")
+        expectBarter("current", spacedId.object(forKey: "status"))
+        XCTAssertEqual(DashboardTradeSelection.tradeId(from: spacedId), " bike ")
+
+        expectPast("current", "review")
+        expectPast("current", HulaConstants.review_status)
+        expectPast("current", ("review" as NSString))
+        let reviewRoom = room(["status": "review", "_id": "t-review", "turn_user_id": "peer"])
+        expectPast("current", reviewRoom.object(forKey: "status"))
+        XCTAssertEqual(HLDashboardViewController.lobbyListBucket(from: reviewRoom)?.listStatus, "current")
+        XCTAssertEqual(HLDashboardViewController.lobbyListBucket(from: reviewRoom)?.tradeStatus, "review")
+        let reviewHeadline = HLPastTradeViewController.headline(status: "review")
+        XCTAssertEqual(reviewHeadline.title, NSLocalizedString("Close the deal", comment: ""))
+        XCTAssertEqual(
+            reviewHeadline.dateReplacement,
+            NSLocalizedString("We recommend confirming this trade only after exchanging stuff", comment: "")
+        )
+        XCTAssertEqual(
+            TradeTurnPolicy.lobbyBadge(
+                listStatus: "current",
+                tradeStatus: "review",
+                turnValue: "peer",
+                viewerId: "me"
+            ),
+            TradeTurnPolicy.badgeInReview
+        )
+
+        let barterOnCurrent = [
+            "pending", "offer_sent", "ended", "closed",
+            "Closed", "CLOSED", " closed", "closed ", " closed ", "closed.", "unclosed",
+            "ENDED", "Ended", " ended", "ended ", " ended ", "end", "ending",
+            "Review", "REVIEW", " review", "review ", " review ", "preview", "reviewing",
+            "", " ", "\n", " \n ",
+            "a&b", "a%26b", "P1", "p1", " bike ", "🙂", "1"
+        ]
+        for status in barterOnCurrent {
+            XCTAssertNotEqual(status, "review")
+            expectBarter("current", status)
+            expectBarter("current", (status as NSString))
+        }
+        expectBarter("current", HulaConstants.pending_status)
+        expectBarter("current", HulaConstants.sent_status)
+        expectBarter("current", HulaConstants.end_status)
+        expectBarter("current", HulaConstants.cancel_status)
+
+        let endedRoom = room(["status": "ended", "_id": "t-ended"])
+        XCTAssertEqual(HLDashboardViewController.lobbyListBucket(from: endedRoom)?.listStatus, "past")
+        expectBarter("current", endedRoom.object(forKey: "status"))
+        let endedHeadline = HLPastTradeViewController.headline(status: "ended")
+        XCTAssertEqual(endedHeadline.title, NSLocalizedString("Exchange completed", comment: ""))
+        XCTAssertNil(endedHeadline.dateReplacement)
+        XCTAssertNil(TradeTurnPolicy.lobbyBadge(
+            listStatus: "past",
+            tradeStatus: "ended",
+            turnValue: "peer",
+            viewerId: "me"
+        ))
+        XCTAssertEqual(
+            TradeTurnPolicy.lobbyBadge(
+                listStatus: "current",
+                tradeStatus: "ended",
+                turnValue: "peer",
+                viewerId: "me"
+            ),
+            TradeTurnPolicy.badgeOtherTurn
+        )
+
+        let closedRoom = room(["status": "closed", "_id": "t-closed"])
+        XCTAssertEqual(HLDashboardViewController.lobbyListBucket(from: closedRoom)?.listStatus, "past")
+        expectBarter("current", closedRoom.object(forKey: "status"))
+        let closedHeadline = HLPastTradeViewController.headline(status: "closed")
+        XCTAssertEqual(closedHeadline.title, NSLocalizedString("Trade canceled", comment: ""))
+        XCTAssertNil(closedHeadline.dateReplacement)
+
+        let paddedRoom = room(["status": " closed ", "_id": "a&b"])
+        XCTAssertEqual(HLDashboardViewController.lobbyListBucket(from: paddedRoom)?.listStatus, "current")
+        XCTAssertEqual(HLDashboardViewController.lobbyListBucket(from: paddedRoom)?.tradeStatus, " closed ")
+        XCTAssertEqual(HLDashboardViewController.lobbyListBucket(from: paddedRoom)?.tradeId, "a&b")
+        XCTAssertNotEqual(HLDashboardViewController.lobbyListBucket(from: paddedRoom)?.tradeId, "a%26b")
+        expectBarter("current", paddedRoom.object(forKey: "status"))
+        let paddedHeadline = HLPastTradeViewController.headline(status: " closed ")
+        XCTAssertEqual(paddedHeadline.title, NSLocalizedString("Exchange completed", comment: ""))
+        XCTAssertNil(paddedHeadline.dateReplacement)
+
+        let otherModes = [
+            "past", "Past", "PAST", " current", "current ", " current ",
+            "", "CURRENT", "Current", "current\n", "\n", " ",
+            "a&b", "a%26b", "P1", "p1", " bike ", "🙂"
+        ]
+        let pastRegardless = [
+            "review", "pending", "offer_sent", "ended", "closed",
+            "Review", " review", "review ", "preview", " closed ",
+            "", " ", "\n", " \n ", "a&b", "a%26b", "P1", " bike ", "🙂"
+        ]
+        for mode in otherModes {
+            XCTAssertNotEqual(mode, "current")
+            for status in pastRegardless {
+                expectPast(mode, status)
+            }
+            expectPast(mode, HulaConstants.review_status)
+            expectPast(mode, HulaConstants.end_status)
+            expectPast(mode, HulaConstants.cancel_status)
+            expectPast(mode, HulaConstants.pending_status)
+            expectPast(mode, HulaConstants.sent_status)
+        }
+
+        expectPast("past", reviewRoom.object(forKey: "status"))
+        expectPast("", endedRoom.object(forKey: "status"))
+        expectPast("Past", closedRoom.object(forKey: "status"))
+        expectPast(" current", paddedRoom.object(forKey: "status"))
+        expectPast("current ", room(["status": "pending", "_id": "t"]).object(forKey: "status"))
+
+        XCTAssertEqual(
+            HLBarterScreenViewController.inventoryStatusImageName(
+                videoRequested: false,
+                videoURL: " ",
+                productStatus: nil
+            ),
+            "video-player-icon-red"
+        )
+        XCTAssertNil(HLNotificationsViewController.rowDestination(type: "start", fromUserId: "").sellerUserId)
+        XCTAssertFalse(HLSearchResultViewController.passesDistanceFilter(miles: CGFloat(5), limit: CGFloat(5)))
+        XCTAssertTrue(HLSearchResultViewController.passesDistanceFilter(miles: CGFloat(0), limit: CGFloat(0)))
+        XCTAssertFalse(HLSearchResultViewController.includesOtherSeller(productOwnerId: "", viewerId: ""))
+        XCTAssertFalse(HLSwappViewController.showsWaitingForReply(
+            turnUserId: " bike ",
+            viewerId: nil,
+            waitingTurnEnabled: false
+        ))
+        XCTAssertFalse(HLSwappViewController.shouldBlockOffer(
+            turnUserId: nil,
+            viewerId: "a&b",
+            buttonTag: 0,
+            productsReceivedTag: 1,
+            turnGateEnabled: false
+        ))
+    }
+
     private func tradeReadyFixture(
         ownerId: String,
         otherId: String,
