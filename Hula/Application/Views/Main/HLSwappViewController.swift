@@ -442,6 +442,112 @@ class HLSwappViewController: UIViewController {
         let unread = CommonUtils.intFromJSON(trade.object(forKey: "other_unread")) ?? 0
         return (ownerId, unread)
     }
+
+    /// Bottom-bar offer chrome, chosen after `peerChatContext`. A missing,
+    /// `NSNull`, numeric, or bool `status` becomes `""` (`as? String ?? ""`).
+    /// Exact `"closed"` (`cancel_status`) or `"ended"` (`end_status`) hides
+    /// send, the other offer, the central label, and remaining time, and hides
+    /// the three dots. Exact `"review"` sets the send title to "I received my
+    /// stuff", the products-received tag, hides the central label, remaining
+    /// time, and three dots, and sets the other offer alpha to 0. Send itself
+    /// stays visible so the receipt button is not cleared. Any other string
+    /// with `characters.count > 0` stays bartering. A string `turn_user_id`
+    /// with `waitingTurnEnabled: false` shows Accept, shows the three dots,
+    /// and sets remaining alpha to 0. The gate is off, so the ids are not
+    /// compared and a nil viewer still shows Accept. A non-string turn does
+    /// not enter that branch. `""` has count 0 and changes nothing here.
+    /// `" "`, `"\n"`, `" closed "`, `"Closed"`, `"Review"`, `" review"`,
+    /// `"preview"`, `"a&b"`, `"P1"`, and one emoji are not cancel and not
+    /// review. Do not trim. Do not case-fold. Do not percent-encode. Do not
+    /// change `?? ""` into a nil return. Do not fold the later `other_agree`
+    /// overlay into this helper (that block can set the other offer alpha
+    /// back to 1 unless status is exact `"closed"` or `"ended"`). Do not
+    /// enable `waitingTurnEnabled`. Do not fold this into `lobbyTapDestination`
+    /// (review there opens past trade; here it changes the offer button).
+    /// Do not assign the Accept tag. The bartering branch only changes the title.
+    class func bottomBarOfferChrome(
+        status: Any?,
+        turnUserId: Any?,
+        viewerId: String?,
+        waitingTurnEnabled: Bool,
+        productsReceivedTag: Int
+    ) -> BottomBarOfferChrome {
+        let statusText = status as? String ?? ""
+        if statusText == HulaConstants.cancel_status || statusText == HulaConstants.end_status {
+            return BottomBarOfferChrome(
+                status: statusText,
+                hidesSend: true,
+                otherOfferAlpha: 0,
+                centralLabelAlpha: 0,
+                remainingAlpha: 0,
+                hidesThreeDots: true,
+                sendTitle: nil,
+                sendTag: nil,
+                showsAccept: false,
+                showsWaiting: false
+            )
+        }
+        if statusText.characters.count > 0 {
+            if statusText == HulaConstants.review_status {
+                return BottomBarOfferChrome(
+                    status: statusText,
+                    hidesSend: false,
+                    otherOfferAlpha: 0,
+                    centralLabelAlpha: 0,
+                    remainingAlpha: 0,
+                    hidesThreeDots: true,
+                    sendTitle: NSLocalizedString("I received my stuff", comment: ""),
+                    sendTag: productsReceivedTag,
+                    showsAccept: false,
+                    showsWaiting: false
+                )
+            }
+            if let turn = turnUserId as? String {
+                if TradeTurnPolicy.showsWaitingForReply(
+                    turnUserId: turn,
+                    viewerId: viewerId,
+                    waitingTurnEnabled: waitingTurnEnabled
+                ) {
+                    return BottomBarOfferChrome(
+                        status: statusText,
+                        hidesSend: true,
+                        otherOfferAlpha: 0,
+                        centralLabelAlpha: 1,
+                        remainingAlpha: nil,
+                        hidesThreeDots: false,
+                        sendTitle: nil,
+                        sendTag: nil,
+                        showsAccept: false,
+                        showsWaiting: true
+                    )
+                }
+                return BottomBarOfferChrome(
+                    status: statusText,
+                    hidesSend: false,
+                    otherOfferAlpha: nil,
+                    centralLabelAlpha: nil,
+                    remainingAlpha: 0,
+                    hidesThreeDots: false,
+                    sendTitle: NSLocalizedString("Accept", comment: ""),
+                    sendTag: nil,
+                    showsAccept: true,
+                    showsWaiting: false
+                )
+            }
+        }
+        return BottomBarOfferChrome(
+            status: statusText,
+            hidesSend: false,
+            otherOfferAlpha: nil,
+            centralLabelAlpha: nil,
+            remainingAlpha: nil,
+            hidesThreeDots: nil,
+            sendTitle: nil,
+            sendTag: nil,
+            showsAccept: false,
+            showsWaiting: false
+        )
+    }
     
     
     override func preferredScreenEdgesDeferringSystemGestures() -> UIRectEdge {
@@ -834,79 +940,46 @@ class HLSwappViewController: UIViewController {
                     let chat_count = peer.unread
 
 
-                    let currentStatus = thisTrade.object(forKey: "status") as? String ?? ""
-                    if currentStatus == HulaConstants.cancel_status || currentStatus == HulaConstants.end_status {
-                        // closed or removed trade!
-                        
+                    let offer = HLSwappViewController.bottomBarOfferChrome(
+                        status: thisTrade.object(forKey: "status"),
+                        turnUserId: thisTrade.object(forKey: "turn_user_id"),
+                        viewerId: HulaUser.sharedInstance.userId,
+                        waitingTurnEnabled: false,
+                        productsReceivedTag: kTagProductsReceived
+                    )
+                    let currentStatus = offer.status
+                    if offer.hidesSend {
                         self.sendOfferBtn.alpha = 0
-                        self.otherOfferBtn.alpha = 0
-                        self.mainCentralLabel.alpha = 0
-                        self.remainingTimeLabel.alpha = 0
-                        self.threeDotsView.isHidden = true
-                        
-                    } else if currentStatus.count > 0 {
-                        if currentStatus == HulaConstants.review_status {
-                            // pending exchange
-                            
-                            self.mainCentralLabel.alpha = 0
-                            self.remainingTimeLabel.alpha = 0
-                            self.threeDotsView.isHidden = true
-                            
-                            self.sendOfferBtn.setTitle( NSLocalizedString("I received my stuff", comment: ""), for: .normal)
-                            self.sendOfferBtn.tag = kTagProductsReceived
-                            
-                            self.otherOfferBtn.alpha = 0;
+                    }
+                    if let otherAlpha = offer.otherOfferAlpha {
+                        self.otherOfferBtn.alpha = otherAlpha
+                    }
+                    if let centralAlpha = offer.centralLabelAlpha {
+                        self.mainCentralLabel.alpha = centralAlpha
+                    }
+                    if let remainingAlpha = offer.remainingAlpha {
+                        self.remainingTimeLabel.alpha = remainingAlpha
+                    }
+                    if let hidesDots = offer.hidesThreeDots {
+                        self.threeDotsView.isHidden = hidesDots
+                    }
+                    if let title = offer.sendTitle {
+                        self.sendOfferBtn.setTitle(title, for: .normal)
+                    }
+                    if let tag = offer.sendTag {
+                        self.sendOfferBtn.tag = tag
+                    }
+                    if offer.showsWaiting {
+                        // Reachable only if `waitingTurnEnabled` is turned on.
+                        // The call above keeps it false, so this does not run.
+                        self.mainCentralLabel.text = NSLocalizedString("Waiting for user reply", comment: "")
+                        if let str_hours = HLSwappViewController.remainingResponseHoursLabel(
+                            lastUpdate: thisTrade.object(forKey: "last_update")
+                        ) {
+                            self.remainingTimeLabel.alpha = 1
+                            self.remainingTimeLabel.text = NSLocalizedString("Remaining time for response:", comment: "") + " \(str_hours)"
                         } else {
-                            // still bartering
-                            
-                            if let current_user_turn = thisTrade.object(forKey: "turn_user_id") as? String {
-                                
-                                // `turn_user_id != userId` unwrapped the viewer IUO before
-                                // `&& false`, so a nil viewer crashed this bar. Waiting
-                                // chrome stays off until product enables it.
-                                if TradeTurnPolicy.showsWaitingForReply(
-                                    turnUserId: current_user_turn,
-                                    viewerId: HulaUser.sharedInstance.userId,
-                                    waitingTurnEnabled: false
-                                ) {
-                                    
-                                    // other user turn
-                                    
-                                    self.sendOfferBtn.alpha = 0
-                                    self.otherOfferBtn.alpha = 0
-                                    self.mainCentralLabel.alpha=1;
-                                    self.mainCentralLabel.text = NSLocalizedString("Waiting for user reply", comment: "")
-                                    if let str_hours = HLSwappViewController.remainingResponseHoursLabel(
-                                        lastUpdate: thisTrade.object(forKey: "last_update")
-                                    ) {
-                                        self.remainingTimeLabel.alpha = 1
-                                        self.remainingTimeLabel.text = NSLocalizedString("Remaining time for response:", comment: "") + " \(str_hours)"
-                                    } else {
-                                        self.remainingTimeLabel.alpha = 0
-                                    }
-                                    self.threeDotsView.isHidden = false;
-                                    
-                                } else {
-                                    self.threeDotsView.isHidden = false;
-                                    // my turn!
-                                    self.remainingTimeLabel.alpha = 0;
-                                    
-                                    self.sendOfferBtn.setTitle( NSLocalizedString("Accept", comment: ""), for: .normal)
-                                    //self.sendOfferBtn.tag = kTagJustAccept
-                                    /*
-                                    if self.tradeCanBeClosed(thisTrade) {
-                                        // can be closed
-                                        self.sendOfferBtn.setTitle( NSLocalizedString("Accept trade", comment: ""), for: .normal)
-                                        self.sendOfferBtn.tag = kTagCloseDeal
-                                        
-                                    } else {
-                                        // send counter offer
-                                        self.sendOfferBtn.setTitle( NSLocalizedString("Accept trade", comment: ""), for: .normal)
-                                        self.sendOfferBtn.tag = kTagJustAccept
-                                    }
-                                    */
-                                }
-                            }
+                            self.remainingTimeLabel.alpha = 0
                         }
                     }
                     
@@ -1472,6 +1545,23 @@ struct OfferSubmissionPolicy {
         }
         return ownerId ?? ""
     }
+}
+
+/// Status-driven offer button on the trade-room bottom bar.
+/// `hidesSend` sets the send alpha to 0. A nil alpha or dots flag means this
+/// branch does not assign that view. Remaining time for the waiting label is
+/// left nil so `remainingResponseHoursLabel` still owns that text.
+struct BottomBarOfferChrome {
+    let status: String
+    let hidesSend: Bool
+    let otherOfferAlpha: CGFloat?
+    let centralLabelAlpha: CGFloat?
+    let remainingAlpha: CGFloat?
+    let hidesThreeDots: Bool?
+    let sendTitle: String?
+    let sendTag: Int?
+    let showsAccept: Bool
+    let showsWaiting: Bool
 }
 
 /// Turn checks compared IUO `turn_user_id` / `userId` with `!=` and `==`.
