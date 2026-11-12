@@ -13950,6 +13950,228 @@ class HulaTests: XCTestCase {
         ))
     }
 
+    /// After offer chrome and check marks, `other_agree` dims the counterparty
+    /// until they agree. A true flag restores the other user and, unless the
+    /// status is exact `"closed"` or `"ended"`, the other offer button. A
+    /// false flag sets both alphas to 0.5, including canceled, ended, and
+    /// review, overwriting the status helper's 0. The status is the chrome
+    /// string (`as? String ?? ""`). Do not trim. Do not case-fold. The later
+    /// products-received tag check is not part of this step, so review does
+    /// not become alpha 0 here.
+    func testOtherAgreeOverlayDimsCounterpartyUntilTheyAgree() {
+        let productsReceivedTag = 90441
+
+        func chrome(_ status: Any?) -> BottomBarOfferChrome {
+            return HLSwappViewController.bottomBarOfferChrome(
+                status: status,
+                turnUserId: "peer",
+                viewerId: nil,
+                waitingTurnEnabled: false,
+                productsReceivedTag: productsReceivedTag
+            )
+        }
+
+        func overlay(agree: Bool, status: String) -> OtherAgreeOverlay {
+            return HLSwappViewController.otherAgreeOverlay(otherAgree: agree, status: status)
+        }
+
+        func expectAgreedShowsOffer(
+            _ status: String,
+            file: StaticString = #file,
+            line: UInt = #line
+        ) {
+            let row = overlay(agree: true, status: status)
+            XCTAssertNotEqual(status, "closed", file: file, line: line)
+            XCTAssertNotEqual(status, "ended", file: file, line: line)
+            XCTAssertEqual(row.otherUserAlpha, CGFloat(1), file: file, line: line)
+            XCTAssertEqual(row.otherOfferAlpha, CGFloat(1), file: file, line: line)
+        }
+
+        func expectAgreedKeepsOfferHidden(
+            _ status: String,
+            file: StaticString = #file,
+            line: UInt = #line
+        ) {
+            let row = overlay(agree: true, status: status)
+            XCTAssertEqual(row.otherUserAlpha, CGFloat(1), file: file, line: line)
+            XCTAssertNotEqual(row.otherUserAlpha, CGFloat(0.5), file: file, line: line)
+            XCTAssertNil(row.otherOfferAlpha, file: file, line: line)
+        }
+
+        func expectDisagreed(
+            _ status: String,
+            file: StaticString = #file,
+            line: UInt = #line
+        ) {
+            let row = overlay(agree: false, status: status)
+            XCTAssertEqual(row.otherUserAlpha, CGFloat(0.5), file: file, line: line)
+            XCTAssertEqual(row.otherOfferAlpha, CGFloat(0.5), file: file, line: line)
+        }
+
+        func visibleOtherOfferAlpha(status: Any?, agree: Bool) -> CGFloat? {
+            let offer = chrome(status)
+            let row = overlay(agree: agree, status: offer.status)
+            if let alpha = row.otherOfferAlpha {
+                return alpha
+            }
+            return offer.otherOfferAlpha
+        }
+
+        XCTAssertEqual(HulaConstants.cancel_status, "closed")
+        XCTAssertEqual(HulaConstants.end_status, "ended")
+        XCTAssertEqual(HulaConstants.review_status, "review")
+
+        expectAgreedKeepsOfferHidden("closed")
+        expectAgreedKeepsOfferHidden("ended")
+        expectAgreedKeepsOfferHidden(HulaConstants.cancel_status)
+        expectAgreedKeepsOfferHidden(HulaConstants.end_status)
+        expectAgreedKeepsOfferHidden(chrome("closed").status)
+        expectAgreedKeepsOfferHidden(chrome("ended").status)
+        expectAgreedKeepsOfferHidden(chrome(("closed" as NSString)).status)
+        expectAgreedKeepsOfferHidden(chrome(("ended" as NSString)).status)
+
+        let showsOffer = [
+            "", " ", "\n", " \n ",
+            " closed", "closed ", " closed ", "Closed", "CLOSED", "closed.", "unclosed",
+            " ended", "ended ", " ended ", "Ended", "ENDED", "end", "ending",
+            "review", "Review", "REVIEW", " review", "review ", " review ", "preview", "reviewing",
+            "pending", "offer_sent",
+            "a&b", "a%26b", "P1", "p1", " bike ", "🙂", "1"
+        ]
+        for status in showsOffer {
+            expectAgreedShowsOffer(status)
+            expectDisagreed(status)
+            XCTAssertEqual(chrome(status).status, status)
+        }
+        expectDisagreed("closed")
+        expectDisagreed("ended")
+        expectDisagreed(HulaConstants.cancel_status)
+        expectDisagreed(HulaConstants.end_status)
+        expectDisagreed(HulaConstants.review_status)
+        expectAgreedShowsOffer(HulaConstants.review_status)
+        expectAgreedShowsOffer(HulaConstants.pending_status)
+        expectAgreedShowsOffer(HulaConstants.sent_status)
+
+        let reviewChrome = chrome("review")
+        XCTAssertEqual(reviewChrome.otherOfferAlpha, CGFloat(0))
+        XCTAssertEqual(reviewChrome.sendTag, productsReceivedTag)
+        XCTAssertFalse(reviewChrome.hidesSend)
+        XCTAssertEqual(overlay(agree: true, status: reviewChrome.status).otherOfferAlpha, CGFloat(1))
+        XCTAssertEqual(overlay(agree: false, status: reviewChrome.status).otherOfferAlpha, CGFloat(0.5))
+        XCTAssertEqual(visibleOtherOfferAlpha(status: "review", agree: true), CGFloat(1))
+        XCTAssertEqual(visibleOtherOfferAlpha(status: "review", agree: false), CGFloat(0.5))
+
+        let closedChrome = chrome("closed")
+        XCTAssertEqual(closedChrome.otherOfferAlpha, CGFloat(0))
+        XCTAssertTrue(closedChrome.hidesSend)
+        XCTAssertNil(closedChrome.sendTag)
+        XCTAssertNil(overlay(agree: true, status: closedChrome.status).otherOfferAlpha)
+        XCTAssertEqual(visibleOtherOfferAlpha(status: "closed", agree: true), CGFloat(0))
+        XCTAssertEqual(visibleOtherOfferAlpha(status: "ended", agree: true), CGFloat(0))
+        XCTAssertEqual(visibleOtherOfferAlpha(status: "closed", agree: false), CGFloat(0.5))
+        XCTAssertEqual(visibleOtherOfferAlpha(status: "ended", agree: false), CGFloat(0.5))
+
+        XCTAssertEqual(visibleOtherOfferAlpha(status: "pending", agree: true), CGFloat(1))
+        XCTAssertEqual(visibleOtherOfferAlpha(status: "pending", agree: false), CGFloat(0.5))
+        XCTAssertEqual(visibleOtherOfferAlpha(status: " ", agree: true), CGFloat(1))
+        XCTAssertEqual(visibleOtherOfferAlpha(status: " closed ", agree: true), CGFloat(1))
+        XCTAssertEqual(visibleOtherOfferAlpha(status: "Closed", agree: true), CGFloat(1))
+        XCTAssertEqual(visibleOtherOfferAlpha(status: "a&b", agree: true), CGFloat(1))
+        XCTAssertEqual(visibleOtherOfferAlpha(status: "a%26b", agree: false), CGFloat(0.5))
+        XCTAssertNotEqual("a&b", "a%26b")
+        XCTAssertEqual(visibleOtherOfferAlpha(status: "P1", agree: true), CGFloat(1))
+        XCTAssertEqual(visibleOtherOfferAlpha(status: "p1", agree: false), CGFloat(0.5))
+        XCTAssertNotEqual("P1", "p1")
+        XCTAssertEqual(visibleOtherOfferAlpha(status: " bike ", agree: true), CGFloat(1))
+        XCTAssertNotEqual(" bike ", "bike")
+        XCTAssertEqual(visibleOtherOfferAlpha(status: "🙂", agree: false), CGFloat(0.5))
+
+        let nonStringStatuses: [Any?] = [
+            nil,
+            NSNull(),
+            NSNumber(value: 0),
+            NSNumber(value: 1),
+            NSNumber(value: 10.9),
+            true,
+            false
+        ]
+        for status in nonStringStatuses {
+            let offer = chrome(status)
+            XCTAssertEqual(offer.status, "")
+            XCTAssertNil(offer.otherOfferAlpha)
+            expectAgreedShowsOffer(offer.status)
+            expectDisagreed(offer.status)
+            XCTAssertEqual(visibleOtherOfferAlpha(status: status, agree: true), CGFloat(1))
+            XCTAssertEqual(visibleOtherOfferAlpha(status: status, agree: false), CGFloat(0.5))
+        }
+        let missingStatus = NSDictionary(dictionary: ["turn_user_id": "peer"])
+        XCTAssertEqual(chrome(missingStatus.object(forKey: "status")).status, "")
+        expectAgreedShowsOffer(chrome(missingStatus.object(forKey: "status")).status)
+
+        let trade = HulaTrade()
+        XCTAssertFalse(trade.other_agree)
+        expectDisagreed("review")
+        XCTAssertEqual(
+            overlay(agree: trade.other_agree, status: chrome("review").status).otherOfferAlpha,
+            CGFloat(0.5)
+        )
+        trade.loadFrom(dict: [
+            "other_agree": true,
+            "status": "closed"
+        ] as NSDictionary)
+        XCTAssertTrue(trade.other_agree)
+        XCTAssertNil(overlay(agree: trade.other_agree, status: chrome("closed").status).otherOfferAlpha)
+        XCTAssertEqual(
+            overlay(agree: trade.other_agree, status: chrome("closed").status).otherUserAlpha,
+            CGFloat(1)
+        )
+        trade.loadFrom(dict: [
+            "other_agree": NSNull()
+        ] as NSDictionary)
+        XCTAssertTrue(trade.other_agree)
+        XCTAssertEqual(
+            overlay(agree: trade.other_agree, status: "review").otherOfferAlpha,
+            CGFloat(1)
+        )
+        trade.loadFrom(dict: [
+            "other_agree": NSNumber(value: -1)
+        ] as NSDictionary)
+        XCTAssertTrue(trade.other_agree)
+        trade.other_agree = false
+        trade.loadFrom(dict: [
+            "other_agree": "true"
+        ] as NSDictionary)
+        XCTAssertFalse(trade.other_agree)
+        expectDisagreed(chrome("ended").status)
+
+        let reviewTap = HLDashboardViewController.lobbyTapDestination(tradeMode: "current", status: "review")
+        XCTAssertEqual(reviewTap?.storyboardId, "pastTrade")
+        XCTAssertEqual(reviewTap?.assignsCurrentTrade, true)
+        let closedTap = HLDashboardViewController.lobbyTapDestination(tradeMode: "current", status: "closed")
+        XCTAssertEqual(closedTap?.storyboardId, "barterRoom")
+        XCTAssertEqual(closedTap?.opensBarterRoom, true)
+        XCTAssertEqual(
+            HLPastTradeViewController.headline(status: "closed").title,
+            NSLocalizedString("Trade canceled", comment: "")
+        )
+        XCTAssertEqual(
+            HLDashboardViewController.lobbyListBucket(from: NSDictionary(dictionary: ["status": "ended", "_id": "t"]))?.listStatus,
+            "past"
+        )
+        XCTAssertFalse(HLSwappViewController.showsWaitingForReply(
+            turnUserId: "peer",
+            viewerId: nil,
+            waitingTurnEnabled: false
+        ))
+        XCTAssertFalse(HLSwappViewController.shouldBlockOffer(
+            turnUserId: nil,
+            viewerId: "a&b",
+            buttonTag: productsReceivedTag,
+            productsReceivedTag: productsReceivedTag,
+            turnGateEnabled: false
+        ))
+    }
+
     private func tradeReadyFixture(
         ownerId: String,
         otherId: String,
