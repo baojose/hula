@@ -459,11 +459,12 @@ class HLSwappViewController: UIViewController {
     /// `" "`, `"\n"`, `" closed "`, `"Closed"`, `"Review"`, `" review"`,
     /// `"preview"`, `"a&b"`, `"P1"`, and one emoji are not cancel and not
     /// review. Do not trim. Do not case-fold. Do not percent-encode. Do not
-    /// change `?? ""` into a nil return. Do not fold the later `other_agree`
-    /// overlay into this helper (that block can set the other offer alpha
-    /// back to 1 unless status is exact `"closed"` or `"ended"`). Do not
-    /// enable `waitingTurnEnabled`. Do not fold this into `lobbyTapDestination`
-    /// (review there opens past trade; here it changes the offer button).
+    /// change `?? ""` into a nil return. Do not fold `otherAgreeOverlay`
+    /// into this helper (agreement can set the other offer alpha back to 1
+    /// unless status is exact `"closed"` or `"ended"`, and a false flag
+    /// sets both alphas to 0.5). Do not enable `waitingTurnEnabled`. Do not
+    /// fold this into `lobbyTapDestination` (review there opens past trade;
+    /// here it changes the offer button).
     /// Do not assign the Accept tag. The bartering branch only changes the title.
     class func bottomBarOfferChrome(
         status: Any?,
@@ -547,6 +548,28 @@ class HLSwappViewController: UIViewController {
             showsAccept: false,
             showsWaiting: false
         )
+    }
+
+    /// Counterparty agreement overlay, applied after `bottomBarOfferChrome`
+    /// and `manageCheckMarks`. `status` is that helper's already-cast string
+    /// (`as? String ?? ""`). `otherAgree` true sets the other user view to 1
+    /// and restores the other offer button unless the status is exact
+    /// `"closed"` or `"ended"`. Those two statuses leave `otherOfferAlpha`
+    /// nil, so the chrome value stays and the other button stays hidden.
+    /// `otherAgree` false sets both alphas to 0.5, including canceled, ended,
+    /// and review, which overwrites the status helper's 0. Do not trim. Do
+    /// not case-fold. Do not percent-encode. Do not fold this into
+    /// `bottomBarOfferChrome`. Do not read the send-button tag. The later
+    /// `tag == kTagProductsReceived` assignment still runs outside the trade
+    /// lookup and is not part of this step. Do not change `manageCheckMarks`.
+    class func otherAgreeOverlay(otherAgree: Bool, status: String) -> OtherAgreeOverlay {
+        if otherAgree {
+            if status != HulaConstants.cancel_status && status != HulaConstants.end_status {
+                return OtherAgreeOverlay(otherUserAlpha: 1, otherOfferAlpha: 1)
+            }
+            return OtherAgreeOverlay(otherUserAlpha: 1, otherOfferAlpha: nil)
+        }
+        return OtherAgreeOverlay(otherUserAlpha: 0.5, otherOfferAlpha: 0.5)
     }
     
     
@@ -990,19 +1013,15 @@ class HLSwappViewController: UIViewController {
                         print("owner ready \(tr.owner_ready)");
                         print("other ready \(tr.other_ready)");
                         self.manageCheckMarks(trade: tr);
-                        
-                        if tr.other_agree {
-                            self.otherUserView.alpha = 1
-                            
-                            if currentStatus != HulaConstants.cancel_status && currentStatus != HulaConstants.end_status {
-                                // closed deals should not show the other's button
-                                self.otherOfferBtn.alpha = 1
-                            }
-                        } else {
-                            self.otherUserView.alpha = 0.5
-                            self.otherOfferBtn.alpha = 0.5
+
+                        let agreement = HLSwappViewController.otherAgreeOverlay(
+                            otherAgree: tr.other_agree,
+                            status: currentStatus
+                        )
+                        self.otherUserView.alpha = agreement.otherUserAlpha
+                        if let offerAlpha = agreement.otherOfferAlpha {
+                            self.otherOfferBtn.alpha = offerAlpha
                         }
-                        
                     }
                     
                     if chat_count > 0 {
@@ -1562,6 +1581,13 @@ struct BottomBarOfferChrome {
     let sendTag: Int?
     let showsAccept: Bool
     let showsWaiting: Bool
+}
+
+/// Agreement dimming on the trade-room bottom bar. A nil `otherOfferAlpha`
+/// means this step does not assign the other offer button.
+struct OtherAgreeOverlay {
+    let otherUserAlpha: CGFloat
+    let otherOfferAlpha: CGFloat?
 }
 
 /// Turn checks compared IUO `turn_user_id` / `userId` with `!=` and `==`.
