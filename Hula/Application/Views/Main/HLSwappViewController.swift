@@ -462,9 +462,13 @@ class HLSwappViewController: UIViewController {
     /// change `?? ""` into a nil return. Do not fold `otherAgreeOverlay`
     /// into this helper (agreement can set the other offer alpha back to 1
     /// unless status is exact `"closed"` or `"ended"`, and a false flag
-    /// sets both alphas to 0.5). Do not enable `waitingTurnEnabled`. Do not
-    /// fold this into `lobbyTapDestination` (review there opens past trade;
-    /// here it changes the offer button).
+    /// sets both alphas to 0.5). Do not fold
+    /// `productsReceivedOtherOfferAlpha` into this helper. That step runs
+    /// later, outside the trade lookup, and hides the other offer only when
+    /// the send tag is still exactly the products-received tag. Do not
+    /// enable `waitingTurnEnabled`. Do not fold this into
+    /// `lobbyTapDestination` (review there opens past trade; here it changes
+    /// the offer button).
     /// Do not assign the Accept tag. The bartering branch only changes the title.
     class func bottomBarOfferChrome(
         status: Any?,
@@ -559,9 +563,9 @@ class HLSwappViewController: UIViewController {
     /// `otherAgree` false sets both alphas to 0.5, including canceled, ended,
     /// and review, which overwrites the status helper's 0. Do not trim. Do
     /// not case-fold. Do not percent-encode. Do not fold this into
-    /// `bottomBarOfferChrome`. Do not read the send-button tag. The later
-    /// `tag == kTagProductsReceived` assignment still runs outside the trade
-    /// lookup and is not part of this step. Do not change `manageCheckMarks`.
+    /// `bottomBarOfferChrome`. Do not read the send-button tag.
+    /// `productsReceivedOtherOfferAlpha` still runs later, outside the trade
+    /// lookup, and is not part of this step. Do not change `manageCheckMarks`.
     class func otherAgreeOverlay(otherAgree: Bool, status: String) -> OtherAgreeOverlay {
         if otherAgree {
             if status != HulaConstants.cancel_status && status != HulaConstants.end_status {
@@ -570,6 +574,31 @@ class HLSwappViewController: UIViewController {
             return OtherAgreeOverlay(otherUserAlpha: 1, otherOfferAlpha: nil)
         }
         return OtherAgreeOverlay(otherUserAlpha: 0.5, otherOfferAlpha: 0.5)
+    }
+
+    /// Final other-offer hide on a trade-room page (`index != 0`), after
+    /// `bottomBarOfferChrome`, `manageCheckMarks`, and `otherAgreeOverlay`.
+    /// It sits outside the trade lookup, so it still runs with no page
+    /// controller, no trade, and no barter status. Returns 0 only when
+    /// `sendTag` is still exactly `productsReceivedTag` (the call site passes
+    /// `kTagProductsReceived`, 90441). Any other tag, including
+    /// `kTagJustAccept` (1) and `kTagCloseDeal` (91053), returns nil and does
+    /// not assign the button. `manageCheckMarks` replaces 90441 with one of
+    /// those two tags when a barter trade exists, so this hide does not fire
+    /// on that path. A leftover 90441 from an earlier review page still
+    /// hides, because Accept chrome does not clear the tag. Do not trim. Do
+    /// not case-fold a status into this compare. Do not percent-encode. Do
+    /// not fold this into `otherAgreeOverlay` or `bottomBarOfferChrome`. Do
+    /// not change `manageCheckMarks`. Do not treat tag 1 or 91053 as the
+    /// receipt title. The lobby page (`index == 0`) does not call this.
+    class func productsReceivedOtherOfferAlpha(
+        sendTag: Int,
+        productsReceivedTag: Int
+    ) -> CGFloat? {
+        if sendTag == productsReceivedTag {
+            return CGFloat(0)
+        }
+        return nil
     }
     
     
@@ -1083,8 +1112,11 @@ class HLSwappViewController: UIViewController {
                 }
             }
             
-            if self.sendOfferBtn.tag == kTagProductsReceived {
-                self.otherOfferBtn.alpha = 0;
+            if let receiptAlpha = HLSwappViewController.productsReceivedOtherOfferAlpha(
+                sendTag: self.sendOfferBtn.tag,
+                productsReceivedTag: kTagProductsReceived
+            ) {
+                self.otherOfferBtn.alpha = receiptAlpha
             }
             
         } else {
