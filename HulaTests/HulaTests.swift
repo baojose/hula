@@ -14172,6 +14172,267 @@ class HulaTests: XCTestCase {
         ))
     }
 
+    /// After offer chrome and the agreement overlay, the trade-room page
+    /// (`index != 0`) hides the other offer only when the send tag is still
+    /// exactly 90441. The check sits outside the trade lookup, so a missing
+    /// page controller, a missing trade, or a missing barter status does not
+    /// skip it. Tag 1 and tag 91053 do not hide. Accept chrome does not clear
+    /// a leftover 90441, so that leftover tag still wins over an agreement
+    /// alpha of 1. Do not trim. Do not case-fold. Do not percent-encode. Do
+    /// not fold this into the status chrome or the agreement overlay.
+    func testProductsReceivedTagHidesOtherOfferAfterAgreement() {
+        let vc = HLSwappViewController()
+        let productsReceivedTag = 90441
+        let justAcceptTag = 1
+        let closeDealTag = 91053
+        let receiptTitle = NSLocalizedString("I received my stuff", comment: "")
+        let acceptTitle = NSLocalizedString("Accept", comment: "")
+
+        XCTAssertEqual(vc.kTagProductsReceived, productsReceivedTag)
+        XCTAssertEqual(vc.kTagJustAccept, justAcceptTag)
+        XCTAssertEqual(vc.kTagCloseDeal, closeDealTag)
+        XCTAssertNotEqual(productsReceivedTag, justAcceptTag)
+        XCTAssertNotEqual(productsReceivedTag, closeDealTag)
+
+        func hide(
+            _ sendTag: Int,
+            tag: Int = 90441
+        ) -> CGFloat? {
+            return HLSwappViewController.productsReceivedOtherOfferAlpha(
+                sendTag: sendTag,
+                productsReceivedTag: tag
+            )
+        }
+
+        func chrome(
+            _ status: Any?,
+            turn: Any? = "peer",
+            viewer: String? = nil
+        ) -> BottomBarOfferChrome {
+            return HLSwappViewController.bottomBarOfferChrome(
+                status: status,
+                turnUserId: turn,
+                viewerId: viewer,
+                waitingTurnEnabled: false,
+                productsReceivedTag: productsReceivedTag
+            )
+        }
+
+        func visible(status: Any?, agree: Bool?, sendTag: Int) -> CGFloat? {
+            let offer = chrome(status)
+            var alpha = offer.otherOfferAlpha
+            if let agree = agree {
+                let row = HLSwappViewController.otherAgreeOverlay(
+                    otherAgree: agree,
+                    status: offer.status
+                )
+                if let next = row.otherOfferAlpha {
+                    alpha = next
+                }
+            }
+            if let hidden = hide(sendTag) {
+                alpha = hidden
+            }
+            return alpha
+        }
+
+        XCTAssertEqual(hide(productsReceivedTag), CGFloat(0))
+        XCTAssertEqual(hide(vc.kTagProductsReceived), CGFloat(0))
+        XCTAssertEqual(hide(justAcceptTag, tag: justAcceptTag), CGFloat(0))
+        XCTAssertNil(hide(productsReceivedTag, tag: justAcceptTag))
+        XCTAssertNil(hide(0))
+        XCTAssertNil(hide(justAcceptTag))
+        XCTAssertNil(hide(vc.kTagJustAccept))
+        XCTAssertNil(hide(closeDealTag))
+        XCTAssertNil(hide(vc.kTagCloseDeal))
+        XCTAssertNil(hide(90440))
+        XCTAssertNil(hide(90442))
+        XCTAssertNil(hide(-1))
+        XCTAssertNil(hide(43909))
+        XCTAssertNil(hide(Int.max))
+        XCTAssertNil(hide(Int.min))
+
+        let review = chrome("review")
+        XCTAssertEqual(review.status, "review")
+        XCTAssertEqual(review.sendTag, productsReceivedTag)
+        XCTAssertEqual(review.sendTitle, receiptTitle)
+        XCTAssertNotEqual(review.sendTitle, acceptTitle)
+        XCTAssertFalse(review.hidesSend)
+        XCTAssertFalse(review.showsWaiting)
+        XCTAssertEqual(review.otherOfferAlpha, CGFloat(0))
+        XCTAssertEqual(
+            HLSwappViewController.otherAgreeOverlay(otherAgree: true, status: review.status).otherOfferAlpha,
+            CGFloat(1)
+        )
+        XCTAssertEqual(
+            HLSwappViewController.otherAgreeOverlay(otherAgree: false, status: review.status).otherOfferAlpha,
+            CGFloat(0.5)
+        )
+        XCTAssertEqual(hide(review.sendTag ?? -1), CGFloat(0))
+        XCTAssertEqual(visible(status: "review", agree: true, sendTag: productsReceivedTag), CGFloat(0))
+        XCTAssertEqual(visible(status: "review", agree: false, sendTag: productsReceivedTag), CGFloat(0))
+        XCTAssertEqual(visible(status: "review", agree: true, sendTag: justAcceptTag), CGFloat(1))
+        XCTAssertEqual(visible(status: "review", agree: true, sendTag: closeDealTag), CGFloat(1))
+        XCTAssertEqual(visible(status: "review", agree: false, sendTag: justAcceptTag), CGFloat(0.5))
+        XCTAssertEqual(visible(status: "review", agree: false, sendTag: closeDealTag), CGFloat(0.5))
+        XCTAssertEqual(visible(status: "review", agree: nil, sendTag: productsReceivedTag), CGFloat(0))
+        XCTAssertEqual(visible(status: "review", agree: nil, sendTag: justAcceptTag), CGFloat(0))
+
+        let accept = chrome("pending")
+        XCTAssertNil(accept.sendTag)
+        XCTAssertEqual(accept.sendTitle, acceptTitle)
+        XCTAssertNotEqual(accept.sendTitle, receiptTitle)
+        XCTAssertNil(accept.otherOfferAlpha)
+        XCTAssertTrue(accept.showsAccept)
+        XCTAssertFalse(accept.showsWaiting)
+        XCTAssertEqual(visible(status: "pending", agree: true, sendTag: productsReceivedTag), CGFloat(0))
+        XCTAssertEqual(visible(status: "pending", agree: false, sendTag: productsReceivedTag), CGFloat(0))
+        XCTAssertEqual(visible(status: "pending", agree: true, sendTag: 0), CGFloat(1))
+        XCTAssertEqual(visible(status: "pending", agree: false, sendTag: 0), CGFloat(0.5))
+        XCTAssertNil(visible(status: "pending", agree: nil, sendTag: 0))
+        XCTAssertNil(visible(status: "pending", agree: nil, sendTag: justAcceptTag))
+        XCTAssertEqual(visible(status: "pending", agree: nil, sendTag: productsReceivedTag), CGFloat(0))
+
+        let canceled = ["closed", "ended", HulaConstants.cancel_status, HulaConstants.end_status]
+        for status in canceled {
+            XCTAssertEqual(chrome(status).status, status)
+            XCTAssertNil(chrome(status).sendTag)
+            XCTAssertTrue(chrome(status).hidesSend)
+            XCTAssertEqual(chrome(status).otherOfferAlpha, CGFloat(0))
+            XCTAssertNil(HLSwappViewController.otherAgreeOverlay(otherAgree: true, status: status).otherOfferAlpha)
+            XCTAssertEqual(visible(status: status, agree: true, sendTag: productsReceivedTag), CGFloat(0))
+            XCTAssertEqual(visible(status: status, agree: true, sendTag: justAcceptTag), CGFloat(0))
+            XCTAssertEqual(visible(status: status, agree: true, sendTag: 0), CGFloat(0))
+            XCTAssertEqual(visible(status: status, agree: false, sendTag: productsReceivedTag), CGFloat(0))
+            XCTAssertEqual(visible(status: status, agree: false, sendTag: justAcceptTag), CGFloat(0.5))
+            XCTAssertEqual(visible(status: status, agree: false, sendTag: closeDealTag), CGFloat(0.5))
+            XCTAssertEqual(visible(status: status, agree: false, sendTag: 0), CGFloat(0.5))
+            XCTAssertEqual(visible(status: status, agree: nil, sendTag: productsReceivedTag), CGFloat(0))
+            XCTAssertEqual(visible(status: status, agree: nil, sendTag: justAcceptTag), CGFloat(0))
+        }
+
+        let spellings = [
+            "", " ", "\n", " \n ",
+            " closed", "closed ", " closed ", "Closed", "CLOSED", "closed.", "unclosed",
+            " ended", "ended ", " ended ", "Ended", "ENDED", "end", "ending",
+            "review", "Review", "REVIEW", " review", "review ", " review ", "preview", "reviewing",
+            "pending", "offer_sent",
+            "a&b", "a%26b", "P1", "p1", " bike ", "🙂", "1"
+        ]
+        for status in spellings {
+            XCTAssertNotEqual(status, "closed")
+            XCTAssertNotEqual(status, "ended")
+            XCTAssertEqual(chrome(status).status, status)
+            XCTAssertEqual(visible(status: status, agree: true, sendTag: productsReceivedTag), CGFloat(0))
+            XCTAssertEqual(visible(status: status, agree: false, sendTag: productsReceivedTag), CGFloat(0))
+            XCTAssertEqual(visible(status: status, agree: true, sendTag: justAcceptTag), CGFloat(1))
+            XCTAssertEqual(visible(status: status, agree: true, sendTag: closeDealTag), CGFloat(1))
+            XCTAssertEqual(visible(status: status, agree: false, sendTag: justAcceptTag), CGFloat(0.5))
+            XCTAssertEqual(visible(status: status, agree: false, sendTag: 0), CGFloat(0.5))
+            XCTAssertEqual(visible(status: status, agree: false, sendTag: 90440), CGFloat(0.5))
+            XCTAssertEqual(visible(status: status, agree: false, sendTag: 90442), CGFloat(0.5))
+            if status == "review" {
+                XCTAssertEqual(chrome(status).sendTag, productsReceivedTag)
+                XCTAssertEqual(visible(status: status, agree: nil, sendTag: justAcceptTag), CGFloat(0))
+            } else {
+                XCTAssertNotEqual(chrome(status).sendTag, productsReceivedTag)
+                XCTAssertNil(visible(status: status, agree: nil, sendTag: justAcceptTag))
+                XCTAssertEqual(visible(status: status, agree: nil, sendTag: productsReceivedTag), CGFloat(0))
+            }
+        }
+        XCTAssertEqual(visible(status: HulaConstants.review_status, agree: true, sendTag: productsReceivedTag), CGFloat(0))
+        XCTAssertEqual(visible(status: HulaConstants.pending_status, agree: true, sendTag: 0), CGFloat(1))
+        XCTAssertEqual(visible(status: HulaConstants.sent_status, agree: false, sendTag: closeDealTag), CGFloat(0.5))
+
+        XCTAssertNotEqual("a&b", "a%26b")
+        XCTAssertEqual(
+            visible(status: "a&b", agree: true, sendTag: productsReceivedTag),
+            visible(status: "a%26b", agree: true, sendTag: productsReceivedTag)
+        )
+        XCTAssertEqual(visible(status: "a&b", agree: false, sendTag: justAcceptTag), CGFloat(0.5))
+        XCTAssertEqual(visible(status: "a%26b", agree: true, sendTag: justAcceptTag), CGFloat(1))
+        XCTAssertNotEqual("P1", "p1")
+        XCTAssertEqual(visible(status: "P1", agree: true, sendTag: productsReceivedTag), CGFloat(0))
+        XCTAssertEqual(visible(status: "p1", agree: true, sendTag: 0), CGFloat(1))
+        XCTAssertNotEqual(" bike ", "bike")
+        XCTAssertEqual(visible(status: " bike ", agree: false, sendTag: productsReceivedTag), CGFloat(0))
+        XCTAssertEqual(visible(status: "bike", agree: true, sendTag: justAcceptTag), CGFloat(1))
+        XCTAssertEqual(visible(status: "🙂", agree: true, sendTag: productsReceivedTag), CGFloat(0))
+        XCTAssertEqual(visible(status: "🙂", agree: false, sendTag: 0), CGFloat(0.5))
+
+        XCTAssertEqual(chrome(("review" as NSString)).status, "review")
+        XCTAssertEqual(chrome(("review" as NSString)).sendTag, productsReceivedTag)
+        XCTAssertEqual(visible(status: ("review" as NSString), agree: true, sendTag: productsReceivedTag), CGFloat(0))
+        XCTAssertEqual(visible(status: ("closed" as NSString), agree: false, sendTag: justAcceptTag), CGFloat(0.5))
+        XCTAssertEqual(visible(status: ("ended" as NSString), agree: true, sendTag: 0), CGFloat(0))
+        XCTAssertEqual(chrome(("pending" as NSString)).status, "pending")
+        XCTAssertNil(chrome(("pending" as NSString)).sendTag)
+
+        let nonStringStatuses: [Any?] = [
+            nil,
+            NSNull(),
+            NSNumber(value: 0),
+            NSNumber(value: 1),
+            NSNumber(value: 10.9),
+            true,
+            false
+        ]
+        for status in nonStringStatuses {
+            XCTAssertEqual(chrome(status).status, "")
+            XCTAssertNil(chrome(status).sendTag)
+            XCTAssertNil(chrome(status).otherOfferAlpha)
+            XCTAssertEqual(visible(status: status, agree: true, sendTag: productsReceivedTag), CGFloat(0))
+            XCTAssertEqual(visible(status: status, agree: true, sendTag: 0), CGFloat(1))
+            XCTAssertEqual(visible(status: status, agree: false, sendTag: 90440), CGFloat(0.5))
+            XCTAssertNil(visible(status: status, agree: nil, sendTag: 0))
+        }
+        let missingStatus = NSDictionary(dictionary: ["turn_user_id": "peer"])
+        XCTAssertEqual(chrome(missingStatus.object(forKey: "status")).status, "")
+        XCTAssertEqual(
+            visible(status: missingStatus.object(forKey: "status"), agree: true, sendTag: productsReceivedTag),
+            CGFloat(0)
+        )
+        XCTAssertEqual(
+            visible(status: missingStatus.object(forKey: "status"), agree: false, sendTag: justAcceptTag),
+            CGFloat(0.5)
+        )
+
+        let trade = HulaTrade()
+        XCTAssertFalse(trade.other_agree)
+        XCTAssertEqual(visible(status: "review", agree: trade.other_agree, sendTag: justAcceptTag), CGFloat(0.5))
+        XCTAssertEqual(visible(status: "review", agree: trade.other_agree, sendTag: productsReceivedTag), CGFloat(0))
+        trade.loadFrom(dict: ["other_agree": NSNull()] as NSDictionary)
+        XCTAssertFalse(trade.other_agree)
+        trade.loadFrom(dict: ["other_agree": "true"] as NSDictionary)
+        XCTAssertFalse(trade.other_agree)
+        XCTAssertNil(hide(justAcceptTag))
+
+        let reviewTap = HLDashboardViewController.lobbyTapDestination(tradeMode: "current", status: "review")
+        XCTAssertEqual(reviewTap?.storyboardId, "pastTrade")
+        let closedTap = HLDashboardViewController.lobbyTapDestination(tradeMode: "current", status: "closed")
+        XCTAssertEqual(closedTap?.storyboardId, "barterRoom")
+        XCTAssertEqual(
+            HLPastTradeViewController.headline(status: "closed").title,
+            NSLocalizedString("Trade canceled", comment: "")
+        )
+        XCTAssertEqual(
+            HLDashboardViewController.lobbyListBucket(from: NSDictionary(dictionary: ["status": "ended", "_id": "t"]))?.listStatus,
+            "past"
+        )
+        XCTAssertFalse(HLSwappViewController.showsWaitingForReply(
+            turnUserId: "peer",
+            viewerId: nil,
+            waitingTurnEnabled: false
+        ))
+        XCTAssertFalse(HLSwappViewController.shouldBlockOffer(
+            turnUserId: nil,
+            viewerId: "a&b",
+            buttonTag: productsReceivedTag,
+            productsReceivedTag: productsReceivedTag,
+            turnGateEnabled: false
+        ))
+    }
+
     private func tradeReadyFixture(
         ownerId: String,
         otherId: String,
