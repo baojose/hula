@@ -600,6 +600,59 @@ class HLSwappViewController: UIViewController {
         }
         return nil
     }
+
+    /// Lobby page (`index == 0`) of `controlSetupBottomBar`. The add-room
+    /// button is `0.3` when `maxTrades >= 50` and `1` otherwise. That is the
+    /// inverse of `shouldGrantExtraTradeRoom` (`maxTrades < 50`). Exactly 50
+    /// is `0.3`. Do not change `0.3` into `0`. The past-chat loop keeps only
+    /// the last `arrPastTrades` row: `peerChatContext` replaces both the peer
+    /// id and the unread count, including `0`, so an earlier unread is
+    /// discarded and is not summed. An empty list stays at count `0`, peer
+    /// `""`, and hidden. A last unread that is not greater than `0` hides the
+    /// badge. `pastChatPeerId` is printed only when the badge shows. Do not
+    /// start an image load. Do not trim. Do not case-fold. Do not
+    /// percent-encode. Status strings do not enter this helper. `"a&b"` is
+    /// not `a%26b`. `"P1"` is not `"p1"`. `" bike "` is not `bike`. Do not
+    /// call `productsReceivedOtherOfferAlpha` (that hide is the `index != 0`
+    /// branch). Do not assign the send tag. Do not change
+    /// `manageCheckMarks`. Do not fold this into `lobbyTapDestination`,
+    /// `lobbyListBucket`, `headline`, `bottomBarOfferChrome`, or
+    /// `otherAgreeOverlay`. Do not enable `waitingTurnEnabled`.
+    class func lobbyPageChrome(
+        maxTrades: Int,
+        pastTrades: [NSDictionary],
+        viewerId: String
+    ) -> LobbyPageChrome {
+        let addAlpha: CGFloat
+        if maxTrades >= 50 {
+            addAlpha = 0.3
+        } else {
+            addAlpha = 1
+        }
+        var chatCount = 0
+        var peerId = ""
+        for oldTrade in pastTrades {
+            let peer = peerChatContext(from: oldTrade, viewerId: viewerId)
+            peerId = peer.peerId
+            chatCount = peer.unread
+        }
+        return LobbyPageChrome(
+            addTradeRoomAlpha: addAlpha,
+            showsPastChatBadge: chatCount > 0,
+            pastChatCount: chatCount,
+            pastChatPeerId: peerId,
+            hidesCurrentChatBadge: true,
+            sendAlpha: 0,
+            otherOfferAlpha: 0,
+            centralLabelAlpha: 0,
+            chatButtonAlpha: 0,
+            remainingAlpha: 0,
+            hidesThreeDots: true,
+            currentTradesAlpha: 1,
+            pastTradesAlpha: 1,
+            tradeModeLineAlpha: 1
+        )
+    }
     
     
     override func preferredScreenEdgesDeferringSystemGestures() -> UIRectEdge {
@@ -1121,53 +1174,45 @@ class HLSwappViewController: UIViewController {
             
         } else {
             // index == 0
+            // Add-room alpha and the past-chat badge come from the last row
+            // only. Frames stay here. No image load. No receipt-tag hide.
             
             last_index_setup = 0
+            let lobby = HLSwappViewController.lobbyPageChrome(
+                maxTrades: HulaUser.sharedInstance.maxTrades,
+                pastTrades: HLDataManager.sharedInstance.arrPastTrades,
+                viewerId: HulaUser.sharedInstance.userId
+            )
             UIView.animate(withDuration: 0.3) {
                 /*
                 self.extraRoomBtn.alpha = 1
                 self.extraRoomImage.alpha = 1
                 self.nextTradeBtn.alpha = 1
                  */
-                if HulaUser.sharedInstance.maxTrades >= 50{
-                    self.addTradeRoomBtn.alpha = 0.3
-                } else {
-                    self.addTradeRoomBtn.alpha = 1;
-                }
-                self.mainCentralLabel.alpha=0;
+                self.addTradeRoomBtn.alpha = lobby.addTradeRoomAlpha
+                self.mainCentralLabel.alpha = lobby.centralLabelAlpha
                 self.myUserView.frame.origin.x = -500
                 self.otherUserView.frame.origin.x = self.initialOtherUserX + 500
-                self.sendOfferBtn.alpha = 0
-                self.otherOfferBtn.alpha = 0
+                self.sendOfferBtn.alpha = lobby.sendAlpha
+                self.otherOfferBtn.alpha = lobby.otherOfferAlpha
                 //self.mainCentralLabel.text = "Available Table Rooms"
-                self.chatButton.alpha = 0
-                self.remainingTimeLabel.alpha = 0;
-                self.threeDotsView.isHidden = true
-                self.currentTradesBtn.alpha = 1;
-                self.pastTradesBtn.alpha = 1
-                self.tradeModeLine.alpha = 1
+                self.chatButton.alpha = lobby.chatButtonAlpha
+                self.remainingTimeLabel.alpha = lobby.remainingAlpha
+                self.threeDotsView.isHidden = lobby.hidesThreeDots
+                self.currentTradesBtn.alpha = lobby.currentTradesAlpha
+                self.pastTradesBtn.alpha = lobby.pastTradesAlpha
+                self.tradeModeLine.alpha = lobby.tradeModeLineAlpha
                 self.pastChatCountLbl.isHidden = true
             }
-            self.chatCountLbl.isHidden = true
+            self.chatCountLbl.isHidden = lobby.hidesCurrentChatBadge
             
-            var chat_count = 0
-            var other_user_id = ""
-            for oldTrade in HLDataManager.sharedInstance.arrPastTrades {
-                let thisTrade: NSDictionary = oldTrade
-                let peer = HLSwappViewController.peerChatContext(
-                    from: thisTrade,
-                    viewerId: HulaUser.sharedInstance.userId
-                )
-                other_user_id = peer.peerId
-                chat_count = peer.unread
-            }
-            if chat_count > 0 {
+            if lobby.showsPastChatBadge {
                 self.pastChatCountLbl.isHidden = false
-                self.pastChatCountLbl.text = "\(chat_count)"
+                self.pastChatCountLbl.text = "\(lobby.pastChatCount)"
                 print("chat_count")
-                print(chat_count)
+                print(lobby.pastChatCount)
                 print("other_user_id")
-                print(other_user_id)
+                print(lobby.pastChatPeerId)
             } else {
                 
                 self.pastChatCountLbl.isHidden = true
@@ -1620,6 +1665,27 @@ struct BottomBarOfferChrome {
 struct OtherAgreeOverlay {
     let otherUserAlpha: CGFloat
     let otherOfferAlpha: CGFloat?
+}
+
+/// Lobby page (`index == 0`) bottom bar. `addTradeRoomAlpha` is `0.3` at the
+/// 50-room cap and `1` below it. The past-chat fields are the last
+/// `arrPastTrades` row only. `pastChatPeerId` is not an image URL. This step
+/// does not assign a send tag and does not apply the products-received hide.
+struct LobbyPageChrome {
+    let addTradeRoomAlpha: CGFloat
+    let showsPastChatBadge: Bool
+    let pastChatCount: Int
+    let pastChatPeerId: String
+    let hidesCurrentChatBadge: Bool
+    let sendAlpha: CGFloat
+    let otherOfferAlpha: CGFloat
+    let centralLabelAlpha: CGFloat
+    let chatButtonAlpha: CGFloat
+    let remainingAlpha: CGFloat
+    let hidesThreeDots: Bool
+    let currentTradesAlpha: CGFloat
+    let pastTradesAlpha: CGFloat
+    let tradeModeLineAlpha: CGFloat
 }
 
 /// Turn checks compared IUO `turn_user_id` / `userId` with `!=` and `==`.

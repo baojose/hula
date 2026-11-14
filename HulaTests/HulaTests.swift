@@ -14433,6 +14433,383 @@ class HulaTests: XCTestCase {
         ))
     }
 
+    /// Lobby page (`index == 0`) dims the add-room button at 50 rooms and
+    /// badges only the last past trade. Earlier unreads are discarded, not
+    /// summed. A last unread that is not greater than 0 stays hidden. The
+    /// peer id is not an image URL and is not trimmed or encoded. The
+    /// products-received hide is not this step. Do not enable the turn gate.
+    func testLobbyPageChromeCapsAddRoomAndKeepsOnlyTheLastPastChat() {
+        func lobby(_ maxTrades: Int, _ trades: [NSDictionary], viewerId: String) -> LobbyPageChrome {
+            return HLSwappViewController.lobbyPageChrome(
+                maxTrades: maxTrades,
+                pastTrades: trades,
+                viewerId: viewerId
+            )
+        }
+
+        func assertShell(_ row: LobbyPageChrome, file: StaticString = #file, line: UInt = #line) {
+            XCTAssertTrue(row.hidesCurrentChatBadge, file: file, line: line)
+            XCTAssertEqual(row.sendAlpha, CGFloat(0), file: file, line: line)
+            XCTAssertEqual(row.otherOfferAlpha, CGFloat(0), file: file, line: line)
+            XCTAssertEqual(row.centralLabelAlpha, CGFloat(0), file: file, line: line)
+            XCTAssertEqual(row.chatButtonAlpha, CGFloat(0), file: file, line: line)
+            XCTAssertEqual(row.remainingAlpha, CGFloat(0), file: file, line: line)
+            XCTAssertTrue(row.hidesThreeDots, file: file, line: line)
+            XCTAssertEqual(row.currentTradesAlpha, CGFloat(1), file: file, line: line)
+            XCTAssertEqual(row.pastTradesAlpha, CGFloat(1), file: file, line: line)
+            XCTAssertEqual(row.tradeModeLineAlpha, CGFloat(1), file: file, line: line)
+            XCTAssertNotEqual(row.addTradeRoomAlpha, CGFloat(0), file: file, line: line)
+        }
+
+        let caps = [Int.min, -1, 0, 3, 49, 50, 51, Int.max]
+        for maxTrades in caps {
+            let row = lobby(maxTrades, [], viewerId: "me")
+            assertShell(row)
+            let granted = HLSwappViewController.shouldGrantExtraTradeRoom(maxTrades: maxTrades)
+            if maxTrades >= 50 {
+                XCTAssertFalse(granted)
+                XCTAssertEqual(row.addTradeRoomAlpha, CGFloat(0.3))
+                XCTAssertNotEqual(row.addTradeRoomAlpha, CGFloat(1))
+            } else {
+                XCTAssertTrue(granted)
+                XCTAssertEqual(row.addTradeRoomAlpha, CGFloat(1))
+                XCTAssertNotEqual(row.addTradeRoomAlpha, CGFloat(0.3))
+            }
+            XCTAssertFalse(row.showsPastChatBadge)
+            XCTAssertEqual(row.pastChatCount, 0)
+            XCTAssertEqual(row.pastChatPeerId, "")
+        }
+        XCTAssertEqual(lobby(50, [], viewerId: "me").addTradeRoomAlpha, CGFloat(0.3))
+        XCTAssertNotEqual(lobby(50, [], viewerId: "me").addTradeRoomAlpha, CGFloat(0))
+        XCTAssertFalse(HLSwappViewController.shouldGrantExtraTradeRoom(maxTrades: 50))
+        XCTAssertTrue(HLSwappViewController.shouldGrantExtraTradeRoom(maxTrades: 49))
+        XCTAssertTrue(SessionListPolicy.roomsFull(currentCount: 100, maxTrades: 3))
+        XCTAssertEqual(lobby(3, [], viewerId: "me").addTradeRoomAlpha, CGFloat(1))
+
+        let earlier: NSDictionary = [
+            "owner_id": "a&b",
+            "other_id": " bike ",
+            "owner_unread": NSNumber(value: 4),
+            "other_unread": NSNumber(value: 9),
+            "status": "review"
+        ]
+        let later: NSDictionary = [
+            "owner_id": "P1",
+            "other_id": "p1",
+            "owner_unread": NSNumber(value: 0),
+            "other_unread": NSNumber(value: 2),
+            "status": " closed "
+        ]
+        let kept = lobby(49, [earlier, later], viewerId: "a&b")
+        assertShell(kept)
+        XCTAssertEqual(kept.addTradeRoomAlpha, CGFloat(1))
+        XCTAssertTrue(kept.showsPastChatBadge)
+        XCTAssertEqual(kept.pastChatCount, 2)
+        XCTAssertNotEqual(kept.pastChatCount, 4)
+        XCTAssertNotEqual(kept.pastChatCount, 9)
+        XCTAssertNotEqual(kept.pastChatCount, 13)
+        XCTAssertEqual(kept.pastChatPeerId, "P1")
+        XCTAssertNotEqual(kept.pastChatPeerId, "p1")
+        XCTAssertNotEqual(kept.pastChatPeerId, " bike ")
+        XCTAssertNotEqual(kept.pastChatPeerId, "a&b")
+        XCTAssertNotEqual(kept.pastChatPeerId, "a%26b")
+        XCTAssertNotEqual(kept.pastChatPeerId, FormFieldPolicy.encoded("a&b"))
+        XCTAssertEqual("\(kept.pastChatCount)", "2")
+        let laterContext = HLSwappViewController.peerChatContext(from: later, viewerId: "a&b")
+        XCTAssertEqual(kept.pastChatCount, laterContext.unread)
+        XCTAssertEqual(kept.pastChatPeerId, laterContext.peerId)
+
+        let ownerOfLast = lobby(50, [earlier, later], viewerId: "P1")
+        assertShell(ownerOfLast)
+        XCTAssertEqual(ownerOfLast.addTradeRoomAlpha, CGFloat(0.3))
+        XCTAssertFalse(ownerOfLast.showsPastChatBadge)
+        XCTAssertEqual(ownerOfLast.pastChatCount, 0)
+        XCTAssertEqual(ownerOfLast.pastChatPeerId, "p1")
+        XCTAssertNotEqual(ownerOfLast.pastChatPeerId, "P1")
+        XCTAssertNotEqual(ownerOfLast.pastChatCount, 4)
+
+        let otherIdIsNotOwner = lobby(3, [earlier, later], viewerId: "p1")
+        XCTAssertTrue(otherIdIsNotOwner.showsPastChatBadge)
+        XCTAssertEqual(otherIdIsNotOwner.pastChatCount, 2)
+        XCTAssertEqual(otherIdIsNotOwner.pastChatPeerId, "P1")
+        XCTAssertNotEqual(otherIdIsNotOwner.pastChatPeerId, "p1")
+
+        let bikeViewer = lobby(3, [earlier, later], viewerId: " bike ")
+        XCTAssertEqual(bikeViewer.pastChatCount, 2)
+        XCTAssertEqual(bikeViewer.pastChatPeerId, "P1")
+        XCTAssertNotEqual(bikeViewer.pastChatCount, 9)
+        let trimmedBike = lobby(3, [earlier, later], viewerId: "bike")
+        XCTAssertEqual(trimmedBike.pastChatCount, 2)
+        XCTAssertEqual(trimmedBike.pastChatPeerId, "P1")
+        XCTAssertNotEqual(" bike ", "bike")
+
+        let encodedViewer = lobby(3, [earlier, later], viewerId: "a%26b")
+        XCTAssertEqual(encodedViewer.pastChatCount, 2)
+        XCTAssertEqual(encodedViewer.pastChatPeerId, "P1")
+        XCTAssertNotEqual(encodedViewer.pastChatPeerId, " bike ")
+        XCTAssertNotEqual("a&b", "a%26b")
+
+        let firstOnly = lobby(3, [earlier], viewerId: "a&b")
+        XCTAssertTrue(firstOnly.showsPastChatBadge)
+        XCTAssertEqual(firstOnly.pastChatCount, 4)
+        XCTAssertEqual(firstOnly.pastChatPeerId, " bike ")
+        XCTAssertNotEqual(firstOnly.pastChatPeerId, "bike")
+        let firstAsPeer = lobby(3, [earlier], viewerId: " bike ")
+        XCTAssertEqual(firstAsPeer.pastChatCount, 9)
+        XCTAssertEqual(firstAsPeer.pastChatPeerId, "a&b")
+        XCTAssertNotEqual(firstAsPeer.pastChatPeerId, FormFieldPolicy.encoded("a&b"))
+
+        let summedFirst: NSDictionary = [
+            "owner_id": "me",
+            "other_id": "first",
+            "owner_unread": NSNumber(value: 3),
+            "status": "ended"
+        ]
+        let summedLast: NSDictionary = [
+            "owner_id": "me",
+            "other_id": "last",
+            "owner_unread": NSNumber(value: 4),
+            "status": "closed"
+        ]
+        let summed = lobby(51, [summedFirst, summedLast], viewerId: "me")
+        XCTAssertEqual(summed.addTradeRoomAlpha, CGFloat(0.3))
+        XCTAssertEqual(summed.pastChatCount, 4)
+        XCTAssertNotEqual(summed.pastChatCount, 7)
+        XCTAssertEqual(summed.pastChatPeerId, "last")
+        XCTAssertNotEqual(summed.pastChatPeerId, "first")
+
+        let positive: NSDictionary = [
+            "owner_id": "me",
+            "other_id": "early",
+            "owner_unread": NSNumber(value: 8),
+            "status": "Review"
+        ]
+        let zeroLast: NSDictionary = [
+            "owner_id": "me",
+            "other_id": "done",
+            "owner_unread": NSNumber(value: 0),
+            "status": "review"
+        ]
+        let hiddenLast = lobby(3, [positive, zeroLast], viewerId: "me")
+        XCTAssertFalse(hiddenLast.showsPastChatBadge)
+        XCTAssertEqual(hiddenLast.pastChatCount, 0)
+        XCTAssertEqual(hiddenLast.pastChatPeerId, "done")
+        XCTAssertNotEqual(hiddenLast.pastChatCount, 8)
+        XCTAssertEqual(hiddenLast.addTradeRoomAlpha, CGFloat(1))
+
+        let negativeLast: NSDictionary = [
+            "owner_id": "me",
+            "other_id": "neg",
+            "owner_unread": NSNumber(value: -3),
+            "status": "🙂"
+        ]
+        let negative = lobby(3, [positive, negativeLast], viewerId: "me")
+        XCTAssertFalse(negative.showsPastChatBadge)
+        XCTAssertEqual(negative.pastChatCount, -3)
+        XCTAssertNotEqual(negative.pastChatCount, 0)
+        XCTAssertEqual(negative.pastChatPeerId, "neg")
+
+        let fractional: NSDictionary = [
+            "owner_id": "me",
+            "other_id": "frac",
+            "owner_unread": NSNumber(value: 10.9),
+            "status": "preview"
+        ]
+        let truncated = lobby(3, [positive, fractional], viewerId: "me")
+        XCTAssertTrue(truncated.showsPastChatBadge)
+        XCTAssertEqual(truncated.pastChatCount, 10)
+        XCTAssertNotEqual(truncated.pastChatCount, 11)
+        XCTAssertEqual(truncated.pastChatPeerId, "frac")
+        XCTAssertEqual("\(truncated.pastChatCount)", "10")
+
+        let boolLast: NSDictionary = [
+            "owner_id": "me",
+            "other_id": "bool-peer",
+            "owner_unread": true,
+            "other_unread": NSNumber(value: 6),
+            "status": "pending"
+        ]
+        let boolRow = lobby(3, [positive, boolLast], viewerId: "me")
+        XCTAssertFalse(boolRow.showsPastChatBadge)
+        XCTAssertEqual(boolRow.pastChatCount, 0)
+        XCTAssertNotEqual(boolRow.pastChatCount, 6)
+        XCTAssertNotEqual(boolRow.pastChatCount, 8)
+        XCTAssertEqual(boolRow.pastChatPeerId, "bool-peer")
+
+        let wordLast: NSDictionary = [
+            "owner_id": "me",
+            "other_id": "word",
+            "owner_unread": "4",
+            "other_unread": NSNumber(value: 5),
+            "status": "\n"
+        ]
+        let wordRow = lobby(3, [positive, wordLast], viewerId: "me")
+        XCTAssertFalse(wordRow.showsPastChatBadge)
+        XCTAssertEqual(wordRow.pastChatCount, 0)
+        XCTAssertNotEqual(wordRow.pastChatCount, 4)
+        XCTAssertNotEqual(wordRow.pastChatCount, 5)
+        XCTAssertEqual(wordRow.pastChatPeerId, "word")
+
+        let nullUnread: NSDictionary = [
+            "owner_id": "me",
+            "other_id": "null-peer",
+            "owner_unread": NSNull(),
+            "status": " "
+        ]
+        let nullRow = lobby(3, [positive, nullUnread], viewerId: "me")
+        XCTAssertFalse(nullRow.showsPastChatBadge)
+        XCTAssertEqual(nullRow.pastChatCount, 0)
+        XCTAssertEqual(nullRow.pastChatPeerId, "null-peer")
+
+        let missingUnread: NSDictionary = [
+            "owner_id": "me",
+            "other_id": "missing",
+            "status": "ended"
+        ]
+        let missingRow = lobby(3, [positive, missingUnread], viewerId: "me")
+        XCTAssertFalse(missingRow.showsPastChatBadge)
+        XCTAssertEqual(missingRow.pastChatCount, 0)
+        XCTAssertEqual(missingRow.pastChatPeerId, "missing")
+        XCTAssertNotEqual(missingRow.pastChatCount, 8)
+
+        let spacedOwner: NSDictionary = [
+            "owner_id": " ",
+            "other_id": "\n",
+            "owner_unread": NSNumber(value: 1),
+            "other_unread": NSNumber(value: 7)
+        ]
+        let spaceMatch = lobby(3, [positive, spacedOwner], viewerId: " ")
+        XCTAssertTrue(spaceMatch.showsPastChatBadge)
+        XCTAssertEqual(spaceMatch.pastChatCount, 1)
+        XCTAssertEqual(spaceMatch.pastChatPeerId, "\n")
+        XCTAssertNotEqual(spaceMatch.pastChatPeerId, " ")
+        let spaceMiss = lobby(3, [positive, spacedOwner], viewerId: "")
+        XCTAssertEqual(spaceMiss.pastChatCount, 7)
+        XCTAssertEqual(spaceMiss.pastChatPeerId, " ")
+        XCTAssertNotEqual(spaceMiss.pastChatCount, 1)
+        XCTAssertNotEqual(" ", "")
+        XCTAssertNotEqual("\n", " ")
+
+        let emojiOwner: NSDictionary = [
+            "owner_id": "🙂",
+            "other_id": "peer",
+            "owner_unread": NSNumber(value: 1),
+            "other_unread": NSNumber(value: 2),
+            "status": "🙂"
+        ]
+        let emoji = lobby(3, [positive, emojiOwner], viewerId: "🙂")
+        XCTAssertEqual(emoji.pastChatCount, 1)
+        XCTAssertEqual(emoji.pastChatPeerId, "peer")
+        XCTAssertTrue(emoji.showsPastChatBadge)
+        let emojiMiss = lobby(3, [positive, emojiOwner], viewerId: "peer")
+        XCTAssertEqual(emojiMiss.pastChatCount, 2)
+        XCTAssertEqual(emojiMiss.pastChatPeerId, "🙂")
+
+        let nullOwner: NSDictionary = [
+            "other_id": "peer",
+            "owner_unread": NSNumber(value: 2),
+            "other_unread": NSNumber(value: 8),
+            "owner_id": NSNull()
+        ]
+        let emptyViewer = lobby(3, [positive, nullOwner], viewerId: "")
+        XCTAssertEqual(emptyViewer.pastChatCount, 2)
+        XCTAssertEqual(emptyViewer.pastChatPeerId, "peer")
+        XCTAssertTrue(emptyViewer.showsPastChatBadge)
+        XCTAssertFalse(TradeTurnPolicy.idsMatch(nil, ""))
+        XCTAssertFalse(TradeTurnPolicy.idsMatch(nil, nil))
+        let namedViewer = lobby(3, [positive, nullOwner], viewerId: "peer")
+        XCTAssertEqual(namedViewer.pastChatCount, 8)
+        XCTAssertEqual(namedViewer.pastChatPeerId, "")
+        XCTAssertNotEqual(namedViewer.pastChatCount, 2)
+
+        let numericOwner: NSDictionary = [
+            "owner_id": NSNumber(value: 1),
+            "other_id": "kept",
+            "owner_unread": NSNumber(value: 5),
+            "other_unread": NSNumber(value: 3)
+        ]
+        let numeric = lobby(3, [positive, numericOwner], viewerId: "1")
+        XCTAssertEqual(numeric.pastChatCount, 3)
+        XCTAssertNotEqual(numeric.pastChatCount, 5)
+        XCTAssertEqual(numeric.pastChatPeerId, "")
+        XCTAssertNotEqual(numeric.pastChatPeerId, "1")
+        XCTAssertNotEqual(numeric.pastChatPeerId, "kept")
+
+        let statuses = [
+            "", " ", "\n", " \n ",
+            "closed", " ended ", "Closed", "Review", "review", "preview",
+            "a&b", "a%26b", "P1", "p1", " bike ", "🙂"
+        ]
+        for status in statuses {
+            let row: NSDictionary = [
+                "owner_id": "me",
+                "other_id": "same",
+                "owner_unread": NSNumber(value: 2),
+                "status": status
+            ]
+            let chrome = lobby(49, [positive, row], viewerId: "me")
+            XCTAssertEqual(chrome.pastChatCount, 2)
+            XCTAssertEqual(chrome.pastChatPeerId, "same")
+            XCTAssertEqual(chrome.addTradeRoomAlpha, CGFloat(1))
+            XCTAssertTrue(chrome.showsPastChatBadge)
+            XCTAssertEqual(chrome.otherOfferAlpha, CGFloat(0))
+        }
+
+        XCTAssertNil(HLSwappViewController.productsReceivedOtherOfferAlpha(
+            sendTag: 0,
+            productsReceivedTag: 90441
+        ))
+        XCTAssertEqual(
+            HLSwappViewController.productsReceivedOtherOfferAlpha(
+                sendTag: 90441,
+                productsReceivedTag: 90441
+            ),
+            CGFloat(0)
+        )
+        XCTAssertEqual(lobby(3, [later], viewerId: "a&b").otherOfferAlpha, CGFloat(0))
+        let reviewChrome = HLSwappViewController.bottomBarOfferChrome(
+            status: "review",
+            turnUserId: "peer",
+            viewerId: nil,
+            waitingTurnEnabled: false,
+            productsReceivedTag: 90441
+        )
+        XCTAssertEqual(reviewChrome.sendTag, 90441)
+        XCTAssertEqual(reviewChrome.sendTitle, NSLocalizedString("I received my stuff", comment: ""))
+        XCTAssertNil(HLSwappViewController.bottomBarOfferChrome(
+            status: "pending",
+            turnUserId: "peer",
+            viewerId: nil,
+            waitingTurnEnabled: false,
+            productsReceivedTag: 90441
+        ).sendTag)
+
+        let reviewTap = HLDashboardViewController.lobbyTapDestination(tradeMode: "current", status: "review")
+        XCTAssertEqual(reviewTap?.storyboardId, "pastTrade")
+        let closedTap = HLDashboardViewController.lobbyTapDestination(tradeMode: "current", status: "closed")
+        XCTAssertEqual(closedTap?.storyboardId, "barterRoom")
+        XCTAssertEqual(
+            HLDashboardViewController.lobbyListBucket(from: NSDictionary(dictionary: ["status": "ended", "_id": "t"]))?.listStatus,
+            "past"
+        )
+        XCTAssertEqual(
+            HLPastTradeViewController.headline(status: "closed").title,
+            NSLocalizedString("Trade canceled", comment: "")
+        )
+        XCTAssertFalse(HLSwappViewController.showsWaitingForReply(
+            turnUserId: "peer",
+            viewerId: nil,
+            waitingTurnEnabled: false
+        ))
+        XCTAssertFalse(HLSwappViewController.shouldBlockOffer(
+            turnUserId: nil,
+            viewerId: "a&b",
+            buttonTag: 90441,
+            productsReceivedTag: 90441,
+            turnGateEnabled: false
+        ))
+    }
+
     private func tradeReadyFixture(
         ownerId: String,
         otherId: String,
