@@ -14810,6 +14810,309 @@ class HulaTests: XCTestCase {
         ))
     }
 
+    /// An empty trade room (`index != 0` and `resolvedTrade` is nil) hides
+    /// the offer buttons and parks the counterparty at `initialOtherUserX +
+    /// 500`. The opening animation had already shown the other offer at `1`
+    /// and left the counterparty on screen. The add-room button stays `0`,
+    /// not the lobby `1` or `0.3`. Current, past, and the mode line stay `0`.
+    /// Both chat badges stay hidden. A later products-received hide can only
+    /// force the other offer to `0` again. It does not restore `1`.
+    /// `manageCheckMarks(nil)` does not assign a send tag. Do not trim. Do
+    /// not case-fold. Do not percent-encode. Do not fold this into the lobby
+    /// page.
+    func testEmptyTradeRoomHidesOffersAndParksTheCounterparty() {
+        let vc = HLSwappViewController()
+        let productsReceivedTag = 90441
+        let justAcceptTag = 1
+        let closeDealTag = 91053
+        let openingSend: CGFloat = 1
+        let openingOtherOffer: CGFloat = 1
+        let openingAddRoom: CGFloat = 0
+        let lobbyViewerX: CGFloat = -500
+
+        XCTAssertEqual(vc.kTagProductsReceived, productsReceivedTag)
+        XCTAssertEqual(vc.kTagJustAccept, justAcceptTag)
+        XCTAssertEqual(vc.kTagCloseDeal, closeDealTag)
+
+        func empty(_ initialOtherUserX: CGFloat) -> EmptyTradeRoomChrome {
+            return HLSwappViewController.emptyTradeRoomChrome(
+                initialOtherUserX: initialOtherUserX
+            )
+        }
+
+        func assertShell(_ row: EmptyTradeRoomChrome, initial: CGFloat, file: StaticString = #file, line: UInt = #line) {
+            XCTAssertEqual(row.addTradeRoomAlpha, CGFloat(0), file: file, line: line)
+            XCTAssertEqual(row.addTradeRoomAlpha, openingAddRoom, file: file, line: line)
+            XCTAssertNotEqual(row.addTradeRoomAlpha, CGFloat(1), file: file, line: line)
+            XCTAssertNotEqual(row.addTradeRoomAlpha, CGFloat(0.3), file: file, line: line)
+            XCTAssertEqual(row.centralLabelAlpha, CGFloat(0), file: file, line: line)
+            XCTAssertEqual(row.myUserOriginX, CGFloat(0), file: file, line: line)
+            XCTAssertNotEqual(row.myUserOriginX, lobbyViewerX, file: file, line: line)
+            XCTAssertEqual(row.otherUserOriginX, initial + 500, file: file, line: line)
+            XCTAssertNotEqual(row.otherUserOriginX, initial, file: file, line: line)
+            XCTAssertNotEqual(row.otherUserOriginX, initial - 500, file: file, line: line)
+            XCTAssertEqual(row.sendAlpha, CGFloat(0), file: file, line: line)
+            XCTAssertNotEqual(row.sendAlpha, openingSend, file: file, line: line)
+            XCTAssertEqual(row.otherOfferAlpha, CGFloat(0), file: file, line: line)
+            XCTAssertNotEqual(row.otherOfferAlpha, openingOtherOffer, file: file, line: line)
+            XCTAssertEqual(row.chatButtonAlpha, CGFloat(0), file: file, line: line)
+            XCTAssertEqual(row.remainingAlpha, CGFloat(0), file: file, line: line)
+            XCTAssertTrue(row.hidesThreeDots, file: file, line: line)
+            XCTAssertEqual(row.currentTradesAlpha, CGFloat(0), file: file, line: line)
+            XCTAssertEqual(row.pastTradesAlpha, CGFloat(0), file: file, line: line)
+            XCTAssertEqual(row.tradeModeLineAlpha, CGFloat(0), file: file, line: line)
+            XCTAssertTrue(row.hidesCurrentChatBadge, file: file, line: line)
+            XCTAssertTrue(row.hidesPastChatBadge, file: file, line: line)
+        }
+
+        let initials: [CGFloat] = [0, -500, -12.5, 0.5, 320, 320.5, 500, 100000]
+        for initial in initials {
+            assertShell(empty(initial), initial: initial)
+        }
+        let landed = empty(-500)
+        XCTAssertEqual(landed.otherUserOriginX, CGFloat(0))
+        XCTAssertEqual(landed.otherUserOriginX, landed.myUserOriginX)
+        XCTAssertNotEqual(landed.otherUserOriginX, CGFloat(-500))
+        let onScreen = empty(320)
+        XCTAssertEqual(onScreen.otherUserOriginX, CGFloat(820))
+        XCTAssertNotEqual(onScreen.otherUserOriginX, CGFloat(320))
+        XCTAssertNotEqual(onScreen.myUserOriginX, CGFloat(320))
+
+        func afterReceipt(_ sendTag: Int, initial: CGFloat = 320) -> CGFloat {
+            var alpha = empty(initial).otherOfferAlpha
+            if let forced = HLSwappViewController.productsReceivedOtherOfferAlpha(
+                sendTag: sendTag,
+                productsReceivedTag: productsReceivedTag
+            ) {
+                alpha = forced
+            }
+            return alpha
+        }
+
+        let tags = [0, justAcceptTag, closeDealTag, 90440, productsReceivedTag, 90442, -1, 43909, Int.max, Int.min]
+        for tag in tags {
+            XCTAssertEqual(afterReceipt(tag), CGFloat(0))
+            XCTAssertNotEqual(afterReceipt(tag), openingOtherOffer)
+            XCTAssertNotEqual(afterReceipt(tag, initial: -12.5), openingOtherOffer)
+        }
+        XCTAssertEqual(
+            HLSwappViewController.productsReceivedOtherOfferAlpha(
+                sendTag: productsReceivedTag,
+                productsReceivedTag: productsReceivedTag
+            ),
+            CGFloat(0)
+        )
+        XCTAssertNil(HLSwappViewController.productsReceivedOtherOfferAlpha(
+            sendTag: justAcceptTag,
+            productsReceivedTag: productsReceivedTag
+        ))
+        XCTAssertNil(HLSwappViewController.productsReceivedOtherOfferAlpha(
+            sendTag: closeDealTag,
+            productsReceivedTag: productsReceivedTag
+        ))
+        XCTAssertNil(HLSwappViewController.productsReceivedOtherOfferAlpha(
+            sendTag: 0,
+            productsReceivedTag: productsReceivedTag
+        ))
+        XCTAssertEqual(afterReceipt(justAcceptTag), empty(0).otherOfferAlpha)
+        XCTAssertEqual(afterReceipt(productsReceivedTag), empty(500).otherOfferAlpha)
+
+        let unread: NSDictionary = [
+            "owner_id": "a&b",
+            "other_id": " bike ",
+            "owner_unread": NSNumber(value: 4),
+            "other_unread": NSNumber(value: 9),
+            "status": "review"
+        ]
+        let lobbyOpen = HLSwappViewController.lobbyPageChrome(
+            maxTrades: 3,
+            pastTrades: [unread],
+            viewerId: "a&b"
+        )
+        XCTAssertEqual(lobbyOpen.addTradeRoomAlpha, CGFloat(1))
+        XCTAssertEqual(lobbyOpen.currentTradesAlpha, CGFloat(1))
+        XCTAssertEqual(lobbyOpen.pastTradesAlpha, CGFloat(1))
+        XCTAssertEqual(lobbyOpen.tradeModeLineAlpha, CGFloat(1))
+        XCTAssertTrue(lobbyOpen.showsPastChatBadge)
+        XCTAssertEqual(lobbyOpen.pastChatCount, 4)
+        XCTAssertEqual(lobbyOpen.pastChatPeerId, " bike ")
+        XCTAssertNotEqual(lobbyOpen.pastChatPeerId, "bike")
+        XCTAssertNotEqual(lobbyOpen.pastChatPeerId, "a&b")
+        XCTAssertNotEqual(lobbyOpen.pastChatPeerId, "a%26b")
+        XCTAssertNotEqual(lobbyOpen.addTradeRoomAlpha, empty(320).addTradeRoomAlpha)
+        XCTAssertNotEqual(lobbyOpen.currentTradesAlpha, empty(320).currentTradesAlpha)
+        XCTAssertTrue(empty(320).hidesPastChatBadge)
+
+        let lobbyCap = HLSwappViewController.lobbyPageChrome(
+            maxTrades: 50,
+            pastTrades: [unread],
+            viewerId: "a&b"
+        )
+        XCTAssertEqual(lobbyCap.addTradeRoomAlpha, CGFloat(0.3))
+        XCTAssertNotEqual(lobbyCap.addTradeRoomAlpha, empty(50).addTradeRoomAlpha)
+        XCTAssertEqual(empty(50).addTradeRoomAlpha, CGFloat(0))
+        XCTAssertFalse(HLSwappViewController.shouldGrantExtraTradeRoom(maxTrades: 50))
+        XCTAssertTrue(HLSwappViewController.shouldGrantExtraTradeRoom(maxTrades: 49))
+        XCTAssertTrue(SessionListPolicy.roomsFull(currentCount: 100, maxTrades: 3))
+        XCTAssertEqual(empty(3).addTradeRoomAlpha, CGFloat(0))
+        XCTAssertNotEqual(empty(3).addTradeRoomAlpha, lobbyOpen.addTradeRoomAlpha)
+
+        let peer = HLSwappViewController.peerChatContext(from: unread, viewerId: "a&b")
+        XCTAssertEqual(peer.peerId, " bike ")
+        XCTAssertEqual(peer.unread, 4)
+        XCTAssertNotEqual(peer.peerId, "bike")
+        XCTAssertNotEqual("a&b", "a%26b")
+        XCTAssertNotEqual("a&b", FormFieldPolicy.encoded("a&b"))
+        XCTAssertNotEqual("P1", "p1")
+        XCTAssertFalse(TradeTurnPolicy.idsMatch(nil, ""))
+        let encodedViewer = HLSwappViewController.peerChatContext(from: unread, viewerId: "a%26b")
+        XCTAssertNotEqual(encodedViewer.peerId, " bike ")
+        XCTAssertEqual(encodedViewer.unread, 9)
+        let caseViewer = HLSwappViewController.peerChatContext(
+            from: [
+                "owner_id": "P1",
+                "other_id": "p1",
+                "owner_unread": NSNumber(value: 1),
+                "other_unread": NSNumber(value: 2)
+            ],
+            viewerId: "p1"
+        )
+        XCTAssertEqual(caseViewer.peerId, "P1")
+        XCTAssertNotEqual(caseViewer.peerId, "p1")
+        XCTAssertEqual(caseViewer.unread, 2)
+
+        func offer(_ status: Any?, turn: Any? = "peer") -> BottomBarOfferChrome {
+            return HLSwappViewController.bottomBarOfferChrome(
+                status: status,
+                turnUserId: turn,
+                viewerId: nil,
+                waitingTurnEnabled: false,
+                productsReceivedTag: productsReceivedTag
+            )
+        }
+
+        let statuses: [Any?] = [
+            "review", "closed", "ended", "pending",
+            " ", "\n", " closed ", "Closed", "Review", "preview",
+            "a&b", "a%26b", "P1", "p1", " bike ", "🙂",
+            "", NSNull(), NSNumber(value: 1), true
+        ]
+        let baseline = empty(320)
+        for status in statuses {
+            let row = empty(320)
+            XCTAssertEqual(row.addTradeRoomAlpha, baseline.addTradeRoomAlpha)
+            XCTAssertEqual(row.otherOfferAlpha, baseline.otherOfferAlpha)
+            XCTAssertEqual(row.sendAlpha, baseline.sendAlpha)
+            XCTAssertEqual(row.otherUserOriginX, baseline.otherUserOriginX)
+            XCTAssertEqual(row.myUserOriginX, baseline.myUserOriginX)
+            XCTAssertEqual(row.currentTradesAlpha, baseline.currentTradesAlpha)
+            XCTAssertTrue(row.hidesPastChatBadge)
+            XCTAssertTrue(row.hidesCurrentChatBadge)
+            let chrome = offer(status)
+            if let text = status as? String {
+                XCTAssertEqual(chrome.status, text)
+            } else {
+                XCTAssertEqual(chrome.status, "")
+            }
+        }
+        XCTAssertEqual(offer("review").sendTag, productsReceivedTag)
+        XCTAssertEqual(offer("review").sendTitle, NSLocalizedString("I received my stuff", comment: ""))
+        XCTAssertEqual(offer("review").otherOfferAlpha, CGFloat(0))
+        XCTAssertNil(offer("pending").sendTag)
+        XCTAssertNil(offer("pending").otherOfferAlpha)
+        XCTAssertFalse(offer("pending").hidesSend)
+        XCTAssertEqual(offer("closed").otherOfferAlpha, CGFloat(0))
+        XCTAssertTrue(offer("closed").hidesSend)
+        XCTAssertNil(offer(" closed ").sendTag)
+        XCTAssertNil(offer("Closed").otherOfferAlpha)
+        XCTAssertNil(offer("a&b").otherOfferAlpha)
+        XCTAssertNil(offer("a%26b").otherOfferAlpha)
+        XCTAssertNotEqual(offer("a&b").status, offer("a%26b").status)
+        XCTAssertNotEqual(offer("P1").status, offer("p1").status)
+        XCTAssertNotEqual(offer(" bike ").status, "bike")
+        XCTAssertEqual(offer("🙂").status, "🙂")
+        let agreedPending = HLSwappViewController.otherAgreeOverlay(otherAgree: true, status: "pending")
+        XCTAssertEqual(agreedPending.otherOfferAlpha, CGFloat(1))
+        XCTAssertNotEqual(agreedPending.otherOfferAlpha, empty(320).otherOfferAlpha)
+        let disagreedReview = HLSwappViewController.otherAgreeOverlay(otherAgree: false, status: "review")
+        XCTAssertEqual(disagreedReview.otherOfferAlpha, CGFloat(0.5))
+        XCTAssertNotEqual(disagreedReview.otherOfferAlpha, empty(320).otherOfferAlpha)
+
+        let room: NSDictionary = [
+            "_id": "t",
+            "status": "review",
+            "owner_id": "a&b",
+            "other_id": "P1",
+            "turn_user_id": "peer"
+        ]
+        XCTAssertNil(DashboardTradeSelection.resolvedTrade(
+            currentTrade: nil,
+            currentIndex: 0,
+            trades: []
+        ))
+        XCTAssertNil(DashboardTradeSelection.resolvedTrade(
+            currentTrade: nil,
+            currentIndex: 1,
+            trades: [room]
+        ))
+        XCTAssertNil(DashboardTradeSelection.resolvedTrade(
+            currentTrade: nil,
+            currentIndex: -1,
+            trades: [room]
+        ))
+        XCTAssertNil(DashboardTradeSelection.resolvedTrade(
+            currentTrade: nil,
+            currentIndex: Int.max,
+            trades: [room]
+        ))
+        let present = DashboardTradeSelection.resolvedTrade(
+            currentTrade: nil,
+            currentIndex: 0,
+            trades: [room]
+        )
+        XCTAssertNotNil(present)
+        XCTAssertEqual(DashboardTradeSelection.tradeId(from: present!), "t")
+        let snapshot = DashboardTradeSelection.resolvedTrade(
+            currentTrade: room,
+            currentIndex: 9,
+            trades: []
+        )
+        if let snapshot = snapshot {
+            XCTAssertTrue(snapshot === room)
+        } else {
+            XCTFail("expected the tap snapshot when the list is empty")
+        }
+        XCTAssertEqual(offer(snapshot?.object(forKey: "status")).sendTag, productsReceivedTag)
+        XCTAssertEqual(offer("pending", turn: room.object(forKey: "turn_user_id")).status, "pending")
+        XCTAssertNil(offer("pending", turn: room.object(forKey: "turn_user_id")).otherOfferAlpha)
+        XCTAssertEqual(empty(0).otherOfferAlpha, CGFloat(0))
+
+        let reviewTap = HLDashboardViewController.lobbyTapDestination(tradeMode: "current", status: "review")
+        XCTAssertEqual(reviewTap?.storyboardId, "pastTrade")
+        let closedTap = HLDashboardViewController.lobbyTapDestination(tradeMode: "current", status: "closed")
+        XCTAssertEqual(closedTap?.storyboardId, "barterRoom")
+        XCTAssertEqual(
+            HLDashboardViewController.lobbyListBucket(from: NSDictionary(dictionary: ["status": "ended", "_id": "t"]))?.listStatus,
+            "past"
+        )
+        XCTAssertEqual(
+            HLPastTradeViewController.headline(status: "closed").title,
+            NSLocalizedString("Trade canceled", comment: "")
+        )
+        XCTAssertFalse(HLSwappViewController.showsWaitingForReply(
+            turnUserId: "peer",
+            viewerId: nil,
+            waitingTurnEnabled: false
+        ))
+        XCTAssertFalse(HLSwappViewController.shouldBlockOffer(
+            turnUserId: nil,
+            viewerId: "a&b",
+            buttonTag: productsReceivedTag,
+            productsReceivedTag: productsReceivedTag,
+            turnGateEnabled: false
+        ))
+    }
+
     private func tradeReadyFixture(
         ownerId: String,
         otherId: String,

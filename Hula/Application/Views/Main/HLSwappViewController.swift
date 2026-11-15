@@ -653,6 +653,46 @@ class HLSwappViewController: UIViewController {
             tradeModeLineAlpha: 1
         )
     }
+
+    /// Empty trade room on a trade-room page (`index != 0` and
+    /// `resolvedTrade` is nil). The opening animation on that page already
+    /// set the other offer to `1`, the send button to `1`, the add-room
+    /// button to `0`, the viewer at x `0`, and the counterparty at
+    /// `initialOtherUserX`. This step overwrites send and the other offer to
+    /// `0` and parks the counterparty at `initialOtherUserX + 500`. The
+    /// add-room button stays `0`. It is not the lobby `1` and not the lobby
+    /// cap `0.3`. The viewer stays at x `0`. The lobby page moves that view
+    /// to `-500`. Current trades, past trades, and the mode line are `0`.
+    /// The lobby page sets those to `1`. Both chat badges stay hidden. This
+    /// step does not read a status, a turn, a peer id, `maxTrades`, or
+    /// `arrPastTrades`. Do not trim. Do not case-fold. Do not
+    /// percent-encode. `"a&b"` is not `a%26b`. `"P1"` is not `"p1"`.
+    /// `" bike "` is not `bike`. Do not fold this into `lobbyPageChrome`,
+    /// `bottomBarOfferChrome`, `otherAgreeOverlay`, or
+    /// `productsReceivedOtherOfferAlpha`. The receipt-tag hide still runs
+    /// after this block and can only force the other offer to `0` again when
+    /// the send tag is still `90441`. It does not restore the opening alpha
+    /// of `1`. `manageCheckMarks(nil)` still runs after these assignments
+    /// and does not set the send tag. Do not change `manageCheckMarks`. Do
+    /// not enable `waitingTurnEnabled`.
+    class func emptyTradeRoomChrome(initialOtherUserX: CGFloat) -> EmptyTradeRoomChrome {
+        return EmptyTradeRoomChrome(
+            addTradeRoomAlpha: 0,
+            centralLabelAlpha: 0,
+            myUserOriginX: 0,
+            otherUserOriginX: initialOtherUserX + 500,
+            sendAlpha: 0,
+            otherOfferAlpha: 0,
+            chatButtonAlpha: 0,
+            remainingAlpha: 0,
+            hidesThreeDots: true,
+            currentTradesAlpha: 0,
+            pastTradesAlpha: 0,
+            tradeModeLineAlpha: 0,
+            hidesCurrentChatBadge: true,
+            hidesPastChatBadge: true
+        )
+    }
     
     
     override func preferredScreenEdgesDeferringSystemGestures() -> UIRectEdge {
@@ -1145,22 +1185,29 @@ class HLSwappViewController: UIViewController {
                     
                     
                 } else {
-                    // no trades
-                    self.addTradeRoomBtn.alpha = 0
-                    self.mainCentralLabel.alpha = 0
-                    self.myUserView.frame.origin.x = 0
-                    self.otherUserView.frame.origin.x = self.initialOtherUserX + 500
-                    self.sendOfferBtn.alpha = 0
-                    self.otherOfferBtn.alpha = 0
-                    self.chatButton.alpha = 0
-                    self.remainingTimeLabel.alpha = 0;
-                    self.threeDotsView.isHidden = true
-                    self.currentTradesBtn.alpha = 0;
-                    self.pastTradesBtn.alpha = 0
-                    self.tradeModeLine.alpha = 0
-                    self.chatCountLbl.isHidden = true
-                    self.pastChatCountLbl.isHidden = true
-                    
+                    // No resolved trade. Opening animation already showed the
+                    // other offer and parked the counterparty on screen. This
+                    // step hides that offer and moves the counterparty off
+                    // screen. The receipt-tag hide still runs after the page
+                    // controller lookup. Check marks stay a separate call.
+                    let empty = HLSwappViewController.emptyTradeRoomChrome(
+                        initialOtherUserX: self.initialOtherUserX
+                    )
+                    self.addTradeRoomBtn.alpha = empty.addTradeRoomAlpha
+                    self.mainCentralLabel.alpha = empty.centralLabelAlpha
+                    self.myUserView.frame.origin.x = empty.myUserOriginX
+                    self.otherUserView.frame.origin.x = empty.otherUserOriginX
+                    self.sendOfferBtn.alpha = empty.sendAlpha
+                    self.otherOfferBtn.alpha = empty.otherOfferAlpha
+                    self.chatButton.alpha = empty.chatButtonAlpha
+                    self.remainingTimeLabel.alpha = empty.remainingAlpha
+                    self.threeDotsView.isHidden = empty.hidesThreeDots
+                    self.currentTradesBtn.alpha = empty.currentTradesAlpha
+                    self.pastTradesBtn.alpha = empty.pastTradesAlpha
+                    self.tradeModeLine.alpha = empty.tradeModeLineAlpha
+                    self.chatCountLbl.isHidden = empty.hidesCurrentChatBadge
+                    self.pastChatCountLbl.isHidden = empty.hidesPastChatBadge
+
                     self.manageCheckMarks(trade: nil);
                 }
             }
@@ -1686,6 +1733,28 @@ struct LobbyPageChrome {
     let currentTradesAlpha: CGFloat
     let pastTradesAlpha: CGFloat
     let tradeModeLineAlpha: CGFloat
+}
+
+/// Empty trade room (`index != 0` and `resolvedTrade` is nil). The add-room
+/// button is `0`, not the lobby `1` or `0.3`. The counterparty origin is
+/// `initialOtherUserX + 500`. The viewer origin is `0`. Both chat badges are
+/// hidden. This step does not assign a send tag. The products-received hide
+/// still runs after it.
+struct EmptyTradeRoomChrome {
+    let addTradeRoomAlpha: CGFloat
+    let centralLabelAlpha: CGFloat
+    let myUserOriginX: CGFloat
+    let otherUserOriginX: CGFloat
+    let sendAlpha: CGFloat
+    let otherOfferAlpha: CGFloat
+    let chatButtonAlpha: CGFloat
+    let remainingAlpha: CGFloat
+    let hidesThreeDots: Bool
+    let currentTradesAlpha: CGFloat
+    let pastTradesAlpha: CGFloat
+    let tradeModeLineAlpha: CGFloat
+    let hidesCurrentChatBadge: Bool
+    let hidesPastChatBadge: Bool
 }
 
 /// Turn checks compared IUO `turn_user_id` / `userId` with `!=` and `==`.
