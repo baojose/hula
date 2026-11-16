@@ -693,6 +693,56 @@ class HLSwappViewController: UIViewController {
             hidesPastChatBadge: true
         )
     }
+
+    /// Opening animation on a trade-room page (`index != 0`), before the
+    /// page-controller lookup. `initialOtherUserX` is
+    /// `viewWidth - otherUserWidth`, and that same value is what the
+    /// animation writes as the counterparty x. It is not
+    /// `initialOtherUserX + 500`. A result of `0` is kept, including equal
+    /// widths and a negative width that lands on the viewer. Do not
+    /// special-case it. Do not take the absolute value. Send and the other
+    /// offer are `1`. The add-room button is `0`, not the lobby `1` and not
+    /// the lobby cap `0.3`. The viewer x is `0`, not the lobby `-500`.
+    /// Current trades, past trades, and the mode line are `0`. The past-chat
+    /// badge is hidden. The three dots are hidden outside the animation.
+    /// The current-chat badge, the chat button, the remaining-time label,
+    /// and the send tag are not assigned. When `childViewControllers.first`
+    /// is not an `HLSwappPageViewController`, `emptyTradeRoomChrome` does
+    /// not run, so send stays `1` and the other offer stays `1` unless the
+    /// send tag is still `90441`, which forces the other offer to `0`. A
+    /// nil receipt hide does not change the opening `1`. That is the inverse
+    /// of the empty room, where the other offer is already `0` and a nil
+    /// hide cannot restore `1`. Do not fold this into
+    /// `emptyTradeRoomChrome`. Do not change the empty helper's `0` alphas
+    /// into these `1`s. Do not read `arrPastTrades`. Do not trim. Do not
+    /// case-fold. Do not percent-encode. `"a&b"` is not `a%26b`. `"P1"` is
+    /// not `"p1"`. `" bike "` is not `bike`. Status strings do not enter
+    /// this helper. Do not change `manageCheckMarks`. Do not enable
+    /// `waitingTurnEnabled`.
+    class func tradeRoomOpeningChrome(
+        viewWidth: CGFloat,
+        otherUserWidth: CGFloat
+    ) -> TradeRoomOpeningChrome {
+        let counterpartyX = viewWidth - otherUserWidth
+        return TradeRoomOpeningChrome(
+            centralLabelAlpha: 0,
+            myUserOriginX: 0,
+            otherUserOriginX: counterpartyX,
+            initialOtherUserX: counterpartyX,
+            sendAlpha: 1,
+            otherOfferAlpha: 1,
+            addTradeRoomAlpha: 0,
+            currentTradesAlpha: 0,
+            pastTradesAlpha: 0,
+            tradeModeLineAlpha: 0,
+            hidesPastChatBadge: true,
+            hidesThreeDots: true,
+            chatButtonAlpha: nil,
+            remainingAlpha: nil,
+            hidesCurrentChatBadge: nil,
+            sendTag: nil
+        )
+    }
     
     
     override func preferredScreenEdgesDeferringSystemGestures() -> UIRectEdge {
@@ -1050,25 +1100,32 @@ class HLSwappViewController: UIViewController {
     
     func controlSetupBottomBar(index:Int){
         //print("setting up bottom bar with index: \(index)")
-        
-        initialOtherUserX = self.view.frame.width - self.otherUserView.frame.width
+
+        // Stored for the lobby offset as well. The trade-room animation uses
+        // the same raw difference and does not add 500.
+        let opening = HLSwappViewController.tradeRoomOpeningChrome(
+            viewWidth: self.view.frame.width,
+            otherUserWidth: self.otherUserView.frame.width
+        )
+        initialOtherUserX = opening.initialOtherUserX
         
         if (index != 0){
-            // hide/show elements on the bottom bar
+            // Opening shell, before the page-controller lookup. An empty
+            // room overwrites it. Three dots stay outside the animation.
             UIView.animate(withDuration: 0.3) {
-                self.mainCentralLabel.alpha=0;
-                self.myUserView.frame.origin.x = 0
-                self.otherUserView.frame.origin.x = self.view.frame.width - self.otherUserView.frame.width
-                self.sendOfferBtn.alpha = 1
-                self.otherOfferBtn.alpha = 1
-                self.addTradeRoomBtn.alpha = 0;
-                self.mainCentralLabel.alpha = 0;
-                self.currentTradesBtn.alpha = 0;
-                self.pastTradesBtn.alpha = 0
-                self.tradeModeLine.alpha = 0
-                self.pastChatCountLbl.isHidden = true
+                self.mainCentralLabel.alpha = opening.centralLabelAlpha
+                self.myUserView.frame.origin.x = opening.myUserOriginX
+                self.otherUserView.frame.origin.x = opening.otherUserOriginX
+                self.sendOfferBtn.alpha = opening.sendAlpha
+                self.otherOfferBtn.alpha = opening.otherOfferAlpha
+                self.addTradeRoomBtn.alpha = opening.addTradeRoomAlpha
+                self.mainCentralLabel.alpha = opening.centralLabelAlpha
+                self.currentTradesBtn.alpha = opening.currentTradesAlpha
+                self.pastTradesBtn.alpha = opening.pastTradesAlpha
+                self.tradeModeLine.alpha = opening.tradeModeLineAlpha
+                self.pastChatCountLbl.isHidden = opening.hidesPastChatBadge
             }
-            self.threeDotsView.isHidden = true;
+            self.threeDotsView.isHidden = opening.hidesThreeDots
             
             if let swappPageVC = self.childViewControllers.first as? HLSwappPageViewController {
                 if let thisTrade = DashboardTradeSelection.resolvedTrade(
@@ -1755,6 +1812,32 @@ struct EmptyTradeRoomChrome {
     let tradeModeLineAlpha: CGFloat
     let hidesCurrentChatBadge: Bool
     let hidesPastChatBadge: Bool
+}
+
+/// Opening animation on a trade-room page (`index != 0`), before the page
+/// controller lookup. `otherUserOriginX` equals `initialOtherUserX`
+/// (`viewWidth - otherUserWidth`). It is not `initialOtherUserX + 500`.
+/// Send and the other offer are `1`. A nil chat, remaining, current-badge,
+/// or send-tag field means this step does not assign that view. The
+/// products-received hide still runs after it and can force the other offer
+/// to `0` only when the leftover send tag is `90441`.
+struct TradeRoomOpeningChrome {
+    let centralLabelAlpha: CGFloat
+    let myUserOriginX: CGFloat
+    let otherUserOriginX: CGFloat
+    let initialOtherUserX: CGFloat
+    let sendAlpha: CGFloat
+    let otherOfferAlpha: CGFloat
+    let addTradeRoomAlpha: CGFloat
+    let currentTradesAlpha: CGFloat
+    let pastTradesAlpha: CGFloat
+    let tradeModeLineAlpha: CGFloat
+    let hidesPastChatBadge: Bool
+    let hidesThreeDots: Bool
+    let chatButtonAlpha: CGFloat?
+    let remainingAlpha: CGFloat?
+    let hidesCurrentChatBadge: Bool?
+    let sendTag: Int?
 }
 
 /// Turn checks compared IUO `turn_user_id` / `userId` with `!=` and `==`.
