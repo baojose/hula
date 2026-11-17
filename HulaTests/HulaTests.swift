@@ -15483,6 +15483,523 @@ class HulaTests: XCTestCase {
         ))
     }
 
+    func testResolvedTradeAfterOpeningOverwritesOnlyAssignedOfferFields() {
+        let vc = HLSwappViewController()
+        let productsReceivedTag = 90441
+        let justAcceptTag = 1
+        let closeDealTag = 91053
+        let acceptTitle = NSLocalizedString("Accept", comment: "")
+        let receiptTitle = NSLocalizedString("I received my stuff", comment: "")
+        let emptyOffset: CGFloat = 500
+        let lobbyViewerX: CGFloat = -500
+
+        XCTAssertEqual(vc.kTagProductsReceived, productsReceivedTag)
+        XCTAssertEqual(vc.kTagJustAccept, justAcceptTag)
+        XCTAssertEqual(vc.kTagCloseDeal, closeDealTag)
+        XCTAssertEqual(HulaConstants.cancel_status, "closed")
+        XCTAssertEqual(HulaConstants.end_status, "ended")
+        XCTAssertEqual(HulaConstants.review_status, "review")
+        XCTAssertEqual(HulaConstants.pending_status, "pending")
+
+        func resolved(
+            _ viewWidth: CGFloat,
+            _ otherWidth: CGFloat,
+            status: Any?,
+            turn: Any? = "peer",
+            viewer: String? = nil,
+            waiting: Bool = false,
+            tag: Int = 90441
+        ) -> ResolvedTradeAfterOpening {
+            let opening = HLSwappViewController.tradeRoomOpeningChrome(
+                viewWidth: viewWidth,
+                otherUserWidth: otherWidth
+            )
+            return HLSwappViewController.resolvedTradeAfterOpening(
+                opening: opening,
+                status: status,
+                turnUserId: turn,
+                viewerId: viewer,
+                waitingTurnEnabled: waiting,
+                productsReceivedTag: tag
+            )
+        }
+
+        func otherAfterReceipt(
+            _ row: ResolvedTradeAfterOpening,
+            leftoverTag: Int,
+            file: StaticString = #file,
+            line: UInt = #line
+        ) -> CGFloat {
+            let tag = row.offer.sendTag ?? leftoverTag
+            if row.offer.sendTag == nil {
+                XCTAssertEqual(tag, leftoverTag, file: file, line: line)
+            }
+            var alpha = row.otherOfferAlpha
+            if let forced = HLSwappViewController.productsReceivedOtherOfferAlpha(
+                sendTag: tag,
+                productsReceivedTag: productsReceivedTag
+            ) {
+                alpha = forced
+            }
+            return alpha
+        }
+
+        func assertOpeningShell(
+            _ row: ResolvedTradeAfterOpening,
+            viewWidth: CGFloat,
+            otherWidth: CGFloat,
+            file: StaticString = #file,
+            line: UInt = #line
+        ) {
+            let counterparty = viewWidth - otherWidth
+            XCTAssertEqual(row.opening.initialOtherUserX, counterparty, file: file, line: line)
+            XCTAssertEqual(row.opening.otherUserOriginX, counterparty, file: file, line: line)
+            XCTAssertEqual(row.opening.myUserOriginX, CGFloat(0), file: file, line: line)
+            XCTAssertNotEqual(row.opening.myUserOriginX, lobbyViewerX, file: file, line: line)
+            XCTAssertNotEqual(row.opening.otherUserOriginX, counterparty + emptyOffset, file: file, line: line)
+            XCTAssertNotEqual(row.opening.otherUserOriginX, counterparty - emptyOffset, file: file, line: line)
+            XCTAssertEqual(row.opening.addTradeRoomAlpha, CGFloat(0), file: file, line: line)
+            XCTAssertNotEqual(row.opening.addTradeRoomAlpha, CGFloat(1), file: file, line: line)
+            XCTAssertNotEqual(row.opening.addTradeRoomAlpha, CGFloat(0.3), file: file, line: line)
+            XCTAssertEqual(row.opening.currentTradesAlpha, CGFloat(0), file: file, line: line)
+            XCTAssertEqual(row.opening.pastTradesAlpha, CGFloat(0), file: file, line: line)
+            XCTAssertEqual(row.opening.tradeModeLineAlpha, CGFloat(0), file: file, line: line)
+            XCTAssertTrue(row.opening.hidesPastChatBadge, file: file, line: line)
+            XCTAssertTrue(row.opening.hidesThreeDots, file: file, line: line)
+            XCTAssertEqual(row.opening.sendAlpha, CGFloat(1), file: file, line: line)
+            XCTAssertEqual(row.opening.otherOfferAlpha, CGFloat(1), file: file, line: line)
+            XCTAssertEqual(row.opening.centralLabelAlpha, CGFloat(0), file: file, line: line)
+            XCTAssertNil(row.opening.chatButtonAlpha, file: file, line: line)
+            XCTAssertNil(row.opening.remainingAlpha, file: file, line: line)
+            XCTAssertNil(row.opening.hidesCurrentChatBadge, file: file, line: line)
+            XCTAssertNil(row.opening.sendTag, file: file, line: line)
+        }
+
+        func expectAccept(
+            _ row: ResolvedTradeAfterOpening,
+            status: String,
+            file: StaticString = #file,
+            line: UInt = #line
+        ) {
+            assertOpeningShell(row, viewWidth: 320, otherWidth: 80, file: file, line: line)
+            XCTAssertEqual(row.offer.status, status, file: file, line: line)
+            XCTAssertFalse(row.offer.hidesSend, file: file, line: line)
+            XCTAssertEqual(row.sendAlpha, row.opening.sendAlpha, file: file, line: line)
+            XCTAssertEqual(row.sendAlpha, CGFloat(1), file: file, line: line)
+            XCTAssertNil(row.offer.otherOfferAlpha, file: file, line: line)
+            XCTAssertEqual(row.otherOfferAlpha, row.opening.otherOfferAlpha, file: file, line: line)
+            XCTAssertEqual(row.otherOfferAlpha, CGFloat(1), file: file, line: line)
+            XCTAssertNil(row.offer.centralLabelAlpha, file: file, line: line)
+            XCTAssertEqual(row.centralLabelAlpha, row.opening.centralLabelAlpha, file: file, line: line)
+            XCTAssertEqual(row.centralLabelAlpha, CGFloat(0), file: file, line: line)
+            XCTAssertEqual(row.offer.remainingAlpha, CGFloat(0), file: file, line: line)
+            XCTAssertNil(row.opening.remainingAlpha, file: file, line: line)
+            XCTAssertEqual(row.offer.hidesThreeDots, false, file: file, line: line)
+            XCTAssertFalse(row.hidesThreeDots, file: file, line: line)
+            XCTAssertTrue(row.opening.hidesThreeDots, file: file, line: line)
+            XCTAssertEqual(row.offer.sendTitle, acceptTitle, file: file, line: line)
+            XCTAssertNotEqual(row.offer.sendTitle, receiptTitle, file: file, line: line)
+            XCTAssertNil(row.offer.sendTag, file: file, line: line)
+            XCTAssertNotEqual(row.offer.sendTag, justAcceptTag, file: file, line: line)
+            XCTAssertNotEqual(row.offer.sendTag, closeDealTag, file: file, line: line)
+            XCTAssertNotEqual(row.offer.sendTag, productsReceivedTag, file: file, line: line)
+            XCTAssertTrue(row.offer.showsAccept, file: file, line: line)
+            XCTAssertFalse(row.offer.showsWaiting, file: file, line: line)
+            XCTAssertNil(row.opening.chatButtonAlpha, file: file, line: line)
+            XCTAssertNil(row.opening.hidesCurrentChatBadge, file: file, line: line)
+        }
+
+        func expectUntouched(
+            _ row: ResolvedTradeAfterOpening,
+            status: String,
+            file: StaticString = #file,
+            line: UInt = #line
+        ) {
+            assertOpeningShell(row, viewWidth: 320, otherWidth: 80, file: file, line: line)
+            XCTAssertEqual(row.offer.status, status, file: file, line: line)
+            XCTAssertFalse(row.offer.hidesSend, file: file, line: line)
+            XCTAssertEqual(row.sendAlpha, CGFloat(1), file: file, line: line)
+            XCTAssertNil(row.offer.otherOfferAlpha, file: file, line: line)
+            XCTAssertEqual(row.otherOfferAlpha, CGFloat(1), file: file, line: line)
+            XCTAssertNil(row.offer.centralLabelAlpha, file: file, line: line)
+            XCTAssertEqual(row.centralLabelAlpha, CGFloat(0), file: file, line: line)
+            XCTAssertNil(row.offer.remainingAlpha, file: file, line: line)
+            XCTAssertNil(row.offer.hidesThreeDots, file: file, line: line)
+            XCTAssertTrue(row.hidesThreeDots, file: file, line: line)
+            XCTAssertTrue(row.opening.hidesThreeDots, file: file, line: line)
+            XCTAssertNil(row.offer.sendTitle, file: file, line: line)
+            XCTAssertNil(row.offer.sendTag, file: file, line: line)
+            XCTAssertFalse(row.offer.showsAccept, file: file, line: line)
+            XCTAssertFalse(row.offer.showsWaiting, file: file, line: line)
+        }
+
+        let onScreen = resolved(320, 80, status: "pending", turn: "peer", viewer: nil, waiting: false)
+        expectAccept(onScreen, status: "pending")
+        XCTAssertEqual(onScreen.opening.otherUserOriginX, CGFloat(240))
+        XCTAssertNotEqual(onScreen.opening.otherUserOriginX, CGFloat(740))
+        XCTAssertNotEqual(onScreen.opening.otherUserOriginX, CGFloat(820))
+
+        let bartering = [
+            "pending", "offer_sent",
+            " ", "\n", " closed ", "Closed", "Review", "preview",
+            "a&b", "a%26b", "P1", "p1", " bike ", "🙂"
+        ]
+        for status in bartering {
+            XCTAssertNotEqual(status, "closed")
+            XCTAssertNotEqual(status, "ended")
+            XCTAssertNotEqual(status, "review")
+            expectAccept(
+                resolved(320, 80, status: status, turn: "peer", viewer: nil, waiting: false),
+                status: status
+            )
+            expectAccept(
+                resolved(320, 80, status: status, turn: "", viewer: nil, waiting: false),
+                status: status
+            )
+            expectAccept(
+                resolved(320, 80, status: status, turn: " bike ", viewer: "bike", waiting: false),
+                status: status
+            )
+            expectAccept(
+                resolved(320, 80, status: status, turn: "me", viewer: "me", waiting: false),
+                status: status
+            )
+        }
+        expectAccept(
+            resolved(320, 80, status: ("pending" as NSString), turn: ("peer" as NSString), viewer: nil),
+            status: "pending"
+        )
+        expectAccept(
+            resolved(320, 80, status: HulaConstants.pending_status, turn: "a&b", viewer: "a&b"),
+            status: "pending"
+        )
+
+        let keepTags = [0, justAcceptTag, closeDealTag, 90440, 90442, -1, 43909, Int.max, Int.min]
+        for tag in keepTags {
+            XCTAssertEqual(otherAfterReceipt(onScreen, leftoverTag: tag), CGFloat(1))
+            XCTAssertNil(HLSwappViewController.productsReceivedOtherOfferAlpha(
+                sendTag: tag,
+                productsReceivedTag: productsReceivedTag
+            ))
+        }
+        XCTAssertEqual(otherAfterReceipt(onScreen, leftoverTag: productsReceivedTag), CGFloat(0))
+        XCTAssertEqual(onScreen.sendAlpha, CGFloat(1))
+        XCTAssertNotEqual(
+            otherAfterReceipt(onScreen, leftoverTag: justAcceptTag),
+            otherAfterReceipt(onScreen, leftoverTag: productsReceivedTag)
+        )
+
+        let nonStringTurns: [Any?] = [nil, NSNull(), NSNumber(value: 1), NSNumber(value: 10.9), true, false]
+        for turn in nonStringTurns {
+            let row = resolved(320, 80, status: "pending", turn: turn, viewer: "me", waiting: false)
+            expectUntouched(row, status: "pending")
+            XCTAssertEqual(otherAfterReceipt(row, leftoverTag: productsReceivedTag), CGFloat(0))
+            XCTAssertEqual(otherAfterReceipt(row, leftoverTag: justAcceptTag), CGFloat(1))
+            XCTAssertEqual(row.sendAlpha, CGFloat(1))
+        }
+        let numericTurnRoom = NSDictionary(dictionary: [
+            "status": "pending",
+            "turn_user_id": NSNumber(value: 1)
+        ])
+        expectUntouched(
+            resolved(
+                320,
+                80,
+                status: numericTurnRoom.object(forKey: "status"),
+                turn: numericTurnRoom.object(forKey: "turn_user_id"),
+                viewer: "1",
+                waiting: false
+            ),
+            status: "pending"
+        )
+
+        let emptyCasts: [Any?] = [nil, "", NSNull(), NSNumber(value: 1), NSNumber(value: 10.9), true, false]
+        for status in emptyCasts {
+            let row = resolved(320, 80, status: status, turn: "peer", viewer: nil, waiting: false)
+            expectUntouched(row, status: "")
+            XCTAssertEqual(otherAfterReceipt(row, leftoverTag: productsReceivedTag), CGFloat(0))
+            XCTAssertEqual(otherAfterReceipt(row, leftoverTag: justAcceptTag), CGFloat(1))
+            XCTAssertNil(row.offer.sendTag)
+            XCTAssertTrue(row.hidesThreeDots)
+            XCTAssertEqual(row.otherOfferAlpha, CGFloat(1))
+        }
+        let missingStatus = NSDictionary()
+        expectUntouched(
+            resolved(320, 80, status: missingStatus.object(forKey: "status"), turn: "me", viewer: "me"),
+            status: ""
+        )
+        expectUntouched(
+            resolved(320, 80, status: ("" as NSString), turn: "peer", viewer: "peer", waiting: true),
+            status: ""
+        )
+
+        let review = resolved(320, 80, status: "review", turn: "peer", viewer: "me", waiting: false)
+        assertOpeningShell(review, viewWidth: 320, otherWidth: 80)
+        XCTAssertEqual(review.offer.status, "review")
+        XCTAssertFalse(review.offer.hidesSend)
+        XCTAssertEqual(review.sendAlpha, CGFloat(1))
+        XCTAssertEqual(review.sendAlpha, review.opening.sendAlpha)
+        XCTAssertEqual(review.offer.otherOfferAlpha, CGFloat(0))
+        XCTAssertEqual(review.otherOfferAlpha, CGFloat(0))
+        XCTAssertNotEqual(review.otherOfferAlpha, review.opening.otherOfferAlpha)
+        XCTAssertEqual(review.offer.centralLabelAlpha, CGFloat(0))
+        XCTAssertEqual(review.centralLabelAlpha, CGFloat(0))
+        XCTAssertEqual(review.offer.remainingAlpha, CGFloat(0))
+        XCTAssertEqual(review.offer.hidesThreeDots, true)
+        XCTAssertTrue(review.hidesThreeDots)
+        XCTAssertEqual(review.offer.sendTitle, receiptTitle)
+        XCTAssertNotEqual(review.offer.sendTitle, acceptTitle)
+        XCTAssertEqual(review.offer.sendTag, productsReceivedTag)
+        XCTAssertFalse(review.offer.showsAccept)
+        XCTAssertFalse(review.offer.showsWaiting)
+        XCTAssertEqual(otherAfterReceipt(review, leftoverTag: justAcceptTag), CGFloat(0))
+        XCTAssertEqual(otherAfterReceipt(review, leftoverTag: productsReceivedTag), CGFloat(0))
+        XCTAssertEqual(review.sendAlpha, CGFloat(1))
+        let reviewCustomTag = resolved(
+            320,
+            80,
+            status: HulaConstants.review_status,
+            turn: "peer",
+            viewer: nil,
+            waiting: true,
+            tag: justAcceptTag
+        )
+        XCTAssertEqual(reviewCustomTag.offer.sendTag, justAcceptTag)
+        XCTAssertNotEqual(reviewCustomTag.offer.sendTag, productsReceivedTag)
+        XCTAssertEqual(reviewCustomTag.otherOfferAlpha, CGFloat(0))
+        XCTAssertNil(HLSwappViewController.productsReceivedOtherOfferAlpha(
+            sendTag: justAcceptTag,
+            productsReceivedTag: productsReceivedTag
+        ))
+
+        for status in ["closed", "ended"] {
+            let row = resolved(320, 80, status: status, turn: "peer", viewer: nil, waiting: true)
+            assertOpeningShell(row, viewWidth: 320, otherWidth: 80)
+            XCTAssertEqual(row.offer.status, status)
+            XCTAssertTrue(row.offer.hidesSend)
+            XCTAssertEqual(row.sendAlpha, CGFloat(0))
+            XCTAssertNotEqual(row.sendAlpha, row.opening.sendAlpha)
+            XCTAssertEqual(row.offer.otherOfferAlpha, CGFloat(0))
+            XCTAssertEqual(row.otherOfferAlpha, CGFloat(0))
+            XCTAssertEqual(row.centralLabelAlpha, CGFloat(0))
+            XCTAssertEqual(row.offer.remainingAlpha, CGFloat(0))
+            XCTAssertEqual(row.offer.hidesThreeDots, true)
+            XCTAssertTrue(row.hidesThreeDots)
+            XCTAssertNil(row.offer.sendTitle)
+            XCTAssertNil(row.offer.sendTag)
+            XCTAssertFalse(row.offer.showsAccept)
+            XCTAssertFalse(row.offer.showsWaiting)
+            XCTAssertEqual(otherAfterReceipt(row, leftoverTag: justAcceptTag), CGFloat(0))
+            XCTAssertEqual(otherAfterReceipt(row, leftoverTag: productsReceivedTag), CGFloat(0))
+            XCTAssertEqual(row.sendAlpha, CGFloat(0))
+        }
+        XCTAssertEqual(resolved(320, 80, status: HulaConstants.cancel_status).offer.status, "closed")
+        XCTAssertEqual(resolved(320, 80, status: HulaConstants.end_status).sendAlpha, CGFloat(0))
+        XCTAssertTrue(resolved(320, 80, status: ("closed" as NSString)).offer.hidesSend)
+        let spacedClosed = resolved(320, 80, status: " closed ", turn: "me", viewer: "me")
+        expectAccept(spacedClosed, status: " closed ")
+        XCTAssertNotEqual(spacedClosed.offer.status, "closed")
+        XCTAssertEqual(spacedClosed.sendAlpha, CGFloat(1))
+
+        let widths: [(CGFloat, CGFloat, CGFloat)] = [
+            (320, 80, 240),
+            (320.5, 40.25, 280.25),
+            (80, 320, -240),
+            (0, 500, -500),
+            (0, 0, 0),
+            (320, 320, 0),
+            (50, 0, 50)
+        ]
+        for triple in widths {
+            let row = resolved(triple.0, triple.1, status: "pending", turn: "peer", viewer: nil)
+            XCTAssertEqual(row.opening.otherUserOriginX, triple.2)
+            XCTAssertEqual(row.opening.initialOtherUserX, triple.2)
+            XCTAssertEqual(row.opening.otherUserOriginX, row.opening.myUserOriginX + triple.2)
+            XCTAssertEqual(row.sendAlpha, CGFloat(1))
+            XCTAssertEqual(row.otherOfferAlpha, CGFloat(1))
+            XCTAssertFalse(row.hidesThreeDots)
+            XCTAssertEqual(row.opening.addTradeRoomAlpha, CGFloat(0))
+            let reviewRow = resolved(triple.0, triple.1, status: "review")
+            XCTAssertEqual(reviewRow.opening.otherUserOriginX, triple.2)
+            XCTAssertEqual(reviewRow.otherOfferAlpha, CGFloat(0))
+            let closedRow = resolved(triple.0, triple.1, status: "ended")
+            XCTAssertEqual(closedRow.opening.otherUserOriginX, triple.2)
+            XCTAssertEqual(closedRow.sendAlpha, CGFloat(0))
+            let untouchedRow = resolved(triple.0, triple.1, status: NSNull(), turn: NSNumber(value: 1))
+            XCTAssertEqual(untouchedRow.opening.otherUserOriginX, triple.2)
+            XCTAssertTrue(untouchedRow.hidesThreeDots)
+            XCTAssertEqual(untouchedRow.otherOfferAlpha, CGFloat(1))
+        }
+        let widerPeer = resolved(80, 320, status: "pending")
+        XCTAssertEqual(widerPeer.opening.otherUserOriginX, CGFloat(-240))
+        XCTAssertNotEqual(widerPeer.opening.otherUserOriginX, CGFloat(240))
+        let fractional = resolved(320.5, 40.25, status: "a&b", turn: "P1", viewer: "p1")
+        XCTAssertEqual(fractional.opening.otherUserOriginX, CGFloat(280.25))
+        XCTAssertNotEqual(fractional.opening.otherUserOriginX, CGFloat(780.25))
+        XCTAssertEqual(fractional.offer.status, "a&b")
+        XCTAssertNotEqual(fractional.offer.status, "a%26b")
+        let landed = resolved(0, 0, status: "pending")
+        XCTAssertEqual(landed.opening.otherUserOriginX, CGFloat(0))
+        XCTAssertEqual(landed.opening.otherUserOriginX, landed.opening.myUserOriginX)
+        let equalWidths = resolved(320, 320, status: " bike ")
+        XCTAssertEqual(equalWidths.opening.otherUserOriginX, CGFloat(0))
+        XCTAssertEqual(equalWidths.opening.otherUserOriginX, equalWidths.opening.myUserOriginX)
+        XCTAssertNotEqual(equalWidths.offer.status, "bike")
+        let negativeStored = resolved(0, 500, status: "P1", turn: "p1", viewer: "P1")
+        XCTAssertEqual(negativeStored.opening.otherUserOriginX, CGFloat(-500))
+        XCTAssertEqual(negativeStored.opening.initialOtherUserX, CGFloat(-500))
+        XCTAssertNotEqual(negativeStored.opening.otherUserOriginX, CGFloat(0))
+        XCTAssertNotEqual(negativeStored.offer.status, "p1")
+        XCTAssertEqual(negativeStored.sendAlpha, CGFloat(1))
+
+        let parked = HLSwappViewController.emptyTradeRoomChrome(
+            initialOtherUserX: onScreen.opening.initialOtherUserX
+        )
+        XCTAssertEqual(parked.otherUserOriginX, CGFloat(740))
+        XCTAssertNotEqual(parked.otherUserOriginX, onScreen.opening.otherUserOriginX)
+        XCTAssertEqual(parked.sendAlpha, CGFloat(0))
+        XCTAssertNotEqual(parked.sendAlpha, onScreen.sendAlpha)
+        XCTAssertEqual(parked.otherOfferAlpha, CGFloat(0))
+        XCTAssertNotEqual(parked.otherOfferAlpha, onScreen.otherOfferAlpha)
+        let parkedNegative = HLSwappViewController.emptyTradeRoomChrome(
+            initialOtherUserX: negativeStored.opening.initialOtherUserX
+        )
+        XCTAssertEqual(parkedNegative.otherUserOriginX, CGFloat(0))
+        XCTAssertNotEqual(parkedNegative.otherUserOriginX, negativeStored.opening.otherUserOriginX)
+
+        XCTAssertEqual(resolved(50, 0, status: "pending").opening.addTradeRoomAlpha, CGFloat(0))
+        XCTAssertEqual(resolved(49, 0, status: "pending").opening.addTradeRoomAlpha, CGFloat(0))
+        XCTAssertEqual(resolved(51, 10, status: "pending").opening.addTradeRoomAlpha, CGFloat(0))
+        XCTAssertEqual(resolved(CGFloat(Int.min), 0, status: "review").opening.addTradeRoomAlpha, CGFloat(0))
+        XCTAssertFalse(HLSwappViewController.shouldGrantExtraTradeRoom(maxTrades: 50))
+        XCTAssertTrue(HLSwappViewController.shouldGrantExtraTradeRoom(maxTrades: 49))
+        XCTAssertTrue(SessionListPolicy.roomsFull(currentCount: 100, maxTrades: 3))
+        XCTAssertEqual(resolved(3, 0, status: "pending").opening.addTradeRoomAlpha, CGFloat(0))
+        let lobby = HLSwappViewController.lobbyPageChrome(
+            maxTrades: 3,
+            pastTrades: [],
+            viewerId: "a&b"
+        )
+        XCTAssertEqual(lobby.addTradeRoomAlpha, CGFloat(1))
+        XCTAssertNotEqual(lobby.addTradeRoomAlpha, onScreen.opening.addTradeRoomAlpha)
+        XCTAssertEqual(lobby.sendAlpha, CGFloat(0))
+        XCTAssertNotEqual(lobby.sendAlpha, onScreen.sendAlpha)
+        XCTAssertEqual(lobby.currentTradesAlpha, CGFloat(1))
+        XCTAssertNotEqual(lobby.currentTradesAlpha, onScreen.opening.currentTradesAlpha)
+        let lobbyCap = HLSwappViewController.lobbyPageChrome(
+            maxTrades: 50,
+            pastTrades: [],
+            viewerId: "a&b"
+        )
+        XCTAssertEqual(lobbyCap.addTradeRoomAlpha, CGFloat(0.3))
+        XCTAssertNotEqual(lobbyCap.addTradeRoomAlpha, onScreen.opening.addTradeRoomAlpha)
+
+        let ampersand = resolved(320, 80, status: "a&b", turn: "a&b", viewer: "a&b")
+        XCTAssertEqual(ampersand.offer.status, "a&b")
+        XCTAssertNotEqual(ampersand.offer.status, "a%26b")
+        XCTAssertNotEqual(ampersand.offer.status, FormFieldPolicy.encoded("a&b"))
+        XCTAssertNotEqual("a&b", "a%26b")
+        let encoded = resolved(320, 80, status: "a%26b")
+        XCTAssertEqual(encoded.offer.status, "a%26b")
+        XCTAssertNotEqual(encoded.offer.status, "a&b")
+        let upperP = resolved(320, 80, status: "P1", turn: "P1", viewer: "p1")
+        XCTAssertEqual(upperP.offer.status, "P1")
+        XCTAssertNotEqual(upperP.offer.status, "p1")
+        XCTAssertTrue(upperP.offer.showsAccept)
+        let bike = resolved(320, 80, status: " bike ", turn: " bike ", viewer: "bike")
+        XCTAssertEqual(bike.offer.status, " bike ")
+        XCTAssertNotEqual(bike.offer.status, "bike")
+        XCTAssertFalse(TradeTurnPolicy.idsMatch(" bike ", "bike"))
+        XCTAssertTrue(bike.offer.showsAccept)
+        XCTAssertFalse(bike.offer.showsWaiting)
+        XCTAssertFalse(TradeTurnPolicy.idsMatch(nil, ""))
+        XCTAssertTrue(ProductIdentityPolicy.identifiersMatch(nil, ""))
+        XCTAssertNotEqual(
+            TradeTurnPolicy.idsMatch(nil, ""),
+            ProductIdentityPolicy.identifiersMatch(nil, "")
+        )
+        let nilViewer = resolved(320, 80, status: "pending", turn: "peer", viewer: nil, waiting: false)
+        expectAccept(nilViewer, status: "pending")
+        XCTAssertFalse(TradeTurnPolicy.idsMatch("peer", nil))
+
+        let disagreed = HLSwappViewController.otherAgreeOverlay(otherAgree: false, status: "pending")
+        XCTAssertEqual(disagreed.otherOfferAlpha, CGFloat(0.5))
+        XCTAssertNotEqual(onScreen.otherOfferAlpha, disagreed.otherOfferAlpha)
+        let agreedClosed = HLSwappViewController.otherAgreeOverlay(otherAgree: true, status: "closed")
+        XCTAssertNil(agreedClosed.otherOfferAlpha)
+        XCTAssertEqual(resolved(320, 80, status: "closed").otherOfferAlpha, CGFloat(0))
+        let agreedPending = HLSwappViewController.otherAgreeOverlay(otherAgree: true, status: "pending")
+        XCTAssertEqual(agreedPending.otherOfferAlpha, CGFloat(1))
+        XCTAssertEqual(onScreen.otherOfferAlpha, CGFloat(1))
+
+        let waiting = resolved(320, 80, status: "pending", turn: "peer", viewer: "me", waiting: true)
+        XCTAssertTrue(waiting.offer.showsWaiting)
+        XCTAssertFalse(waiting.offer.showsAccept)
+        XCTAssertTrue(waiting.offer.hidesSend)
+        XCTAssertEqual(waiting.sendAlpha, CGFloat(0))
+        XCTAssertNotEqual(waiting.sendAlpha, waiting.opening.sendAlpha)
+        XCTAssertEqual(waiting.offer.otherOfferAlpha, CGFloat(0))
+        XCTAssertEqual(waiting.otherOfferAlpha, CGFloat(0))
+        XCTAssertEqual(waiting.offer.centralLabelAlpha, CGFloat(1))
+        XCTAssertEqual(waiting.centralLabelAlpha, CGFloat(1))
+        XCTAssertNotEqual(waiting.centralLabelAlpha, waiting.opening.centralLabelAlpha)
+        XCTAssertNil(waiting.offer.remainingAlpha)
+        XCTAssertEqual(waiting.offer.hidesThreeDots, false)
+        XCTAssertFalse(waiting.hidesThreeDots)
+        XCTAssertNil(waiting.offer.sendTitle)
+        XCTAssertNil(waiting.offer.sendTag)
+        let waitingOff = resolved(320, 80, status: "pending", turn: "peer", viewer: "me", waiting: false)
+        XCTAssertFalse(waitingOff.offer.showsWaiting)
+        XCTAssertTrue(waitingOff.offer.showsAccept)
+        XCTAssertEqual(waitingOff.sendAlpha, CGFloat(1))
+        XCTAssertEqual(waitingOff.otherOfferAlpha, CGFloat(1))
+        XCTAssertEqual(waitingOff.offer.sendTitle, acceptTitle)
+        XCTAssertFalse(HLSwappViewController.showsWaitingForReply(
+            turnUserId: "peer",
+            viewerId: "me",
+            waitingTurnEnabled: false
+        ))
+        let spacedWaits = resolved(320, 80, status: "pending", turn: " bike ", viewer: "bike", waiting: true)
+        XCTAssertTrue(spacedWaits.offer.showsWaiting)
+        XCTAssertEqual(spacedWaits.sendAlpha, CGFloat(0))
+        XCTAssertNotEqual(" bike ", "bike")
+
+        let stillOpening = HLSwappViewController.tradeRoomOpeningChrome(viewWidth: 320, otherUserWidth: 80)
+        XCTAssertEqual(stillOpening.sendAlpha, CGFloat(1))
+        XCTAssertEqual(stillOpening.otherOfferAlpha, CGFloat(1))
+        XCTAssertTrue(stillOpening.hidesThreeDots)
+        XCTAssertNil(stillOpening.remainingAlpha)
+        XCTAssertNil(stillOpening.sendTag)
+        XCTAssertEqual(stillOpening.otherUserOriginX, CGFloat(240))
+        XCTAssertNotEqual(stillOpening.hidesThreeDots, onScreen.hidesThreeDots)
+
+        let unread: NSDictionary = [
+            "owner_id": "a&b",
+            "other_id": " bike ",
+            "owner_unread": NSNumber(value: 4),
+            "status": "review"
+        ]
+        let withStatusOnly = resolved(320, 80, status: "pending", turn: "peer", viewer: "a&b")
+        XCTAssertEqual(withStatusOnly.sendAlpha, onScreen.sendAlpha)
+        XCTAssertEqual(withStatusOnly.opening.otherUserOriginX, onScreen.opening.otherUserOriginX)
+        XCTAssertTrue(withStatusOnly.opening.hidesPastChatBadge)
+        let lobbyUnread = HLSwappViewController.lobbyPageChrome(
+            maxTrades: 3,
+            pastTrades: [unread],
+            viewerId: "a&b"
+        )
+        XCTAssertTrue(lobbyUnread.showsPastChatBadge)
+        XCTAssertEqual(lobbyUnread.pastChatCount, 4)
+        XCTAssertEqual(lobbyUnread.pastChatPeerId, " bike ")
+        XCTAssertFalse(HLSwappViewController.shouldBlockOffer(
+            turnUserId: "peer",
+            viewerId: "a&b",
+            buttonTag: productsReceivedTag,
+            productsReceivedTag: productsReceivedTag,
+            turnGateEnabled: false
+        ))
+    }
+
     private func tradeReadyFixture(
         ownerId: String,
         otherId: String,

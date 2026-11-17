@@ -743,6 +743,76 @@ class HLSwappViewController: UIViewController {
             sendTag: nil
         )
     }
+
+    /// Resolved trade after the opening animation (`index != 0` and
+    /// `resolvedTrade` is non-nil). Starts from `tradeRoomOpeningChrome` and
+    /// applies `bottomBarOfferChrome` only where that helper assigns a field.
+    /// `hidesSend` sets send to `0`. Otherwise send stays at the opening `1`.
+    /// A nil other-offer alpha leaves the opening `1`. A nil central alpha
+    /// leaves the opening `0`. A nil dots flag leaves the opening hide. A nil
+    /// `sendTag` does not clear a leftover products-received tag, so
+    /// `productsReceivedOtherOfferAlpha` can still force the other offer to
+    /// `0` later. A string turn with `waitingTurnEnabled: false` on a
+    /// non-review, non-cancel status shows the three dots again, sets
+    /// remaining to `0`, and sets the Accept title. A non-string turn, or a
+    /// status that casts to `""`, assigns none of those and the opening hide
+    /// stays. Review assigns the other offer `0` and tag `90441`. Closed and
+    /// ended hide send, so the opening `1` becomes `0`. Do not fold this into
+    /// `tradeRoomOpeningChrome` or `emptyTradeRoomChrome`. Do not call
+    /// `manageCheckMarks`. Do not fold `otherAgreeOverlay` or
+    /// `productsReceivedOtherOfferAlpha` into this helper. Do not enable
+    /// `waitingTurnEnabled` at the call site. Do not trim. Do not case-fold.
+    /// Do not percent-encode. `"a&b"` is not `a%26b`. `"P1"` is not `"p1"`.
+    /// `" bike "` is not `bike`. Frames, the add-room alpha, and the chat
+    /// button stay on the opening shell.
+    class func resolvedTradeAfterOpening(
+        opening: TradeRoomOpeningChrome,
+        status: Any?,
+        turnUserId: Any?,
+        viewerId: String?,
+        waitingTurnEnabled: Bool,
+        productsReceivedTag: Int
+    ) -> ResolvedTradeAfterOpening {
+        let offer = HLSwappViewController.bottomBarOfferChrome(
+            status: status,
+            turnUserId: turnUserId,
+            viewerId: viewerId,
+            waitingTurnEnabled: waitingTurnEnabled,
+            productsReceivedTag: productsReceivedTag
+        )
+        let sendAlpha: CGFloat
+        if offer.hidesSend {
+            sendAlpha = 0
+        } else {
+            sendAlpha = opening.sendAlpha
+        }
+        let otherOfferAlpha: CGFloat
+        if let assigned = offer.otherOfferAlpha {
+            otherOfferAlpha = assigned
+        } else {
+            otherOfferAlpha = opening.otherOfferAlpha
+        }
+        let centralLabelAlpha: CGFloat
+        if let assigned = offer.centralLabelAlpha {
+            centralLabelAlpha = assigned
+        } else {
+            centralLabelAlpha = opening.centralLabelAlpha
+        }
+        let hidesThreeDots: Bool
+        if let assigned = offer.hidesThreeDots {
+            hidesThreeDots = assigned
+        } else {
+            hidesThreeDots = opening.hidesThreeDots
+        }
+        return ResolvedTradeAfterOpening(
+            opening: opening,
+            offer: offer,
+            sendAlpha: sendAlpha,
+            otherOfferAlpha: otherOfferAlpha,
+            centralLabelAlpha: centralLabelAlpha,
+            hidesThreeDots: hidesThreeDots
+        )
+    }
     
     
     override func preferredScreenEdgesDeferringSystemGestures() -> UIRectEdge {
@@ -1142,13 +1212,18 @@ class HLSwappViewController: UIViewController {
                     let chat_count = peer.unread
 
 
-                    let offer = HLSwappViewController.bottomBarOfferChrome(
+                    // Overwrite only the fields offer chrome assigns. The
+                    // opening shell stays for everything else. The gate stays
+                    // off. Check marks and the agreement overlay run later.
+                    let resolved = HLSwappViewController.resolvedTradeAfterOpening(
+                        opening: opening,
                         status: thisTrade.object(forKey: "status"),
                         turnUserId: thisTrade.object(forKey: "turn_user_id"),
                         viewerId: HulaUser.sharedInstance.userId,
                         waitingTurnEnabled: false,
                         productsReceivedTag: kTagProductsReceived
                     )
+                    let offer = resolved.offer
                     let currentStatus = offer.status
                     if offer.hidesSend {
                         self.sendOfferBtn.alpha = 0
@@ -1838,6 +1913,20 @@ struct TradeRoomOpeningChrome {
     let remainingAlpha: CGFloat?
     let hidesCurrentChatBadge: Bool?
     let sendTag: Int?
+}
+
+/// Resolved trade laid over the opening animation. `offer` is assigned with
+/// the same nil-means-do-not-touch rules as `bottomBarOfferChrome`. The
+/// non-optional alphas are the opening values after that overwrite. A nil
+/// `offer.sendTag` leaves a leftover products-received tag in place.
+/// `otherAgreeOverlay` and `productsReceivedOtherOfferAlpha` are later steps.
+struct ResolvedTradeAfterOpening {
+    let opening: TradeRoomOpeningChrome
+    let offer: BottomBarOfferChrome
+    let sendAlpha: CGFloat
+    let otherOfferAlpha: CGFloat
+    let centralLabelAlpha: CGFloat
+    let hidesThreeDots: Bool
 }
 
 /// Turn checks compared IUO `turn_user_id` / `userId` with `!=` and `==`.
