@@ -584,9 +584,11 @@ class HLSwappViewController: UIViewController {
     /// `kTagProductsReceived`, 90441). Any other tag, including
     /// `kTagJustAccept` (1) and `kTagCloseDeal` (91053), returns nil and does
     /// not assign the button. `manageCheckMarks` replaces 90441 with one of
-    /// those two tags when a barter trade exists, so this hide does not fire
-    /// on that path. A leftover 90441 from an earlier review page still
-    /// hides, because Accept chrome does not clear the tag. Do not trim. Do
+    /// those two tags when a barter trade exists, and
+    /// `agreedTradeAfterResolved` stores that same replacement before this
+    /// hide, so the hide does not fire on that path. A leftover 90441 from an
+    /// earlier review page still hides, because Accept chrome does not clear
+    /// the tag. Do not trim. Do
     /// not case-fold a status into this compare. Do not percent-encode. Do
     /// not fold this into `otherAgreeOverlay` or `bottomBarOfferChrome`. Do
     /// not change `manageCheckMarks`. Do not treat tag 1 or 91053 as the
@@ -759,12 +761,12 @@ class HLSwappViewController: UIViewController {
     /// stays. Review assigns the other offer `0` and tag `90441`. Closed and
     /// ended hide send, so the opening `1` becomes `0`. Do not fold this into
     /// `tradeRoomOpeningChrome` or `emptyTradeRoomChrome`. Do not call
-    /// `manageCheckMarks`. Do not fold `otherAgreeOverlay` or
-    /// `productsReceivedOtherOfferAlpha` into this helper. Do not enable
-    /// `waitingTurnEnabled` at the call site. Do not trim. Do not case-fold.
-    /// Do not percent-encode. `"a&b"` is not `a%26b`. `"P1"` is not `"p1"`.
-    /// `" bike "` is not `bike`. Frames, the add-room alpha, and the chat
-    /// button stay on the opening shell.
+    /// `manageCheckMarks`. Do not fold `otherAgreeOverlay`,
+    /// `agreedTradeAfterResolved`, or `productsReceivedOtherOfferAlpha` into
+    /// this helper. Do not enable `waitingTurnEnabled` at the call site. Do
+    /// not trim. Do not case-fold. Do not percent-encode. `"a&b"` is not
+    /// `a%26b`. `"P1"` is not `"p1"`. `" bike "` is not `bike`. Frames, the
+    /// add-room alpha, and the chat button stay on the opening shell.
     class func resolvedTradeAfterOpening(
         opening: TradeRoomOpeningChrome,
         status: Any?,
@@ -811,6 +813,64 @@ class HLSwappViewController: UIViewController {
             otherOfferAlpha: otherOfferAlpha,
             centralLabelAlpha: centralLabelAlpha,
             hidesThreeDots: hidesThreeDots
+        )
+    }
+
+    /// Agreement after `resolvedTradeAfterOpening`, and only when
+    /// `getCurrentTradeStatus()` returned a trade. `manageCheckMarks` runs
+    /// first and replaces the send tag with `justAcceptTag` (`1`), then with
+    /// `closeDealTag` (`91053`) when `peerReady` is true. That replacement is
+    /// stored here before `productsReceivedOtherOfferAlpha`, so a review tag
+    /// of `90441` does not survive and the receipt hide does not fire unless
+    /// the tag this step stores is still exactly `productsReceivedTag`.
+    /// Agreement then sets the other user to `1` and the other offer to `1`
+    /// unless status is exact `"closed"` or `"ended"`, where the agreement
+    /// alpha stays nil and the resolved `0` survives. `otherAgree` false sets
+    /// both alphas to `0.5`, overwriting the opening `1`, the review `0`, and
+    /// the closed `0`. The receipt hide runs after that overwrite and forces
+    /// the other offer to `0` only for a matching tag. Do not fold this into
+    /// `resolvedTradeAfterOpening`. Do not change `manageCheckMarks`. Do not
+    /// change the three-dots flag, the send alpha, or the chat button. Do not
+    /// enable `waitingTurnEnabled`. Do not trim. Do not case-fold. Do not
+    /// percent-encode. Do not read `arrPastTrades`. `"a&b"` is not `a%26b`.
+    /// `"P1"` is not `"p1"`. `" bike "` is not `bike`.
+    class func agreedTradeAfterResolved(
+        resolved: ResolvedTradeAfterOpening,
+        otherAgree: Bool,
+        peerReady: Bool,
+        justAcceptTag: Int,
+        closeDealTag: Int,
+        productsReceivedTag: Int
+    ) -> AgreedTradeAfterResolved {
+        let sendTag: Int
+        if peerReady {
+            sendTag = closeDealTag
+        } else {
+            sendTag = justAcceptTag
+        }
+        let agreement = HLSwappViewController.otherAgreeOverlay(
+            otherAgree: otherAgree,
+            status: resolved.offer.status
+        )
+        var otherOfferAlpha = resolved.otherOfferAlpha
+        if let assigned = agreement.otherOfferAlpha {
+            otherOfferAlpha = assigned
+        }
+        var appliedReceiptHide = false
+        if let forced = HLSwappViewController.productsReceivedOtherOfferAlpha(
+            sendTag: sendTag,
+            productsReceivedTag: productsReceivedTag
+        ) {
+            otherOfferAlpha = forced
+            appliedReceiptHide = true
+        }
+        return AgreedTradeAfterResolved(
+            resolved: resolved,
+            agreement: agreement,
+            sendTag: sendTag,
+            otherUserAlpha: agreement.otherUserAlpha,
+            otherOfferAlpha: otherOfferAlpha,
+            appliedReceiptHide: appliedReceiptHide
         )
     }
     
@@ -1224,7 +1284,6 @@ class HLSwappViewController: UIViewController {
                         productsReceivedTag: kTagProductsReceived
                     )
                     let offer = resolved.offer
-                    let currentStatus = offer.status
                     if offer.hidesSend {
                         self.sendOfferBtn.alpha = 0
                     }
@@ -1268,14 +1327,25 @@ class HLSwappViewController: UIViewController {
                         print("other ready \(tr.other_ready)");
                         self.manageCheckMarks(trade: tr);
 
-                        let agreement = HLSwappViewController.otherAgreeOverlay(
+                        // Check marks already replaced the send tag. Agreement
+                        // overwrites the other offer except exact closed and
+                        // ended. The receipt hide below still runs and forces
+                        // 0 only when the stored tag is still 90441. Chat
+                        // alpha is the next step and is not part of this one.
+                        let agreed = HLSwappViewController.agreedTradeAfterResolved(
+                            resolved: resolved,
                             otherAgree: tr.other_agree,
-                            status: currentStatus
+                            peerReady: TradeReadyPolicy.peerIsReady(
+                                trade: tr,
+                                viewerId: HulaUser.sharedInstance.userId
+                            ),
+                            justAcceptTag: kTagJustAccept,
+                            closeDealTag: kTagCloseDeal,
+                            productsReceivedTag: kTagProductsReceived
                         )
-                        self.otherUserView.alpha = agreement.otherUserAlpha
-                        if let offerAlpha = agreement.otherOfferAlpha {
-                            self.otherOfferBtn.alpha = offerAlpha
-                        }
+                        self.sendOfferBtn.tag = agreed.sendTag
+                        self.otherUserView.alpha = agreed.otherUserAlpha
+                        self.otherOfferBtn.alpha = agreed.otherOfferAlpha
                     }
                     
                     if chat_count > 0 {
@@ -1919,7 +1989,7 @@ struct TradeRoomOpeningChrome {
 /// the same nil-means-do-not-touch rules as `bottomBarOfferChrome`. The
 /// non-optional alphas are the opening values after that overwrite. A nil
 /// `offer.sendTag` leaves a leftover products-received tag in place.
-/// `otherAgreeOverlay` and `productsReceivedOtherOfferAlpha` are later steps.
+/// `agreedTradeAfterResolved` is the later step when a barter trade exists.
 struct ResolvedTradeAfterOpening {
     let opening: TradeRoomOpeningChrome
     let offer: BottomBarOfferChrome
@@ -1927,6 +1997,22 @@ struct ResolvedTradeAfterOpening {
     let otherOfferAlpha: CGFloat
     let centralLabelAlpha: CGFloat
     let hidesThreeDots: Bool
+}
+
+/// Agreement laid over a resolved trade after check marks replace the send
+/// tag. `sendTag` is never nil: `closeDealTag` when the peer is ready, and
+/// `justAcceptTag` otherwise. `appliedReceiptHide` is true only when that
+/// tag is still exactly the products-received tag, which forces
+/// `otherOfferAlpha` to 0. A nil agreement alpha leaves the resolved other
+/// offer in place. Send alpha, frames, the chat button, and the three-dots
+/// flag stay on `resolved`.
+struct AgreedTradeAfterResolved {
+    let resolved: ResolvedTradeAfterOpening
+    let agreement: OtherAgreeOverlay
+    let sendTag: Int
+    let otherUserAlpha: CGFloat
+    let otherOfferAlpha: CGFloat
+    let appliedReceiptHide: Bool
 }
 
 /// Turn checks compared IUO `turn_user_id` / `userId` with `!=` and `==`.
