@@ -16826,6 +16826,698 @@ class HulaTests: XCTestCase {
         ))
     }
 
+    /// After agreement, the current-chat badge and the chat button are
+    /// independent. The badge is this trade's `peerChatContext` count only.
+    /// It shows when that count is greater than 0. One bid dims the button
+    /// only when the turn string matches the viewer. A nil viewer does not
+    /// match. The receipt hide still runs after chat and forces the other
+    /// offer to 0 only when the stored tag is still the products-received
+    /// tag. Do not fold this into `agreedTradeAfterResolved`. Do not trim.
+    /// Do not case-fold. Do not percent-encode.
+    func testResolvedTradeChatChromeKeepsBadgeAndFirstBidDimIndependent() {
+        let vc = HLSwappViewController()
+        let productsReceivedTag = 90441
+        let justAcceptTag = 1
+        let closeDealTag = 91053
+        let oneBid = ["only"] as [Any]
+        let twoBids = ["a", "b"] as [Any]
+        let nsOne = NSMutableArray()
+        nsOne.add("only")
+        let nsTwo = NSMutableArray()
+        nsTwo.add("a")
+        nsTwo.add("b")
+        XCTAssertEqual(vc.kTagProductsReceived, productsReceivedTag)
+        XCTAssertEqual(vc.kTagJustAccept, justAcceptTag)
+        XCTAssertEqual(vc.kTagCloseDeal, closeDealTag)
+        XCTAssertEqual(CommonUtils.intFromJSON(10.9 as Double), 10)
+        XCTAssertEqual(CommonUtils.intFromJSON(Float(10.9)), 10)
+        XCTAssertEqual(CommonUtils.intFromJSON(4 as Int), 4)
+        XCTAssertEqual(CommonUtils.intFromJSON(NSNumber(value: 10.9)), 10)
+        XCTAssertEqual(CommonUtils.intFromJSON(NSNumber(value: -3)), -3)
+        XCTAssertNil(CommonUtils.intFromJSON(true))
+        XCTAssertNil(CommonUtils.intFromJSON(false))
+        XCTAssertNil(CommonUtils.intFromJSON("4"))
+        XCTAssertNil(CommonUtils.intFromJSON(NSNull()))
+        XCTAssertNil(CommonUtils.intFromJSON(nil))
+
+        func agreed(
+            _ viewWidth: CGFloat,
+            _ otherWidth: CGFloat,
+            status: Any?,
+            turn: Any? = "peer",
+            viewer: String? = nil,
+            waiting: Bool = false,
+            agree: Bool,
+            peerReady: Bool,
+            justAccept: Int = 1,
+            closeDeal: Int = 91053,
+            receipt: Int = 90441
+        ) -> AgreedTradeAfterResolved {
+            let opening = HLSwappViewController.tradeRoomOpeningChrome(
+                viewWidth: viewWidth,
+                otherUserWidth: otherWidth
+            )
+            let resolved = HLSwappViewController.resolvedTradeAfterOpening(
+                opening: opening,
+                status: status,
+                turnUserId: turn,
+                viewerId: viewer,
+                waitingTurnEnabled: waiting,
+                productsReceivedTag: receipt
+            )
+            return HLSwappViewController.agreedTradeAfterResolved(
+                resolved: resolved,
+                otherAgree: agree,
+                peerReady: peerReady,
+                justAcceptTag: justAccept,
+                closeDealTag: closeDeal,
+                productsReceivedTag: receipt
+            )
+        }
+
+        func chrome(
+            agreed: AgreedTradeAfterResolved?,
+            peerId: String,
+            unread: Int,
+            bids: Any?,
+            turn: Any?,
+            viewer: String?,
+            receipt: Int = 90441
+        ) -> ResolvedTradeChatChrome {
+            return HLSwappViewController.resolvedTradeChatChrome(
+                agreed: agreed,
+                peerId: peerId,
+                unread: unread,
+                bids: bids,
+                turnValue: turn,
+                viewerId: viewer,
+                productsReceivedTag: receipt
+            )
+        }
+
+        func fromTrade(
+            _ trade: NSDictionary,
+            viewer: String,
+            agreed: AgreedTradeAfterResolved?,
+            receipt: Int = 90441
+        ) -> ResolvedTradeChatChrome {
+            let peer = HLSwappViewController.peerChatContext(from: trade, viewerId: viewer)
+            return chrome(
+                agreed: agreed,
+                peerId: peer.peerId,
+                unread: peer.unread,
+                bids: trade.object(forKey: "bids"),
+                turn: trade.object(forKey: "turn_user_id"),
+                viewer: viewer,
+                receipt: receipt
+            )
+        }
+
+        func expectAlpha(
+            _ value: CGFloat?,
+            _ expected: CGFloat,
+            file: StaticString = #file,
+            line: UInt = #line
+        ) {
+            XCTAssertEqual(Double(value ?? -1), Double(expected), accuracy: 0.0001, file: file, line: line)
+        }
+
+        func deal(_ row: ResolvedTradeChatChrome) -> AgreedTradeAfterResolved {
+            return row.agreed!
+        }
+
+        func assertShell(
+            _ row: ResolvedTradeChatChrome,
+            viewWidth: CGFloat,
+            otherWidth: CGFloat,
+            file: StaticString = #file,
+            line: UInt = #line
+        ) {
+            let counterparty = viewWidth - otherWidth
+            XCTAssertEqual(deal(row).resolved.opening.otherUserOriginX, counterparty, file: file, line: line)
+            XCTAssertEqual(deal(row).resolved.opening.initialOtherUserX, counterparty, file: file, line: line)
+            XCTAssertEqual(deal(row).resolved.opening.myUserOriginX, CGFloat(0), file: file, line: line)
+            XCTAssertNotEqual(deal(row).resolved.opening.otherUserOriginX, counterparty + 500, file: file, line: line)
+            XCTAssertNotEqual(deal(row).resolved.opening.myUserOriginX, CGFloat(-500), file: file, line: line)
+            XCTAssertEqual(deal(row).resolved.opening.addTradeRoomAlpha, CGFloat(0), file: file, line: line)
+            XCTAssertNotEqual(deal(row).resolved.opening.addTradeRoomAlpha, CGFloat(1), file: file, line: line)
+            XCTAssertNotEqual(deal(row).resolved.opening.addTradeRoomAlpha, CGFloat(0.3), file: file, line: line)
+            XCTAssertNil(deal(row).resolved.opening.chatButtonAlpha, file: file, line: line)
+            XCTAssertNil(deal(row).resolved.opening.hidesCurrentChatBadge, file: file, line: line)
+            XCTAssertTrue(deal(row).resolved.opening.hidesPastChatBadge, file: file, line: line)
+            XCTAssertEqual(deal(row).resolved.opening.sendAlpha, CGFloat(1), file: file, line: line)
+        }
+
+        let pending = agreed(320, 80, status: "pending", turn: "me", viewer: "me", agree: true, peerReady: false)
+        let ownerTrade: NSDictionary = [
+            "owner_id": "a&b",
+            "other_id": " bike ",
+            "owner_unread": NSNumber(value: 4),
+            "other_unread": NSNumber(value: 9),
+            "turn_user_id": "a&b",
+            "status": "pending",
+            "bids": nsOne
+        ]
+        let shown = fromTrade(ownerTrade, viewer: "a&b", agreed: pending)
+        assertShell(shown, viewWidth: 320, otherWidth: 80)
+        XCTAssertEqual(shown.peerId, " bike ")
+        XCTAssertNotEqual(shown.peerId, "bike")
+        XCTAssertEqual(shown.unread, 4)
+        XCTAssertNotEqual(shown.unread, 13)
+        XCTAssertNotEqual(shown.unread, 9)
+        XCTAssertEqual(shown.currentChatText, "4")
+        XCTAssertFalse(shown.hidesCurrentChatBadge)
+        expectAlpha(shown.chatButtonAlpha, TradeTurnPolicy.chatDimmedAlpha)
+        XCTAssertNil(deal(shown).resolved.opening.chatButtonAlpha)
+        XCTAssertEqual(shown.otherOfferAlpha, CGFloat(1))
+        XCTAssertFalse(shown.appliedPostChatReceiptHide)
+        XCTAssertEqual(deal(shown).sendTag, justAcceptTag)
+        XCTAssertEqual(deal(shown).resolved.sendAlpha, CGFloat(1))
+        XCTAssertFalse(deal(shown).resolved.hidesThreeDots)
+        XCTAssertEqual(deal(shown).otherUserAlpha, CGFloat(1))
+
+        let encodedViewer = fromTrade(ownerTrade, viewer: "a%26b", agreed: pending)
+        XCTAssertEqual(encodedViewer.peerId, "a&b")
+        XCTAssertNotEqual(encodedViewer.peerId, "a%26b")
+        XCTAssertEqual(encodedViewer.unread, 9)
+        XCTAssertEqual(encodedViewer.currentChatText, "9")
+        expectAlpha(encodedViewer.chatButtonAlpha, TradeTurnPolicy.chatFullAlpha)
+        XCTAssertNotEqual("a&b", "a%26b")
+
+        let spacedOwner = fromTrade(ownerTrade, viewer: " bike ", agreed: pending)
+        XCTAssertEqual(spacedOwner.unread, 9)
+        XCTAssertNotEqual(spacedOwner.peerId, "bike")
+        let cased: NSDictionary = [
+            "owner_id": "P1",
+            "other_id": "p1",
+            "owner_unread": NSNumber(value: 2),
+            "other_unread": NSNumber(value: 6),
+            "turn_user_id": "P1",
+            "bids": nsOne
+        ]
+        let upper = fromTrade(cased, viewer: "P1", agreed: pending)
+        XCTAssertEqual(upper.peerId, "p1")
+        XCTAssertEqual(upper.unread, 2)
+        XCTAssertEqual(upper.currentChatText, "2")
+        expectAlpha(upper.chatButtonAlpha, TradeTurnPolicy.chatDimmedAlpha)
+        let lower = fromTrade(cased, viewer: "p1", agreed: pending)
+        XCTAssertEqual(lower.peerId, "P1")
+        XCTAssertNotEqual(lower.peerId, "p1")
+        XCTAssertEqual(lower.unread, 6)
+        expectAlpha(lower.chatButtonAlpha, TradeTurnPolicy.chatFullAlpha)
+        XCTAssertNotEqual("P1", "p1")
+
+        let missingOwner: NSDictionary = [
+            "other_id": "peer",
+            "owner_unread": NSNumber(value: 2),
+            "other_unread": NSNumber(value: 8),
+            "turn_user_id": "",
+            "bids": nsOne
+        ]
+        let emptyViewer = fromTrade(missingOwner, viewer: "", agreed: pending)
+        XCTAssertEqual(emptyViewer.peerId, "peer")
+        XCTAssertEqual(emptyViewer.unread, 2)
+        XCTAssertEqual(emptyViewer.currentChatText, "2")
+        expectAlpha(emptyViewer.chatButtonAlpha, TradeTurnPolicy.chatDimmedAlpha)
+        let nullOwner: NSDictionary = [
+            "owner_id": NSNull(),
+            "other_id": "peer",
+            "owner_unread": NSNumber(value: 2),
+            "other_unread": NSNumber(value: 8)
+        ]
+        let nullMatch = fromTrade(nullOwner, viewer: "", agreed: pending)
+        XCTAssertEqual(nullMatch.peerId, "peer")
+        XCTAssertEqual(nullMatch.unread, 2)
+        let numericOwner: NSDictionary = [
+            "owner_id": NSNumber(value: 1),
+            "other_id": "peer",
+            "owner_unread": NSNumber(value: 2),
+            "other_unread": NSNumber(value: 5),
+            "turn_user_id": "1",
+            "bids": nsOne
+        ]
+        let numeric = fromTrade(numericOwner, viewer: "1", agreed: pending)
+        XCTAssertEqual(numeric.peerId, "")
+        XCTAssertEqual(numeric.unread, 5)
+        XCTAssertEqual(numeric.currentChatText, "5")
+        expectAlpha(numeric.chatButtonAlpha, TradeTurnPolicy.chatDimmedAlpha)
+
+        let fractional: NSDictionary = [
+            "owner_id": "me",
+            "other_id": "peer",
+            "owner_unread": NSNumber(value: 10.9),
+            "turn_user_id": "me",
+            "bids": nsTwo
+        ]
+        let truncated = fromTrade(fractional, viewer: "me", agreed: pending)
+        XCTAssertEqual(truncated.unread, 10)
+        XCTAssertEqual(truncated.currentChatText, "10")
+        XCTAssertNotEqual(truncated.currentChatText, "10.9")
+        expectAlpha(truncated.chatButtonAlpha, TradeTurnPolicy.chatFullAlpha)
+        XCTAssertFalse(truncated.hidesCurrentChatBadge)
+
+        let negativeTrade: NSDictionary = [
+            "owner_id": "me",
+            "other_id": "peer",
+            "owner_unread": NSNumber(value: -3)
+        ]
+        let negative = fromTrade(negativeTrade, viewer: "me", agreed: pending)
+        XCTAssertEqual(negative.unread, -3)
+        XCTAssertNotEqual(negative.unread, 0)
+        XCTAssertNil(negative.currentChatText)
+        XCTAssertTrue(negative.hidesCurrentChatBadge)
+        XCTAssertNil(negative.chatButtonAlpha)
+
+        let hiddenCounts: [NSDictionary] = [
+            ["owner_id": "me", "other_id": "peer"] as NSDictionary,
+            ["owner_id": "me", "other_id": "peer", "owner_unread": NSNull()] as NSDictionary,
+            ["owner_id": "me", "other_id": "peer", "owner_unread": true] as NSDictionary,
+            ["owner_id": "me", "other_id": "peer", "owner_unread": false] as NSDictionary,
+            ["owner_id": "me", "other_id": "peer", "owner_unread": "4"] as NSDictionary,
+            ["owner_id": "me", "other_id": "peer", "owner_unread": NSNumber(value: 0)] as NSDictionary
+        ]
+        for trade in hiddenCounts {
+            let row = fromTrade(trade, viewer: "me", agreed: pending)
+            XCTAssertEqual(row.unread, 0)
+            XCTAssertNil(row.currentChatText)
+            XCTAssertTrue(row.hidesCurrentChatBadge)
+            XCTAssertNotEqual(row.currentChatText, "1")
+            XCTAssertNotEqual(row.currentChatText, "4")
+        }
+        let boolNumber: NSDictionary = [
+            "owner_id": "me",
+            "other_id": "peer",
+            "owner_unread": NSNumber(value: true)
+        ]
+        let boolRow = fromTrade(boolNumber, viewer: "me", agreed: pending)
+        XCTAssertEqual(boolRow.unread, 0)
+        XCTAssertTrue(boolRow.hidesCurrentChatBadge)
+
+        let huge = chrome(
+            agreed: pending,
+            peerId: "peer",
+            unread: Int.max,
+            bids: nil,
+            turn: "me",
+            viewer: "me"
+        )
+        XCTAssertEqual(huge.currentChatText, "\(Int.max)")
+        XCTAssertFalse(huge.hidesCurrentChatBadge)
+        XCTAssertNil(huge.chatButtonAlpha)
+        let tiny = chrome(
+            agreed: pending,
+            peerId: "peer",
+            unread: Int.min,
+            bids: oneBid,
+            turn: "me",
+            viewer: "me"
+        )
+        XCTAssertEqual(tiny.unread, Int.min)
+        XCTAssertNil(tiny.currentChatText)
+        XCTAssertTrue(tiny.hidesCurrentChatBadge)
+        expectAlpha(tiny.chatButtonAlpha, TradeTurnPolicy.chatDimmedAlpha)
+
+        let unreadOnly = chrome(
+            agreed: pending,
+            peerId: "peer",
+            unread: 1,
+            bids: twoBids,
+            turn: "me",
+            viewer: "me"
+        )
+        XCTAssertEqual(unreadOnly.currentChatText, "1")
+        expectAlpha(unreadOnly.chatButtonAlpha, TradeTurnPolicy.chatFullAlpha)
+        let bidOnly = chrome(
+            agreed: pending,
+            peerId: "peer",
+            unread: 0,
+            bids: oneBid,
+            turn: "me",
+            viewer: "me"
+        )
+        XCTAssertTrue(bidOnly.hidesCurrentChatBadge)
+        XCTAssertNil(bidOnly.currentChatText)
+        expectAlpha(bidOnly.chatButtonAlpha, TradeTurnPolicy.chatDimmedAlpha)
+        let both = chrome(
+            agreed: pending,
+            peerId: "peer",
+            unread: 1,
+            bids: oneBid,
+            turn: "me",
+            viewer: "me"
+        )
+        XCTAssertEqual(both.currentChatText, "1")
+        expectAlpha(both.chatButtonAlpha, TradeTurnPolicy.chatDimmedAlpha)
+
+        let emptyBids = chrome(agreed: pending, peerId: "peer", unread: 0, bids: [] as [Any], turn: "me", viewer: "me")
+        expectAlpha(emptyBids.chatButtonAlpha, TradeTurnPolicy.chatFullAlpha)
+        XCTAssertTrue(emptyBids.hidesCurrentChatBadge)
+        let missingBids: [Any?] = [nil, NSNull(), "only", NSNumber(value: 1), true]
+        for bids in missingBids {
+            let row = chrome(agreed: pending, peerId: "peer", unread: 3, bids: bids, turn: "me", viewer: "me")
+            XCTAssertNil(row.chatButtonAlpha)
+            XCTAssertNil(deal(row).resolved.opening.chatButtonAlpha)
+            XCTAssertEqual(row.currentChatText, "3")
+            XCTAssertEqual(row.otherOfferAlpha, CGFloat(1))
+        }
+
+        let nilViewer = chrome(
+            agreed: pending,
+            peerId: "owner",
+            unread: 0,
+            bids: oneBid,
+            turn: "me",
+            viewer: nil
+        )
+        expectAlpha(nilViewer.chatButtonAlpha, TradeTurnPolicy.chatFullAlpha)
+        XCTAssertTrue(nilViewer.hidesCurrentChatBadge)
+        XCTAssertFalse(TradeTurnPolicy.idsMatch(nil, "me"))
+        XCTAssertFalse(TradeTurnPolicy.idsMatch(nil, ""))
+        XCTAssertTrue(ProductIdentityPolicy.identifiersMatch(nil, ""))
+        XCTAssertNotEqual(
+            TradeTurnPolicy.idsMatch(nil, ""),
+            ProductIdentityPolicy.identifiersMatch(nil, "")
+        )
+        let emptyIds = chrome(agreed: pending, peerId: "", unread: 0, bids: oneBid, turn: "", viewer: "")
+        expectAlpha(emptyIds.chatButtonAlpha, TradeTurnPolicy.chatDimmedAlpha)
+        let spacedTurn = chrome(agreed: pending, peerId: " bike ", unread: 0, bids: oneBid, turn: " bike ", viewer: "bike")
+        expectAlpha(spacedTurn.chatButtonAlpha, TradeTurnPolicy.chatFullAlpha)
+        XCTAssertEqual(spacedTurn.peerId, " bike ")
+        XCTAssertNotEqual(spacedTurn.peerId, "bike")
+        let spacedMatch = chrome(agreed: pending, peerId: " bike ", unread: 0, bids: oneBid, turn: " bike ", viewer: " bike ")
+        expectAlpha(spacedMatch.chatButtonAlpha, TradeTurnPolicy.chatDimmedAlpha)
+        let encodedTurn = chrome(agreed: pending, peerId: "a&b", unread: 0, bids: oneBid, turn: "a&b", viewer: "a%26b")
+        expectAlpha(encodedTurn.chatButtonAlpha, TradeTurnPolicy.chatFullAlpha)
+        XCTAssertNotEqual(encodedTurn.peerId, "a%26b")
+        let encodedMatch = chrome(agreed: pending, peerId: "a&b", unread: 0, bids: oneBid, turn: "a&b", viewer: "a&b")
+        expectAlpha(encodedMatch.chatButtonAlpha, TradeTurnPolicy.chatDimmedAlpha)
+        let casedTurn = chrome(agreed: pending, peerId: "P1", unread: 0, bids: oneBid, turn: "P1", viewer: "p1")
+        expectAlpha(casedTurn.chatButtonAlpha, TradeTurnPolicy.chatFullAlpha)
+        let casedMatch = chrome(agreed: pending, peerId: "P1", unread: 0, bids: oneBid, turn: "P1", viewer: "P1")
+        expectAlpha(casedMatch.chatButtonAlpha, TradeTurnPolicy.chatDimmedAlpha)
+
+        let nsTrade: NSDictionary = [
+            "owner_id": "me",
+            "other_id": "peer",
+            "owner_unread": NSNumber(value: 1),
+            "bids": nsOne,
+            "turn_user_id": "me"
+        ]
+        let nsRow = fromTrade(nsTrade, viewer: "me", agreed: pending)
+        XCTAssertEqual(nsRow.currentChatText, "1")
+        expectAlpha(nsRow.chatButtonAlpha, TradeTurnPolicy.chatDimmedAlpha)
+        let nsTwoTrade: NSDictionary = [
+            "owner_id": "me",
+            "other_id": "peer",
+            "owner_unread": NSNumber(value: 1),
+            "bids": nsTwo,
+            "turn_user_id": "me"
+        ]
+        let nsTwoRow = fromTrade(nsTwoTrade, viewer: "me", agreed: pending)
+        expectAlpha(nsTwoRow.chatButtonAlpha, TradeTurnPolicy.chatFullAlpha)
+        XCTAssertEqual(nsTwoRow.currentChatText, "1")
+
+        let nonStringTurns: [Any?] = [nil, NSNull(), NSNumber(value: 1), NSNumber(value: 10.9), true, false]
+        for turn in nonStringTurns {
+            let row = agreed(320, 80, status: "pending", turn: turn, viewer: "me", agree: true, peerReady: false)
+            let chat = chrome(agreed: row, peerId: "peer", unread: 0, bids: oneBid, turn: turn, viewer: "me")
+            XCTAssertEqual(deal(chat).sendTag, justAcceptTag)
+            XCTAssertNotEqual(deal(chat).sendTag, productsReceivedTag)
+            XCTAssertTrue(chat.hidesCurrentChatBadge)
+            expectAlpha(chat.chatButtonAlpha, TradeTurnPolicy.chatFullAlpha)
+            XCTAssertEqual(chat.otherOfferAlpha, CGFloat(1))
+            XCTAssertFalse(chat.appliedPostChatReceiptHide)
+            XCTAssertEqual(deal(chat).resolved.sendAlpha, CGFloat(1))
+        }
+
+        let plainStatuses = [
+            " closed ", "Closed", "Review", "preview", " ", "\n", "a&b", "P1", " bike ",
+            String(repeating: Character("🙂"), count: 1)
+        ]
+        for status in plainStatuses {
+            let row = agreed(320, 80, status: status, turn: "peer", viewer: "me", agree: true, peerReady: false)
+            let chat = chrome(agreed: row, peerId: " bike ", unread: 4, bids: twoBids, turn: "peer", viewer: "me")
+            XCTAssertEqual(deal(chat).resolved.offer.status, status)
+            XCTAssertNotEqual(deal(chat).resolved.offer.status, "closed")
+            XCTAssertNotEqual(deal(chat).resolved.offer.status, "ended")
+            XCTAssertNotEqual(deal(chat).resolved.offer.status, "review")
+            XCTAssertEqual(chat.currentChatText, "4")
+            XCTAssertEqual(chat.peerId, " bike ")
+            expectAlpha(chat.chatButtonAlpha, TradeTurnPolicy.chatFullAlpha)
+            XCTAssertEqual(chat.otherOfferAlpha, CGFloat(1))
+            XCTAssertFalse(chat.appliedPostChatReceiptHide)
+            XCTAssertEqual(deal(chat).sendTag, justAcceptTag)
+        }
+        XCTAssertNotEqual(" bike ", "bike")
+        XCTAssertNotEqual("a&b", FormFieldPolicy.encoded("a&b"))
+
+        let emptyCasts: [Any?] = [nil, "", NSNull(), NSNumber(value: 1), true, false]
+        for status in emptyCasts {
+            let row = agreed(320, 80, status: status, turn: "peer", viewer: nil, agree: true, peerReady: false)
+            let chat = chrome(agreed: row, peerId: "peer", unread: 1, bids: nil, turn: "peer", viewer: nil)
+            XCTAssertEqual(deal(chat).resolved.offer.status, "")
+            XCTAssertEqual(chat.otherOfferAlpha, CGFloat(1))
+            XCTAssertEqual(chat.currentChatText, "1")
+            XCTAssertNil(chat.chatButtonAlpha)
+            XCTAssertFalse(chat.appliedPostChatReceiptHide)
+        }
+
+        let review = agreed(320, 80, status: "review", agree: true, peerReady: false)
+        let reviewChat = chrome(agreed: review, peerId: "peer", unread: 2, bids: oneBid, turn: "peer", viewer: "me")
+        XCTAssertEqual(review.otherOfferAlpha, CGFloat(1))
+        XCTAssertEqual(review.resolved.otherOfferAlpha, CGFloat(0))
+        XCTAssertEqual(reviewChat.otherOfferAlpha, CGFloat(1))
+        XCTAssertNotEqual(reviewChat.otherOfferAlpha, review.resolved.otherOfferAlpha)
+        XCTAssertFalse(reviewChat.appliedPostChatReceiptHide)
+        XCTAssertEqual(deal(reviewChat).sendTag, justAcceptTag)
+        XCTAssertEqual(reviewChat.currentChatText, "2")
+        expectAlpha(reviewChat.chatButtonAlpha, TradeTurnPolicy.chatFullAlpha)
+        XCTAssertEqual(deal(reviewChat).resolved.sendAlpha, CGFloat(1))
+        XCTAssertTrue(deal(reviewChat).resolved.hidesThreeDots)
+
+        let reviewDim = agreed(320, 80, status: "review", agree: false, peerReady: false)
+        let reviewDimChat = chrome(agreed: reviewDim, peerId: "peer", unread: 0, bids: oneBid, turn: "me", viewer: "me")
+        XCTAssertEqual(reviewDimChat.otherOfferAlpha, CGFloat(0.5))
+        XCTAssertNotEqual(reviewDimChat.otherOfferAlpha, CGFloat(0))
+        XCTAssertFalse(reviewDimChat.appliedPostChatReceiptHide)
+        XCTAssertTrue(reviewDimChat.hidesCurrentChatBadge)
+        expectAlpha(reviewDimChat.chatButtonAlpha, TradeTurnPolicy.chatDimmedAlpha)
+
+        let closed = agreed(320, 80, status: "closed", agree: true, peerReady: false)
+        let closedChat = chrome(agreed: closed, peerId: "peer", unread: 6, bids: oneBid, turn: "me", viewer: "me")
+        XCTAssertNil(closed.agreement.otherOfferAlpha)
+        XCTAssertEqual(closedChat.otherOfferAlpha, CGFloat(0))
+        XCTAssertFalse(closedChat.appliedPostChatReceiptHide)
+        XCTAssertEqual(deal(closedChat).otherUserAlpha, CGFloat(1))
+        XCTAssertEqual(deal(closedChat).resolved.sendAlpha, CGFloat(0))
+        XCTAssertEqual(closedChat.currentChatText, "6")
+        expectAlpha(closedChat.chatButtonAlpha, TradeTurnPolicy.chatDimmedAlpha)
+        let ended = agreed(320, 80, status: "ended", agree: true, peerReady: true)
+        let endedChat = chrome(agreed: ended, peerId: "peer", unread: 0, bids: nil, turn: "peer", viewer: "me")
+        XCTAssertEqual(endedChat.otherOfferAlpha, CGFloat(0))
+        XCTAssertFalse(endedChat.appliedPostChatReceiptHide)
+        XCTAssertEqual(deal(endedChat).sendTag, closeDealTag)
+        XCTAssertTrue(endedChat.hidesCurrentChatBadge)
+        XCTAssertNil(endedChat.chatButtonAlpha)
+        XCTAssertEqual(deal(endedChat).resolved.sendAlpha, CGFloat(0))
+        let closedDim = agreed(320, 80, status: "closed", agree: false, peerReady: false)
+        let closedDimChat = chrome(agreed: closedDim, peerId: "peer", unread: 1, bids: twoBids, turn: "me", viewer: "me")
+        XCTAssertEqual(closedDimChat.otherOfferAlpha, CGFloat(0.5))
+        XCTAssertNotEqual(closedDimChat.otherOfferAlpha, CGFloat(0))
+        XCTAssertFalse(closedDimChat.appliedPostChatReceiptHide)
+        expectAlpha(closedDimChat.chatButtonAlpha, TradeTurnPolicy.chatFullAlpha)
+
+        let receiptAsAccept = agreed(
+            320, 80, status: "review", agree: true, peerReady: false,
+            justAccept: productsReceivedTag, closeDeal: closeDealTag, receipt: productsReceivedTag
+        )
+        let hiddenOffer = chrome(
+            agreed: receiptAsAccept, peerId: "peer", unread: 3, bids: oneBid, turn: "me", viewer: "me"
+        )
+        XCTAssertTrue(hiddenOffer.appliedPostChatReceiptHide)
+        XCTAssertEqual(hiddenOffer.otherOfferAlpha, CGFloat(0))
+        XCTAssertEqual(deal(hiddenOffer).agreement.otherOfferAlpha, CGFloat(1))
+        XCTAssertNotEqual(hiddenOffer.otherOfferAlpha ?? CGFloat(-1), deal(hiddenOffer).agreement.otherOfferAlpha ?? CGFloat(-1))
+        XCTAssertEqual(hiddenOffer.currentChatText, "3")
+        expectAlpha(hiddenOffer.chatButtonAlpha, TradeTurnPolicy.chatDimmedAlpha)
+        XCTAssertEqual(deal(hiddenOffer).resolved.sendAlpha, CGFloat(1))
+        let peerClears = agreed(
+            320, 80, status: "review", agree: true, peerReady: true,
+            justAccept: productsReceivedTag, closeDeal: closeDealTag, receipt: productsReceivedTag
+        )
+        let peerChat = chrome(agreed: peerClears, peerId: "peer", unread: 3, bids: oneBid, turn: "peer", viewer: "me")
+        XCTAssertEqual(deal(peerChat).sendTag, closeDealTag)
+        XCTAssertFalse(peerChat.appliedPostChatReceiptHide)
+        XCTAssertEqual(peerChat.otherOfferAlpha, CGFloat(1))
+        XCTAssertEqual(peerChat.currentChatText, "3")
+        expectAlpha(peerChat.chatButtonAlpha, TradeTurnPolicy.chatFullAlpha)
+        XCTAssertTrue(deal(peerChat).resolved.hidesThreeDots)
+        let pendingPeer = agreed(320, 80, status: "pending", agree: true, peerReady: true)
+        let pendingPeerChat = chrome(
+            agreed: pendingPeer, peerId: "peer", unread: 1, bids: oneBid, turn: "me", viewer: "me"
+        )
+        XCTAssertEqual(deal(pendingPeerChat).sendTag, closeDealTag)
+        XCTAssertFalse(deal(pendingPeerChat).resolved.hidesThreeDots)
+        XCTAssertFalse(pendingPeerChat.appliedPostChatReceiptHide)
+        XCTAssertEqual(pendingPeerChat.otherOfferAlpha, CGFloat(1))
+        expectAlpha(pendingPeerChat.chatButtonAlpha, TradeTurnPolicy.chatDimmedAlpha)
+        let closeDealIsReceipt = agreed(
+            320, 80, status: "pending", agree: false, peerReady: true,
+            justAccept: justAcceptTag, closeDeal: productsReceivedTag, receipt: productsReceivedTag
+        )
+        let closeHidden = chrome(agreed: closeDealIsReceipt, peerId: "peer", unread: 0, bids: nil, turn: nil, viewer: "me")
+        XCTAssertTrue(closeHidden.appliedPostChatReceiptHide)
+        XCTAssertEqual(closeHidden.otherOfferAlpha, CGFloat(0))
+        XCTAssertEqual(deal(closeHidden).agreement.otherOfferAlpha, CGFloat(0.5))
+        XCTAssertNil(closeHidden.chatButtonAlpha)
+        XCTAssertTrue(closeHidden.hidesCurrentChatBadge)
+        let passedReceipt = agreed(
+            320, 80, status: "pending", agree: true, peerReady: false,
+            justAccept: 7, closeDeal: 8, receipt: 7
+        )
+        let passed = chrome(agreed: passedReceipt, peerId: "peer", unread: 1, bids: twoBids, turn: "me", viewer: "me", receipt: 7)
+        XCTAssertTrue(passed.appliedPostChatReceiptHide)
+        XCTAssertEqual(passed.otherOfferAlpha, CGFloat(0))
+        XCTAssertNotEqual(deal(passed).sendTag, productsReceivedTag)
+        let differentReceipt = agreed(
+            320, 80, status: "review", agree: true, peerReady: false,
+            justAccept: productsReceivedTag, closeDeal: closeDealTag, receipt: 7
+        )
+        let different = chrome(
+            agreed: differentReceipt, peerId: "peer", unread: 1, bids: oneBid, turn: "me", viewer: "me", receipt: 7
+        )
+        XCTAssertFalse(different.appliedPostChatReceiptHide)
+        XCTAssertEqual(different.otherOfferAlpha, CGFloat(1))
+        XCTAssertEqual(deal(different).sendTag, productsReceivedTag)
+
+        let oddTags = [0, -1, 43909, 90440, 90442, Int.max, Int.min]
+        for tag in oddTags {
+            let shownTag = agreed(
+                320, 80, status: "review", agree: true, peerReady: false,
+                justAccept: tag, closeDeal: closeDealTag, receipt: productsReceivedTag
+            )
+            let chat = chrome(agreed: shownTag, peerId: "peer", unread: 1, bids: nil, turn: "me", viewer: "me")
+            XCTAssertEqual(deal(chat).sendTag, tag)
+            XCTAssertFalse(chat.appliedPostChatReceiptHide)
+            XCTAssertEqual(chat.otherOfferAlpha, CGFloat(1))
+            XCTAssertEqual(chat.currentChatText, "1")
+        }
+
+        let waiting = agreed(
+            320, 80, status: "pending", turn: "peer", viewer: "me", waiting: true, agree: true, peerReady: false
+        )
+        let waitingChat = chrome(agreed: waiting, peerId: "peer", unread: 2, bids: oneBid, turn: "peer", viewer: "me")
+        XCTAssertTrue(waiting.resolved.offer.showsWaiting)
+        XCTAssertEqual(waiting.resolved.sendAlpha, CGFloat(0))
+        XCTAssertEqual(waitingChat.otherOfferAlpha, CGFloat(1))
+        XCTAssertEqual(deal(waitingChat).resolved.sendAlpha, CGFloat(0))
+        XCTAssertEqual(waitingChat.currentChatText, "2")
+        expectAlpha(waitingChat.chatButtonAlpha, TradeTurnPolicy.chatFullAlpha)
+        XCTAssertFalse(waitingChat.appliedPostChatReceiptHide)
+        XCTAssertFalse(HLSwappViewController.showsWaitingForReply(
+            turnUserId: "peer", viewerId: "me", waitingTurnEnabled: false
+        ))
+        XCTAssertFalse(HLSwappViewController.shouldBlockOffer(
+            turnUserId: "peer",
+            viewerId: "me",
+            buttonTag: justAcceptTag,
+            productsReceivedTag: productsReceivedTag,
+            turnGateEnabled: false
+        ))
+
+        let bare = chrome(agreed: nil, peerId: "peer", unread: 4, bids: oneBid, turn: "me", viewer: "me")
+        XCTAssertNil(bare.agreed)
+        XCTAssertNil(bare.otherOfferAlpha)
+        XCTAssertFalse(bare.appliedPostChatReceiptHide)
+        XCTAssertEqual(bare.currentChatText, "4")
+        expectAlpha(bare.chatButtonAlpha, TradeTurnPolicy.chatDimmedAlpha)
+        XCTAssertNotEqual(bare.otherOfferAlpha ?? CGFloat(-1), CGFloat(0))
+
+        let widths: [(CGFloat, CGFloat, CGFloat)] = [
+            (320, 80, 240),
+            (320.5, 40.25, 280.25),
+            (80, 320, -240),
+            (0, 500, -500),
+            (0, 0, 0),
+            (320, 320, 0)
+        ]
+        for triple in widths {
+            let row = agreed(triple.0, triple.1, status: "pending", agree: true, peerReady: false)
+            let chat = chrome(agreed: row, peerId: "peer", unread: 1, bids: nil, turn: "peer", viewer: "me")
+            assertShell(chat, viewWidth: triple.0, otherWidth: triple.1)
+            XCTAssertEqual(deal(chat).resolved.opening.otherUserOriginX, triple.2)
+            XCTAssertEqual(chat.otherOfferAlpha, CGFloat(1))
+            XCTAssertEqual(deal(chat).resolved.opening.addTradeRoomAlpha, CGFloat(0))
+        }
+        XCTAssertEqual(
+            agreed(50, 0, status: "pending", agree: true, peerReady: false).resolved.opening.addTradeRoomAlpha,
+            CGFloat(0)
+        )
+        XCTAssertTrue(SessionListPolicy.roomsFull(currentCount: 100, maxTrades: 3))
+        XCTAssertEqual(
+            agreed(3, 0, status: "pending", agree: true, peerReady: false).resolved.opening.addTradeRoomAlpha,
+            CGFloat(0)
+        )
+        let lobby = HLSwappViewController.lobbyPageChrome(maxTrades: 3, pastTrades: [], viewerId: "a&b")
+        XCTAssertEqual(lobby.addTradeRoomAlpha, CGFloat(1))
+        XCTAssertNotEqual(lobby.addTradeRoomAlpha, pending.resolved.opening.addTradeRoomAlpha)
+        let lobbyCap = HLSwappViewController.lobbyPageChrome(maxTrades: 50, pastTrades: [], viewerId: "a&b")
+        XCTAssertEqual(lobbyCap.addTradeRoomAlpha, CGFloat(0.3))
+        let earlier: NSDictionary = [
+            "owner_id": "a&b",
+            "other_id": "x",
+            "owner_unread": NSNumber(value: 3)
+        ]
+        let later: NSDictionary = [
+            "owner_id": "a&b",
+            "other_id": " bike ",
+            "owner_unread": NSNumber(value: 4)
+        ]
+        let lobbyUnread = HLSwappViewController.lobbyPageChrome(
+            maxTrades: 3,
+            pastTrades: [earlier, later],
+            viewerId: "a&b"
+        )
+        XCTAssertEqual(lobbyUnread.pastChatCount, 4)
+        XCTAssertNotEqual(lobbyUnread.pastChatCount, 7)
+        XCTAssertEqual(lobbyUnread.pastChatPeerId, " bike ")
+        let currentOnly = fromTrade(earlier, viewer: "a&b", agreed: pending)
+        XCTAssertEqual(currentOnly.unread, 3)
+        XCTAssertEqual(currentOnly.currentChatText, "3")
+        XCTAssertNotEqual(currentOnly.unread, lobbyUnread.pastChatCount)
+        XCTAssertNotEqual(currentOnly.peerId, lobbyUnread.pastChatPeerId)
+
+        let parked = HLSwappViewController.emptyTradeRoomChrome(
+            initialOtherUserX: pending.resolved.opening.initialOtherUserX
+        )
+        XCTAssertEqual(parked.chatButtonAlpha, CGFloat(0))
+        XCTAssertNotNil(parked.chatButtonAlpha)
+        XCTAssertNil(pending.resolved.opening.chatButtonAlpha)
+        XCTAssertEqual(parked.otherOfferAlpha, CGFloat(0))
+        XCTAssertNotEqual(parked.otherOfferAlpha, shown.otherOfferAlpha)
+        XCTAssertTrue(parked.hidesCurrentChatBadge)
+        XCTAssertFalse(shown.hidesCurrentChatBadge)
+
+        let ownerReady = tradeReadyFixture(ownerId: "owner", otherId: "peer", ownerReady: true, otherReady: false)
+        XCTAssertFalse(TradeReadyPolicy.peerIsReady(trade: ownerReady, viewerId: "owner"))
+        XCTAssertTrue(TradeReadyPolicy.viewerIsReady(trade: ownerReady, viewerId: "owner"))
+        let ownerReadyChat = chrome(
+            agreed: agreed(320, 80, status: "pending", agree: true, peerReady: false),
+            peerId: "peer",
+            unread: 1,
+            bids: nil,
+            turn: "owner",
+            viewer: "owner"
+        )
+        XCTAssertEqual(deal(ownerReadyChat).sendTag, justAcceptTag)
+        XCTAssertNotEqual(deal(ownerReadyChat).sendTag, closeDealTag)
+        XCTAssertFalse(deal(ownerReadyChat).resolved.hidesThreeDots)
+        let peerReadyTrade = tradeReadyFixture(ownerId: "owner", otherId: "peer", ownerReady: false, otherReady: true)
+        XCTAssertTrue(TradeReadyPolicy.peerIsReady(trade: peerReadyTrade, viewerId: "owner"))
+        XCTAssertFalse(TradeReadyPolicy.peerIsReady(trade: peerReadyTrade, viewerId: nil))
+        XCTAssertFalse(TradeReadyPolicy.peerIsReady(trade: nil, viewerId: "owner"))
+    }
+
     private func tradeReadyFixture(
         ownerId: String,
         otherId: String,

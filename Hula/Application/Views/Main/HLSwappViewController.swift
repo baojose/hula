@@ -833,7 +833,9 @@ class HLSwappViewController: UIViewController {
     /// change the three-dots flag, the send alpha, or the chat button. Do not
     /// enable `waitingTurnEnabled`. Do not trim. Do not case-fold. Do not
     /// percent-encode. Do not read `arrPastTrades`. `"a&b"` is not `a%26b`.
-    /// `"P1"` is not `"p1"`. `" bike "` is not `bike`.
+    /// `"P1"` is not `"p1"`. `" bike "` is not `bike`. Chat badge and
+    /// `chatButtonAlpha` are the next step, `resolvedTradeChatChrome`. Do
+    /// not fold them into this helper.
     class func agreedTradeAfterResolved(
         resolved: ResolvedTradeAfterOpening,
         otherAgree: Bool,
@@ -871,6 +873,67 @@ class HLSwappViewController: UIViewController {
             otherUserAlpha: agreement.otherUserAlpha,
             otherOfferAlpha: otherOfferAlpha,
             appliedReceiptHide: appliedReceiptHide
+        )
+    }
+
+    /// Current-chat badge and chat-button alpha after agreement, still on
+    /// the resolved trade. `unread` and `peerId` come from `peerChatContext`
+    /// on this trade only. The call site still passes `userId` into that
+    /// helper as `String`, so a nil user id traps there and is not coalesced
+    /// to `""`. The badge shows only when `unread > 0`. The label is
+    /// `"\(unread)"` only then. A negative count hides and is stored as
+    /// itself. One count is not summed with `arrPastTrades`. `chatButtonAlpha`
+    /// is separate. One `[Any]` bid plus a string turn that matches `viewerId`
+    /// is `0.3`. Any other array is `1`. A non-array returns nil and does not
+    /// assign the button. Opening left that alpha nil. A nil `viewerId` does
+    /// not match a string turn, so one bid is `1`. `""` matches `""`.
+    /// `" bike "` does not match `"bike"`. One unread does not dim the
+    /// button. One bid does not show the badge. When `agreed` is non-nil, the
+    /// receipt hide runs after that and forces the other offer to `0` only
+    /// when `agreed.sendTag` is still exactly `productsReceivedTag`. On the
+    /// barter path that tag is `1` or `91053`, so the hide does not fire. A
+    /// nil `agreed` leaves `otherOfferAlpha` nil. Do not treat that nil as
+    /// `0`. Do not fold this into `agreedTradeAfterResolved`. Do not change
+    /// `manageCheckMarks`. Do not enable `waitingTurnEnabled`. Do not trim.
+    /// Do not case-fold. Do not percent-encode. `"a&b"` is not `a%26b`.
+    /// `"P1"` is not `"p1"`. `" bike "` is not `bike`.
+    class func resolvedTradeChatChrome(
+        agreed: AgreedTradeAfterResolved?,
+        peerId: String,
+        unread: Int,
+        bids: Any?,
+        turnValue: Any?,
+        viewerId: String?,
+        productsReceivedTag: Int
+    ) -> ResolvedTradeChatChrome {
+        let showsBadge = unread > 0
+        let text: String? = showsBadge ? "\(unread)" : nil
+        let alpha = TradeTurnPolicy.chatButtonAlpha(
+            bids: bids,
+            turnValue: turnValue,
+            viewerId: viewerId
+        )
+        var offerAlpha: CGFloat? = nil
+        var appliedHide = false
+        if let agreed = agreed {
+            offerAlpha = agreed.otherOfferAlpha
+            if let forced = HLSwappViewController.productsReceivedOtherOfferAlpha(
+                sendTag: agreed.sendTag,
+                productsReceivedTag: productsReceivedTag
+            ) {
+                offerAlpha = forced
+                appliedHide = true
+            }
+        }
+        return ResolvedTradeChatChrome(
+            agreed: agreed,
+            peerId: peerId,
+            unread: unread,
+            hidesCurrentChatBadge: !showsBadge,
+            currentChatText: text,
+            chatButtonAlpha: alpha,
+            otherOfferAlpha: offerAlpha,
+            appliedPostChatReceiptHide: appliedHide
         )
     }
     
@@ -1264,12 +1327,12 @@ class HLSwappViewController: UIViewController {
                     trades: swappPageVC.arrTrades
                 ) {
                     last_index_setup = swappPageVC.currentIndex
+                    // Nil `userId` still traps here. Do not coalesce it to `""`
+                    // before the badge read. Chat chrome runs after agreement.
                     let peer = HLSwappViewController.peerChatContext(
                         from: thisTrade,
                         viewerId: HulaUser.sharedInstance.userId
                     )
-                    let other_user_id = peer.peerId
-                    let chat_count = peer.unread
 
 
                     // Overwrite only the fields offer chrome assigns. The
@@ -1321,6 +1384,7 @@ class HLSwappViewController: UIViewController {
                     
                     
                     
+                    var agreedForChat: AgreedTradeAfterResolved? = nil
                     if let tr = self.barterDelegate?.getCurrentTradeStatus() {
                         //print("updating checkmarks...");
                         print("owner ready \(tr.owner_ready)");
@@ -1329,9 +1393,8 @@ class HLSwappViewController: UIViewController {
 
                         // Check marks already replaced the send tag. Agreement
                         // overwrites the other offer except exact closed and
-                        // ended. The receipt hide below still runs and forces
-                        // 0 only when the stored tag is still 90441. Chat
-                        // alpha is the next step and is not part of this one.
+                        // ended. Chat chrome is the next step and is not part
+                        // of this one. The receipt hide still runs after chat.
                         let agreed = HLSwappViewController.agreedTradeAfterResolved(
                             resolved: resolved,
                             otherAgree: tr.other_agree,
@@ -1346,22 +1409,35 @@ class HLSwappViewController: UIViewController {
                         self.sendOfferBtn.tag = agreed.sendTag
                         self.otherUserView.alpha = agreed.otherUserAlpha
                         self.otherOfferBtn.alpha = agreed.otherOfferAlpha
+                        agreedForChat = agreed
                     }
-                    
-                    if chat_count > 0 {
-                        self.chatCountLbl.text = "\(chat_count)"
-                        self.chatCountLbl.isHidden = false
-                    } else {
-                        self.chatCountLbl.isHidden = true
-                    }
-                    
-                    if let alpha = TradeTurnPolicy.chatButtonAlpha(
+
+                    // Badge and chat alpha. A nil alpha does not assign the
+                    // button. The post-chat hide writes only when the stored
+                    // tag is still the products-received tag. The outer hide
+                    // still runs for the empty room and a leftover tag.
+                    let chat = HLSwappViewController.resolvedTradeChatChrome(
+                        agreed: agreedForChat,
+                        peerId: peer.peerId,
+                        unread: peer.unread,
                         bids: thisTrade.object(forKey: "bids"),
                         turnValue: thisTrade.object(forKey: "turn_user_id"),
-                        viewerId: HulaUser.sharedInstance.userId
-                    ) {
+                        viewerId: HulaUser.sharedInstance.userId,
+                        productsReceivedTag: kTagProductsReceived
+                    )
+                    if let text = chat.currentChatText {
+                        self.chatCountLbl.text = text
+                    }
+                    self.chatCountLbl.isHidden = chat.hidesCurrentChatBadge
+                    if let alpha = chat.chatButtonAlpha {
                         self.chatButton.alpha = alpha
                     }
+                    if chat.appliedPostChatReceiptHide {
+                        if let offerAlpha = chat.otherOfferAlpha {
+                            self.otherOfferBtn.alpha = offerAlpha
+                        }
+                    }
+                    let other_user_id = chat.peerId
                     
                     
                     if (prevUser != other_user_id) {
@@ -2005,7 +2081,7 @@ struct ResolvedTradeAfterOpening {
 /// tag is still exactly the products-received tag, which forces
 /// `otherOfferAlpha` to 0. A nil agreement alpha leaves the resolved other
 /// offer in place. Send alpha, frames, the chat button, and the three-dots
-/// flag stay on `resolved`.
+/// flag stay on `resolved`. `resolvedTradeChatChrome` is the next step.
 struct AgreedTradeAfterResolved {
     let resolved: ResolvedTradeAfterOpening
     let agreement: OtherAgreeOverlay
@@ -2013,6 +2089,23 @@ struct AgreedTradeAfterResolved {
     let otherUserAlpha: CGFloat
     let otherOfferAlpha: CGFloat
     let appliedReceiptHide: Bool
+}
+
+/// Chat badge and chat-button alpha after agreement. `currentChatText` is
+/// nil when the badge hides, including a negative `unread`. A nil
+/// `chatButtonAlpha` means this step does not assign the button. A nil
+/// `otherOfferAlpha` means no agreed trade was passed, so this step does
+/// not assign the other offer. `appliedPostChatReceiptHide` is true only
+/// when the agreed send tag is still exactly the products-received tag.
+struct ResolvedTradeChatChrome {
+    let agreed: AgreedTradeAfterResolved?
+    let peerId: String
+    let unread: Int
+    let hidesCurrentChatBadge: Bool
+    let currentChatText: String?
+    let chatButtonAlpha: CGFloat?
+    let otherOfferAlpha: CGFloat?
+    let appliedPostChatReceiptHide: Bool
 }
 
 /// Turn checks compared IUO `turn_user_id` / `userId` with `!=` and `==`.
