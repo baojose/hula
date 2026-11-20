@@ -896,7 +896,9 @@ class HLSwappViewController: UIViewController {
     /// `0`. Do not fold this into `agreedTradeAfterResolved`. Do not change
     /// `manageCheckMarks`. Do not enable `waitingTurnEnabled`. Do not trim.
     /// Do not case-fold. Do not percent-encode. `"a&b"` is not `a%26b`.
-    /// `"P1"` is not `"p1"`. `" bike "` is not `bike`.
+    /// `"P1"` is not `"p1"`. `" bike "` is not `bike`. The peer image and
+    /// nick refresh is the next step. Do not fold it into this helper. Do
+    /// not start that load from `lobbyPageChrome` or `emptyTradeRoomChrome`.
     class func resolvedTradeChatChrome(
         agreed: AgreedTradeAfterResolved?,
         peerId: String,
@@ -936,8 +938,61 @@ class HLSwappViewController: UIViewController {
             appliedPostChatReceiptHide: appliedHide
         )
     }
-    
-    
+
+    /// Peer image and nick refresh after `resolvedTradeChatChrome`, still
+    /// inside the resolved trade and before the outer receipt hide. Reloads
+    /// only when `previousPeerId != peerId`. `prevUser` starts as `""`. The
+    /// compare is exact. Do not trim it. `" bike "` is not `"bike"`.
+    /// `"a&b"` is not `"a%26b"`. `"P1"` is not `"p1"`. `"" != ""` does not
+    /// reload. On a reload, `storedPeerId` is the raw peer id, not the
+    /// encoded path. `imageURL` is the instance `userImageURL(userId:)`,
+    /// which is `""` when the static builder returns nil. `nickURL` is
+    /// `userNickURL`, which is nil for a blank or whitespace-only id so the
+    /// call site does not GET `users//nick`. A non-blank id is trimmed and
+    /// percent-encoded by `encodedPathSegment`. Do not change that encoder.
+    /// Do not compare the encoded value. A nil `imageURL` or `nickURL` means
+    /// this step does not load. Do not fold this into
+    /// `resolvedTradeChatChrome`. Do not start a load from `lobbyPageChrome`
+    /// or `emptyTradeRoomChrome`. The outer receipt hide still runs after
+    /// this step and is not decided here.
+    class func resolvedTradePeerRefresh(
+        previousPeerId: String,
+        peerId: String,
+        apiBase: String
+    ) -> ResolvedTradePeerRefresh {
+        if previousPeerId != peerId {
+            return ResolvedTradePeerRefresh(
+                previousPeerId: previousPeerId,
+                peerId: peerId,
+                shouldReload: true,
+                storedPeerId: peerId,
+                imageURL: CommonUtils.sharedInstance.userImageURL(userId: peerId),
+                nickURL: userNickURL(apiBase: apiBase, userId: peerId)
+            )
+        }
+        return ResolvedTradePeerRefresh(
+            previousPeerId: previousPeerId,
+            peerId: peerId,
+            shouldReload: false,
+            storedPeerId: previousPeerId,
+            imageURL: nil,
+            nickURL: nil
+        )
+    }
+
+    /// Nick body from `users/{id}/nick`. Only a `[String: String]` is read,
+    /// which is the historical `json as? [String: String]` cast. A numeric
+    /// nick, a bool, `NSNull`, an array, a string body, or a sibling
+    /// non-string field drops the whole payload. A missing `nick` stays nil
+    /// and does not clear the label. The text is `otherUserNickLabel`: no
+    /// trim, no percent-encoding, and not `displayNick`.
+    class func nickLabel(from json: Any?) -> String? {
+        guard let dict = json as? [String: String] else {
+            return nil
+        }
+        return otherUserNickLabel(dict["nick"])
+    }
+
     override func preferredScreenEdgesDeferringSystemGestures() -> UIRectEdge {
         print("*preferredScreenEdges")
         return .all
@@ -1438,22 +1493,26 @@ class HLSwappViewController: UIViewController {
                         }
                     }
                     let other_user_id = chat.peerId
-                    
-                    
-                    if (prevUser != other_user_id) {
-                        prevUser = other_user_id
-                        otherUserImage.loadImageFromURL(urlString: CommonUtils.sharedInstance.userImageURL(userId: other_user_id))
-                        
-                        if let queryURL = HLSwappViewController.userNickURL(
-                            apiBase: HulaConstants.apiURL,
-                            userId: other_user_id
-                        ) {
+
+                    // Image and nick only when the raw peer id changes.
+                    // Blank ids still reload against a different previous id,
+                    // but they do not GET `users//nick`. The outer receipt
+                    // hide stays after this block.
+                    let refresh = HLSwappViewController.resolvedTradePeerRefresh(
+                        previousPeerId: prevUser,
+                        peerId: other_user_id,
+                        apiBase: HulaConstants.apiURL
+                    )
+                    if refresh.shouldReload {
+                        prevUser = refresh.storedPeerId
+                        if let imageURL = refresh.imageURL {
+                            otherUserImage.loadImageFromURL(urlString: imageURL)
+                        }
+                        if let queryURL = refresh.nickURL {
                             HLDataManager.sharedInstance.httpGet(urlstr: queryURL, taskCallback: { (result, json) in
-                                if let dict = json as? [String:String]{
-                                    if let label = HLSwappViewController.otherUserNickLabel(dict["nick"]) {
-                                        DispatchQueue.main.async {
-                                            self.otherUserNick.text = label
-                                        }
+                                if let label = HLSwappViewController.nickLabel(from: json) {
+                                    DispatchQueue.main.async {
+                                        self.otherUserNick.text = label
                                     }
                                 }
                             })
@@ -2106,6 +2165,20 @@ struct ResolvedTradeChatChrome {
     let chatButtonAlpha: CGFloat?
     let otherOfferAlpha: CGFloat?
     let appliedPostChatReceiptHide: Bool
+}
+
+/// Image and nick load after chat chrome. `shouldReload` is exact
+/// `previousPeerId != peerId`. `storedPeerId` is the raw id written back to
+/// `prevUser`. `imageURL` is nil when this step does not load, and `""` when
+/// the static avatar builder returns nil. `nickURL` is nil when this step
+/// does not GET, including a blank or whitespace-only peer.
+struct ResolvedTradePeerRefresh {
+    let previousPeerId: String
+    let peerId: String
+    let shouldReload: Bool
+    let storedPeerId: String
+    let imageURL: String?
+    let nickURL: String?
 }
 
 /// Turn checks compared IUO `turn_user_id` / `userId` with `!=` and `==`.

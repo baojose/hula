@@ -17518,6 +17518,333 @@ class HulaTests: XCTestCase {
         XCTAssertFalse(TradeReadyPolicy.peerIsReady(trade: nil, viewerId: "owner"))
     }
 
+    func testResolvedTradePeerRefreshReloadsOnlyWhenRawPeerChanges() {
+        let base = "https://api.example.test/v1/"
+        let productsReceivedTag = 90441
+        let justAcceptTag = 1
+        let closeDealTag = 91053
+        let vc = HLSwappViewController()
+        XCTAssertEqual(vc.kTagProductsReceived, productsReceivedTag)
+        XCTAssertEqual(vc.kTagJustAccept, justAcceptTag)
+        XCTAssertEqual(vc.kTagCloseDeal, closeDealTag)
+        XCTAssertTrue(ProductIdentityPolicy.identifiersMatch(nil, ""))
+        XCTAssertFalse(TradeTurnPolicy.idsMatch(nil, ""))
+        XCTAssertNotEqual(
+            TradeTurnPolicy.idsMatch(nil, ""),
+            ProductIdentityPolicy.identifiersMatch(nil, "")
+        )
+
+        func peerRefresh(_ previous: String, _ peer: String) -> ResolvedTradePeerRefresh {
+            return HLSwappViewController.resolvedTradePeerRefresh(
+                previousPeerId: previous,
+                peerId: peer,
+                apiBase: base
+            )
+        }
+
+        func expectURL(_ value: String?, _ peer: String, file: StaticString = #file, line: UInt = #line) {
+            XCTAssertEqual(
+                value,
+                HLSwappViewController.userNickURL(apiBase: base, userId: peer),
+                file: file,
+                line: line
+            )
+            XCTAssertEqual(
+                peerRefresh("old", peer).imageURL,
+                CommonUtils.sharedInstance.userImageURL(userId: peer),
+                file: file,
+                line: line
+            )
+        }
+
+        let first = peerRefresh("", "peer")
+        XCTAssertTrue(first.shouldReload)
+        XCTAssertEqual(first.previousPeerId, "")
+        XCTAssertEqual(first.storedPeerId, "peer")
+        XCTAssertNotEqual(first.storedPeerId, "")
+        expectURL(first.nickURL, "peer")
+        XCTAssertTrue((first.nickURL ?? "").contains("/users/peer/nick"))
+        XCTAssertTrue((first.imageURL ?? "").contains("/users/peer/image"))
+        let again = peerRefresh(first.storedPeerId, "peer")
+        XCTAssertFalse(again.shouldReload)
+        XCTAssertNil(again.imageURL)
+        XCTAssertNil(again.nickURL)
+        XCTAssertEqual(again.storedPeerId, "peer")
+
+        let sameEmpty = peerRefresh("", "")
+        XCTAssertFalse(sameEmpty.shouldReload)
+        XCTAssertNil(sameEmpty.imageURL)
+        XCTAssertNil(sameEmpty.nickURL)
+        XCTAssertEqual(sameEmpty.storedPeerId, "")
+
+        let spaced = peerRefresh("", " bike ")
+        XCTAssertTrue(spaced.shouldReload)
+        XCTAssertEqual(spaced.storedPeerId, " bike ")
+        XCTAssertNotEqual(spaced.storedPeerId, "bike")
+        XCTAssertNotEqual(spaced.storedPeerId, CommonUtils.encodedPathSegment(" bike "))
+        XCTAssertNotEqual(spaced.storedPeerId, CommonUtils.displayNick(" bike "))
+        expectURL(spaced.nickURL, " bike ")
+        XCTAssertEqual(spaced.nickURL, base + "users/bike/nick")
+        XCTAssertTrue((spaced.imageURL ?? "").contains("/users/bike/image"))
+        XCTAssertFalse((spaced.nickURL ?? "").contains(" bike "))
+        XCTAssertFalse((spaced.nickURL ?? "").contains("%20"))
+        XCTAssertFalse((spaced.imageURL ?? "").contains("%20"))
+        let spacedAgain = peerRefresh(" bike ", " bike ")
+        XCTAssertFalse(spacedAgain.shouldReload)
+        XCTAssertNil(spacedAgain.imageURL)
+        XCTAssertNil(spacedAgain.nickURL)
+        XCTAssertEqual(spacedAgain.storedPeerId, " bike ")
+        let trimmedPeer = peerRefresh(" bike ", "bike")
+        XCTAssertTrue(trimmedPeer.shouldReload)
+        XCTAssertEqual(trimmedPeer.storedPeerId, "bike")
+        XCTAssertNotEqual(trimmedPeer.storedPeerId, " bike ")
+
+        let encoded = peerRefresh("a%26b", "a&b")
+        XCTAssertTrue(encoded.shouldReload)
+        XCTAssertEqual(encoded.storedPeerId, "a&b")
+        XCTAssertNotEqual(encoded.storedPeerId, "a%26b")
+        expectURL(encoded.nickURL, "a&b")
+        XCTAssertEqual(encoded.nickURL, base + "users/a%26b/nick")
+        XCTAssertTrue((encoded.imageURL ?? "").contains("/users/a%26b/image"))
+        XCTAssertFalse((encoded.nickURL ?? "").contains("a&b"))
+        XCTAssertFalse((encoded.imageURL ?? "").contains("a&b/image"))
+        let encodedAgain = peerRefresh("a&b", "a&b")
+        XCTAssertFalse(encodedAgain.shouldReload)
+        XCTAssertNil(encodedAgain.nickURL)
+
+        let cased = peerRefresh("p1", "P1")
+        XCTAssertTrue(cased.shouldReload)
+        XCTAssertEqual(cased.storedPeerId, "P1")
+        XCTAssertNotEqual(cased.storedPeerId, "p1")
+        expectURL(cased.nickURL, "P1")
+        XCTAssertEqual(cased.nickURL, base + "users/P1/nick")
+        XCTAssertTrue((cased.imageURL ?? "").contains("/users/P1/image"))
+        XCTAssertFalse((cased.imageURL ?? "").contains("/users/p1/image"))
+        XCTAssertFalse(peerRefresh("P1", "P1").shouldReload)
+
+        let slashed = peerRefresh("", "a/b")
+        XCTAssertTrue(slashed.shouldReload)
+        XCTAssertEqual(slashed.storedPeerId, "a/b")
+        XCTAssertNotEqual(slashed.storedPeerId, "a%2Fb")
+        expectURL(slashed.nickURL, "a/b")
+        XCTAssertEqual(slashed.nickURL, base + "users/a%2Fb/nick")
+        XCTAssertTrue((slashed.imageURL ?? "").contains("/users/a%2Fb/image"))
+        XCTAssertFalse((slashed.nickURL ?? "").contains("/users/a/b/"))
+        XCTAssertFalse((slashed.imageURL ?? "").contains("/users/a/b/"))
+
+        let blanks = ["", " ", "   ", "\n", "\t"]
+        for peer in blanks {
+            let row = peerRefresh("previous", peer)
+            XCTAssertTrue(row.shouldReload)
+            XCTAssertEqual(row.storedPeerId, peer)
+            XCTAssertNil(CommonUtils.nonEmptyTrimmed(peer))
+            XCTAssertEqual(row.imageURL, "")
+            XCTAssertNil(row.nickURL)
+            XCTAssertFalse((row.imageURL ?? "x").contains("users/"))
+            XCTAssertNotEqual(row.imageURL, base + "users//image")
+            XCTAssertNil(HLSwappViewController.userNickURL(apiBase: base, userId: peer))
+            XCTAssertEqual(HLSwappViewController.nickLabel(from: nickJSON("{\"nick\":\"Ada\"}")), "Ada")
+        }
+        XCTAssertTrue(peerRefresh("", " ").shouldReload)
+        XCTAssertTrue(peerRefresh(" ", "\n").shouldReload)
+        XCTAssertFalse(peerRefresh(" ", " ").shouldReload)
+        XCTAssertFalse(peerRefresh("\n", "\n").shouldReload)
+        XCTAssertEqual(peerRefresh(" ", " ").storedPeerId, " ")
+        XCTAssertNil(peerRefresh("\n", "\n").imageURL)
+
+        let opening = HLSwappViewController.tradeRoomOpeningChrome(viewWidth: 320, otherUserWidth: 80)
+        let resolved = HLSwappViewController.resolvedTradeAfterOpening(
+            opening: opening,
+            status: "pending",
+            turnUserId: "me",
+            viewerId: "me",
+            waitingTurnEnabled: false,
+            productsReceivedTag: productsReceivedTag
+        )
+        let agreed = HLSwappViewController.agreedTradeAfterResolved(
+            resolved: resolved,
+            otherAgree: true,
+            peerReady: false,
+            justAcceptTag: justAcceptTag,
+            closeDealTag: closeDealTag,
+            productsReceivedTag: productsReceivedTag
+        )
+        let oneBid = NSMutableArray()
+        oneBid.add("only")
+        let trade: NSDictionary = [
+            "owner_id": "me",
+            "other_id": " bike ",
+            "owner_unread": NSNumber(value: 1),
+            "other_unread": NSNumber(value: 9),
+            "turn_user_id": "me",
+            "bids": oneBid
+        ]
+        let peer = HLSwappViewController.peerChatContext(from: trade, viewerId: "me")
+        let chat = HLSwappViewController.resolvedTradeChatChrome(
+            agreed: agreed,
+            peerId: peer.peerId,
+            unread: peer.unread,
+            bids: trade.object(forKey: "bids"),
+            turnValue: trade.object(forKey: "turn_user_id"),
+            viewerId: "me",
+            productsReceivedTag: productsReceivedTag
+        )
+        XCTAssertEqual(chat.peerId, " bike ")
+        XCTAssertEqual(chat.unread, 1)
+        XCTAssertEqual(chat.currentChatText, "1")
+        XCTAssertFalse(chat.hidesCurrentChatBadge)
+        XCTAssertEqual(Double(chat.chatButtonAlpha ?? -1), Double(TradeTurnPolicy.chatDimmedAlpha), accuracy: 0.0001)
+        XCTAssertEqual(chat.otherOfferAlpha, CGFloat(1))
+        XCTAssertFalse(chat.appliedPostChatReceiptHide)
+        XCTAssertEqual(agreed.sendTag, justAcceptTag)
+        let loaded = peerRefresh("", chat.peerId)
+        XCTAssertTrue(loaded.shouldReload)
+        XCTAssertEqual(loaded.storedPeerId, " bike ")
+        XCTAssertEqual(chat.currentChatText, "1")
+        XCTAssertEqual(Double(chat.chatButtonAlpha ?? -1), Double(TradeTurnPolicy.chatDimmedAlpha), accuracy: 0.0001)
+        XCTAssertEqual(chat.unread, 1)
+        let held = peerRefresh(loaded.storedPeerId, chat.peerId)
+        XCTAssertFalse(held.shouldReload)
+        XCTAssertNil(held.imageURL)
+        XCTAssertNil(held.nickURL)
+        XCTAssertEqual(chat.currentChatText, "1")
+        XCTAssertFalse(chat.hidesCurrentChatBadge)
+
+        let quiet: NSDictionary = [
+            "owner_id": "me",
+            "other_id": "peer",
+            "owner_unread": NSNumber(value: 0),
+            "turn_user_id": "peer"
+        ]
+        let quietPeer = HLSwappViewController.peerChatContext(from: quiet, viewerId: "me")
+        let quietChat = HLSwappViewController.resolvedTradeChatChrome(
+            agreed: agreed,
+            peerId: quietPeer.peerId,
+            unread: quietPeer.unread,
+            bids: oneBid,
+            turnValue: "peer",
+            viewerId: "me",
+            productsReceivedTag: productsReceivedTag
+        )
+        XCTAssertTrue(quietChat.hidesCurrentChatBadge)
+        XCTAssertNil(quietChat.currentChatText)
+        XCTAssertEqual(Double(quietChat.chatButtonAlpha ?? -1), Double(TradeTurnPolicy.chatFullAlpha), accuracy: 0.0001)
+        XCTAssertFalse(peerRefresh("peer", quietChat.peerId).shouldReload)
+        XCTAssertTrue(peerRefresh("", quietChat.peerId).shouldReload)
+
+        func hide(_ tag: Int, receipt: Int = 90441) -> CGFloat? {
+            return HLSwappViewController.productsReceivedOtherOfferAlpha(
+                sendTag: tag,
+                productsReceivedTag: receipt
+            )
+        }
+        XCTAssertNil(hide(agreed.sendTag))
+        XCTAssertNil(hide(justAcceptTag))
+        XCTAssertNil(hide(closeDealTag))
+        XCTAssertEqual(hide(productsReceivedTag), CGFloat(0))
+        XCTAssertEqual(hide(7, receipt: 7), CGFloat(0))
+        XCTAssertNil(hide(7, receipt: productsReceivedTag))
+        XCTAssertNil(hide(justAcceptTag))
+        let leftover = peerRefresh("peer", "peer")
+        XCTAssertFalse(leftover.shouldReload)
+        XCTAssertEqual(hide(productsReceivedTag), CGFloat(0))
+        XCTAssertEqual(leftover.storedPeerId, "peer")
+        let changed = peerRefresh("peer", "other")
+        XCTAssertTrue(changed.shouldReload)
+        XCTAssertNil(hide(closeDealTag))
+        XCTAssertEqual(changed.storedPeerId, "other")
+
+        let ready = HLSwappViewController.agreedTradeAfterResolved(
+            resolved: resolved,
+            otherAgree: true,
+            peerReady: true,
+            justAcceptTag: justAcceptTag,
+            closeDealTag: closeDealTag,
+            productsReceivedTag: productsReceivedTag
+        )
+        XCTAssertEqual(ready.sendTag, closeDealTag)
+        XCTAssertNil(hide(ready.sendTag))
+        XCTAssertNotEqual(ready.sendTag, productsReceivedTag)
+
+        let empty = HLSwappViewController.emptyTradeRoomChrome(initialOtherUserX: 40)
+        XCTAssertEqual(empty.chatButtonAlpha, CGFloat(0))
+        XCTAssertEqual(empty.otherOfferAlpha, CGFloat(0))
+        XCTAssertEqual(empty.addTradeRoomAlpha, CGFloat(0))
+        let lobby = HLSwappViewController.lobbyPageChrome(
+            maxTrades: 49,
+            pastTrades: [],
+            viewerId: "me"
+        )
+        XCTAssertEqual(lobby.addTradeRoomAlpha, CGFloat(1))
+        let fullLobby = HLSwappViewController.lobbyPageChrome(
+            maxTrades: 50,
+            pastTrades: [],
+            viewerId: "me"
+        )
+        XCTAssertEqual(fullLobby.addTradeRoomAlpha, CGFloat(0.3))
+
+        XCTAssertEqual(HLSwappViewController.nickLabel(from: nickJSON("{\"nick\":\"Ada\"}")), "Ada")
+        XCTAssertEqual(HLSwappViewController.nickLabel(from: ["nick": "Ada"] as [String: String]), "Ada")
+        XCTAssertEqual(HLSwappViewController.nickLabel(from: nickJSON("{\"nick\":\" bike \"}")), " bike ")
+        XCTAssertNotEqual(
+            HLSwappViewController.nickLabel(from: nickJSON("{\"nick\":\" bike \"}")),
+            CommonUtils.displayNick(" bike ")
+        )
+        XCTAssertNotEqual(HLSwappViewController.nickLabel(from: nickJSON("{\"nick\":\" bike \"}")), "bike")
+        XCTAssertEqual(HLSwappViewController.nickLabel(from: nickJSON("{\"nick\":\"a&b\"}")), "a&b")
+        XCTAssertNotEqual(HLSwappViewController.nickLabel(from: nickJSON("{\"nick\":\"a&b\"}")), "a%26b")
+        XCTAssertEqual(HLSwappViewController.nickLabel(from: nickJSON("{\"nick\":\"P1\"}")), "P1")
+        XCTAssertNotEqual(HLSwappViewController.nickLabel(from: nickJSON("{\"nick\":\"P1\"}")), "p1")
+        XCTAssertEqual(HLSwappViewController.nickLabel(from: nickJSON("{\"nick\":\"\"}")), "")
+        XCTAssertEqual(HLSwappViewController.nickLabel(from: nickJSON("{\"nick\":\" \"}")), " ")
+        XCTAssertEqual(HLSwappViewController.nickLabel(from: nickJSON("{\"nick\":\"\\n\"}")), "\n")
+        XCTAssertNil(HLSwappViewController.nickLabel(from: nickJSON("{}")))
+        XCTAssertNil(HLSwappViewController.nickLabel(from: nickJSON("{\"name\":\"Ada\"}")))
+        XCTAssertNil(HLSwappViewController.nickLabel(from: nickJSON("{\"Nick\":\"Ada\"}")))
+        XCTAssertNil(HLSwappViewController.nickLabel(from: nickJSON("{\"nick\":1}")))
+        XCTAssertNil(HLSwappViewController.nickLabel(from: nickJSON("{\"nick\":true}")))
+        XCTAssertNil(HLSwappViewController.nickLabel(from: nickJSON("{\"nick\":false}")))
+        XCTAssertNil(HLSwappViewController.nickLabel(from: nickJSON("{\"nick\":null}")))
+        XCTAssertNil(HLSwappViewController.nickLabel(from: nickJSON("{\"nick\":\"Ada\",\"n\":1}")))
+        XCTAssertNil(HLSwappViewController.nickLabel(from: nickJSON("[{\"nick\":\"Ada\"}]")))
+        XCTAssertNil(HLSwappViewController.nickLabel(from: nickJSON("\"Ada\"")))
+        XCTAssertNil(HLSwappViewController.nickLabel(from: nickJSON("1")))
+        XCTAssertNil(HLSwappViewController.nickLabel(from: nickJSON("null")))
+        XCTAssertNil(HLSwappViewController.nickLabel(from: nil))
+        XCTAssertNil(HLSwappViewController.nickLabel(from: NSNull()))
+        let mixed: Any = ["nick": "Ada", "n": 1] as [String: Any]
+        XCTAssertNil(HLSwappViewController.nickLabel(from: mixed))
+        XCTAssertNil(HLSwappViewController.nickLabel(from: ["only"] as [String]))
+
+        let fifteen = String(repeating: Character("b"), count: 15)
+        let seventeen = String(repeating: Character("b"), count: 17)
+        XCTAssertEqual(
+            HLSwappViewController.nickLabel(from: nickJSON("{\"nick\":\"" + seventeen + "\"}")),
+            fifteen + "..."
+        )
+        XCTAssertEqual(
+            HLSwappViewController.nickLabel(from: ["nick": seventeen] as [String: String]),
+            HLSwappViewController.otherUserNickLabel(seventeen)
+        )
+        let emoji = String(repeating: Character("🙂"), count: 1)
+        XCTAssertEqual(HLSwappViewController.nickLabel(from: ["nick": emoji] as [String: String]), emoji)
+        let many = String(repeating: Character("🙂"), count: 17)
+        let emojiLabel = String(repeating: Character("🙂"), count: 15) + "..."
+        XCTAssertEqual(
+            HLSwappViewController.nickLabel(from: ["nick": many] as [String: String]),
+            emojiLabel
+        )
+        XCTAssertFalse(emojiLabel.contains("%"))
+        XCTAssertNotEqual(HLSwappViewController.nickLabel(from: ["nick": " bike "] as [String: String]), "bike")
+    }
+
+    private func nickJSON(_ raw: String) -> Any? {
+        guard let data = raw.data(using: String.Encoding.utf8) else {
+            return nil
+        }
+        return try? JSONSerialization.jsonObject(with: data, options: [])
+    }
+
     private func tradeReadyFixture(
         ownerId: String,
         otherId: String,
