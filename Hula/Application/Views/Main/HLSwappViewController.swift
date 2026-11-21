@@ -954,7 +954,8 @@ class HLSwappViewController: UIViewController {
     /// this step does not load. Do not fold this into
     /// `resolvedTradeChatChrome`. Do not start a load from `lobbyPageChrome`
     /// or `emptyTradeRoomChrome`. The outer receipt hide still runs after
-    /// this step and is not decided here.
+    /// this step and is not decided here. The avatar tap is
+    /// `sellerSheetFromStoredPeer`. Do not fold that sheet into this refresh.
     class func resolvedTradePeerRefresh(
         previousPeerId: String,
         peerId: String,
@@ -1310,14 +1311,64 @@ class HLSwappViewController: UIViewController {
         return true
     }
 
+    /// Seller sheet opened from the trade-room avatar. `lookupUserId` is the
+    /// raw stored `prevUser`. It starts as `""` and, after a peer refresh,
+    /// is that refresh's raw `storedPeerId`, including `" bike "`, `"a&b"`,
+    /// `"P1"`, `" "`, and `"\n"`. Do not trim it. Do not pass
+    /// `encodedPathSegment`. `profileURL` is `userProfileURL`. Blank and
+    /// whitespace-only ids are nil, so `getUserProfile` returns before the
+    /// callback and the sheet is not presented even if a dictionary body is
+    /// supplied here. A non-blank id is still passed raw; the existing
+    /// encoder trims and percent-encodes only the URL. `" bike "` is not
+    /// `"bike"`. The sheet is presented only when that URL exists, the
+    /// request succeeded, and the body is `[String: Any]`, which is the
+    /// historical callback cast. `backFromChat` is set only then. The
+    /// storyboard id stays `sellerHorizontal`. The
+    /// `as! HLSellerHorizontalViewController` stays at the call site. Do not
+    /// fold this into `resolvedTradePeerRefresh`. Do not start it from
+    /// `lobbyPageChrome` or `emptyTradeRoomChrome`.
+    class func sellerSheetFromStoredPeer(
+        storedPeerId: String,
+        apiBase: String,
+        httpOk: Bool,
+        json: Any?
+    ) -> SellerSheetFromStoredPeer {
+        let profileURL = HLDataManager.userProfileURL(apiBase: apiBase, userId: storedPeerId)
+        let arrived = httpOk && (json as? [String: Any]) != nil
+        let presents = profileURL != nil && arrived
+        return SellerSheetFromStoredPeer(
+            storedPeerId: storedPeerId,
+            lookupUserId: storedPeerId,
+            profileURL: profileURL,
+            shouldRequest: profileURL != nil,
+            presentsSellerSheet: presents,
+            backFromChat: presents,
+            storyboardIdentifier: "sellerHorizontal"
+        )
+    }
+
     @IBAction func showUserAction(_ sender: Any) {
         //print (prevUser)
-        HLDataManager.sharedInstance.getUserProfile(userId: prevUser, taskCallback: {(user, prods, feedback) in
-            let viewController = self.storyboard?.instantiateViewController(withIdentifier: "sellerHorizontal") as! HLSellerHorizontalViewController
-            
-            viewController.user = user
-            self.present(viewController, animated: true)
-            self.backFromChat = true
+        let lookup = HLSwappViewController.sellerSheetFromStoredPeer(
+            storedPeerId: prevUser,
+            apiBase: HulaConstants.apiURL,
+            httpOk: false,
+            json: nil
+        )
+        HLDataManager.sharedInstance.getUserProfile(userId: lookup.lookupUserId, taskCallback: {(user, prods, feedback) in
+            let sheet = HLSwappViewController.sellerSheetFromStoredPeer(
+                storedPeerId: lookup.storedPeerId,
+                apiBase: HulaConstants.apiURL,
+                httpOk: true,
+                json: [String: Any]()
+            )
+            if sheet.presentsSellerSheet {
+                let viewController = self.storyboard?.instantiateViewController(withIdentifier: sheet.storyboardIdentifier) as! HLSellerHorizontalViewController
+
+                viewController.user = user
+                self.present(viewController, animated: true)
+                self.backFromChat = sheet.backFromChat
+            }
         })
     }
     func manageCheckMarks(trade:HulaTrade?){
@@ -2179,6 +2230,21 @@ struct ResolvedTradePeerRefresh {
     let storedPeerId: String
     let imageURL: String?
     let nickURL: String?
+}
+
+/// Avatar tap after a peer id has been stored. `lookupUserId` is that raw
+/// id, not the encoded path and not a trimmed copy. `profileURL` is nil when
+/// `getUserProfile` returns before the callback. `presentsSellerSheet` and
+/// `backFromChat` are true only for a real request whose body is
+/// `[String: Any]`. The storyboard id stays `sellerHorizontal`.
+struct SellerSheetFromStoredPeer {
+    let storedPeerId: String
+    let lookupUserId: String
+    let profileURL: String?
+    let shouldRequest: Bool
+    let presentsSellerSheet: Bool
+    let backFromChat: Bool
+    let storyboardIdentifier: String
 }
 
 /// Turn checks compared IUO `turn_user_id` / `userId` with `!=` and `==`.
