@@ -18085,6 +18085,329 @@ class HulaTests: XCTestCase {
         ))
     }
 
+    func testTradeRoomAppearSkipsBottomBarOnlyWhileReturning() {
+        let base = "https://api.example.test/v1/"
+        let productsReceivedTag = 90441
+        let justAcceptTag = 1
+        let closeDealTag = 91053
+        let vc = HLSwappViewController()
+        XCTAssertEqual(vc.prevUser, "")
+        XCTAssertFalse(vc.backFromChat)
+        XCTAssertEqual(vc.last_index_setup, 0)
+        XCTAssertTrue(ProductIdentityPolicy.identifiersMatch(nil, ""))
+        XCTAssertFalse(TradeTurnPolicy.idsMatch(nil, ""))
+        XCTAssertNotEqual(
+            TradeTurnPolicy.idsMatch(nil, ""),
+            ProductIdentityPolicy.identifiersMatch(nil, "")
+        )
+
+        func sheet(_ stored: String, _ httpOk: Bool, _ json: Any?) -> SellerSheetFromStoredPeer {
+            return HLSwappViewController.sellerSheetFromStoredPeer(
+                storedPeerId: stored,
+                apiBase: base,
+                httpOk: httpOk,
+                json: json
+            )
+        }
+        func appear(_ returning: Bool, _ index: Int) -> TradeRoomAppearChrome {
+            return HLSwappViewController.tradeRoomAppearChrome(
+                backFromChat: returning,
+                lastIndexSetup: index
+            )
+        }
+        func flagAfterSheet(_ current: Bool, _ row: SellerSheetFromStoredPeer) -> Bool {
+            return HLSwappViewController.backFromChatAfterSellerSheet(
+                current: current,
+                sheet: row
+            )
+        }
+
+        let userBody = nickJSON("{\"user\":{\"nick\":\"Ada\"}}")
+        let emptyBody = nickJSON("{}")
+        let mixedBody = nickJSON("{\"nick\":\"Ada\",\"n\":1}")
+
+        let initial = sheet(vc.prevUser, true, userBody)
+        XCTAssertFalse(initial.presentsSellerSheet)
+        XCTAssertFalse(initial.backFromChat)
+        XCTAssertEqual(initial.lookupUserId, "")
+        var flag = flagAfterSheet(vc.backFromChat, initial)
+        XCTAssertFalse(flag)
+        let first = appear(flag, vc.last_index_setup)
+        XCTAssertFalse(first.backFromChatBefore)
+        XCTAssertTrue(first.shouldSetupBottomBar)
+        XCTAssertEqual(first.shouldSetupBottomBar, !first.backFromChatBefore)
+        XCTAssertEqual(first.setupIndex, 0)
+        XCTAssertFalse(first.backFromChat)
+        XCTAssertNotEqual(first.setupIndex, 1)
+
+        let blanks = ["", " ", "   ", "\n", "\t"]
+        for stored in blanks {
+            let row = sheet(stored, true, userBody)
+            XCTAssertEqual(row.lookupUserId, stored)
+            XCTAssertEqual(row.storedPeerId, stored)
+            XCTAssertNil(row.profileURL)
+            XCTAssertFalse(row.shouldRequest)
+            XCTAssertFalse(row.presentsSellerSheet)
+            XCTAssertFalse(row.backFromChat)
+            XCTAssertEqual(row.storyboardIdentifier, "sellerHorizontal")
+            let kept = flagAfterSheet(false, row)
+            XCTAssertFalse(kept)
+            let shown = appear(kept, 0)
+            XCTAssertTrue(shown.shouldSetupBottomBar)
+            XCTAssertEqual(shown.setupIndex, 0)
+            XCTAssertFalse(shown.backFromChat)
+        }
+        XCTAssertNotEqual(sheet(" ", true, userBody).lookupUserId, "")
+        XCTAssertNotEqual(sheet(" ", true, userBody).lookupUserId, "\n")
+        XCTAssertNotEqual(sheet("\n", true, userBody).lookupUserId, "\t")
+
+        let refresh = HLSwappViewController.resolvedTradePeerRefresh(
+            previousPeerId: "",
+            peerId: " bike ",
+            apiBase: base
+        )
+        XCTAssertTrue(refresh.shouldReload)
+        XCTAssertEqual(refresh.storedPeerId, " bike ")
+        XCTAssertNotEqual(refresh.storedPeerId, "bike")
+        XCTAssertNotEqual(refresh.storedPeerId, CommonUtils.encodedPathSegment(" bike "))
+        let spaced = sheet(refresh.storedPeerId, true, userBody)
+        XCTAssertEqual(spaced.lookupUserId, " bike ")
+        XCTAssertNotEqual(spaced.lookupUserId, "bike")
+        XCTAssertTrue(spaced.presentsSellerSheet)
+        XCTAssertTrue(spaced.backFromChat)
+        XCTAssertEqual(spaced.profileURL, base + "users/bike")
+        XCTAssertFalse((spaced.profileURL ?? "").contains("%20"))
+        XCTAssertFalse((spaced.profileURL ?? "").hasSuffix("/nick"))
+        flag = flagAfterSheet(false, spaced)
+        XCTAssertTrue(flag)
+        let skipped = appear(flag, 2)
+        XCTAssertTrue(skipped.backFromChatBefore)
+        XCTAssertFalse(skipped.shouldSetupBottomBar)
+        XCTAssertEqual(skipped.shouldSetupBottomBar, !skipped.backFromChatBefore)
+        XCTAssertEqual(skipped.setupIndex, 2)
+        XCTAssertNotEqual(skipped.setupIndex, 0)
+        XCTAssertNotEqual(skipped.setupIndex, 3)
+        XCTAssertFalse(skipped.backFromChat)
+        let rebuilt = appear(skipped.backFromChat, skipped.setupIndex)
+        XCTAssertFalse(rebuilt.backFromChatBefore)
+        XCTAssertTrue(rebuilt.shouldSetupBottomBar)
+        XCTAssertEqual(rebuilt.setupIndex, 2)
+        XCTAssertFalse(rebuilt.backFromChat)
+        let held = HLSwappViewController.resolvedTradePeerRefresh(
+            previousPeerId: refresh.storedPeerId,
+            peerId: refresh.storedPeerId,
+            apiBase: base
+        )
+        XCTAssertFalse(held.shouldReload)
+        let secondTap = sheet(refresh.storedPeerId, true, emptyBody)
+        XCTAssertTrue(secondTap.presentsSellerSheet)
+        XCTAssertEqual(secondTap.lookupUserId, " bike ")
+        flag = flagAfterSheet(rebuilt.backFromChat, secondTap)
+        XCTAssertTrue(flag)
+        XCTAssertFalse(appear(flag, 2).shouldSetupBottomBar)
+        XCTAssertEqual(appear(flag, 2).setupIndex, 2)
+
+        let ampersand = sheet("a&b", true, emptyBody)
+        XCTAssertEqual(ampersand.lookupUserId, "a&b")
+        XCTAssertNotEqual(ampersand.lookupUserId, "a%26b")
+        XCTAssertEqual(ampersand.profileURL, base + "users/a%26b")
+        XCTAssertTrue(ampersand.presentsSellerSheet)
+        XCTAssertTrue(flagAfterSheet(false, ampersand))
+        XCTAssertFalse(appear(flagAfterSheet(false, ampersand), 1).shouldSetupBottomBar)
+        XCTAssertEqual(ampersand.lookupUserId, "a&b")
+
+        let cased = sheet("P1", true, emptyBody)
+        XCTAssertEqual(cased.lookupUserId, "P1")
+        XCTAssertNotEqual(cased.lookupUserId, "p1")
+        XCTAssertEqual(cased.profileURL, base + "users/P1")
+        XCTAssertTrue(flagAfterSheet(false, cased))
+        XCTAssertEqual(appear(true, -1).setupIndex, -1)
+        XCTAssertFalse(appear(true, -1).shouldSetupBottomBar)
+        XCTAssertEqual(appear(false, -1).setupIndex, -1)
+        XCTAssertTrue(appear(false, -1).shouldSetupBottomBar)
+        XCTAssertEqual(appear(false, Int.max).setupIndex, Int.max)
+        XCTAssertNotEqual(appear(false, Int.max).setupIndex, 0)
+
+        let failed = sheet(" bike ", false, userBody)
+        XCTAssertTrue(failed.shouldRequest)
+        XCTAssertFalse(failed.presentsSellerSheet)
+        XCTAssertFalse(failed.backFromChat)
+        XCTAssertFalse(flagAfterSheet(false, failed))
+        XCTAssertTrue(appear(flagAfterSheet(false, failed), 4).shouldSetupBottomBar)
+        XCTAssertEqual(appear(flagAfterSheet(false, failed), 4).setupIndex, 4)
+        XCTAssertTrue(flagAfterSheet(true, failed))
+        XCTAssertFalse(appear(flagAfterSheet(true, failed), 4).shouldSetupBottomBar)
+        XCTAssertFalse(sheet("peer", true, nil).presentsSellerSheet)
+        XCTAssertFalse(sheet("peer", true, NSNull()).presentsSellerSheet)
+        XCTAssertFalse(flagAfterSheet(false, sheet("peer", true, nil)))
+        XCTAssertFalse(flagAfterSheet(false, sheet("peer", true, NSNull())))
+        let rejected = ["null", "1", "true", "\"Ada\"", "[{\"user\":\"Ada\"}]"]
+        for raw in rejected {
+            let row = sheet("peer", true, nickJSON(raw))
+            XCTAssertFalse(row.presentsSellerSheet)
+            XCTAssertFalse(row.backFromChat)
+            XCTAssertFalse(flagAfterSheet(false, row))
+            XCTAssertTrue(flagAfterSheet(true, row))
+            XCTAssertTrue(appear(flagAfterSheet(false, row), 0).shouldSetupBottomBar)
+            XCTAssertFalse(appear(flagAfterSheet(true, row), 5).shouldSetupBottomBar)
+            XCTAssertEqual(appear(flagAfterSheet(true, row), 5).setupIndex, 5)
+        }
+        XCTAssertTrue(sheet("peer", true, emptyBody).presentsSellerSheet)
+        XCTAssertTrue(sheet("peer", true, mixedBody).presentsSellerSheet)
+        XCTAssertNil(HLSwappViewController.nickLabel(from: mixedBody))
+        XCTAssertEqual(HLSwappViewController.nickLabel(from: nickJSON("{\"nick\":\"Ada\"}")), "Ada")
+        XCTAssertTrue(flagAfterSheet(false, sheet("peer", true, mixedBody)))
+        XCTAssertEqual(sheet("peer", true, mixedBody).lookupUserId, "peer")
+
+        XCTAssertNil(HLSwappViewController.chatSegueBackFromChat(resolvedTrade: nil))
+        var heldByChat = true
+        if let returning = HLSwappViewController.chatSegueBackFromChat(resolvedTrade: nil) {
+            heldByChat = returning
+        }
+        XCTAssertTrue(heldByChat)
+        XCTAssertTrue(appear(heldByChat, 1).shouldSetupBottomBar == false)
+        XCTAssertEqual(appear(heldByChat, 1).setupIndex, 1)
+        let missingChat = ["_id": " bike "] as NSDictionary
+        let missingConfig = HLSwappViewController.chatConfiguration(from: missingChat)
+        XCTAssertEqual(missingConfig.tradeId, " bike ")
+        XCTAssertNotEqual(missingConfig.tradeId, "bike")
+        XCTAssertEqual(missingConfig.chat.count, 0)
+        if let returning = HLSwappViewController.chatSegueBackFromChat(resolvedTrade: missingChat) {
+            XCTAssertTrue(returning)
+            flag = returning
+        } else {
+            XCTFail("a resolved trade sets backFromChat even when chat is missing")
+        }
+        XCTAssertTrue(flag)
+        let fromMissingChat = appear(flag, 6)
+        XCTAssertFalse(fromMissingChat.shouldSetupBottomBar)
+        XCTAssertEqual(fromMissingChat.setupIndex, 6)
+        XCTAssertFalse(fromMissingChat.backFromChat)
+        XCTAssertTrue(appear(fromMissingChat.backFromChat, fromMissingChat.setupIndex).shouldSetupBottomBar)
+        let nullChat = ["_id": "t", "chat": NSNull()] as NSDictionary
+        XCTAssertEqual(HLSwappViewController.chatConfiguration(from: nullChat).tradeId, "t")
+        XCTAssertEqual(HLSwappViewController.chatConfiguration(from: nullChat).chat.count, 0)
+        if let returning = HLSwappViewController.chatSegueBackFromChat(resolvedTrade: nullChat) {
+            XCTAssertTrue(returning)
+        } else {
+            XCTFail("a null chat array still sets backFromChat")
+        }
+        let emptyTrade = NSDictionary()
+        if let returning = HLSwappViewController.chatSegueBackFromChat(resolvedTrade: emptyTrade) {
+            XCTAssertTrue(returning)
+            XCTAssertFalse(appear(returning, 0).shouldSetupBottomBar)
+            XCTAssertEqual(appear(returning, 0).setupIndex, 0)
+        } else {
+            XCTFail("an empty trade dictionary still sets backFromChat")
+        }
+        var chatThenBlank = true
+        if let returning = HLSwappViewController.chatSegueBackFromChat(resolvedTrade: missingChat) {
+            chatThenBlank = returning
+        }
+        chatThenBlank = flagAfterSheet(chatThenBlank, sheet("\n", true, userBody))
+        XCTAssertTrue(chatThenBlank)
+        XCTAssertEqual(sheet("\n", true, userBody).lookupUserId, "\n")
+        let blankAfterChat = appear(chatThenBlank, 7)
+        XCTAssertFalse(blankAfterChat.shouldSetupBottomBar)
+        XCTAssertEqual(blankAfterChat.setupIndex, 7)
+        XCTAssertFalse(blankAfterChat.backFromChat)
+        let afterClearedReturn = appear(blankAfterChat.backFromChat, 7)
+        XCTAssertTrue(afterClearedReturn.shouldSetupBottomBar)
+        XCTAssertEqual(afterClearedReturn.setupIndex, 7)
+
+        let oneBid = NSMutableArray()
+        oneBid.add("only")
+        let trade: NSDictionary = [
+            "owner_id": "me",
+            "other_id": " bike ",
+            "owner_unread": NSNumber(value: 1),
+            "other_unread": NSNumber(value: 9),
+            "turn_user_id": "me",
+            "bids": oneBid
+        ]
+        let peer = HLSwappViewController.peerChatContext(from: trade, viewerId: "me")
+        let opening = HLSwappViewController.tradeRoomOpeningChrome(viewWidth: 320, otherUserWidth: 80)
+        let resolved = HLSwappViewController.resolvedTradeAfterOpening(
+            opening: opening,
+            status: "pending",
+            turnUserId: "me",
+            viewerId: "me",
+            waitingTurnEnabled: false,
+            productsReceivedTag: productsReceivedTag
+        )
+        let agreed = HLSwappViewController.agreedTradeAfterResolved(
+            resolved: resolved,
+            otherAgree: true,
+            peerReady: false,
+            justAcceptTag: justAcceptTag,
+            closeDealTag: closeDealTag,
+            productsReceivedTag: productsReceivedTag
+        )
+        let chat = HLSwappViewController.resolvedTradeChatChrome(
+            agreed: agreed,
+            peerId: peer.peerId,
+            unread: peer.unread,
+            bids: trade.object(forKey: "bids"),
+            turnValue: trade.object(forKey: "turn_user_id"),
+            viewerId: "me",
+            productsReceivedTag: productsReceivedTag
+        )
+        XCTAssertEqual(chat.peerId, " bike ")
+        XCTAssertEqual(chat.unread, 1)
+        XCTAssertEqual(chat.currentChatText, "1")
+        XCTAssertEqual(Double(chat.chatButtonAlpha ?? -1), Double(TradeTurnPolicy.chatDimmedAlpha), accuracy: 0.0001)
+        XCTAssertEqual(agreed.sendTag, justAcceptTag)
+        let unreadDoesNotReturn = appear(false, 1)
+        XCTAssertTrue(unreadDoesNotReturn.shouldSetupBottomBar)
+        XCTAssertEqual(unreadDoesNotReturn.setupIndex, 1)
+        XCTAssertEqual(chat.unread, 1)
+        XCTAssertFalse(chat.hidesCurrentChatBadge)
+        let fromSheet = sheet(chat.peerId, true, userBody)
+        XCTAssertEqual(fromSheet.lookupUserId, " bike ")
+        XCTAssertTrue(flagAfterSheet(false, fromSheet))
+        XCTAssertFalse(appear(flagAfterSheet(false, fromSheet), 1).shouldSetupBottomBar)
+        XCTAssertEqual(chat.currentChatText, "1")
+
+        func hide(_ tag: Int) -> CGFloat? {
+            return HLSwappViewController.productsReceivedOtherOfferAlpha(
+                sendTag: tag,
+                productsReceivedTag: productsReceivedTag
+            )
+        }
+        XCTAssertNil(hide(justAcceptTag))
+        XCTAssertNil(hide(closeDealTag))
+        XCTAssertEqual(hide(productsReceivedTag), CGFloat(0))
+        XCTAssertTrue(appear(false, 0).shouldSetupBottomBar)
+        XCTAssertFalse(appear(true, productsReceivedTag).shouldSetupBottomBar)
+        XCTAssertEqual(appear(true, productsReceivedTag).setupIndex, productsReceivedTag)
+        XCTAssertNil(hide(justAcceptTag))
+
+        let empty = HLSwappViewController.emptyTradeRoomChrome(initialOtherUserX: 40)
+        XCTAssertEqual(empty.addTradeRoomAlpha, CGFloat(0))
+        XCTAssertEqual(empty.chatButtonAlpha, CGFloat(0))
+        let lobby = HLSwappViewController.lobbyPageChrome(
+            maxTrades: 49,
+            pastTrades: [],
+            viewerId: "me"
+        )
+        XCTAssertEqual(lobby.addTradeRoomAlpha, CGFloat(1))
+        XCTAssertEqual(appear(false, 0).setupIndex, 0)
+        XCTAssertTrue(appear(false, 0).shouldSetupBottomBar)
+        XCTAssertFalse(sheet("", true, userBody).presentsSellerSheet)
+        XCTAssertFalse(TradeTurnPolicy.showsWaitingForReply(
+            turnUserId: "peer",
+            viewerId: "me",
+            waitingTurnEnabled: false
+        ))
+        XCTAssertFalse(TradeTurnPolicy.shouldBlockOffer(
+            turnUserId: "peer",
+            viewerId: "me",
+            buttonTag: justAcceptTag,
+            productsReceivedTag: productsReceivedTag,
+            turnGateEnabled: false
+        ))
+    }
+
     private func nickJSON(_ raw: String) -> Any? {
         guard let data = raw.data(using: String.Encoding.utf8) else {
             return nil

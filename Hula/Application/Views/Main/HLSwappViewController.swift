@@ -372,10 +372,16 @@ class HLSwappViewController: UIViewController {
         }
         
         
-        if !self.backFromChat {
-            controlSetupBottomBar(index:last_index_setup);
+        // Rebuild only when this appear is not a return from chat or a
+        // presented seller sheet. The flag is read first and cleared after.
+        let appear = HLSwappViewController.tradeRoomAppearChrome(
+            backFromChat: self.backFromChat,
+            lastIndexSetup: last_index_setup
+        )
+        if appear.shouldSetupBottomBar {
+            controlSetupBottomBar(index: appear.setupIndex)
         }
-        self.backFromChat = false
+        self.backFromChat = appear.backFromChat
         self.rotateAnimation()
         
         
@@ -417,7 +423,9 @@ class HLSwappViewController: UIViewController {
                 chatVC.trade_id = config.tradeId
                 chatVC.chat = config.chat
                 //print(chat)
-                self.backFromChat = true
+                if let returning = HLSwappViewController.chatSegueBackFromChat(resolvedTrade: thisTrade) {
+                    self.backFromChat = returning
+                }
                 self.chatCountLbl.isHidden = true
             }
         }
@@ -428,6 +436,40 @@ class HLSwappViewController: UIViewController {
         let tradeId = trade.object(forKey: "_id") as? String ?? ""
         let chat = trade.object(forKey: "chat") as? [NSDictionary] ?? []
         return (tradeId, chat)
+    }
+
+    /// `backFromChat` for the chat segue. Nil means there is no resolved
+    /// trade, so the segue returns before the assignment and the flag stays
+    /// as it was. A resolved trade assigns true even when `chat` is missing,
+    /// null, or not an array. Do not trim `_id`. Do not fold this into
+    /// `tradeRoomAppearChrome` or `sellerSheetFromStoredPeer`. The
+    /// current-chat badge hide stays at the call site.
+    class func chatSegueBackFromChat(resolvedTrade: NSDictionary?) -> Bool? {
+        if resolvedTrade == nil {
+            return nil
+        }
+        return true
+    }
+
+    /// Bottom-bar rebuild on `viewDidAppear`. `controlSetupBottomBar` runs
+    /// only when `backFromChat` is false. The flag is cleared after that
+    /// check, never before. `setupIndex` is the stored `last_index_setup`,
+    /// including `0` and a negative index. Do not clamp it. A seller sheet
+    /// sets the incoming flag only when `presentsSellerSheet` is true, so a
+    /// stored `""`, `" "`, or `"\n"` leaves it false and this appear still
+    /// rebuilds. A presented sheet for `" bike "` skips the rebuild once.
+    /// The chat segue sets the flag on its own. Do not fold this into
+    /// `sellerSheetFromStoredPeer`. Do not change `manageCheckMarks`.
+    class func tradeRoomAppearChrome(
+        backFromChat: Bool,
+        lastIndexSetup: Int
+    ) -> TradeRoomAppearChrome {
+        return TradeRoomAppearChrome(
+            backFromChatBefore: backFromChat,
+            shouldSetupBottomBar: !backFromChat,
+            setupIndex: lastIndexSetup,
+            backFromChat: false
+        )
     }
 
     /// Peer id + viewer unread badge for a trade dict.
@@ -1326,7 +1368,8 @@ class HLSwappViewController: UIViewController {
     /// storyboard id stays `sellerHorizontal`. The
     /// `as! HLSellerHorizontalViewController` stays at the call site. Do not
     /// fold this into `resolvedTradePeerRefresh`. Do not start it from
-    /// `lobbyPageChrome` or `emptyTradeRoomChrome`.
+    /// `lobbyPageChrome` or `emptyTradeRoomChrome`. The appear skip is
+    /// `tradeRoomAppearChrome`. Do not decide that skip here.
     class func sellerSheetFromStoredPeer(
         storedPeerId: String,
         apiBase: String,
@@ -1345,6 +1388,21 @@ class HLSwappViewController: UIViewController {
             backFromChat: presents,
             storyboardIdentifier: "sellerHorizontal"
         )
+    }
+
+    /// The avatar callback writes `backFromChat` only when the sheet is
+    /// presented. A blank, whitespace-only, failed, or non-object lookup
+    /// leaves the current flag untouched, including a flag the chat segue
+    /// already set. Do not clear it here. Do not fold
+    /// `tradeRoomAppearChrome` into this helper.
+    class func backFromChatAfterSellerSheet(
+        current: Bool,
+        sheet: SellerSheetFromStoredPeer
+    ) -> Bool {
+        if sheet.presentsSellerSheet {
+            return sheet.backFromChat
+        }
+        return current
     }
 
     @IBAction func showUserAction(_ sender: Any) {
@@ -1367,7 +1425,10 @@ class HLSwappViewController: UIViewController {
 
                 viewController.user = user
                 self.present(viewController, animated: true)
-                self.backFromChat = sheet.backFromChat
+                self.backFromChat = HLSwappViewController.backFromChatAfterSellerSheet(
+                    current: self.backFromChat,
+                    sheet: sheet
+                )
             }
         })
     }
@@ -2245,6 +2306,16 @@ struct SellerSheetFromStoredPeer {
     let presentsSellerSheet: Bool
     let backFromChat: Bool
     let storyboardIdentifier: String
+}
+
+/// `viewDidAppear` bottom-bar decision. `shouldSetupBottomBar` is the
+/// incoming flag inverted. `backFromChat` is the flag after the check and
+/// is always false. `setupIndex` is the stored index, unchanged.
+struct TradeRoomAppearChrome {
+    let backFromChatBefore: Bool
+    let shouldSetupBottomBar: Bool
+    let setupIndex: Int
+    let backFromChat: Bool
 }
 
 /// Turn checks compared IUO `turn_user_id` / `userId` with `!=` and `==`.
