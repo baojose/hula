@@ -426,7 +426,17 @@ class HLSwappViewController: UIViewController {
                 if let returning = HLSwappViewController.chatSegueBackFromChat(resolvedTrade: thisTrade) {
                     self.backFromChat = returning
                 }
-                self.chatCountLbl.isHidden = true
+                // Hide only after the resolved-trade guard above. A nil trade
+                // returns first, so a visible badge stays visible. A blank
+                // `prevUser` is not the reason. The label text stays whatever
+                // `resolvedTradeChatChrome` wrote, including `"1"`.
+                let badge = HLSwappViewController.chatSegueBadgeHide(
+                    resolvedTrade: thisTrade,
+                    storedPeerId: prevUser
+                )
+                if let hidden = badge.hidesCurrentChatBadge {
+                    self.chatCountLbl.isHidden = hidden
+                }
             }
         }
     }
@@ -443,12 +453,56 @@ class HLSwappViewController: UIViewController {
     /// as it was. A resolved trade assigns true even when `chat` is missing,
     /// null, or not an array. Do not trim `_id`. Do not fold this into
     /// `tradeRoomAppearChrome` or `sellerSheetFromStoredPeer`. The
-    /// current-chat badge hide stays at the call site.
+    /// current-chat badge hide is `chatSegueBadgeHide`. Do not fold that
+    /// hide into this helper.
     class func chatSegueBackFromChat(resolvedTrade: NSDictionary?) -> Bool? {
         if resolvedTrade == nil {
             return nil
         }
         return true
+    }
+
+    /// Current-chat badge on the chat segue, after a resolved trade. The
+    /// call site returns before this when `resolvedTrade` is nil, so a
+    /// visible badge stays visible: `hidesCurrentChatBadge` is nil and must
+    /// not be assigned. A resolved trade hides the badge even when unread is
+    /// greater than 0 and even when `chat` is missing, null, or not an
+    /// array. `chatMissing` is that cast (`as? [NSDictionary] == nil`). An
+    /// empty chat array is present, and the badge still hides. A blank
+    /// stored peer id (`""`, `" "`, `"   "`, `"\n"`, `"\t"`) does not hide
+    /// the badge. `hidesBecauseBlankPeer` stays false, including when a
+    /// resolved trade hides for its own reason and `prevUser` is still
+    /// `""`. `storedPeerId` is echoed raw. Do not trim it. `" bike "` is not
+    /// `"bike"`. `"a&b"` is not `"a%26b"`. `"P1"` is not `"p1"`. `" "` is
+    /// not `""` and is not `"\n"`. This step does not assign the label text,
+    /// so one unread still shows `"1"` through `resolvedTradeChatChrome`
+    /// until the call site assigns this hide. Do not fold this into
+    /// `chatSegueBackFromChat` or `tradeRoomAppearChrome`. Do not call
+    /// `peerChatContext` here. A nil viewer id must not be coalesced. Do not
+    /// change `manageCheckMarks`. Do not enable `waitingTurnEnabled`.
+    class func chatSegueBadgeHide(
+        resolvedTrade: NSDictionary?,
+        storedPeerId: String
+    ) -> ChatSegueBadgeHide {
+        guard let trade = resolvedTrade else {
+            return ChatSegueBadgeHide(
+                resolved: false,
+                storedPeerId: storedPeerId,
+                chatMissing: false,
+                hidesCurrentChatBadge: nil,
+                hidesBecauseBlankPeer: false,
+                assignsBadgeText: false
+            )
+        }
+        let chatMissing = (trade.object(forKey: "chat") as? [NSDictionary]) == nil
+        return ChatSegueBadgeHide(
+            resolved: true,
+            storedPeerId: storedPeerId,
+            chatMissing: chatMissing,
+            hidesCurrentChatBadge: true,
+            hidesBecauseBlankPeer: false,
+            assignsBadgeText: false
+        )
     }
 
     /// Bottom-bar rebuild on `viewDidAppear`. `controlSetupBottomBar` runs
@@ -458,8 +512,10 @@ class HLSwappViewController: UIViewController {
     /// sets the incoming flag only when `presentsSellerSheet` is true, so a
     /// stored `""`, `" "`, or `"\n"` leaves it false and this appear still
     /// rebuilds. A presented sheet for `" bike "` skips the rebuild once.
-    /// The chat segue sets the flag on its own. Do not fold this into
-    /// `sellerSheetFromStoredPeer`. Do not change `manageCheckMarks`.
+    /// The chat segue sets the flag on its own. The badge hide is
+    /// `chatSegueBadgeHide`. Do not fold that hide into this helper. Do not
+    /// fold this into `sellerSheetFromStoredPeer`. Do not change
+    /// `manageCheckMarks`.
     class func tradeRoomAppearChrome(
         backFromChat: Bool,
         lastIndexSetup: Int
@@ -2316,6 +2372,20 @@ struct TradeRoomAppearChrome {
     let shouldSetupBottomBar: Bool
     let setupIndex: Int
     let backFromChat: Bool
+}
+
+/// Chat-segue badge hide. Nil `hidesCurrentChatBadge` means the segue
+/// returned before a resolved trade and the label must not be assigned. A
+/// resolved trade hides even when chat is missing and even when unread is
+/// above zero. `hidesBecauseBlankPeer` is never the reason. This step does
+/// not write the badge text.
+struct ChatSegueBadgeHide {
+    let resolved: Bool
+    let storedPeerId: String
+    let chatMissing: Bool
+    let hidesCurrentChatBadge: Bool?
+    let hidesBecauseBlankPeer: Bool
+    let assignsBadgeText: Bool
 }
 
 /// Turn checks compared IUO `turn_user_id` / `userId` with `!=` and `==`.
