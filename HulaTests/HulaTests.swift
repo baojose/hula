@@ -18408,6 +18408,356 @@ class HulaTests: XCTestCase {
         ))
     }
 
+    func testChatSegueHidesCurrentBadgeAfterResolvedTrade() {
+        let base = "https://api.example.test/v1/"
+        let productsReceivedTag = 90441
+        let justAcceptTag = 1
+        let closeDealTag = 91053
+        let vc = HLSwappViewController()
+        XCTAssertEqual(vc.prevUser, "")
+        XCTAssertFalse(vc.backFromChat)
+        XCTAssertTrue(ProductIdentityPolicy.identifiersMatch(nil, ""))
+        XCTAssertFalse(TradeTurnPolicy.idsMatch(nil, ""))
+        XCTAssertNotEqual(
+            TradeTurnPolicy.idsMatch(nil, ""),
+            ProductIdentityPolicy.identifiersMatch(nil, "")
+        )
+
+        func hide(_ trade: NSDictionary?, _ stored: String) -> ChatSegueBadgeHide {
+            return HLSwappViewController.chatSegueBadgeHide(
+                resolvedTrade: trade,
+                storedPeerId: stored
+            )
+        }
+        func assign(_ badge: ChatSegueBadgeHide, _ hidden: Bool) -> Bool {
+            if let hides = badge.hidesCurrentChatBadge {
+                return hides
+            }
+            return hidden
+        }
+        func appear(_ returning: Bool, _ index: Int) -> TradeRoomAppearChrome {
+            return HLSwappViewController.tradeRoomAppearChrome(
+                backFromChat: returning,
+                lastIndexSetup: index
+            )
+        }
+
+        let blanks = ["", " ", "   ", "\n", "\t"]
+        var hidden = false
+        for stored in blanks {
+            let badge = hide(nil, stored)
+            XCTAssertFalse(badge.resolved)
+            XCTAssertEqual(badge.storedPeerId, stored)
+            XCTAssertFalse(badge.chatMissing)
+            XCTAssertNil(badge.hidesCurrentChatBadge)
+            XCTAssertFalse(badge.hidesBecauseBlankPeer)
+            XCTAssertFalse(badge.assignsBadgeText)
+            hidden = assign(badge, hidden)
+            XCTAssertFalse(hidden)
+        }
+        XCTAssertNotEqual(hide(nil, " ").storedPeerId, "")
+        XCTAssertNotEqual(hide(nil, " ").storedPeerId, "\n")
+        XCTAssertNotEqual(hide(nil, "\n").storedPeerId, "\t")
+        var alreadyHidden = true
+        alreadyHidden = assign(hide(nil, ""), alreadyHidden)
+        XCTAssertTrue(alreadyHidden)
+        XCTAssertNil(HLSwappViewController.chatSegueBackFromChat(resolvedTrade: nil))
+        var flag = true
+        if let returning = HLSwappViewController.chatSegueBackFromChat(resolvedTrade: nil) {
+            flag = returning
+        }
+        XCTAssertTrue(flag)
+        XCTAssertFalse(assign(hide(nil, vc.prevUser), false))
+        XCTAssertFalse(appear(flag, 1).shouldSetupBottomBar)
+        XCTAssertEqual(appear(flag, 1).setupIndex, 1)
+        XCTAssertFalse(hidden)
+
+        let missingChat = ["_id": " bike "] as NSDictionary
+        let missingConfig = HLSwappViewController.chatConfiguration(from: missingChat)
+        XCTAssertEqual(missingConfig.tradeId, " bike ")
+        XCTAssertNotEqual(missingConfig.tradeId, "bike")
+        XCTAssertEqual(missingConfig.chat.count, 0)
+        for stored in blanks {
+            let badge = hide(missingChat, stored)
+            XCTAssertTrue(badge.resolved)
+            XCTAssertEqual(badge.storedPeerId, stored)
+            XCTAssertTrue(badge.chatMissing)
+            XCTAssertEqual(badge.hidesCurrentChatBadge, true)
+            XCTAssertFalse(badge.hidesBecauseBlankPeer)
+            XCTAssertFalse(badge.assignsBadgeText)
+            XCTAssertTrue(assign(badge, false))
+        }
+        if let returning = HLSwappViewController.chatSegueBackFromChat(resolvedTrade: missingChat) {
+            XCTAssertTrue(returning)
+            flag = returning
+        } else {
+            XCTFail("a resolved trade sets backFromChat even when chat is missing")
+        }
+        XCTAssertTrue(flag)
+        XCTAssertFalse(appear(flag, 6).shouldSetupBottomBar)
+        XCTAssertEqual(appear(flag, 6).setupIndex, 6)
+        XCTAssertFalse(appear(flag, 6).backFromChat)
+        XCTAssertTrue(appear(false, 6).shouldSetupBottomBar)
+        hidden = assign(hide(missingChat, ""), false)
+        XCTAssertTrue(hidden)
+        XCTAssertEqual(hide(missingChat, " bike ").storedPeerId, " bike ")
+        XCTAssertNotEqual(hide(missingChat, " bike ").storedPeerId, "bike")
+        XCTAssertNotEqual(hide(missingChat, " bike ").storedPeerId, "a%20")
+
+        let nullChat = ["_id": "t", "chat": NSNull()] as NSDictionary
+        XCTAssertEqual(HLSwappViewController.chatConfiguration(from: nullChat).chat.count, 0)
+        let nullBadge = hide(nullChat, "a&b")
+        XCTAssertTrue(nullBadge.chatMissing)
+        XCTAssertEqual(nullBadge.hidesCurrentChatBadge, true)
+        XCTAssertEqual(nullBadge.storedPeerId, "a&b")
+        XCTAssertNotEqual(nullBadge.storedPeerId, "a%26b")
+        XCTAssertFalse(nullBadge.hidesBecauseBlankPeer)
+        XCTAssertFalse(nullBadge.assignsBadgeText)
+        if let returning = HLSwappViewController.chatSegueBackFromChat(resolvedTrade: nullChat) {
+            XCTAssertTrue(returning)
+        } else {
+            XCTFail("a null chat array still sets backFromChat")
+        }
+
+        let emptyMessages = NSMutableArray()
+        let emptyChatTrade = NSMutableDictionary()
+        emptyChatTrade.setObject("t-empty", forKey: "_id" as NSString)
+        emptyChatTrade.setObject(emptyMessages, forKey: "chat" as NSString)
+        let emptyBadge = hide(emptyChatTrade, "P1")
+        XCTAssertFalse(emptyBadge.chatMissing)
+        XCTAssertEqual(emptyBadge.hidesCurrentChatBadge, true)
+        XCTAssertEqual(emptyBadge.storedPeerId, "P1")
+        XCTAssertNotEqual(emptyBadge.storedPeerId, "p1")
+        XCTAssertEqual(HLSwappViewController.chatConfiguration(from: emptyChatTrade).chat.count, 0)
+        XCTAssertFalse(emptyBadge.assignsBadgeText)
+
+        let message: NSDictionary = ["user_id": "u1", "message": "hi"]
+        let withChat = ["_id": " bike ", "chat": [message]] as NSDictionary
+        let present = hide(withChat, " bike ")
+        XCTAssertFalse(present.chatMissing)
+        XCTAssertEqual(present.hidesCurrentChatBadge, true)
+        XCTAssertEqual(present.storedPeerId, " bike ")
+        XCTAssertNotEqual(present.storedPeerId, "bike")
+        XCTAssertFalse(present.hidesBecauseBlankPeer)
+        let presentConfig = HLSwappViewController.chatConfiguration(from: withChat)
+        XCTAssertEqual(presentConfig.tradeId, " bike ")
+        XCTAssertEqual(presentConfig.chat.count, 1)
+        XCTAssertEqual(presentConfig.chat[0].object(forKey: "message") as? String, "hi")
+
+        let stringChat = ["_id": "t", "chat": "hi"] as NSDictionary
+        XCTAssertTrue(hide(stringChat, "").chatMissing)
+        XCTAssertEqual(hide(stringChat, "").hidesCurrentChatBadge, true)
+        XCTAssertFalse(hide(stringChat, "").hidesBecauseBlankPeer)
+        let numberChat = ["_id": "t", "chat": NSNumber(value: 2)] as NSDictionary
+        XCTAssertTrue(hide(numberChat, " ").chatMissing)
+        XCTAssertEqual(hide(numberChat, " ").storedPeerId, " ")
+        XCTAssertEqual(hide(numberChat, " ").hidesCurrentChatBadge, true)
+        let emptyTrade = NSDictionary()
+        XCTAssertTrue(hide(emptyTrade, "").chatMissing)
+        XCTAssertEqual(hide(emptyTrade, "").hidesCurrentChatBadge, true)
+        XCTAssertFalse(hide(emptyTrade, "").hidesBecauseBlankPeer)
+        if let returning = HLSwappViewController.chatSegueBackFromChat(resolvedTrade: emptyTrade) {
+            XCTAssertTrue(returning)
+            XCTAssertFalse(appear(returning, 0).shouldSetupBottomBar)
+            XCTAssertEqual(appear(returning, 0).setupIndex, 0)
+        } else {
+            XCTFail("an empty trade dictionary still sets backFromChat")
+        }
+
+        let userBody = nickJSON("{\"user\":{\"nick\":\"Ada\"}}")
+        let blankSheet = HLSwappViewController.sellerSheetFromStoredPeer(
+            storedPeerId: "\n",
+            apiBase: base,
+            httpOk: true,
+            json: userBody
+        )
+        XCTAssertEqual(blankSheet.lookupUserId, "\n")
+        XCTAssertFalse(blankSheet.presentsSellerSheet)
+        XCTAssertNil(blankSheet.profileURL)
+        XCTAssertNil(hide(nil, blankSheet.lookupUserId).hidesCurrentChatBadge)
+        XCTAssertFalse(hide(nil, blankSheet.lookupUserId).hidesBecauseBlankPeer)
+        let spacedSheet = HLSwappViewController.sellerSheetFromStoredPeer(
+            storedPeerId: " bike ",
+            apiBase: base,
+            httpOk: true,
+            json: userBody
+        )
+        XCTAssertEqual(spacedSheet.lookupUserId, " bike ")
+        XCTAssertNotEqual(spacedSheet.lookupUserId, "bike")
+        XCTAssertTrue(spacedSheet.presentsSellerSheet)
+        XCTAssertEqual(spacedSheet.profileURL, base + "users/bike")
+        flag = HLSwappViewController.backFromChatAfterSellerSheet(
+            current: false,
+            sheet: spacedSheet
+        )
+        XCTAssertTrue(flag)
+        XCTAssertFalse(appear(flag, 2).shouldSetupBottomBar)
+        hidden = false
+        hidden = assign(hide(nil, spacedSheet.lookupUserId), hidden)
+        XCTAssertFalse(hidden)
+        hidden = assign(hide(missingChat, spacedSheet.lookupUserId), hidden)
+        XCTAssertTrue(hidden)
+        XCTAssertEqual(hide(missingChat, spacedSheet.lookupUserId).storedPeerId, " bike ")
+
+        let oneBid = NSMutableArray()
+        oneBid.add("only")
+        let trade: NSDictionary = [
+            "owner_id": "me",
+            "other_id": " bike ",
+            "owner_unread": NSNumber(value: 1),
+            "other_unread": NSNumber(value: 9),
+            "turn_user_id": "me",
+            "bids": oneBid,
+            "_id": " bike "
+        ]
+        let peer = HLSwappViewController.peerChatContext(from: trade, viewerId: "me")
+        XCTAssertEqual(peer.peerId, " bike ")
+        XCTAssertEqual(peer.unread, 1)
+        XCTAssertNotEqual(peer.unread, 9)
+        let opening = HLSwappViewController.tradeRoomOpeningChrome(viewWidth: 320, otherUserWidth: 80)
+        let resolved = HLSwappViewController.resolvedTradeAfterOpening(
+            opening: opening,
+            status: "pending",
+            turnUserId: "me",
+            viewerId: "me",
+            waitingTurnEnabled: false,
+            productsReceivedTag: productsReceivedTag
+        )
+        let agreed = HLSwappViewController.agreedTradeAfterResolved(
+            resolved: resolved,
+            otherAgree: true,
+            peerReady: false,
+            justAcceptTag: justAcceptTag,
+            closeDealTag: closeDealTag,
+            productsReceivedTag: productsReceivedTag
+        )
+        let chat = HLSwappViewController.resolvedTradeChatChrome(
+            agreed: agreed,
+            peerId: peer.peerId,
+            unread: peer.unread,
+            bids: trade.object(forKey: "bids"),
+            turnValue: trade.object(forKey: "turn_user_id"),
+            viewerId: "me",
+            productsReceivedTag: productsReceivedTag
+        )
+        XCTAssertEqual(chat.unread, 1)
+        XCTAssertEqual(chat.currentChatText, "1")
+        XCTAssertFalse(chat.hidesCurrentChatBadge)
+        XCTAssertEqual(Double(chat.chatButtonAlpha ?? -1), Double(TradeTurnPolicy.chatDimmedAlpha), accuracy: 0.0001)
+        XCTAssertEqual(agreed.sendTag, justAcceptTag)
+        hidden = chat.hidesCurrentChatBadge
+        XCTAssertFalse(hidden)
+        let segue = hide(trade, chat.peerId)
+        XCTAssertTrue(segue.chatMissing)
+        XCTAssertEqual(segue.storedPeerId, " bike ")
+        XCTAssertNotEqual(segue.storedPeerId, "bike")
+        XCTAssertEqual(segue.hidesCurrentChatBadge, true)
+        XCTAssertFalse(segue.hidesBecauseBlankPeer)
+        XCTAssertFalse(segue.assignsBadgeText)
+        hidden = assign(segue, hidden)
+        XCTAssertTrue(hidden)
+        XCTAssertEqual(chat.currentChatText, "1")
+        XCTAssertEqual(chat.unread, 1)
+        XCTAssertTrue(appear(false, 1).shouldSetupBottomBar)
+        XCTAssertEqual(appear(false, 1).setupIndex, 1)
+
+        let zeroTrade: NSDictionary = [
+            "owner_id": "me",
+            "other_id": "peer",
+            "owner_unread": NSNumber(value: 0),
+            "turn_user_id": "peer",
+            "bids": oneBid
+        ]
+        let zeroPeer = HLSwappViewController.peerChatContext(from: zeroTrade, viewerId: "me")
+        XCTAssertEqual(zeroPeer.unread, 0)
+        let zeroChat = HLSwappViewController.resolvedTradeChatChrome(
+            agreed: agreed,
+            peerId: zeroPeer.peerId,
+            unread: zeroPeer.unread,
+            bids: zeroTrade.object(forKey: "bids"),
+            turnValue: zeroTrade.object(forKey: "turn_user_id"),
+            viewerId: "me",
+            productsReceivedTag: productsReceivedTag
+        )
+        XCTAssertTrue(zeroChat.hidesCurrentChatBadge)
+        XCTAssertNil(zeroChat.currentChatText)
+        XCTAssertEqual(Double(zeroChat.chatButtonAlpha ?? -1), Double(TradeTurnPolicy.chatFullAlpha), accuracy: 0.0001)
+        let zeroSegue = hide(zeroTrade, "")
+        XCTAssertEqual(zeroSegue.hidesCurrentChatBadge, true)
+        XCTAssertFalse(zeroSegue.hidesBecauseBlankPeer)
+        XCTAssertFalse(zeroSegue.assignsBadgeText)
+        XCTAssertTrue(zeroSegue.chatMissing)
+
+        let negativeTrade: NSDictionary = [
+            "owner_id": "me",
+            "other_id": "peer",
+            "owner_unread": NSNumber(value: -2)
+        ]
+        let negativePeer = HLSwappViewController.peerChatContext(from: negativeTrade, viewerId: "me")
+        XCTAssertEqual(negativePeer.unread, -2)
+        let negativeChat = HLSwappViewController.resolvedTradeChatChrome(
+            agreed: nil,
+            peerId: negativePeer.peerId,
+            unread: negativePeer.unread,
+            bids: nil,
+            turnValue: nil,
+            viewerId: "me",
+            productsReceivedTag: productsReceivedTag
+        )
+        XCTAssertTrue(negativeChat.hidesCurrentChatBadge)
+        XCTAssertNil(negativeChat.currentChatText)
+        XCTAssertNil(negativeChat.chatButtonAlpha)
+        XCTAssertNil(negativeChat.otherOfferAlpha)
+        let negativeSegue = hide(negativeTrade, "\t")
+        XCTAssertEqual(negativeSegue.storedPeerId, "\t")
+        XCTAssertEqual(negativeSegue.hidesCurrentChatBadge, true)
+        XCTAssertFalse(negativeSegue.hidesBecauseBlankPeer)
+        XCTAssertEqual(negativeChat.unread, -2)
+
+        func receipt(_ tag: Int) -> CGFloat? {
+            return HLSwappViewController.productsReceivedOtherOfferAlpha(
+                sendTag: tag,
+                productsReceivedTag: productsReceivedTag
+            )
+        }
+        XCTAssertNil(receipt(justAcceptTag))
+        XCTAssertNil(receipt(closeDealTag))
+        XCTAssertEqual(receipt(productsReceivedTag), CGFloat(0))
+        XCTAssertTrue(appear(false, 0).shouldSetupBottomBar)
+        XCTAssertEqual(appear(false, 0).setupIndex, 0)
+        XCTAssertEqual(appear(false, -1).setupIndex, -1)
+        XCTAssertTrue(appear(false, -1).shouldSetupBottomBar)
+        XCTAssertEqual(appear(false, Int.max).setupIndex, Int.max)
+        XCTAssertFalse(appear(true, productsReceivedTag).shouldSetupBottomBar)
+        XCTAssertEqual(appear(true, productsReceivedTag).setupIndex, productsReceivedTag)
+        XCTAssertNil(receipt(justAcceptTag))
+
+        let empty = HLSwappViewController.emptyTradeRoomChrome(initialOtherUserX: 40)
+        XCTAssertTrue(empty.hidesCurrentChatBadge)
+        XCTAssertEqual(empty.addTradeRoomAlpha, CGFloat(0))
+        XCTAssertNil(hide(nil, "").hidesCurrentChatBadge)
+        let lobby = HLSwappViewController.lobbyPageChrome(
+            maxTrades: 49,
+            pastTrades: [],
+            viewerId: "me"
+        )
+        XCTAssertTrue(lobby.hidesCurrentChatBadge)
+        XCTAssertEqual(lobby.addTradeRoomAlpha, CGFloat(1))
+        XCTAssertFalse(assign(hide(nil, ""), false))
+        XCTAssertFalse(TradeTurnPolicy.showsWaitingForReply(
+            turnUserId: "peer",
+            viewerId: "me",
+            waitingTurnEnabled: false
+        ))
+        XCTAssertFalse(TradeTurnPolicy.shouldBlockOffer(
+            turnUserId: "peer",
+            viewerId: "me",
+            buttonTag: justAcceptTag,
+            productsReceivedTag: productsReceivedTag,
+            turnGateEnabled: false
+        ))
+    }
+
     private func nickJSON(_ raw: String) -> Any? {
         guard let data = raw.data(using: String.Encoding.utf8) else {
             return nil
