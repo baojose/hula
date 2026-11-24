@@ -108,6 +108,58 @@ class ChatViewController: UIViewController {
         return CommonUtils.tradeResourceURL(apiBase: apiBase, tradeId: tradeId, extra: ["chat"])
     }
 
+    /// Chat poll replacement. `refreshChat` replaces `self.chat` only when
+    /// `chatRequestURL` is non-nil, the request is ok, and
+    /// `json as? [NSDictionary]` succeeds, then calls `updateData`. A nil
+    /// URL, a failed request, nil, `NSNull`, a dictionary, a string, a
+    /// number, a bool, or a non-dictionary array keeps the seed from
+    /// `chatConfiguration`, including a present message array and a missing
+    /// `chat` that was seeded as `[]`. An empty dictionary array does
+    /// replace the seed. Do not unwrap `json!`. The `print(json!)` in
+    /// `refreshChat` stays inside a comment. A blank `trade_id` (`""`,
+    /// `" "`, `"   "`, `"\n"`, `"\t"`) still makes `chatRequestURL` nil, so
+    /// this refresh does not GET and does not replace. `tradeId` is echoed
+    /// raw. Do not trim it. `" bike "` is not `"bike"`. `"a&b"` is not
+    /// `"a%26b"`. `"P1"` is not `"p1"`. `" "` is not `""` and is not `"\n"`.
+    /// Encoding stays in `chatRequestURL`. Do not change
+    /// `tradeResourceURL`. Do not fold this into `chatSegueBadgeHide`. Do
+    /// not filter dates here. `updateData` still skips a message whose date
+    /// is not a string section key, and that filter stays there.
+    /// `filtersDates` stays false. The send path clears the text field only
+    /// when `ok` and `json as? NSDictionary` succeed. That clear is the
+    /// following step. `clearsTextField` stays false. Do not fold it into
+    /// this helper. Do not change `manageCheckMarks`. Do not enable
+    /// `waitingTurnEnabled`.
+    class func chatRefreshReplacement(
+        apiBase: String,
+        tradeId: String,
+        seededChat: [NSDictionary],
+        httpOk: Bool,
+        json: Any?
+    ) -> ChatRefreshReplacement {
+        let requestURL = chatRequestURL(apiBase: apiBase, tradeId: tradeId)
+        let requestsChat = requestURL != nil
+        var chat = seededChat
+        var replacesChat = false
+        if requestsChat && httpOk {
+            if let dictionary = json as? [NSDictionary] {
+                chat = dictionary
+                replacesChat = true
+            }
+        }
+        return ChatRefreshReplacement(
+            tradeId: tradeId,
+            requestsChat: requestsChat,
+            requestURL: requestURL,
+            replacesChat: replacesChat,
+            chat: chat,
+            updatesData: replacesChat,
+            filtersDates: false,
+            clearsTextField: false,
+            unwrapsJSON: false
+        )
+    }
+
     func refreshChat(forze: Bool){
         //print("refreshing...")
         //print("trade id: \(trade_id)")
@@ -116,16 +168,21 @@ class ChatViewController: UIViewController {
                 //print("done")
                 //print(ok)
                 //print(json!)
-                if (ok){
-                    if let dictionary = json as? [NSDictionary] {
-                        DispatchQueue.main.async(execute: {
-                            self.chat = dictionary
-                            self.updateData(forze: forze)
-                        })
-                    } else {
-                        
-                    }
-                    
+                // Replace only for an ok dictionary array. Any other body
+                // keeps the seeded chat. Do not unwrap json. Do not filter
+                // dates here. Do not clear the text field.
+                let replacement = ChatViewController.chatRefreshReplacement(
+                    apiBase: HulaConstants.apiURL,
+                    tradeId: self.trade_id,
+                    seededChat: self.chat,
+                    httpOk: ok,
+                    json: json
+                )
+                if replacement.replacesChat {
+                    DispatchQueue.main.async(execute: {
+                        self.chat = replacement.chat
+                        self.updateData(forze: forze)
+                    })
                 }
             })
         }
@@ -414,6 +471,23 @@ extension ChatViewController: UITableViewDelegate, UITableViewDataSource{
         }
         return cell
     }
+}
+
+/// Chat poll decision. `replacesChat` is true only for an ok dictionary
+/// array after a real request URL. The returned `chat` is that array, or
+/// the seed when the response does not apply. `updatesData` follows the
+/// replace. This step does not filter dates, clear the composer, or unwrap
+/// JSON.
+struct ChatRefreshReplacement {
+    let tradeId: String
+    let requestsChat: Bool
+    let requestURL: String?
+    let replacesChat: Bool
+    let chat: [NSDictionary]
+    let updatesData: Bool
+    let filtersDates: Bool
+    let clearsTextField: Bool
+    let unwrapsJSON: Bool
 }
 
 /// Chat rows compared `user_id == userId`. A nil viewer id force-unwrapped on
