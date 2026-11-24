@@ -18758,6 +18758,284 @@ class HulaTests: XCTestCase {
         ))
     }
 
+    func testChatRefreshReplacesOnlyDictionaryArray() {
+        let base = "https://api.example.test/v1/"
+        let productsReceivedTag = 90441
+        XCTAssertTrue(ProductIdentityPolicy.identifiersMatch(nil, ""))
+        XCTAssertFalse(TradeTurnPolicy.idsMatch(nil, ""))
+        XCTAssertNotEqual(
+            TradeTurnPolicy.idsMatch(nil, ""),
+            ProductIdentityPolicy.identifiersMatch(nil, "")
+        )
+
+        func parsed(_ raw: String) -> Any? {
+            guard let data = raw.data(using: String.Encoding.utf8) else {
+                return nil
+            }
+            let json = try? JSONSerialization.jsonObject(with: data, options: [])
+            return json as AnyObject?
+        }
+        func refresh(
+            _ tradeId: String,
+            _ seeded: [NSDictionary],
+            _ ok: Bool,
+            _ json: Any?
+        ) -> ChatRefreshReplacement {
+            return ChatViewController.chatRefreshReplacement(
+                apiBase: base,
+                tradeId: tradeId,
+                seededChat: seeded,
+                httpOk: ok,
+                json: json
+            )
+        }
+        func texts(_ chat: [NSDictionary]) -> [String] {
+            var out: [String] = []
+            for item in chat {
+                out.append(item.object(forKey: "message") as? String ?? "")
+            }
+            return out
+        }
+        func messageNamed(_ chat: [NSDictionary], _ name: String) -> NSDictionary? {
+            for item in chat {
+                if (item.object(forKey: "message") as? String) == name {
+                    return item
+                }
+            }
+            return nil
+        }
+
+        let seedMessage: NSDictionary = [
+            "user_id": "u1",
+            "message": "keep-me",
+            "date": "2026-11-24T09:00:00.000Z"
+        ]
+        let presentTrade = ["_id": " bike ", "chat": [seedMessage]] as NSDictionary
+        let present = HLSwappViewController.chatConfiguration(from: presentTrade)
+        XCTAssertEqual(present.tradeId, " bike ")
+        XCTAssertNotEqual(present.tradeId, "bike")
+        XCTAssertEqual(present.chat.count, 1)
+        XCTAssertEqual(texts(present.chat), ["keep-me"])
+
+        let missingTrade = ["_id": " bike "] as NSDictionary
+        let missing = HLSwappViewController.chatConfiguration(from: missingTrade)
+        XCTAssertEqual(missing.tradeId, " bike ")
+        XCTAssertEqual(missing.chat.count, 0)
+        let nullChatTrade = ["_id": "a&b", "chat": NSNull()] as NSDictionary
+        XCTAssertEqual(HLSwappViewController.chatConfiguration(from: nullChatTrade).chat.count, 0)
+
+        let freshJSON = "[{\"message\":\"fresh\",\"date\":\"2026-11-24T10:02:00.000Z\"}]"
+        let fresh = parsed(freshJSON)
+        XCTAssertNotNil(fresh as? [NSDictionary])
+        XCTAssertNil(fresh as? NSDictionary)
+
+        let blanks = ["", " ", "   ", "\n", "\t"]
+        for stored in blanks {
+            let skipped = refresh(stored, present.chat, true, fresh)
+            XCTAssertEqual(skipped.tradeId, stored)
+            XCTAssertFalse(skipped.requestsChat)
+            XCTAssertNil(skipped.requestURL)
+            XCTAssertNil(ChatViewController.chatRequestURL(apiBase: base, tradeId: stored))
+            XCTAssertFalse(skipped.replacesChat)
+            XCTAssertFalse(skipped.updatesData)
+            XCTAssertFalse(skipped.filtersDates)
+            XCTAssertFalse(skipped.clearsTextField)
+            XCTAssertFalse(skipped.unwrapsJSON)
+            XCTAssertEqual(texts(skipped.chat), ["keep-me"])
+            let emptySeed = refresh(stored, missing.chat, true, fresh)
+            XCTAssertFalse(emptySeed.replacesChat)
+            XCTAssertEqual(emptySeed.chat.count, 0)
+        }
+        XCTAssertNotEqual(refresh(" ", present.chat, true, fresh).tradeId, "")
+        XCTAssertNotEqual(refresh(" ", present.chat, true, fresh).tradeId, "\n")
+        XCTAssertNotEqual(refresh("\n", present.chat, true, fresh).tradeId, "\t")
+
+        let spaced = refresh(" bike ", present.chat, false, fresh)
+        XCTAssertEqual(spaced.tradeId, " bike ")
+        XCTAssertNotEqual(spaced.tradeId, "bike")
+        XCTAssertNotEqual(spaced.tradeId, "a%20")
+        XCTAssertTrue(spaced.requestsChat)
+        XCTAssertEqual(spaced.requestURL, base + "trades/bike/chat")
+        XCTAssertEqual(
+            spaced.requestURL,
+            ChatViewController.chatRequestURL(apiBase: base, tradeId: " bike ")
+        )
+        XCTAssertFalse((spaced.requestURL ?? "").contains(" bike "))
+        XCTAssertFalse((spaced.requestURL ?? "").contains("%20"))
+        XCTAssertFalse(spaced.replacesChat)
+        XCTAssertFalse(spaced.updatesData)
+        XCTAssertFalse(spaced.filtersDates)
+        XCTAssertFalse(spaced.clearsTextField)
+        XCTAssertFalse(spaced.unwrapsJSON)
+        XCTAssertEqual(texts(spaced.chat), ["keep-me"])
+
+        let encoded = refresh("a&b", present.chat, true, parsed("null"))
+        XCTAssertEqual(encoded.tradeId, "a&b")
+        XCTAssertNotEqual(encoded.tradeId, "a%26b")
+        XCTAssertEqual(encoded.requestURL, base + "trades/a%26b/chat")
+        XCTAssertTrue(encoded.requestsChat)
+        XCTAssertFalse(encoded.replacesChat)
+        XCTAssertEqual(texts(encoded.chat), ["keep-me"])
+
+        let rejected: [Any?] = [
+            nil,
+            NSNull(),
+            parsed("null"),
+            parsed("{}"),
+            NSDictionary(),
+            ["message": "fresh"] as NSDictionary,
+            "hi",
+            parsed("\"hi\""),
+            NSNumber(value: 2),
+            parsed("2"),
+            true,
+            false,
+            parsed("true"),
+            parsed("[\"hi\"]")
+        ]
+        for body in rejected {
+            let kept = refresh(" bike ", present.chat, true, body)
+            XCTAssertTrue(kept.requestsChat)
+            XCTAssertEqual(kept.requestURL, base + "trades/bike/chat")
+            XCTAssertFalse(kept.replacesChat)
+            XCTAssertFalse(kept.updatesData)
+            XCTAssertFalse(kept.filtersDates)
+            XCTAssertFalse(kept.clearsTextField)
+            XCTAssertFalse(kept.unwrapsJSON)
+            XCTAssertEqual(texts(kept.chat), ["keep-me"])
+            let stillEmpty = refresh("P1", missing.chat, true, body)
+            XCTAssertEqual(stillEmpty.tradeId, "P1")
+            XCTAssertNotEqual(stillEmpty.tradeId, "p1")
+            XCTAssertEqual(stillEmpty.requestURL, base + "trades/P1/chat")
+            XCTAssertFalse(stillEmpty.replacesChat)
+            XCTAssertEqual(stillEmpty.chat.count, 0)
+        }
+
+        let sendBody = parsed("{}")
+        XCTAssertNotNil(sendBody as? NSDictionary)
+        let sendShaped = refresh(" bike ", present.chat, true, sendBody)
+        XCTAssertFalse(sendShaped.replacesChat)
+        XCTAssertFalse(sendShaped.clearsTextField)
+        XCTAssertEqual(texts(sendShaped.chat), ["keep-me"])
+        let failedArray = refresh(" bike ", present.chat, false, fresh)
+        XCTAssertFalse(failedArray.replacesChat)
+        XCTAssertFalse(failedArray.updatesData)
+        XCTAssertEqual(texts(failedArray.chat), ["keep-me"])
+
+        let strings = NSMutableArray()
+        strings.add("hi")
+        XCTAssertFalse(refresh(" bike ", present.chat, true, strings).replacesChat)
+        let mixed = NSMutableArray()
+        mixed.add(seedMessage)
+        mixed.add("nope")
+        XCTAssertFalse(refresh(" bike ", present.chat, true, mixed).replacesChat)
+        XCTAssertEqual(texts(refresh(" bike ", present.chat, true, mixed).chat), ["keep-me"])
+        let loose: [Any] = [seedMessage]
+        XCTAssertFalse(refresh(" bike ", present.chat, true, loose).replacesChat)
+
+        let emptyJSON = refresh(" bike ", present.chat, true, parsed("[]"))
+        XCTAssertTrue(emptyJSON.replacesChat)
+        XCTAssertTrue(emptyJSON.updatesData)
+        XCTAssertFalse(emptyJSON.filtersDates)
+        XCTAssertFalse(emptyJSON.clearsTextField)
+        XCTAssertFalse(emptyJSON.unwrapsJSON)
+        XCTAssertEqual(emptyJSON.chat.count, 0)
+        XCTAssertEqual(texts(emptyJSON.chat), [])
+        let emptyBridge = refresh("P1", present.chat, true, NSMutableArray())
+        XCTAssertTrue(emptyBridge.replacesChat)
+        XCTAssertTrue(emptyBridge.updatesData)
+        XCTAssertEqual(emptyBridge.chat.count, 0)
+        XCTAssertEqual(emptyBridge.tradeId, "P1")
+        let emptyTyped = refresh("P1", present.chat, true, [] as [NSDictionary])
+        XCTAssertTrue(emptyTyped.replacesChat)
+        XCTAssertEqual(emptyTyped.chat.count, 0)
+        let emptyOnBlankSeed = refresh(" bike ", missing.chat, true, parsed("[]"))
+        XCTAssertTrue(emptyOnBlankSeed.replacesChat)
+        XCTAssertTrue(emptyOnBlankSeed.updatesData)
+        XCTAssertEqual(emptyOnBlankSeed.chat.count, 0)
+
+        let dated = "2026-11-24T10:02:00.000Z"
+        let datedMessage: NSDictionary = ["message": "dated", "date": dated]
+        let blankDate: NSDictionary = ["message": "blank-date", "date": ""]
+        let numberDate: NSDictionary = ["message": "number-date", "date": NSNumber(value: 5)]
+        let noDate: NSDictionary = ["message": "no-date"]
+        let spacedMessage: NSDictionary = ["message": " spaced "]
+        let incoming = [datedMessage, blankDate, numberDate, noDate, spacedMessage] as [NSDictionary]
+        let replaced = refresh(" bike ", present.chat, true, incoming)
+        XCTAssertTrue(replaced.replacesChat)
+        XCTAssertTrue(replaced.updatesData)
+        XCTAssertFalse(replaced.filtersDates)
+        XCTAssertFalse(replaced.clearsTextField)
+        XCTAssertFalse(replaced.unwrapsJSON)
+        XCTAssertEqual(replaced.tradeId, " bike ")
+        XCTAssertEqual(
+            texts(replaced.chat),
+            ["dated", "blank-date", "number-date", "no-date", " spaced "]
+        )
+        XCTAssertNotEqual(texts(replaced.chat), ["keep-me"])
+        XCTAssertEqual(messageNamed(replaced.chat, "dated")?.object(forKey: "date") as? String, dated)
+        XCTAssertEqual(messageNamed(replaced.chat, "blank-date")?.object(forKey: "date") as? String, "")
+        XCTAssertEqual(
+            (messageNamed(replaced.chat, "number-date")?.object(forKey: "date") as? NSNumber)?.intValue,
+            5
+        )
+        XCTAssertNil(messageNamed(replaced.chat, "no-date")?.object(forKey: "date"))
+        XCTAssertEqual(messageNamed(replaced.chat, " spaced ")?.object(forKey: "message") as? String, " spaced ")
+        XCTAssertNotEqual(messageNamed(replaced.chat, " spaced ")?.object(forKey: "message") as? String, "spaced")
+        XCTAssertEqual(CommonUtils.chatDateSectionKey(dated), "2026-11-24T10")
+        XCTAssertNil(CommonUtils.chatDateSectionKey(""))
+        XCTAssertEqual(texts(present.chat), ["keep-me"])
+
+        let bridged = refresh("a&b", missing.chat, true, fresh)
+        XCTAssertTrue(bridged.replacesChat)
+        XCTAssertTrue(bridged.updatesData)
+        XCTAssertEqual(bridged.tradeId, "a&b")
+        XCTAssertEqual(bridged.requestURL, base + "trades/a%26b/chat")
+        XCTAssertEqual(texts(bridged.chat), ["fresh"])
+        XCTAssertNil(fresh as? NSDictionary)
+        XCTAssertFalse(bridged.clearsTextField)
+
+        let badge = HLSwappViewController.chatSegueBadgeHide(
+            resolvedTrade: presentTrade,
+            storedPeerId: " bike "
+        )
+        XCTAssertEqual(badge.hidesCurrentChatBadge, true)
+        XCTAssertFalse(badge.assignsBadgeText)
+        XCTAssertEqual(badge.storedPeerId, " bike ")
+        XCTAssertFalse(badge.hidesBecauseBlankPeer)
+        XCTAssertNil(HLSwappViewController.chatSegueBadgeHide(
+            resolvedTrade: nil,
+            storedPeerId: ""
+        ).hidesCurrentChatBadge)
+        let chrome = HLSwappViewController.resolvedTradeChatChrome(
+            agreed: nil,
+            peerId: " bike ",
+            unread: 1,
+            bids: nil,
+            turnValue: nil,
+            viewerId: "me",
+            productsReceivedTag: productsReceivedTag
+        )
+        XCTAssertEqual(chrome.currentChatText, "1")
+        XCTAssertEqual(chrome.unread, 1)
+        XCTAssertFalse(chrome.hidesCurrentChatBadge)
+        XCTAssertEqual(chrome.peerId, " bike ")
+        XCTAssertNotEqual(chrome.peerId, "bike")
+        XCTAssertFalse(ChatViewController.shouldAutoDismissForOrientation(.portrait))
+        XCTAssertFalse(TradeTurnPolicy.showsWaitingForReply(
+            turnUserId: "peer",
+            viewerId: "me",
+            waitingTurnEnabled: false
+        ))
+        XCTAssertFalse(TradeTurnPolicy.shouldBlockOffer(
+            turnUserId: "peer",
+            viewerId: "me",
+            buttonTag: 1,
+            productsReceivedTag: productsReceivedTag,
+            turnGateEnabled: false
+        ))
+    }
+
     private func nickJSON(_ raw: String) -> Any? {
         guard let data = raw.data(using: String.Encoding.utf8) else {
             return nil
