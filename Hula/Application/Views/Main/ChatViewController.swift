@@ -125,10 +125,9 @@ class ChatViewController: UIViewController {
     /// `tradeResourceURL`. Do not fold this into `chatSegueBadgeHide`. Do
     /// not filter dates here. `updateData` still skips a message whose date
     /// is not a string section key, and that filter stays there.
-    /// `filtersDates` stays false. The send path clears the text field only
-    /// when `ok` and `json as? NSDictionary` succeed. That clear is the
-    /// following step. `clearsTextField` stays false. Do not fold it into
-    /// this helper. Do not change `manageCheckMarks`. Do not enable
+    /// `filtersDates` stays false. `clearsTextField` stays false. The send
+    /// clear lives in `chatSendClear` and must not be folded into this
+    /// helper. Do not change `manageCheckMarks`. Do not enable
     /// `waitingTurnEnabled`.
     class func chatRefreshReplacement(
         apiBase: String,
@@ -156,6 +155,60 @@ class ChatViewController: UIViewController {
             updatesData: replacesChat,
             filtersDates: false,
             clearsTextField: false,
+            unwrapsJSON: false
+        )
+    }
+
+    /// Send callback. After `validatedChatMessage` and `chatRequestURL` both
+    /// succeed, the composer clears and `refreshChat(forze: true)` runs only
+    /// when `httpOk` and `json as? NSDictionary` succeed. An empty dictionary
+    /// still clears. A failed request, nil, `NSNull`, a dictionary array
+    /// (including one `chatRefreshReplacement` would apply), a string array,
+    /// a string, a number, or a bool keeps the draft. Do not unwrap `json`.
+    /// Do not fold this clear into `chatRefreshReplacement`. `replacesChat`
+    /// stays false. `filtersDates` stays false. A blank `trade_id` (`""`,
+    /// `" "`, `"   "`, `"\n"`, `"\t"`) still makes `chatRequestURL` nil, so
+    /// this send does not POST and does not clear. `tradeId` is echoed raw.
+    /// Do not trim it. `" bike "` is not `"bike"`. `"a&b"` is not `"a%26b"`.
+    /// `"P1"` is not `"p1"`. Encoding stays in `chatRequestURL`. The
+    /// untrimmed draft longer than 300 characters still shows the length
+    /// alert and does not POST, even when trimming would fit. Do not trim
+    /// before that count. `validatedChatMessage` still trims and rejects
+    /// blank text before the request. Do not reimplement that trim here.
+    /// Do not change `chatPostString`. The refresh after a clear stays a
+    /// separate `refreshChat` call. `getTrades` still runs for every POST
+    /// callback, including when the draft stays, and is not this helper.
+    /// Do not dismiss the chat from this helper.
+    class func chatSendClear(
+        apiBase: String,
+        tradeId: String,
+        draft: String?,
+        httpOk: Bool,
+        json: Any?
+    ) -> ChatSendClear {
+        let draftText = draft ?? ""
+        let showsLengthAlert = draftText.characters.count > maxChatMessageLength
+        let message = showsLengthAlert ? nil : validatedChatMessage(draftText)
+        let requestURL = chatRequestURL(apiBase: apiBase, tradeId: tradeId)
+        let posts = (message != nil) && (requestURL != nil)
+        var postString: String? = nil
+        if posts, let message = message {
+            postString = chatPostString(message: message)
+        }
+        let clearsTextField = posts && httpOk && ((json as? NSDictionary) != nil)
+        return ChatSendClear(
+            tradeId: tradeId,
+            draft: draftText,
+            message: message,
+            showsLengthAlert: showsLengthAlert,
+            posts: posts,
+            requestURL: requestURL,
+            postString: postString,
+            clearsTextField: clearsTextField,
+            refreshesChat: clearsTextField,
+            keptDraft: clearsTextField ? "" : draftText,
+            replacesChat: false,
+            filtersDates: false,
             unwrapsJSON: false
         )
     }
@@ -277,7 +330,15 @@ class ChatViewController: UIViewController {
     
     @IBAction func sendChatTextAction(_ sender: Any) {
         let raw = self.chatTextField.text ?? ""
-        if raw.count > ChatViewController.maxChatMessageLength {
+        let tradeId = self.trade_id
+        let decision = ChatViewController.chatSendClear(
+            apiBase: HulaConstants.apiURL,
+            tradeId: tradeId,
+            draft: raw,
+            httpOk: false,
+            json: nil
+        )
+        if decision.showsLengthAlert {
             let alert = UIAlertController(
                 title: NSLocalizedString("Message too long", comment: ""),
                 message: NSLocalizedString("Please keep trade chat messages to 300 characters or fewer.", comment: ""),
@@ -287,22 +348,30 @@ class ChatViewController: UIViewController {
             self.present(alert, animated: true, completion: nil)
             return
         }
-        guard let tx = ChatViewController.validatedChatMessage(raw),
-            let queryURL = ChatViewController.chatRequestURL(apiBase: HulaConstants.apiURL, tradeId: self.trade_id) else {
+        guard decision.posts,
+            let queryURL = decision.requestURL,
+            let postBody = decision.postString else {
             return
         }
         //print("Sending...")
         //print("trade id: \(self.trade_id)")
-        HLDataManager.sharedInstance.httpPost(urlstr: queryURL, postString: ChatViewController.chatPostString(message: tx), isPut: false, taskCallback: { (ok, json) in
+        HLDataManager.sharedInstance.httpPost(urlstr: queryURL, postString: postBody, isPut: false, taskCallback: { (ok, json) in
             //print("done")
             //print(ok)
-            if (ok){
-                if (json as? NSDictionary) != nil {
-                    DispatchQueue.main.async(execute: {
-                        self.chatTextField.text = ""
-                        self.refreshChat(forze:true)
-                    })
-                }
+            // Clear only for an ok dictionary. Do not unwrap json. A
+            // dictionary array is a poll body and must keep the draft.
+            let outcome = ChatViewController.chatSendClear(
+                apiBase: HulaConstants.apiURL,
+                tradeId: tradeId,
+                draft: raw,
+                httpOk: ok,
+                json: json
+            )
+            if outcome.clearsTextField {
+                DispatchQueue.main.async(execute: {
+                    self.chatTextField.text = ""
+                    self.refreshChat(forze:true)
+                })
             }
             HLDataManager.sharedInstance.getTrades {(succ) in
                 // trades refreshed
@@ -487,6 +556,27 @@ struct ChatRefreshReplacement {
     let updatesData: Bool
     let filtersDates: Bool
     let clearsTextField: Bool
+    let unwrapsJSON: Bool
+}
+
+/// Send decision. `posts` requires a validated message and a real chat URL.
+/// `clearsTextField` and `refreshesChat` are true only for an ok dictionary
+/// after that post. The returned `keptDraft` is empty when the composer
+/// clears, otherwise the original draft, including surrounding spaces.
+/// This step does not replace the chat array, filter dates, or unwrap JSON.
+struct ChatSendClear {
+    let tradeId: String
+    let draft: String
+    let message: String?
+    let showsLengthAlert: Bool
+    let posts: Bool
+    let requestURL: String?
+    let postString: String?
+    let clearsTextField: Bool
+    let refreshesChat: Bool
+    let keptDraft: String
+    let replacesChat: Bool
+    let filtersDates: Bool
     let unwrapsJSON: Bool
 }
 
