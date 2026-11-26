@@ -19368,6 +19368,384 @@ class HulaTests: XCTestCase {
         ))
     }
 
+    func testChatSendReloadsTradesForEveryPost() {
+        let base = "https://api.example.test/v1/"
+        let productsReceivedTag = 90441
+        XCTAssertTrue(ProductIdentityPolicy.identifiersMatch(nil, ""))
+        XCTAssertFalse(TradeTurnPolicy.idsMatch(nil, ""))
+        XCTAssertNotEqual(
+            TradeTurnPolicy.idsMatch(nil, ""),
+            ProductIdentityPolicy.identifiersMatch(nil, "")
+        )
+
+        func parsed(_ raw: String) -> Any? {
+            guard let data = raw.data(using: String.Encoding.utf8) else {
+                return nil
+            }
+            let json = try? JSONSerialization.jsonObject(with: data, options: [])
+            return json as AnyObject?
+        }
+        func reload(
+            _ tradeId: String,
+            _ draft: String?,
+            _ ok: Bool,
+            _ json: Any?
+        ) -> ChatSendTradeReload {
+            return ChatViewController.chatSendTradeReload(
+                apiBase: base,
+                tradeId: tradeId,
+                draft: draft,
+                httpOk: ok,
+                json: json
+            )
+        }
+        func send(
+            _ tradeId: String,
+            _ draft: String?,
+            _ ok: Bool,
+            _ json: Any?
+        ) -> ChatSendClear {
+            return ChatViewController.chatSendClear(
+                apiBase: base,
+                tradeId: tradeId,
+                draft: draft,
+                httpOk: ok,
+                json: json
+            )
+        }
+
+        let freshJSON = "[{\"message\":\"fresh\",\"date\":\"2026-11-26T10:02:00.000Z\"}]"
+        let fresh = parsed(freshJSON)
+        XCTAssertNotNil(fresh as? [NSDictionary])
+        XCTAssertNil(fresh as? NSDictionary)
+        let emptyObject = parsed("{}")
+        XCTAssertNotNil(emptyObject as? NSDictionary)
+        XCTAssertNil(emptyObject as? [NSDictionary])
+        let seedMessage: NSDictionary = [
+            "message": "keep-me",
+            "date": "2026-11-26T09:00:00.000Z"
+        ]
+        let seed = [seedMessage]
+
+        let blanks = ["", " ", "   ", "\n", "\t"]
+        for stored in blanks {
+            let skipped = reload(stored, " hello ", true, emptyObject)
+            XCTAssertEqual(skipped.tradeId, stored)
+            XCTAssertEqual(skipped.draft, " hello ")
+            XCTAssertFalse(skipped.showsLengthAlert)
+            XCTAssertFalse(skipped.posts)
+            XCTAssertNil(skipped.requestURL)
+            XCTAssertNil(ChatViewController.chatRequestURL(apiBase: base, tradeId: stored))
+            XCTAssertFalse(skipped.clearsTextField)
+            XCTAssertFalse(skipped.reloadsTrades)
+            XCTAssertEqual(skipped.keptDraft, " hello ")
+            XCTAssertNotEqual(skipped.keptDraft, "hello")
+            XCTAssertNotEqual(skipped.keptDraft, "")
+            XCTAssertFalse(skipped.dismissesChat)
+            XCTAssertFalse(skipped.refreshesChat)
+            XCTAssertFalse(skipped.replacesChat)
+            XCTAssertFalse(skipped.filtersDates)
+            XCTAssertFalse(skipped.unwrapsJSON)
+            let clear = send(stored, " hello ", true, emptyObject)
+            XCTAssertFalse(clear.posts)
+            XCTAssertFalse(clear.clearsTextField)
+            XCTAssertEqual(clear.message, "hello")
+        }
+        XCTAssertNotEqual(reload(" ", "hello", true, emptyObject).tradeId, "")
+        XCTAssertNotEqual(reload(" ", "hello", true, emptyObject).tradeId, "\n")
+        XCTAssertNotEqual(reload("\n", "hello", true, emptyObject).tradeId, "\t")
+
+        let draftBlanks = ["", " ", "   ", "\n", "\t"]
+        for draft in draftBlanks {
+            let skipped = reload(" bike ", draft, true, NSDictionary())
+            XCTAssertFalse(skipped.showsLengthAlert)
+            XCTAssertFalse(skipped.posts)
+            XCTAssertEqual(skipped.requestURL, base + "trades/bike/chat")
+            XCTAssertFalse(skipped.reloadsTrades)
+            XCTAssertFalse(skipped.clearsTextField)
+            XCTAssertFalse(skipped.dismissesChat)
+            XCTAssertFalse(skipped.refreshesChat)
+            XCTAssertEqual(skipped.keptDraft, draft)
+            XCTAssertNil(ChatViewController.validatedChatMessage(draft))
+        }
+        let missingDraft = reload(" bike ", nil, true, NSDictionary())
+        XCTAssertEqual(missingDraft.draft, "")
+        XCTAssertFalse(missingDraft.posts)
+        XCTAssertFalse(missingDraft.reloadsTrades)
+        XCTAssertFalse(missingDraft.dismissesChat)
+        XCTAssertEqual(missingDraft.keptDraft, "")
+
+        let failed = reload(" bike ", " hello ", false, emptyObject)
+        XCTAssertEqual(failed.tradeId, " bike ")
+        XCTAssertNotEqual(failed.tradeId, "bike")
+        XCTAssertNotEqual(failed.tradeId, "a%20")
+        XCTAssertEqual(failed.draft, " hello ")
+        XCTAssertFalse(failed.showsLengthAlert)
+        XCTAssertTrue(failed.posts)
+        XCTAssertEqual(failed.requestURL, base + "trades/bike/chat")
+        XCTAssertEqual(
+            failed.requestURL,
+            ChatViewController.chatRequestURL(apiBase: base, tradeId: " bike ")
+        )
+        XCTAssertFalse((failed.requestURL ?? "").contains(" bike "))
+        XCTAssertFalse((failed.requestURL ?? "").contains("%20"))
+        XCTAssertFalse(failed.clearsTextField)
+        XCTAssertTrue(failed.reloadsTrades)
+        XCTAssertNotEqual(failed.reloadsTrades, failed.clearsTextField)
+        XCTAssertEqual(failed.keptDraft, " hello ")
+        XCTAssertNotEqual(failed.keptDraft, "hello")
+        XCTAssertFalse(failed.dismissesChat)
+        XCTAssertFalse(failed.refreshesChat)
+        XCTAssertFalse(failed.replacesChat)
+        XCTAssertFalse(failed.filtersDates)
+        XCTAssertFalse(failed.unwrapsJSON)
+        let failedClear = send(" bike ", " hello ", false, emptyObject)
+        XCTAssertTrue(failedClear.posts)
+        XCTAssertFalse(failedClear.clearsTextField)
+        XCTAssertFalse(failedClear.refreshesChat)
+        XCTAssertEqual(failedClear.postString, "message=hello")
+        XCTAssertEqual(failedClear.keptDraft, failed.keptDraft)
+
+        let encoded = reload("a&b", " a&b=c+1 ", true, emptyObject)
+        XCTAssertEqual(encoded.tradeId, "a&b")
+        XCTAssertNotEqual(encoded.tradeId, "a%26b")
+        XCTAssertEqual(encoded.requestURL, base + "trades/a%26b/chat")
+        XCTAssertTrue(encoded.posts)
+        XCTAssertTrue(encoded.clearsTextField)
+        XCTAssertTrue(encoded.reloadsTrades)
+        XCTAssertEqual(encoded.keptDraft, "")
+        XCTAssertFalse(encoded.dismissesChat)
+        XCTAssertFalse(encoded.refreshesChat)
+        XCTAssertFalse(encoded.replacesChat)
+        let encodedClear = send("a&b", " a&b=c+1 ", true, emptyObject)
+        XCTAssertEqual(encodedClear.postString, "message=a%26b%3Dc%2B1")
+        XCTAssertEqual(
+            encodedClear.postString,
+            ChatViewController.chatPostString(message: "a&b=c+1")
+        )
+        XCTAssertTrue(encodedClear.refreshesChat)
+        XCTAssertFalse(encoded.refreshesChat)
+        XCTAssertNotEqual(encoded.refreshesChat, encodedClear.refreshesChat)
+        let encodedFail = reload("a&b", " a&b=c+1 ", false, emptyObject)
+        XCTAssertTrue(encodedFail.posts)
+        XCTAssertTrue(encodedFail.reloadsTrades)
+        XCTAssertFalse(encodedFail.clearsTextField)
+        XCTAssertFalse(encodedFail.dismissesChat)
+        XCTAssertEqual(encodedFail.keptDraft, " a&b=c+1 ")
+        XCTAssertNotEqual(encodedFail.keptDraft, "a&b=c+1")
+        XCTAssertNotEqual(encodedFail.keptDraft, "a%26b%3Dc%2B1")
+
+        let upper = reload("P1", "hi", true, NSDictionary())
+        XCTAssertEqual(upper.tradeId, "P1")
+        XCTAssertNotEqual(upper.tradeId, "p1")
+        XCTAssertEqual(upper.requestURL, base + "trades/P1/chat")
+        XCTAssertTrue(upper.reloadsTrades)
+        XCTAssertTrue(upper.clearsTextField)
+        XCTAssertFalse(upper.dismissesChat)
+        XCTAssertFalse(upper.refreshesChat)
+        XCTAssertTrue(send("P1", "hi", true, NSDictionary()).refreshesChat)
+
+        let mutable = NSMutableDictionary()
+        mutable.setValue("sent", forKey: "message")
+        let withNull = NSMutableDictionary()
+        withNull.setValue(NSNull(), forKey: "message")
+        let accepted: [Any?] = [
+            emptyObject,
+            NSDictionary(),
+            mutable,
+            withNull,
+            ["message": "sent"] as NSDictionary
+        ]
+        for body in accepted {
+            let cleared = reload("P1", " hi ", true, body)
+            XCTAssertTrue(cleared.posts)
+            XCTAssertTrue(cleared.clearsTextField)
+            XCTAssertTrue(cleared.reloadsTrades)
+            XCTAssertEqual(cleared.keptDraft, "")
+            XCTAssertFalse(cleared.dismissesChat)
+            XCTAssertFalse(cleared.refreshesChat)
+            XCTAssertFalse(cleared.replacesChat)
+            XCTAssertFalse(cleared.filtersDates)
+            XCTAssertFalse(cleared.unwrapsJSON)
+            let clear = send("P1", " hi ", true, body)
+            XCTAssertTrue(clear.clearsTextField)
+            XCTAssertTrue(clear.refreshesChat)
+            XCTAssertEqual(clear.postString, "message=hi")
+            XCTAssertFalse(ChatViewController.chatRefreshReplacement(
+                apiBase: base,
+                tradeId: "P1",
+                seededChat: seed,
+                httpOk: true,
+                json: body
+            ).replacesChat)
+        }
+
+        let rejected: [Any?] = [
+            nil,
+            NSNull(),
+            parsed("null"),
+            fresh,
+            parsed("[]"),
+            parsed("[\"hi\"]"),
+            "hi",
+            parsed("\"hi\""),
+            "ok",
+            NSNumber(value: 0),
+            parsed("0"),
+            true,
+            false,
+            parsed("true")
+        ]
+        for body in rejected {
+            let kept = reload(" bike ", " hello ", true, body)
+            XCTAssertTrue(kept.posts)
+            XCTAssertFalse(kept.clearsTextField)
+            XCTAssertTrue(kept.reloadsTrades)
+            XCTAssertNotEqual(kept.reloadsTrades, kept.clearsTextField)
+            XCTAssertEqual(kept.keptDraft, " hello ")
+            XCTAssertNotEqual(kept.keptDraft, "")
+            XCTAssertFalse(kept.dismissesChat)
+            XCTAssertFalse(kept.refreshesChat)
+            XCTAssertFalse(kept.replacesChat)
+            XCTAssertFalse(kept.filtersDates)
+            XCTAssertFalse(kept.unwrapsJSON)
+            let failedBody = reload("P1", " hello ", false, body)
+            XCTAssertTrue(failedBody.posts)
+            XCTAssertTrue(failedBody.reloadsTrades)
+            XCTAssertFalse(failedBody.clearsTextField)
+            XCTAssertFalse(failedBody.dismissesChat)
+            XCTAssertEqual(failedBody.keptDraft, " hello ")
+            XCTAssertFalse(send("P1", " hello ", false, body).refreshesChat)
+        }
+        let strings = NSMutableArray()
+        strings.add("hi")
+        let stringArray = reload(" bike ", "hello", true, strings)
+        XCTAssertTrue(stringArray.reloadsTrades)
+        XCTAssertFalse(stringArray.clearsTextField)
+        XCTAssertFalse(stringArray.dismissesChat)
+        XCTAssertEqual(stringArray.keptDraft, "hello")
+        let mixed = NSMutableArray()
+        mixed.add(seedMessage)
+        mixed.add("nope")
+        XCTAssertTrue(reload(" bike ", "hello", true, mixed).reloadsTrades)
+        XCTAssertFalse(reload(" bike ", "hello", true, mixed).clearsTextField)
+        XCTAssertFalse(reload(" bike ", "hello", true, mixed).dismissesChat)
+        let loose: [Any] = [seedMessage]
+        XCTAssertTrue(reload(" bike ", "hello", true, loose).reloadsTrades)
+        XCTAssertFalse(reload(" bike ", "hello", true, loose).replacesChat)
+        XCTAssertEqual(reload(" bike ", "hello", true, [] as [NSDictionary]).keptDraft, "hello")
+        XCTAssertTrue(reload(" bike ", "hello", true, [] as [NSDictionary]).reloadsTrades)
+        let emptyArray = reload(" bike ", " hello ", true, NSMutableArray())
+        XCTAssertTrue(emptyArray.reloadsTrades)
+        XCTAssertFalse(emptyArray.clearsTextField)
+        XCTAssertFalse(emptyArray.dismissesChat)
+        XCTAssertFalse(emptyArray.refreshesChat)
+        XCTAssertFalse(emptyArray.replacesChat)
+        XCTAssertEqual(emptyArray.keptDraft, " hello ")
+        XCTAssertTrue(ChatViewController.chatRefreshReplacement(
+            apiBase: base,
+            tradeId: " bike ",
+            seededChat: seed,
+            httpOk: true,
+            json: NSMutableArray()
+        ).replacesChat)
+        let pollWouldReplace = ChatViewController.chatRefreshReplacement(
+            apiBase: base,
+            tradeId: " bike ",
+            seededChat: seed,
+            httpOk: true,
+            json: fresh
+        )
+        XCTAssertTrue(pollWouldReplace.replacesChat)
+        XCTAssertFalse(pollWouldReplace.clearsTextField)
+        XCTAssertEqual(pollWouldReplace.chat.count, 1)
+        let sendKeeps = reload(" bike ", " hello ", true, fresh)
+        XCTAssertTrue(sendKeeps.reloadsTrades)
+        XCTAssertFalse(sendKeeps.clearsTextField)
+        XCTAssertFalse(sendKeeps.dismissesChat)
+        XCTAssertFalse(sendKeeps.refreshesChat)
+        XCTAssertFalse(sendKeeps.replacesChat)
+        XCTAssertEqual(sendKeeps.keptDraft, " hello ")
+        let failedArray = reload(" bike ", " hello ", false, fresh)
+        XCTAssertTrue(failedArray.reloadsTrades)
+        XCTAssertFalse(failedArray.clearsTextField)
+        XCTAssertFalse(failedArray.dismissesChat)
+        XCTAssertEqual(failedArray.keptDraft, " hello ")
+
+        let exact = String(repeating: Character("b"), count: ChatViewController.maxChatMessageLength)
+        let exactReload = reload(" bike ", exact, true, NSDictionary())
+        XCTAssertFalse(exactReload.showsLengthAlert)
+        XCTAssertTrue(exactReload.posts)
+        XCTAssertTrue(exactReload.reloadsTrades)
+        XCTAssertTrue(exactReload.clearsTextField)
+        XCTAssertFalse(exactReload.dismissesChat)
+        XCTAssertFalse(exactReload.refreshesChat)
+        XCTAssertEqual(exactReload.keptDraft, "")
+        XCTAssertTrue(send(" bike ", exact, true, NSDictionary()).refreshesChat)
+        let exactFail = reload(" bike ", exact, false, NSDictionary())
+        XCTAssertTrue(exactFail.posts)
+        XCTAssertTrue(exactFail.reloadsTrades)
+        XCTAssertFalse(exactFail.clearsTextField)
+        XCTAssertFalse(exactFail.dismissesChat)
+        XCTAssertEqual(exactFail.keptDraft, exact)
+
+        let spaces = String(repeating: Character(" "), count: ChatViewController.maxChatMessageLength)
+        let spacesOnly = reload(" bike ", spaces, true, NSDictionary())
+        XCTAssertFalse(spacesOnly.showsLengthAlert)
+        XCTAssertFalse(spacesOnly.posts)
+        XCTAssertFalse(spacesOnly.reloadsTrades)
+        XCTAssertFalse(spacesOnly.clearsTextField)
+        XCTAssertFalse(spacesOnly.dismissesChat)
+        XCTAssertEqual(spacesOnly.requestURL, base + "trades/bike/chat")
+        XCTAssertEqual(spacesOnly.keptDraft, spaces)
+        XCTAssertNil(ChatViewController.validatedChatMessage(spaces))
+
+        let over = String(repeating: Character("a"), count: ChatViewController.maxChatMessageLength + 1)
+        let overReload = reload(" bike ", over, true, NSDictionary())
+        XCTAssertTrue(overReload.showsLengthAlert)
+        XCTAssertFalse(overReload.posts)
+        XCTAssertFalse(overReload.reloadsTrades)
+        XCTAssertFalse(overReload.clearsTextField)
+        XCTAssertFalse(overReload.dismissesChat)
+        XCTAssertFalse(overReload.refreshesChat)
+        XCTAssertEqual(overReload.requestURL, base + "trades/bike/chat")
+        XCTAssertEqual(overReload.keptDraft, over)
+        XCTAssertNil(ChatViewController.validatedChatMessage(over))
+
+        let trimmedFit = " " + exact
+        XCTAssertEqual(trimmedFit.characters.count, ChatViewController.maxChatMessageLength + 1)
+        XCTAssertEqual(ChatViewController.validatedChatMessage(trimmedFit), exact)
+        let alertInstead = reload(" bike ", trimmedFit, true, emptyObject)
+        XCTAssertTrue(alertInstead.showsLengthAlert)
+        XCTAssertFalse(alertInstead.posts)
+        XCTAssertFalse(alertInstead.reloadsTrades)
+        XCTAssertFalse(alertInstead.clearsTextField)
+        XCTAssertFalse(alertInstead.dismissesChat)
+        XCTAssertFalse(alertInstead.refreshesChat)
+        XCTAssertEqual(alertInstead.keptDraft, trimmedFit)
+        XCTAssertNotEqual(alertInstead.keptDraft, exact)
+        XCTAssertFalse(alertInstead.unwrapsJSON)
+        XCTAssertNil(send(" bike ", trimmedFit, true, emptyObject).message)
+
+        XCTAssertFalse(ChatViewController.shouldAutoDismissForOrientation(.portrait))
+        XCTAssertNil(HLSwappViewController.chatSegueBadgeHide(
+            resolvedTrade: nil,
+            storedPeerId: " bike "
+        ).hidesCurrentChatBadge)
+        XCTAssertFalse(TradeTurnPolicy.showsWaitingForReply(
+            turnUserId: "peer",
+            viewerId: "me",
+            waitingTurnEnabled: false
+        ))
+        XCTAssertFalse(TradeTurnPolicy.shouldBlockOffer(
+            turnUserId: "peer",
+            viewerId: "me",
+            buttonTag: 1,
+            productsReceivedTag: productsReceivedTag,
+            turnGateEnabled: false
+        ))
+    }
+
     private func nickJSON(_ raw: String) -> Any? {
         guard let data = raw.data(using: String.Encoding.utf8) else {
             return nil
