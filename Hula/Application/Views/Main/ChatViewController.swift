@@ -225,7 +225,7 @@ class ChatViewController: UIViewController {
     /// `chatSendClear`. Do not dismiss the chat from this helper.
     /// `dismissesChat` stays false. `refreshesChat` stays false; the clear
     /// path still refreshes through `chatSendClear`. `replacesChat` stays
-    /// false. Do not filter dates. Do not unwrap `json`. `closeChatAction`
+    /// false. Do not filter dates. Do not unwrap `json`. `chatCloseDismiss`
     /// still reloads trades and then dismisses without a dictionary check.
     /// Do not fold that dismiss into this helper. Do not trim `tradeId`.
     /// `" bike "` is not `"bike"`. `"a&b"` is not `"a%26b"`. `"P1"` is not
@@ -254,6 +254,52 @@ class ChatViewController: UIViewController {
             reloadsTrades: send.posts,
             keptDraft: send.keptDraft,
             dismissesChat: false,
+            refreshesChat: false,
+            replacesChat: false,
+            filtersDates: false,
+            unwrapsJSON: false
+        )
+    }
+
+    /// Close button. `closeChatAction` calls `getTrades` and then dismisses
+    /// on the main queue. It does not wait for that callback, and it does
+    /// not read `succ`. A blank trade id (`""`, `" "`, `"   "`, `"\n"`,
+    /// `"\t"`), a blank or whitespace draft, a nil draft, 300 spaces, and
+    /// an untrimmed draft longer than 300 characters still reload and still
+    /// dismiss. There is no length alert and no POST. A dictionary, a
+    /// dictionary array, a string, a number, a bool, nil, and `NSNull` do
+    /// not change that. `httpOk` is ignored. Do not fold this dismiss into
+    /// `chatSendTradeReload` (`dismissesChat` stays false there). Do not
+    /// skip the reload because the draft is still present or the body is
+    /// not an `NSDictionary`. Do not require `validatedChatMessage`. Do not
+    /// clear the composer. `keptDraft` stays the raw draft, including
+    /// `" hello "`. Do not refresh the thread. Do not replace the polled
+    /// chat. Do not filter dates. Do not unwrap `json`. `tradeId` stays
+    /// raw. Do not trim it. `" bike "` is not `"bike"`. `"a&b"` is not
+    /// `"a%26b"`. `"P1"` is not `"p1"`. This helper does not build
+    /// `chatRequestURL`. Encoding stays on the send and poll paths.
+    class func chatCloseDismiss(
+        tradeId: String,
+        draft: String?,
+        httpOk: Bool,
+        json: Any?
+    ) -> ChatCloseDismiss {
+        let draftText = draft ?? ""
+        // httpOk and json stay in the signature so callers can pass the
+        // send callback's status and body. Neither one gates the close.
+        return ChatCloseDismiss(
+            tradeId: tradeId,
+            draft: draftText,
+            showsLengthAlert: false,
+            posts: false,
+            requestURL: nil,
+            postString: nil,
+            clearsTextField: false,
+            reloadsTrades: true,
+            keptDraft: draftText,
+            dismissesChat: true,
+            waitsForReload: false,
+            requiresReloadSuccess: false,
             refreshesChat: false,
             replacesChat: false,
             filtersDates: false,
@@ -423,7 +469,7 @@ class ChatViewController: UIViewController {
             }
             // Reload trades for every POST callback, including when the
             // draft stays. Do not dismiss. Do not refresh the thread from
-            // this reload. closeChatAction still reloads and then dismisses.
+            // this reload. chatCloseDismiss still reloads and then dismisses.
             let reload = ChatViewController.chatSendTradeReload(
                 apiBase: HulaConstants.apiURL,
                 tradeId: tradeId,
@@ -442,14 +488,31 @@ class ChatViewController: UIViewController {
     
     
     @IBAction func closeChatAction(_ sender: Any) {
-
-        HLDataManager.sharedInstance.getTrades{(succ) in
-            // trades refreshed
-            print("Trades loaded from chat")
+        // Reload and dismiss even when the composer still holds text, the
+        // trade id is blank, or there is no chat response. Do not POST, do
+        // not clear, do not refresh the thread, and do not wait for
+        // getTrades. The send callback still does not dismiss.
+        var draft: String? = nil
+        if let field = self.chatTextField {
+            draft = field.text
         }
-        DispatchQueue.main.async(execute: {
-            self.dismiss(animated: true, completion: nil)
-        })
+        let close = ChatViewController.chatCloseDismiss(
+            tradeId: self.trade_id,
+            draft: draft,
+            httpOk: false,
+            json: nil
+        )
+        if close.reloadsTrades {
+            HLDataManager.sharedInstance.getTrades{(succ) in
+                // trades refreshed
+                print("Trades loaded from chat")
+            }
+        }
+        if close.dismissesChat && !close.waitsForReload {
+            DispatchQueue.main.async(execute: {
+                self.dismiss(animated: true, completion: nil)
+            })
+        }
     }
     
     
@@ -654,6 +717,31 @@ struct ChatSendTradeReload {
     let reloadsTrades: Bool
     let keptDraft: String
     let dismissesChat: Bool
+    let refreshesChat: Bool
+    let replacesChat: Bool
+    let filtersDates: Bool
+    let unwrapsJSON: Bool
+}
+
+/// Close button. `reloadsTrades` and `dismissesChat` are both true with no
+/// post, dictionary, or length check. `waitsForReload` and
+/// `requiresReloadSuccess` stay false: dismiss is scheduled outside the
+/// `getTrades` callback. This step does not clear the composer, post,
+/// refresh the thread, replace the polled array, filter dates, or unwrap
+/// JSON. `requestURL` and `postString` stay nil.
+struct ChatCloseDismiss {
+    let tradeId: String
+    let draft: String
+    let showsLengthAlert: Bool
+    let posts: Bool
+    let requestURL: String?
+    let postString: String?
+    let clearsTextField: Bool
+    let reloadsTrades: Bool
+    let keptDraft: String
+    let dismissesChat: Bool
+    let waitsForReload: Bool
+    let requiresReloadSuccess: Bool
     let refreshesChat: Bool
     let replacesChat: Bool
     let filtersDates: Bool
