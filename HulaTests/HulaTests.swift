@@ -20108,6 +20108,384 @@ class HulaTests: XCTestCase {
         ))
     }
 
+    func testChatSectionHeaderTitleUsesFirstCommentRelativeDate() {
+        let productsReceivedTag = 90441
+        XCTAssertTrue(ProductIdentityPolicy.identifiersMatch(nil, ""))
+        XCTAssertFalse(TradeTurnPolicy.idsMatch(nil, ""))
+        XCTAssertNotEqual(
+            TradeTurnPolicy.idsMatch(nil, ""),
+            ProductIdentityPolicy.identifiersMatch(nil, "")
+        )
+        XCTAssertEqual(CommonUtils.sharedInstance.relativeDateLabel(fromISO: nil, numericDates: true), "")
+        XCTAssertEqual(CommonUtils.sharedInstance.relativeDateLabel(fromISO: "", numericDates: true), "")
+        XCTAssertEqual(ChatViewController.chatHeaderRelativeLabel(fromISO: nil), "")
+        XCTAssertEqual(ChatViewController.chatHeaderRelativeLabel(fromISO: ""), "")
+        XCTAssertEqual(
+            ChatViewController.chatHeaderRelativeLabel(fromISO: nil),
+            CommonUtils.sharedInstance.relativeDateLabel(fromISO: nil, numericDates: true)
+        )
+        let spacedLabel = ChatViewController.chatHeaderRelativeLabel(fromISO: " ")
+        XCTAssertFalse(spacedLabel.isEmpty)
+        XCTAssertEqual(
+            spacedLabel,
+            CommonUtils.sharedInstance.relativeDateLabel(fromISO: " ", numericDates: true)
+        )
+        XCTAssertNotEqual(spacedLabel, "")
+        let oldISO = "2020-01-01T00:00:00.000Z"
+        let oldLabel = ChatViewController.chatHeaderRelativeLabel(fromISO: oldISO)
+        XCTAssertFalse(oldLabel.isEmpty)
+        XCTAssertEqual(
+            oldLabel,
+            CommonUtils.sharedInstance.relativeDateLabel(fromISO: oldISO, numericDates: true)
+        )
+        XCTAssertNotEqual(oldLabel, CommonUtils.chatDateSectionKey(oldISO))
+        XCTAssertEqual(CommonUtils.chatDateSectionKey(oldISO), "2020-01-01T00")
+
+        func row(_ date: Any?, _ message: String) -> NSDictionary {
+            let item = NSMutableDictionary()
+            if let date = date {
+                item.setValue(date, forKey: "date")
+            }
+            item.setValue(message, forKey: "message")
+            return item
+        }
+        func stored(_ pairs: [(String, Any)]) -> NSMutableDictionary {
+            let sorted = NSMutableDictionary()
+            for pair in pairs {
+                sorted.setValue(pair.1, forKey: pair.0)
+            }
+            return sorted
+        }
+        func header(
+            _ keys: [String],
+            _ section: Int,
+            _ chat: NSDictionary,
+            _ label: (String?) -> String
+        ) -> ChatSectionHeaderTitle {
+            return ChatViewController.chatSectionHeaderTitle(
+                sectionKeys: keys,
+                section: section,
+                sortedChat: chat,
+                relativeLabel: label
+            )
+        }
+        func stub(_ date: String?) -> String {
+            if date == "first" {
+                return "FIRST"
+            }
+            if date == "last" {
+                return "LAST"
+            }
+            if date == "first-b" {
+                return "SECTION-B"
+            }
+            if date == " " {
+                return "spaced-date"
+            }
+            if date == "\n" {
+                return "newline-date"
+            }
+            if date == "\t" {
+                return "tab-date"
+            }
+            if date == "0" {
+                return "zero"
+            }
+            if date == " 2026-11-28T10:02:00.000Z " {
+                return "padded-iso"
+            }
+            return ""
+        }
+        func assertIdle(_ decision: ChatSectionHeaderTitle, _ key: String) {
+            XCTAssertEqual(decision.sectionKey, key)
+            XCTAssertFalse(decision.trimsKey)
+            XCTAssertFalse(decision.readsLastComment)
+            XCTAssertFalse(decision.dismissesChat)
+            XCTAssertFalse(decision.posts)
+            XCTAssertFalse(decision.reloadsTrades)
+            XCTAssertFalse(decision.filtersDates)
+            XCTAssertFalse(decision.replacesChat)
+            XCTAssertFalse(decision.unwrapsJSON)
+        }
+        func assertKeeps(_ decision: ChatSectionHeaderTitle, _ key: String) {
+            assertIdle(decision, key)
+            XCTAssertEqual(decision.title, key)
+            XCTAssertFalse(decision.usesRelativeDate)
+        }
+        func assertReplaces(_ decision: ChatSectionHeaderTitle, _ key: String, _ title: String) {
+            assertIdle(decision, key)
+            XCTAssertEqual(decision.title, title)
+            XCTAssertNotEqual(decision.title, key)
+            XCTAssertTrue(decision.usesRelativeDate)
+            XCTAssertTrue(decision.readFirstComment)
+            XCTAssertTrue(decision.commentCount > 0)
+        }
+
+        let emptyChat = NSMutableDictionary()
+        let missing = header([], 0, emptyChat, stub)
+        assertKeeps(missing, "")
+        XCTAssertNil(missing.dateText)
+        XCTAssertEqual(missing.commentCount, 0)
+        XCTAssertFalse(missing.readFirstComment)
+        assertKeeps(header(["hour"], 1, emptyChat, stub), "")
+        assertKeeps(header(["hour"], -1, emptyChat, stub), "")
+        assertKeeps(header(["hour"], Int.max, emptyChat, stub), "")
+
+        let rawKey = " 2026-11-28T10 "
+        var labelCalls = 0
+        let noRows = header([rawKey], 0, emptyChat, { date in
+            labelCalls += 1
+            return stub(date)
+        })
+        assertKeeps(noRows, rawKey)
+        XCTAssertEqual(labelCalls, 0)
+        XCTAssertNotEqual(noRows.sectionKey, "2026-11-28T10")
+        XCTAssertNotEqual(noRows.title, CommonUtils.chatDateSectionKey(rawKey))
+        XCTAssertEqual(CommonUtils.chatDateSectionKey(rawKey), " 2026-11-28T1")
+
+        let emptyRows = stored([(rawKey, [NSDictionary]())])
+        let emptyDecision = header([rawKey], 0, emptyRows, { date in
+            labelCalls += 1
+            return stub(date)
+        })
+        assertKeeps(emptyDecision, rawKey)
+        XCTAssertEqual(emptyDecision.commentCount, 0)
+        XCTAssertFalse(emptyDecision.readFirstComment)
+        XCTAssertEqual(labelCalls, 0)
+
+        let wrongType: [Any] = [
+            "nope",
+            NSNumber(value: 1),
+            NSNull(),
+            ["date": "first"] as NSDictionary,
+            ["first", "last"]
+        ]
+        for value in wrongType {
+            let chat = stored([(rawKey, value)])
+            let kept = header([rawKey], 0, chat, { date in
+                labelCalls += 1
+                return stub(date)
+            })
+            assertKeeps(kept, rawKey)
+            XCTAssertNil(kept.dateText)
+            XCTAssertEqual(kept.commentCount, 0)
+        }
+        XCTAssertEqual(labelCalls, 0)
+
+        let first = row("first", "older")
+        let last = row("last", "newer")
+        let chat = stored([(rawKey, [first, last])])
+        var seen = [String?]()
+        let replaced = header([rawKey], 0, chat, { date in
+            seen.append(date)
+            return stub(date)
+        })
+        assertReplaces(replaced, rawKey, "FIRST")
+        XCTAssertEqual(replaced.dateText, "first")
+        XCTAssertEqual(replaced.commentCount, 2)
+        XCTAssertEqual(seen.count, 1)
+        XCTAssertEqual(seen[0], "first")
+        XCTAssertNotEqual(replaced.title, "LAST")
+        XCTAssertNotEqual(replaced.title, CommonUtils.chatDateSectionKey("first"))
+
+        let emptyRelative = header([rawKey], 0, stored([(rawKey, [row("keep", "a"), row("last", "b")])]), stub)
+        assertKeeps(emptyRelative, rawKey)
+        XCTAssertEqual(emptyRelative.dateText, "keep")
+        XCTAssertTrue(emptyRelative.readFirstComment)
+        XCTAssertEqual(emptyRelative.commentCount, 2)
+        XCTAssertNotEqual(emptyRelative.title, "LAST")
+
+        let missingDate = header(
+            [rawKey],
+            0,
+            stored([(rawKey, [row(nil, "a"), row("last", "b")])]),
+            stub
+        )
+        assertKeeps(missingDate, rawKey)
+        XCTAssertNil(missingDate.dateText)
+        XCTAssertTrue(missingDate.readFirstComment)
+
+        let nullDate = header(
+            [rawKey],
+            0,
+            stored([(rawKey, [row(NSNull(), "a"), row("last", "b")])]),
+            stub
+        )
+        assertKeeps(nullDate, rawKey)
+        XCTAssertNil(nullDate.dateText)
+
+        let numberDate = header(
+            [rawKey],
+            0,
+            stored([(rawKey, [row(NSNumber(value: 3), "a"), row("last", "b")])]),
+            stub
+        )
+        assertKeeps(numberDate, rawKey)
+        XCTAssertNil(numberDate.dateText)
+
+        let boolDate = header(
+            [rawKey],
+            0,
+            stored([(rawKey, [row(true, "a"), row("last", "b")])]),
+            stub
+        )
+        assertKeeps(boolDate, rawKey)
+        XCTAssertNil(boolDate.dateText)
+
+        let blankDate = header(
+            ["hour"],
+            0,
+            stored([("hour", [row("", "a"), row("last", "b")])]),
+            stub
+        )
+        assertKeeps(blankDate, "hour")
+        XCTAssertEqual(blankDate.dateText, "")
+        XCTAssertNotEqual(blankDate.dateText, " ")
+
+        let spaceDate = header(
+            ["hour"],
+            0,
+            stored([("hour", [row(" ", "a"), row("last", "b")])]),
+            stub
+        )
+        assertReplaces(spaceDate, "hour", "spaced-date")
+        XCTAssertEqual(spaceDate.dateText, " ")
+        XCTAssertNotEqual(spaceDate.dateText, "")
+
+        let newlineDate = header(
+            ["hour"],
+            0,
+            stored([("hour", [row("\n", "a"), row("", "b")])]),
+            stub
+        )
+        assertReplaces(newlineDate, "hour", "newline-date")
+        XCTAssertEqual(newlineDate.dateText, "\n")
+        XCTAssertNotEqual(newlineDate.dateText, "")
+
+        let tabDate = header(
+            ["hour"],
+            0,
+            stored([("hour", [row("\t", "a")])]),
+            stub
+        )
+        assertReplaces(tabDate, "hour", "tab-date")
+        XCTAssertEqual(tabDate.dateText, "\t")
+
+        let numericString = header(
+            ["hour"],
+            0,
+            stored([("hour", [row("0", "a"), row("last", "b")])]),
+            stub
+        )
+        assertReplaces(numericString, "hour", "zero")
+        XCTAssertEqual(numericString.dateText, "0")
+        XCTAssertNotEqual(numericString.title, "LAST")
+
+        let paddedISO = " 2026-11-28T10:02:00.000Z "
+        let padded = header(
+            ["hour"],
+            0,
+            stored([("hour", [row(paddedISO, "a"), row("last", "b")])]),
+            stub
+        )
+        assertReplaces(padded, "hour", "padded-iso")
+        XCTAssertEqual(padded.dateText, paddedISO)
+        XCTAssertNotEqual(padded.dateText, "2026-11-28T10:02:00.000Z")
+        XCTAssertNotEqual(padded.title, CommonUtils.chatDateSectionKey(paddedISO))
+
+        let spaceLabel = header(["hour"], 0, stored([("hour", [row("first", "a")])]), { _ in
+            return " "
+        })
+        assertReplaces(spaceLabel, "hour", " ")
+        XCTAssertEqual(spaceLabel.title, " ")
+        XCTAssertNotEqual(spaceLabel.title, "")
+
+        let secondKey = "key-b"
+        let two = stored([
+            (rawKey, [row("first", "a"), row("last", "b")]),
+            (secondKey, [row("first-b", "c"), row("last", "d")])
+        ])
+        let keys = [rawKey, secondKey]
+        assertReplaces(header(keys, 0, two, stub), rawKey, "FIRST")
+        assertReplaces(header(keys, 1, two, stub), secondKey, "SECTION-B")
+        XCTAssertNotEqual(header(keys, 1, two, stub).title, "FIRST")
+        XCTAssertNotEqual(header(keys, 1, two, stub).title, "LAST")
+
+        let onlyOther = stored([("other", [row("first", "a")])])
+        assertKeeps(header([rawKey], 0, onlyOther, stub), rawKey)
+
+        let liveKey = "2020-01-01T00"
+        let live = header(
+            [liveKey],
+            0,
+            stored([(liveKey, [row(oldISO, "a"), row("last", "b")])]),
+            { date in
+                return ChatViewController.chatHeaderRelativeLabel(fromISO: date)
+            }
+        )
+        assertReplaces(live, liveKey, oldLabel)
+        XCTAssertEqual(live.dateText, oldISO)
+        XCTAssertNotEqual(live.title, liveKey)
+        XCTAssertNotEqual(live.title, CommonUtils.chatDateSectionKey(oldISO))
+        XCTAssertNotEqual(live.title, "LAST")
+
+        let liveBlank = header(
+            [rawKey],
+            0,
+            stored([(rawKey, [row("", "a"), row(oldISO, "b")])]),
+            { date in
+                return ChatViewController.chatHeaderRelativeLabel(fromISO: date)
+            }
+        )
+        assertKeeps(liveBlank, rawKey)
+        XCTAssertEqual(liveBlank.dateText, "")
+        XCTAssertNotEqual(liveBlank.title, oldLabel)
+
+        let liveSpace = header(
+            ["hour"],
+            0,
+            stored([("hour", [row(" ", "a"), row(oldISO, "b")])]),
+            { date in
+                return ChatViewController.chatHeaderRelativeLabel(fromISO: date)
+            }
+        )
+        assertReplaces(liveSpace, "hour", spacedLabel)
+        XCTAssertEqual(liveSpace.dateText, " ")
+        XCTAssertNotEqual(liveSpace.title, oldLabel)
+
+        let close = ChatViewController.chatCloseDismiss(
+            tradeId: " bike ",
+            draft: " hello ",
+            httpOk: true,
+            json: NSDictionary()
+        )
+        XCTAssertTrue(close.dismissesChat)
+        XCTAssertTrue(close.reloadsTrades)
+        XCTAssertFalse(close.posts)
+        XCTAssertNotEqual(close.dismissesChat, live.dismissesChat)
+        XCTAssertNotEqual(close.reloadsTrades, live.reloadsTrades)
+        XCTAssertEqual(close.tradeId, " bike ")
+        XCTAssertNotEqual(close.tradeId, "bike")
+
+        XCTAssertFalse(ChatViewController.shouldAutoDismissForOrientation(.portrait))
+        XCTAssertNil(HLSwappViewController.chatSegueBadgeHide(
+            resolvedTrade: nil,
+            storedPeerId: " bike "
+        ).hidesCurrentChatBadge)
+        XCTAssertFalse(TradeTurnPolicy.showsWaitingForReply(
+            turnUserId: "peer",
+            viewerId: "me",
+            waitingTurnEnabled: false
+        ))
+        XCTAssertFalse(TradeTurnPolicy.shouldBlockOffer(
+            turnUserId: "peer",
+            viewerId: "me",
+            buttonTag: 1,
+            productsReceivedTag: productsReceivedTag,
+            turnGateEnabled: false
+        ))
+    }
+
     private func nickJSON(_ raw: String) -> Any? {
         guard let data = raw.data(using: String.Encoding.utf8) else {
             return nil
