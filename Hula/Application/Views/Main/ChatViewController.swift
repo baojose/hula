@@ -390,6 +390,66 @@ class ChatViewController: UIViewController {
         }
         return comments[row]
     }
+
+    /// Header label passed to `relativeDateLabel`. `numericDates` stays true.
+    /// Nil and `""` stay empty. A space, newline, or tab is not blank here.
+    /// Do not trim. Do not fold section keys into this label.
+    class func chatHeaderRelativeLabel(fromISO date: String?) -> String {
+        return CommonUtils.sharedInstance.relativeDateLabel(fromISO: date, numericDates: true)
+    }
+
+    /// Section header title. Starts from the raw section key. A missing
+    /// section becomes `""`. When that section's comments are non-empty,
+    /// the date is read from `comments[0]` (the first comment, despite the
+    /// local name `lastDate`). A string date whose relative label is
+    /// non-empty replaces the title. A missing date, `NSNull`, a number, a
+    /// bool, or an empty relative string keeps the raw section key. Do not
+    /// trim the key. `" 2026-11-28T10 "` is not `"2026-11-28T10"`. Do not
+    /// read the last comment. Do not fold this into `chatCloseDismiss`,
+    /// `chatDateSectionKey`, or `relativeDateLabel`. This step does not
+    /// dismiss, post, reload trades, filter dates, replace the polled chat,
+    /// or unwrap JSON.
+    class func chatSectionHeaderTitle(
+        sectionKeys: [String],
+        section: Int,
+        sortedChat: NSDictionary,
+        relativeLabel: (String?) -> String
+    ) -> ChatSectionHeaderTitle {
+        let rawKey = sectionKey(sectionKeys, section: section) ?? ""
+        var title = rawKey
+        var dateText: String? = nil
+        var commentCount = 0
+        var usesRelativeDate = false
+        var readFirstComment = false
+        if let rows = comments(in: sortedChat, sectionKeys: sectionKeys, section: section), rows.count > 0 {
+            commentCount = rows.count
+            readFirstComment = true
+            if let text = rows[0].object(forKey: "date") as? String {
+                dateText = text
+            }
+            let relative = relativeLabel(dateText)
+            if relative.characters.count > 0 {
+                title = relative
+                usesRelativeDate = true
+            }
+        }
+        return ChatSectionHeaderTitle(
+            sectionKey: rawKey,
+            title: title,
+            dateText: dateText,
+            commentCount: commentCount,
+            usesRelativeDate: usesRelativeDate,
+            readFirstComment: readFirstComment,
+            readsLastComment: false,
+            trimsKey: false,
+            dismissesChat: false,
+            posts: false,
+            reloadsTrades: false,
+            filtersDates: false,
+            replacesChat: false,
+            unwrapsJSON: false
+        )
+    }
     
     func updateData(forze: Bool){
         let prev_co = self.chatTableView.contentOffset
@@ -581,15 +641,15 @@ extension ChatViewController: UITableViewDelegate, UITableViewDataSource{
         label.backgroundColor = UIColor(red: 0, green: 0, blue: 0, alpha: 0)
         label.font = ChatViewController.sectionHeaderFont()
         
-        var sectionTitle = ChatViewController.sectionKey(sectionKeys, section: section) ?? ""
-        if let comments = ChatViewController.comments(in: sortedChat, sectionKeys: sectionKeys, section: section), comments.count > 0 {
-            let lastDate = comments[0].object(forKey: "date") as? String
-            let relative = CommonUtils.sharedInstance.relativeDateLabel(fromISO: lastDate, numericDates: true)
-            if !relative.isEmpty {
-                sectionTitle = relative
+        let header = ChatViewController.chatSectionHeaderTitle(
+            sectionKeys: sectionKeys,
+            section: section,
+            sortedChat: sortedChat,
+            relativeLabel: { date in
+                return ChatViewController.chatHeaderRelativeLabel(fromISO: date)
             }
-        }
-        label.text = sectionTitle
+        )
+        label.text = header.title
         label.textAlignment = .center
         view.addSubview(label)
         
@@ -745,6 +805,28 @@ struct ChatCloseDismiss {
     let refreshesChat: Bool
     let replacesChat: Bool
     let filtersDates: Bool
+    let unwrapsJSON: Bool
+}
+
+/// Section header title. `title` is the raw section key unless the first
+/// comment has a string date and the relative label is non-empty. A missing
+/// section uses `""`. `readsLastComment`, `trimsKey`, `dismissesChat`,
+/// `posts`, `reloadsTrades`, `filtersDates`, `replacesChat`, and
+/// `unwrapsJSON` stay false. Do not fold this into `chatCloseDismiss`.
+struct ChatSectionHeaderTitle {
+    let sectionKey: String
+    let title: String
+    let dateText: String?
+    let commentCount: Int
+    let usesRelativeDate: Bool
+    let readFirstComment: Bool
+    let readsLastComment: Bool
+    let trimsKey: Bool
+    let dismissesChat: Bool
+    let posts: Bool
+    let reloadsTrades: Bool
+    let filtersDates: Bool
+    let replacesChat: Bool
     let unwrapsJSON: Bool
 }
 
